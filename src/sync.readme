@@ -18,3 +18,14 @@ Next Steps:
 - start packaging
 - start building the command line (full sync, incremental sync, mirror)
 - Add proper logging
+
+Commandline:
+gmvault --sync --imap-server --login --passwd --db-dir 
+gmvault --sync --imap-server --oauth-token --db-dir
+gmvault --inc-sync --imap-server --oauth-token --db-dir
+gmvault --quick-sync --imap-server --oauth-token --db-dir
+
+gmvault --restore --imap-server --login --passwd --db-dir 
+gmvault --restore --imap-server --oauth-token --db-dir
+
+gmvault --mirror --type=s3 --token
