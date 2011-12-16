@@ -1,0 +1,6 @@
+.*.swp
+*.pyc
+*.o
+*.class
+dists/disstoolbox-dist/build
+dists/disstoolbox-dist/build/*
