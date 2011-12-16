@@ -14,23 +14,6 @@
 => 2 syncing ways => checking info such as labels mainly and syncing only data
 
 
-=> In Dir: One full metadata file or multiple metadata: ID, FLAG, LABELS
-Structure as we want to be able to write it in streaming mode
-ID: json list
-
-Algo:
-
-Fetch all requested ID:
-  For each id:
-     get all but data
-       if email exist on disk check that there are no differences
-       else:
-          store on disk:
-             if dir doesn't exist create it
-             store email
-
-All Done
-
 Next Steps:
 - start packaging
 - start building the command line (full sync, incremental sync, mirror)
