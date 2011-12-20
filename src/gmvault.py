@@ -4,6 +4,7 @@ Created on Nov 16, 2011
 @author: guillaume.aubert@gmail.com
 '''
 import json
+import zlib
 import gzip
 import re
 import datetime
@@ -17,6 +18,7 @@ import gmvault_utils as gmvault_utils
 class MonkeyIMAPClient(IMAPClient):
     """
        Need to extend the IMAPClient to do more things such as compression
+       Compression inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
     """
     
     def __init__(self, host, port=None, use_uid=True, ssl=False):
@@ -24,6 +26,16 @@ class MonkeyIMAPClient(IMAPClient):
            constructor
         """
         super(MonkeyIMAPClient, self).__init__(host, port, use_uid, ssl)
+        
+        self.inflator = None
+        self.deflator = None
+
+    def enable_compression(self):
+      """ enable compression on the socket (RFC 4978) """
+  
+      self.deflator = zlib.decompressobj(-15)
+      self.inflator = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
+
         
         
 

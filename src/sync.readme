@@ -29,3 +29,9 @@ gmvault --restore --imap-server --login --passwd --db-dir
 gmvault --restore --imap-server --oauth-token --db-dir
 
 gmvault --mirror --type=s3 --token
+
+NEXT => add restore mode,
+     => add mirror mode,
+     => create gui
+
+

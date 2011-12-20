@@ -67,3 +67,9 @@ class CmdLineParser(OptionParser): #pylint: disable-msg=R0904
           forces the full usage message on error. 
         """ 
         self.die_with_usage("%s: error: %s\n" % (self.get_prog_name(), msg))
+        
+    def message(self, msg):
+        """
+           Print a message 
+        """
+        print("%s: %s\n" % (self.get_prog_name(), msg))

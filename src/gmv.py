@@ -20,6 +20,11 @@ a) full synchronisation with email and password login
 b) full synchronisation for german users that have to use googlemail instead of gmail
 
 #> gmvault --imap-server imap.googlemail.com --email foo.bar@gmail.com --passwd sosecrtpasswd
+
+c) restrict synchronisation with an IMAP request
+
+#> gmvault --imap-request 'Since 1-Nov-2011 Before 10-Nov-2011' --imap-server imap.googlemail.com --email foo.bar@gmail.com --passwd sosecrtpasswd 
+
 """
 
 class GMVaultLauncher(object):
@@ -155,10 +160,13 @@ class GMVaultLauncher(object):
         """
            Run the grep with the given args 
         """
-        syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
-                                   args['email'], args['passwd'])
-        
-        syncer.sync(args['request'])
+        try:
+            syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
+                                       args['email'], args['passwd'])
+            
+            syncer.sync(args['request'])
+        except KeyboardInterrupt, kb:
+            args['parser'].message("CRTL^C. Stop all operations.")
         
         
     
@@ -174,9 +182,9 @@ def bootstrap_run():
     
 if __name__ == '__main__':
     import sys
-    sys.argv = ['gmvault.py', '--sync','--host', 'imap.gmail.com', '--port', '1452', '--login', 'foo', '--passwd', 'bar']
+    #sys.argv = ['gmvault.py', '--sync','--host', 'imap.gmail.com', '--port', '1452', '--login', 'foo', '--passwd', 'bar']
     
-    print(sys.argv)
+    #print(sys.argv)
     
     bootstrap_run()
     

@@ -290,12 +290,6 @@ class TestGMVault(unittest.TestCase):
             
         #should be ok to be checked
         #self.assertEquals(dest_email[dest_id][gsource.IMAP_INTERNALDATE], source_email[the_id][gsource.IMAP_INTERNALDATE])
-    
-    def _delete_email(self, a_conn, a_id):
-        """
-           Set an email as deleted
-        """
-        pass
         
     def ztest_restore_10_emails(self):
         """
@@ -401,7 +395,7 @@ class TestGMVault(unittest.TestCase):
         else:
             self.fail('SystemExit exception expected')
 
-    def test_cli_(self):
+    def ztest_cli_(self):
         """
            Test the cli interface bad option
         """
@@ -435,13 +429,22 @@ class TestGMVault(unittest.TestCase):
            full test via the command line
         """
         import sys
-        sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', '993', '--imap-request', 'Since 1-Nov-2011 Before 10-Nov-2011', '--email', self.login, '--passwd', self.passwd]
+        sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', '993', '--imap-request', 'Since 1-Nov-2011 Before 5-Nov-2011', '--email', self.login, '--passwd', self.passwd]
     
-        gmvault = gmv.GMVaultLauncher()
+        gmvaultLauncher = gmv.GMVaultLauncher()
         
-        args = gmvault.parse_args()
+        args = gmvaultLauncher.parse_args()
     
-        gmvault.run(args)
+        gmvaultLauncher.run(args)
+        
+        #check all stored gmail ids
+        gstorer = gmvault.GmailStorer(args['db-dir'])
+        
+        ids = gstorer.get_all_existing_gmail_ids()
+        
+        self.assertEquals(len(ids), 5)
+        
+        self.assertEquals(ids, {1384403887202624608L: '2011-11', 1384486067720566818L: '2011-11', 1384313269332005293L: '2011-11', 1384545182050901969L: '2011-11', 1384578279292583731L: '2011-11'})
         
         #clean db dir
         delete_db_dir(args['db-dir'])
