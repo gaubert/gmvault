@@ -4,6 +4,7 @@ Created on Dec 16, 2011
 @author: guillaume.aubert@gmail.com
 '''
 from cmdline_utils  import CmdLineParser
+import gmvault
 
 
 HELP_USAGE = """ gmvault [options]
@@ -52,7 +53,7 @@ class GMVaultLauncher(object):
                           help="gmail imap server hostname",\
                           dest="host", default="imap.gmail.com")
         
-        parser.add_option("-r", "--imap-port", \
+        parser.add_option("-t", "--imap-port", \
                           help="gmail imap server port",\
                           dest="port", default=993)
         
@@ -63,6 +64,10 @@ class GMVaultLauncher(object):
         parser.add_option("-p", "--passwd", \
                           help="gmail password",\
                           dest="passwd", default=None)
+        
+        parser.add_option("-r", "--imap-request", \
+                          help="imap request to restrict sync",\
+                          dest="request", default="ALL")
         
         parser.add_option("-d", "--db-dir", \
                           help="database root directory",\
@@ -96,18 +101,31 @@ class GMVaultLauncher(object):
         
         #check the sync mode
         if options.qsync:
-            parsed_args['sync-mode'] = 'qsync'
+            parsed_args['sync-mode'] = 'quick-sync'
         elif options.isync:
-            parsed_args['sync-mode'] = 'isync'
+            parsed_args['sync-mode'] = 'inc-sync'
         else:
-            parsed_args['sync-mode'] = 'sync'
+            parsed_args['sync-mode'] = 'full-sync'
         
         # add host
         parsed_args['host']             = options.host
         
+        #convert to int if necessary
+        port_type = type(options.port)
+        
+        try:
+            if port_type == type('s') or port_type == type("s"):
+                port = int(options.port)
+            else:
+                port = options.port
+        except Exception, e:
+            self.error("port option %s is not a number. Please check the port value" % (port))
+        
+        # add port
+        parsed_args['port']             = port
+        
         # add login
         parsed_args['email']            = options.email
-        
         
         # Cannot have passwd and oauth-token at the same time
         if options.passwd and options.oauth_token:
@@ -115,6 +133,9 @@ class GMVaultLauncher(object):
         
         # add passwd
         parsed_args['passwd']           = options.passwd
+        
+        # add imap request
+        parsed_args['request']          = options.request
 
         # add oauth token
         parsed_args['oauth-token']      = options.oauth_token
@@ -134,7 +155,12 @@ class GMVaultLauncher(object):
         """
            Run the grep with the given args 
         """
-        print("In run. Args = %s\n" %(args))
+        syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
+                                   args['email'], args['passwd'])
+        
+        syncer.sync(args['request'])
+        
+        
     
 def bootstrap_run():
     """ temporary bootstrap """

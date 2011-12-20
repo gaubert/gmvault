@@ -12,6 +12,7 @@ import os
 import ssl
 import gmvault
 import gmvault_utils
+import gmv
 
 
 def obfuscate_string(a_str):
@@ -74,7 +75,7 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals(('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH') , gimap.get_capabilities())
     
-    def ztest_gmvault_check_gmailness(self):
+    def test_gmvault_check_gmailness(self):
         """
            Test simple retrieval
         """
@@ -376,10 +377,66 @@ class TestGMVault(unittest.TestCase):
         self.assertTrue(os.path.exists('%s/1384313269332005293.meta' % (storage_dir)))
         self.assertTrue(os.path.exists('%s/1384313269332005293.eml.gz' % (storage_dir)))
 
-    def test_cli(self):
+    def ztest_cli_host_error(self):
         """
-           Test the cli interface
+           Test the cli interface bad option
         """
+        import sys
+        sys.argv = ['gmvault.py', '--sync','--host', 'imap.gmail.com', '--port', '1452', '--login', 'foo', '--passwd', 'bar']
+    
+        gmvault = gmv.GMVaultLauncher()
+    
+        try:
+            args = gmvault.parse_args()
+        except SystemExit, e:
+            self.assertEquals(type(e), type(SystemExit()))
+            self.assertEquals(e.code, 2)
+        except Exception, e:
+            self.fail('unexpected exception: %s' % e)
+        else:
+            self.fail('SystemExit exception expected')
+
+    def test_cli_(self):
+        """
+           Test the cli interface bad option
+        """
+        import sys
+        sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', 993, '--imap-request', 'Since 1-Nov-2011 Before 10-Nov-2011', '--email', 'foo', '--passwd', 'bar']
+    
+        gmvault = gmv.GMVaultLauncher()
+    
+        try:
+            args = gmvault.parse_args()
+            
+            self.assertFalse(args['verbose'])
+            self.assertEquals(args['sync-mode'],'full-sync')
+            self.assertEquals(args['email'],'foo')
+            self.assertEquals(args['passwd'],'bar')
+            self.assertEquals(args['request'], 'Since 1-Nov-2011 Before 10-Nov-2011')
+            self.assertEquals(args['oauth-token'],None)
+            self.assertEquals(args['host'],'imap.gmail.com')
+            self.assertEquals(args['port'], 993)
+            self.assertEquals(args['db-dir'],'./gmvault-db')
+            
+            print(args)
+            
+        except SystemExit, e:
+            self.fail("SystemExit Exception: %s"  % e)
+        except Exception, e:
+            self.fail('unexpected exception: %s' % e)
+    
+    def test_full_sync_gmv(self):
+        """
+           full test via the command line
+        """
+        import sys
+        sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', '993', '--imap-request', 'Since 1-Nov-2011 Before 10-Nov-2011', '--email', self.login, '--passwd', self.passwd]
+    
+        gmvault = gmv.GMVaultLauncher()
+        
+        args = gmvault.parse_args()
+    
+        gmvault.run(args)
         
         
         
