@@ -33,6 +33,11 @@ def read_password_file(a_path):
     
     return (deobfuscate_string(login.strip()), deobfuscate_string(passwd.strip()))
 
+def delete_db_dir(a_db_dir):
+    """
+       delete the db directory
+    """
+    gmvault_utils.delete_all_under(a_db_dir, delete_top_dir = True)
 
 
 class TestGMVault(unittest.TestCase):
@@ -401,7 +406,7 @@ class TestGMVault(unittest.TestCase):
            Test the cli interface bad option
         """
         import sys
-        sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', 993, '--imap-request', 'Since 1-Nov-2011 Before 10-Nov-2011', '--email', 'foo', '--passwd', 'bar']
+        sys.argv = ['gmvault','--imap-server', 'imap.gmail.com', '--imap-port', 993, '--imap-request', 'Since 1-Nov-2011 Before 10-Nov-2011', '--email', 'foo', '--passwd', 'bar']
     
         gmvault = gmv.GMVaultLauncher()
     
@@ -437,6 +442,9 @@ class TestGMVault(unittest.TestCase):
         args = gmvault.parse_args()
     
         gmvault.run(args)
+        
+        #clean db dir
+        delete_db_dir(args['db-dir'])
         
         
         

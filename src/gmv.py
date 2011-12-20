@@ -71,7 +71,7 @@ class GMVaultLauncher(object):
         
         parser.add_option("-d", "--db-dir", \
                           help="database root directory",\
-                          dest="db_dir", default="./gmvault")
+                          dest="db_dir", default="./gmvault-db")
         
         parser.add_option("-o", "--oauth-token", \
                           help="oauth-token",\
