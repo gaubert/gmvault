@@ -6,30 +6,19 @@ Created on Dec 16, 2011
 from cmdline_utils  import CmdLineParser
 
 
-HELP_USAGE = """ nms_client [options] request files or request
+HELP_USAGE = """ gmvault [options]
                                      
 Arguments: a list of request files or an inline request."""
 
 HELP_EPILOGUE = """Examples:
 
-a) Requests examples
+a) full synchronisation with email and password login
 
-- Retrieve shi data with a request stored in a file
-#> nms_client ims_shi.req
+#> gmvault --email foo.bar@gmail.com --passwd vrysecrtpasswd 
 
-b) Pattern examples
+b) full synchronisation for german users that have to use googlemail instead of gmail
 
-#> nms_client shi.req -f "{req_id}_{req_fileprefix}.data"
-will create 546_shi.data.
-   
-#> nms_client shi.req -f "{req_id}_{date}.data"
-will create 547_20091224.data.
-
-#> nms_client shi.req -f "{req_id}_{datetime}.data"
-will create 548_20091224-01h12m23s.data
-
-#> nms_client shi-1.req shi-2.req -f "{req_id}_{req_fileprefix}.data"
-will create 549_shi-1.data and 550_shi-2.data
+#> gmvault --imap-server imap.googlemail.com --email foo.bar@gmail.com --passwd sosecrtpasswd
 """
 
 class GMVaultLauncher(object):
@@ -50,21 +39,39 @@ class GMVaultLauncher(object):
         
         parser = CmdLineParser()
         
-        parser.add_option("-f", "--from", help = "From datetime (YYYY-MM-DDTHH:MM:SS)", \
-                          dest = "dfrom", default = None)
+        parser.add_option("-s", "--sync", help = "full synchronisation between gmail with local db. (default sync mode)", \
+                          action ="store_true", dest="sync", default= False)
         
-        parser.add_option("-u", "--until", \
-                          help="Until datetime (YYYY-MM-DDTHH:MM:SS)",\
-                          dest="duntil", default= None)
+        parser.add_option("-q", "--quick-sync", help = "quick synchronisation between  gmail with local db", \
+                          action ="store_true", dest="qsync", default= False)
         
-        parser.add_option("-n", "--facilities", \
-                          help="List of facilities (DVB_EUR_UPLINK, DVB_CBAND_SAM)",\
-                          dest="facilities", default=None)
+        parser.add_option("-n", "--inc-sync", help = "incremental synchronisation between gmail with local db", \
+                          action ="store_true", dest="isync", default= False)
         
-        parser.add_option("-m", "--hosts", \
-                          help="filter by hosts if necessary",\
-                          dest="hosts", default="ALL")
-     
+        parser.add_option("-i", "--imap-server", \
+                          help="gmail imap server hostname",\
+                          dest="host", default="imap.gmail.com")
+        
+        parser.add_option("-r", "--imap-port", \
+                          help="gmail imap server port",\
+                          dest="port", default=993)
+        
+        parser.add_option("-l", "--email", \
+                          help="gmail email",\
+                          dest="email", default=None)
+        
+        parser.add_option("-p", "--passwd", \
+                          help="gmail password",\
+                          dest="passwd", default=None)
+        
+        parser.add_option("-d", "--db-dir", \
+                          help="database root directory",\
+                          dest="db_dir", default="./gmvault")
+        
+        parser.add_option("-o", "--oauth-token", \
+                          help="oauth-token",\
+                          dest="oauth_token", default=None)
+        
         parser.add_option("-v", "--verbose", \
                           help="Activate the verbose mode.",\
                           action="store_true", dest="verbose", default=False)
@@ -87,33 +94,36 @@ class GMVaultLauncher(object):
         
         parsed_args = { }
         
-        # if file check that file exist and read it
-        # otherwise if -i read stdin 
-        # otherwise start interactive session
+        #check the sync mode
+        if options.qsync:
+            parsed_args['sync-mode'] = 'qsync'
+        elif options.isync:
+            parsed_args['sync-mode'] = 'isync'
+        else:
+            parsed_args['sync-mode'] = 'sync'
         
-        # enter request_file mode       
-        if len(args) > 0:
-            #create a list of grep elements
-            parsed_args['search_request']       = " ".join(args) 
+        # add host
+        parsed_args['host']             = options.host
         
-        # if file check that file exist and read it
-        # otherwise if -i read stdin 
-        # otherwise start interactive session
-            
-        # add from
-        parsed_args['from']              = options.dfrom
+        # add login
+        parsed_args['email']            = options.email
         
-        # add until
-        parsed_args['until']             = options.duntil
         
-        #facilities
-        parsed_args['facilities']        = options.facilities
+        # Cannot have passwd and oauth-token at the same time
+        if options.passwd and options.oauth_token:
+            self.error("Only one authentication mode can be used (password or oauth-token)")
         
-        #hosts
-        parsed_args['hosts']             = options.hosts
+        # add passwd
+        parsed_args['passwd']           = options.passwd
+
+        # add oauth token
+        parsed_args['oauth-token']      = options.oauth_token
+        
+        # add passwd
+        parsed_args['db-dir']           = options.db_dir
      
         #verbose
-        parsed_args['verbose']           = options.verbose
+        parsed_args['verbose']          = options.verbose
         
         #add parser itself for error handling
         parsed_args['parser'] = parser
@@ -138,7 +148,7 @@ def bootstrap_run():
     
 if __name__ == '__main__':
     import sys
-    sys.argv = ['/homespace/gaubert/ecli-workspace/rodd/src/eumetsat/dmon/gems_grep.py', '--from', '2011-04-03T14:30:00', '--until', '2011-05-04T14:40:00', "dmon.log"]
+    sys.argv = ['gmvault.py', '--sync','--host', 'imap.gmail.com', '--port', '1452', '--login', 'foo', '--passwd', 'bar']
     
     print(sys.argv)
     

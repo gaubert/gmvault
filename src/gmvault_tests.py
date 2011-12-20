@@ -52,7 +52,7 @@ class TestGMVault(unittest.TestCase):
         self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         
     
-    def test_gmvault_connect_error(self):
+    def ztest_gmvault_connect_error(self):
         """
            Test connect error (connect to a wrong port). Too long to check
         """
@@ -64,7 +64,7 @@ class TestGMVault(unittest.TestCase):
         except ssl.SSLError, err:
             self.assertEquals(str(err), '[Errno 1] _ssl.c:480: error:140770FC:SSL routines:SSL23_GET_SERVER_HELLO:unknown protocol')
     
-    def test_gmvault_get_capabilities(self):
+    def ztest_gmvault_get_capabilities(self):
         """
            Test simple retrieval
         """
@@ -74,7 +74,7 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals(('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH') , gimap.get_capabilities())
     
-    def test_gmvault_check_gmailness(self):
+    def ztest_gmvault_check_gmailness(self):
         """
            Test simple retrieval
         """
@@ -84,7 +84,7 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals( True , gimap.check_gmailness())
         
-    def test_gmvault_simple_search(self):
+    def ztest_gmvault_simple_search(self):
         """
            search all emails before 01.01.2005
         """
@@ -98,7 +98,7 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals(len(ids), 33629)
         
-    def test_gmvault_retrieve_gmail_ids(self):
+    def ztest_gmvault_retrieve_gmail_ids(self):
         """
            Get all uid before Sep 2004
            Retrieve all GMAIL IDs 
@@ -115,7 +115,7 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals(res, {27362: {'X-GM-MSGID': 1147537963432096749L, 'SEQ': 14535}, 27363: {'X-GM-MSGID': 1147537994018957026L, 'SEQ': 14536}})
         
-    def test_gmvault_retrieve_all_params(self):
+    def ztest_gmvault_retrieve_all_params(self):
         """
            Get all params for a uid
            Retrieve all parts for one email
@@ -136,7 +136,7 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals(res[ids[0]][gimap.EMAIL_BODY],'Message-ID: <6999505.1094377483218.JavaMail.wwwadm@chewbacca.ecmwf.int>\r\nDate: Sun, 5 Sep 2004 09:44:43 +0000 (GMT)\r\nFrom: Guillaume.Aubert@ecmwf.int\r\nReply-To: Guillaume.Aubert@ecmwf.int\r\nTo: aubert_guillaume@yahoo.fr\r\nSubject: Fwd: [Flickr] Guillaume Aubert wants you to see their photos\r\nMime-Version: 1.0\r\nContent-Type: text/plain; charset=us-ascii\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: jwma\r\nStatus: RO\r\nX-Status: \r\nX-Keywords:                 \r\nX-UID: 1\r\n\r\n\r\n')
         
-    def test_gmvault_retrieve_email_store_and_read(self):
+    def ztest_gmvault_retrieve_email_store_and_read(self):
         """
            Retrieve an email store it on disk and read it
         """
@@ -170,7 +170,7 @@ class TestGMVault(unittest.TestCase):
             
         self.assertEquals(labels, j_results['labels'])
     
-    def test_gmvault_retrieve_multiple_emails_store_and_read(self):
+    def ztest_gmvault_retrieve_multiple_emails_store_and_read(self):
         """
            Retrieve emails store them it on disk and read it
         """
@@ -208,7 +208,7 @@ class TestGMVault(unittest.TestCase):
                 
             self.assertEquals(labels, j_results['labels'])
         
-    def test_gmvault_store_gzip_email_and_read(self):
+    def ztest_gmvault_store_gzip_email_and_read(self):
         """
            Retrieve emails store them it on disk and read it
         """
@@ -247,7 +247,7 @@ class TestGMVault(unittest.TestCase):
                 
             self.assertEquals(labels, j_results['labels'])
         
-    def test_restore_one_email(self):
+    def ztest_restore_one_email(self):
         """
            get one email from one account and restore it
         """
@@ -291,7 +291,7 @@ class TestGMVault(unittest.TestCase):
         """
         pass
         
-    def test_restore_10_emails(self):
+    def ztest_restore_10_emails(self):
         """
            Restore 10 emails
         """
@@ -335,7 +335,7 @@ class TestGMVault(unittest.TestCase):
             self.assertEquals(dest_email[dest_id][gsource.EMAIL_BODY], source_email[the_id][gsource.EMAIL_BODY])
             self.assertEquals(dest_email[dest_id][gsource.GMAIL_LABELS], source_email[the_id][gsource.GMAIL_LABELS])
         
-    def test_few_days_syncer(self):
+    def ztest_few_days_syncer(self):
         """
            Test with the Syncer object
         """
@@ -357,7 +357,7 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals(metadata['id'], 1384486067720566818)
         
-    def test_few_days_syncer_with_deletion(self):
+    def ztest_few_days_syncer_with_deletion(self):
         """
            check that there was a deletion
         """
@@ -375,6 +375,11 @@ class TestGMVault(unittest.TestCase):
         self.assertFalse(os.path.exists('%s/2384403887202624608.meta' % (storage_dir)))
         self.assertTrue(os.path.exists('%s/1384313269332005293.meta' % (storage_dir)))
         self.assertTrue(os.path.exists('%s/1384313269332005293.eml.gz' % (storage_dir)))
+
+    def test_cli(self):
+        """
+           Test the cli interface
+        """
         
         
         
