@@ -593,7 +593,7 @@ class GMVaulter(object):
         self._create_update_sync(imap_ids, compress)
         
         #delete supress emails from DB since last sync
-        self._delete_sync(imap_ids)
+        #self._delete_sync(imap_ids)
     
     def remote_sync(self):
         """

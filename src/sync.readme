@@ -33,5 +33,31 @@ gmvault --mirror --type=s3 --token
 NEXT => add restore mode,
      => add mirror mode,
      => create gui
+     
+     
+ Error to catch when data cannot be retrieved:
+ 
+ Traceback (most recent call last):
+  File "gmv.py", line 189, in <module>
+    bootstrap_run()
+  File "gmv.py", line 180, in bootstrap_run
+    gmvault.run(args)
+  File "gmv.py", line 167, in run
+    syncer.sync(args['request'])
+  File "/home/aubert/Dev/projects/gmvault/src/gmvault.py", line 593, in sync
+    self._create_update_sync(imap_ids, compress)
+  File "/home/aubert/Dev/projects/gmvault/src/gmvault.py", line 536, in _create_update_sync
+    data = self.src.fetch(id, GIMAPFetcher.GET_ALL_INFO)
+  File "/home/aubert/Dev/projects/gmvault/src/gmvault.py", line 165, in fetch
+    return self.server.fetch(a_ids, a_attributes)
+  File "/home/aubert/local_python/lib/python2.6/site-packages/imapclient/imapclient.py", line 674, in fetch
+    self._checkok('fetch', typ, data)
+  File "/home/aubert/local_python/lib/python2.6/site-packages/imapclient/imapclient.py", line 790, in _checkok
+    self._check_resp('OK', command, typ, data)
+  File "/home/aubert/local_python/lib/python2.6/site-packages/imapclient/imapclient.py", line 775, in _check_resp
+    raise self.Error('%s failed: %r' % (command, data[0]))
+imaplib.error: fetch failed: 'Some messages could not be FETCHed (Failure)'
+
+strategy reconnect retry abort ?
 
 
