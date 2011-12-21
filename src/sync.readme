@@ -36,6 +36,13 @@ NEXT => add restore mode,
      
      
  Error to catch when data cannot be retrieved:
+ This was due to a connection problem (it should be handled in a better way)
+ 
+ For some reason (maybe the server cuts the connection or something) you get an exception
+ add a retry policy (try up to three times before to quit on error).
+ 
+ Maybe redo the sync_delete as all the gm id are retrieve from filesystem (see if it scales)
+ 
  
  Traceback (most recent call last):
   File "gmv.py", line 189, in <module>
