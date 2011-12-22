@@ -1,5 +1,4 @@
 
-
 => To Do
 - Fix issue with internal date when restored on an account
 - Add support for compression in the imap communication
@@ -66,5 +65,8 @@ NEXT => add restore mode,
 imaplib.error: fetch failed: 'Some messages could not be FETCHed (Failure)'
 
 strategy reconnect retry abort ?
+
+Apparently it seems to be some corrupted messages (http://www.google.com/support/forum/p/gmail/thread?tid=1acf74d2c4c1ed46&hl=en)
+This is worrying but the message should be flagged and maybe deleted later one. Let's see. In any case, the exception needs to be catched in 
 
 
