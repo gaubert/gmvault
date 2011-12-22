@@ -80,7 +80,17 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals(('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH') , gimap.get_capabilities())
     
-    def test_gmvault_check_gmailness(self):
+    def ztest_gmvault_check_gmailness(self):
+        """
+           Test simple retrieval
+        """
+        gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        
+        gimap.connect()
+        
+        self.assertEquals( True , gimap.check_gmailness())
+    
+    def test_gmvault_compression(self):
         """
            Test simple retrieval
         """
@@ -424,7 +434,7 @@ class TestGMVault(unittest.TestCase):
         except Exception, e:
             self.fail('unexpected exception: %s' % e)
     
-    def test_full_sync_gmv(self):
+    def ztest_full_sync_gmv(self):
         """
            full test via the command line
         """

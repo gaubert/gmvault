@@ -17,7 +17,7 @@ from imapclient import IMAPClient
 
 import gmvault_utils as gmvault_utils
 
-class IMAP4_COMP_SSL(imaplib.IMAP4_SSL):
+class IMAP4COMPSSL(imaplib.IMAP4_SSL):
     """
        Add support for compression inspired by inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
     """
@@ -28,19 +28,46 @@ class IMAP4_COMP_SSL(imaplib.IMAP4_SSL):
         self.compressor = None
         self.decompressor = None
         
-        super(IMAP4_COMP_SSL, self).__init__(host, port, keyfile, certfile)
+        imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
+        
+    def enable_compression(self):
+        """enable_compression()
+        Ask the server to start compressing the connection.
+        Should be called from user of this class after instantiation, as in:
+            if 'COMPRESS=DEFLATE' in imapobj.capabilities:
+                imapobj.enable_compression()"""
+
+        try:
+            typ, dat = self._simple_command('COMPRESS', 'DEFLATE')
+            if typ == 'OK':
+                self.enable_compression()
+                if __debug__: self._log(1, 'Enabled COMPRESS=DEFLATE')
+        finally:
+            self._release_state_change()
         
     def activate_compression(self):
         """
            activate_compressing()
            Enable deflate compression on the socket (RFC 4978).
         """
-  
         # rfc 1951 - pure DEFLATE, so use -15 for both windows
         self.decompressor = zlib.decompressobj(-15)
         self.compressor = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
-  
+        
+    
     def read(self, size):
+      """Read 'size' bytes from remote."""
+      # sslobj.read() sometimes returns < size bytes
+      chunks = []
+      read = 0
+      while read < size:
+        data = self._intern_read(min(size-read, 16384))
+        read += len(data)
+        chunks.append(data)
+
+      return ''.join(chunks)
+  
+    def _intern_read(self, size):
         """
         data = read(size)
         Read at most 'size' bytes from remote.
@@ -55,8 +82,35 @@ class IMAP4_COMP_SSL(imaplib.IMAP4_SSL):
             data = self.sslobj.read(8192)
 
         return self.decompressor.decompress(data, size)
+    
+    def readline(self):
+      """Read line from remote."""
+      line = cStringIO.StringIO()
+      while 1:
+        char = self.read(1)
+        line.write(char)
+        if char in ("\n", ""): 
+          line.seek(0)
+          return line.read()
   
     def send(self, data):
+      """send(data)
+      Send 'data' to remote."""
+      if self.compressor is not None:
+        data = self.compressor.compress(data)
+        data += self.compressor.flush(zlib.Z_SYNC_FLUSH)
+      self.sslobj.sendall(data)
+    
+    
+    def oreadline(self):
+        """Read line from remote."""
+        line = []
+        while 1:
+            char = self.read(1)
+            line.append(char)
+            if char in ("\n", ""): return ''.join(line)
+    
+    def osend(self, data):
         """send(data)
         Send 'data' to remote."""
 
@@ -86,20 +140,11 @@ class MonkeyIMAPClient(IMAPClient):
            constructor
         """
         super(MonkeyIMAPClient, self).__init__(host, port, use_uid, ssl)
-        
-        self.inflator = None
-        self.deflator = None
-
-    def enable_compression(self):
-        """ enable compression on the socket (RFC 4978) """
-  
-        self.deflator = zlib.decompressobj(-15)
-        self.inflator = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
-        
+    
     def _create_IMAP4(self):
         # Create the IMAP instance in a separate method to make unit tests easier
         #ImapClass = self.ssl and imaplib.IMAP4_SSL or imaplib.IMAP4
-        ImapClass = self.ssl and IMAP4_COMP_SSL or imaplib.IMAP4
+        ImapClass = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
         return ImapClass(self.host, self.port)
 
         
