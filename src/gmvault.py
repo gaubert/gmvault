@@ -17,6 +17,64 @@ from imapclient import IMAPClient
 
 import gmvault_utils as gmvault_utils
 
+class IMAP4_COMP_SSL(imaplib.IMAP4_SSL):
+    """
+       Add support for compression inspired by inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
+    """
+    def __init__(self, host = '', port = imaplib.IMAP4_SSL_PORT, keyfile = None, certfile = None):
+        """
+           constructor
+        """
+        self.compressor = None
+        self.decompressor = None
+        
+        super(IMAP4_COMP_SSL, self).__init__(host, port, keyfile, certfile)
+        
+    def activate_compression(self):
+        """
+           activate_compressing()
+           Enable deflate compression on the socket (RFC 4978).
+        """
+  
+        # rfc 1951 - pure DEFLATE, so use -15 for both windows
+        self.decompressor = zlib.decompressobj(-15)
+        self.compressor = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
+  
+    def read(self, size):
+        """
+        data = read(size)
+        Read at most 'size' bytes from remote.
+        """
+
+        if self.decompressor is None:
+            return self.sslobj.read(size)
+
+        if self.decompressor.unconsumed_tail:
+            data = self.decompressor.unconsumed_tail
+        else:
+            data = self.sslobj.read(8192)
+
+        return self.decompressor.decompress(data, size)
+  
+    def send(self, data):
+        """send(data)
+        Send 'data' to remote."""
+
+        if self.compressor is not None:
+            data = self.compressor.compress(data)
+            data += self.compressor.flush(zlib.Z_SYNC_FLUSH)
+
+        if hasattr(self.sock, "sendall"):
+            self.sock.sendall(data)
+        else:
+            bytes = len(data)
+            while bytes > 0:
+                sent = self.sslobj.write(data)
+                if sent == bytes:
+                    break    # avoid copy
+                data = data[sent:]
+                bytes = bytes - sent
+    
 class MonkeyIMAPClient(IMAPClient):
     """
        Need to extend the IMAPClient to do more things such as compression
@@ -37,6 +95,12 @@ class MonkeyIMAPClient(IMAPClient):
   
         self.deflator = zlib.decompressobj(-15)
         self.inflator = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
+        
+    def _create_IMAP4(self):
+        # Create the IMAP instance in a separate method to make unit tests easier
+        #ImapClass = self.ssl and imaplib.IMAP4_SSL or imaplib.IMAP4
+        ImapClass = self.ssl and IMAP4_COMP_SSL or imaplib.IMAP4
+        return ImapClass(self.host, self.port)
 
         
         
