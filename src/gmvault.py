@@ -17,6 +17,9 @@ from imapclient import IMAPClient
 
 import gmvault_utils as gmvault_utils
 
+#monkey patching add compress in COMMANDS of imap
+imaplib.Commands['COMPRESS'] = ('AUTH', 'SELECTED')
+
 class IMAP4COMPSSL(imaplib.IMAP4_SSL):
     """
        Add support for compression inspired by inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
@@ -37,7 +40,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL):
         """
         # rfc 1951 - pure DEFLATE, so use -15 for both windows
         self.decompressor = zlib.decompressobj(-15)
-        self.compressor = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
+        self.compressor   = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
         
     
     def read(self, size):
@@ -109,9 +112,9 @@ class MonkeyIMAPClient(IMAPClient):
             if 'COMPRESS=DEFLATE' in imapobj.capabilities:
                 imapobj.enable_compression()
         """
-        ret_code, data = self.uid('COMPRESS', 'DEFLATE')
+        ret_code, data = self._imap._simple_command('COMPRESS', 'DEFLATE')
         if ret_code == 'OK':
-            self.server.activate_compression()
+            self._imap.activate_compression()
         else:
             #no errors for the moment
             pass

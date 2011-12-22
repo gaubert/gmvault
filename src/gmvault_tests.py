@@ -88,6 +88,8 @@ class TestGMVault(unittest.TestCase):
         
         gimap.connect()
         
+        gimap.enable_compression()
+        
         self.assertEquals( True , gimap.check_gmailness())
     
     def test_gmvault_compression(self):
@@ -98,7 +100,14 @@ class TestGMVault(unittest.TestCase):
         
         gimap.connect()
         
+        gimap.enable_compression()
+        
         self.assertEquals( True , gimap.check_gmailness())
+        
+        criteria = ['Before 1-Jan-2011']
+        ids = gimap.search(criteria)
+        
+        self.assertEquals(len(ids), 33629)
         
     def ztest_gmvault_simple_search(self):
         """
