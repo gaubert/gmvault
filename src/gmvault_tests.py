@@ -88,8 +88,6 @@ class TestGMVault(unittest.TestCase):
         
         gimap.connect()
         
-        gimap.enable_compression()
-        
         self.assertEquals( True , gimap.check_gmailness())
     
     def test_gmvault_compression(self):
@@ -172,6 +170,43 @@ class TestGMVault(unittest.TestCase):
         gstorer = gmvault.GmailStorer(storage_dir)
         
         gimap.connect()
+        
+        criteria = ['Before 1-Oct-2006']
+        #criteria = ['ALL']
+        ids = gimap.search(criteria)
+        
+        the_id = ids[124]
+        
+        res          = gimap.fetch(the_id, gimap.GET_ALL_INFO)
+        
+        gm_id = gstorer.bury_email(res[the_id])
+        
+        j_results = gstorer.unbury_email(gm_id)
+        
+        self.assertEquals(res[the_id][gimap.GMAIL_ID], j_results['id'])
+        self.assertEquals(res[the_id][gimap.EMAIL_BODY], j_results['email'])
+        self.assertEquals(res[the_id][gimap.GMAIL_THREAD_ID], j_results['thread_ids'])
+        
+        labels = []
+        for label in res[the_id][gimap.GMAIL_LABELS]:
+            labels.append(label)
+            
+        self.assertEquals(labels, j_results['labels'])
+    
+    def test_gmvault_compress_retrieve_email_store_and_read(self):
+        """
+           Activate compression and retrieve an email store it on disk and read it
+        """
+        storage_dir = '/tmp/gmail_bk'
+        gmvault_utils.delete_all_under(storage_dir)
+        
+        gimap   = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        
+        gstorer = gmvault.GmailStorer(storage_dir)
+        
+        gimap.connect()
+        
+        gimap.enable_compression()
         
         criteria = ['Before 1-Oct-2006']
         #criteria = ['ALL']

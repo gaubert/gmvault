@@ -119,10 +119,6 @@ class MonkeyIMAPClient(IMAPClient):
             #no errors for the moment
             pass
         
-
-        
-        
-
 class GIMAPFetcher(object):
     '''
     IMAP Class reading the information
@@ -474,16 +470,12 @@ class GmailStorer(object):
                 
             if os.path.exists(metadata_p):
                 os.remove(metadata_p)
-    
-class GMVaultIndexer(object):
-    """
-       Indexer maintaining the association between 
-    """
-        
+   
 class GMVaulter(object):
     """
        Main object operating over gmail
     """ 
+    NB_GRP_OF_ITEMS = 100
     
     def __init__(self, db_root_dir, host, port, login, passwd):
         """
@@ -497,7 +489,11 @@ class GMVaulter(object):
         
         # create source and try to connect
         self.src = GIMAPFetcher(host, port, login, passwd)
+        
         self.src.connect()
+        
+        # enable compression if possible
+        self.src.enable_compression() 
         
     def _sync_between(self, begin_date, end_date, storage_dir, compress = True):
         """
@@ -661,27 +657,36 @@ class GMVaulter(object):
        
     
     
-    def _delete_sync(self, imap_ids):
+    def _delete_sync(self, imap_ids, delete_dry_run):
         """
-           delete emails from the database if necessary
+           Delete emails from the database if necessary
+           imap_ids      : all remote imap_ids to check
+           delete_dry_run: True to simulate everything but the deletion
         """ 
         gstorer = GmailStorer(self.db_root_dir)
+        
+        print("get all existing ids from disk")
         
         #get gmail_ids from db
         db_gmail_ids_info = gstorer.get_all_existing_gmail_ids()
         
+        print("got all existing id from disk nb of ids to check: %s" % (len(db_gmail_ids_info)) )
+        
         #create a set of keys
         db_gmail_ids = set(db_gmail_ids_info.keys())
         
+        # optimize nb of items
+        nb_items = self.NB_GRP_OF_ITEMS if len(db_gmail_ids) >= self.NB_GRP_OF_ITEMS else len(db_gmail_ids)
+        
         #calculate the list elements to delete
-        #query 10 items in one query
-        for ten_imap_id in itertools.izip_longest(fillvalue=None,*[iter(imap_ids)]*10):
+        #query nb_items items in one query to minimise number of imap queries
+        for group_imap_id in itertools.izip_longest(fillvalue=None,*[iter(imap_ids)]*nb_items):
             
             # if None in list remove it
-            if None in ten_imap_id: 
-                ten_imap_id = [ id for id in ten_imap_id if id != None ]
+            if None in group_imap_id: 
+                group_imap_id = [ id for id in group_imap_id if id != None ]
             
-            data = self.src.fetch(ten_imap_id, GIMAPFetcher.GET_GMAIL_ID)
+            data = self.src.fetch(group_imap_id, GIMAPFetcher.GET_GMAIL_ID)
             
             imap_gmail_ids = set()
             
@@ -693,15 +698,14 @@ class GMVaulter(object):
             #quit loop if db set is already empty
             if len(db_gmail_ids) == 0:
                 break
+            
+        print("Will delete %s imap from disk db" % (len(db_gmail_ids)) )
+        if not delete_dry_run: #delete if not a simulation dry_run
+            for gm_id in db_gmail_ids:
+                print("gm_id %s not in imap. Delete it" % (gm_id))
+                gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
         
-        for gm_id in db_gmail_ids:
-            #need to delete gm_id
-            print("gm_id %s not in imap. Delete it" % (gm_id))
-            gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
-        
-        
-        
-    def sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress = True):
+    def sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress_on_disk = True, delete_dry_run = True):
         """
            sync with db on disk
         """
@@ -709,10 +713,10 @@ class GMVaulter(object):
         imap_ids = self.src.search(imap_req)
         
         # create new emails in db and update existing emails
-        self._create_update_sync(imap_ids, compress)
+        #self._create_update_sync(imap_ids, compress_on_disk)
         
         #delete supress emails from DB since last sync
-        #self._delete_sync(imap_ids)
+        self._delete_sync(imap_ids, delete_dry_run)
     
     def remote_sync(self):
         """

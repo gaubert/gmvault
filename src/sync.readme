@@ -34,39 +34,35 @@ NEXT => add restore mode,
      => create gui
      
      
- Error to catch when data cannot be retrieved:
- This was due to a connection problem (it should be handled in a better way)
  
- For some reason (maybe the server cuts the connection or something) you get an exception
- add a retry policy (try up to three times before to quit on error).
- 
- Maybe redo the sync_delete as all the gm id are retrieve from filesystem (see if it scales)
- 
- 
- Traceback (most recent call last):
-  File "gmv.py", line 189, in <module>
-    bootstrap_run()
-  File "gmv.py", line 180, in bootstrap_run
-    gmvault.run(args)
-  File "gmv.py", line 167, in run
-    syncer.sync(args['request'])
-  File "/home/aubert/Dev/projects/gmvault/src/gmvault.py", line 593, in sync
-    self._create_update_sync(imap_ids, compress)
-  File "/home/aubert/Dev/projects/gmvault/src/gmvault.py", line 536, in _create_update_sync
-    data = self.src.fetch(id, GIMAPFetcher.GET_ALL_INFO)
-  File "/home/aubert/Dev/projects/gmvault/src/gmvault.py", line 165, in fetch
-    return self.server.fetch(a_ids, a_attributes)
-  File "/home/aubert/local_python/lib/python2.6/site-packages/imapclient/imapclient.py", line 674, in fetch
-    self._checkok('fetch', typ, data)
-  File "/home/aubert/local_python/lib/python2.6/site-packages/imapclient/imapclient.py", line 790, in _checkok
-    self._check_resp('OK', command, typ, data)
-  File "/home/aubert/local_python/lib/python2.6/site-packages/imapclient/imapclient.py", line 775, in _check_resp
-    raise self.Error('%s failed: %r' % (command, data[0]))
-imaplib.error: fetch failed: 'Some messages could not be FETCHed (Failure)'
-
 strategy reconnect retry abort ?
 
 Apparently it seems to be some corrupted messages (http://www.google.com/support/forum/p/gmail/thread?tid=1acf74d2c4c1ed46&hl=en)
-This is worrying but the message should be flagged and maybe deleted later one. Let's see. In any case, the exception needs to be catched in 
+This is worrying but the message should be flagged and maybe deleted later one.
+Let's see. In any case, the exception needs to be catched in 
+
+When Id is retrieved it is working. The problem is there when the data is retrieved
 
 
+To Do 22-12-2012:
+-----------------
+- sync_delete can be redone as all the gm_id are retrieved from the filesystem at once 
+(test if it scales)
+=> instead of iterating on the remote gmail ids, iterate (with generator) by group of 30 elements on the
+disk saved ids. This should scale for ever whatever the number of you have
+- Test disconnection and see what is going on (error generated)
+- Potentially add a reconnection mode (try to reconect 3 times before to quit)
+- Add a way to restart from an imap id. Could be used when you have a very large mailbox and 
+want to restart from the moment when it failed.
+- add logging now otherwise it might be too late
+- test why labels cannot be hierarchically recreated
+- add oauth and a way to save the token.
+- manage a .gmvault dir in your home
+- add progress bar and better logging outputs with verbose and non verbose mode
+- release v0.5 
+- add cloud saves
+- add Mac Gui, Linux or chrome GUI
+
+
+Maybe redo the sync_delete as all the gm id are retrieve from filesystem (see if it scales)
+ 

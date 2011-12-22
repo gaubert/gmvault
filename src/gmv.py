@@ -164,6 +164,7 @@ class GMVaultLauncher(object):
             syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
                                        args['email'], args['passwd'])
             
+            
             syncer.sync(args['request'])
         except KeyboardInterrupt, kb:
             args['parser'].message("CRTL^C. Stop all operations.")
