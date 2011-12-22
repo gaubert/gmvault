@@ -54,11 +54,11 @@ class GMVaultLauncher(object):
         parser.add_option("-n", "--inc-sync", help = "incremental synchronisation between gmail with local db", \
                           action ="store_true", dest="isync", default= False)
         
-        parser.add_option("-i", "--imap-server", \
+        parser.add_option("-i", "--imap-server", metavar = "HOSTNAME", \
                           help="gmail imap server hostname",\
                           dest="host", default="imap.gmail.com")
         
-        parser.add_option("-t", "--imap-port", \
+        parser.add_option("-t", "--imap-port", metavar = "PORT", \
                           help="gmail imap server port",\
                           dest="port", default=993)
         
@@ -70,7 +70,7 @@ class GMVaultLauncher(object):
                           help="gmail password",\
                           dest="passwd", default=None)
         
-        parser.add_option("-r", "--imap-request", \
+        parser.add_option("-r", "--imap-request", metavar = "REQ",\
                           help="imap request to restrict sync",\
                           dest="request", default="ALL")
         
@@ -78,9 +78,13 @@ class GMVaultLauncher(object):
                           help="database root directory",\
                           dest="db_dir", default="./gmvault-db")
         
-        parser.add_option("-o", "--oauth-token", \
+        parser.add_option("-o", "--oauth-token", metavar = "TOK", \
                           help="oauth-token",\
                           dest="oauth_token", default=None)
+        
+        parser.add_option("-z", "--no-db-cleaning", \
+                          help="do not delete db emails that are not on imap gmail",\
+                          action ="store_true", dest="delete_dry_run", default=False)
         
         parser.add_option("-v", "--verbose", \
                           help="Activate the verbose mode.",\
@@ -147,6 +151,9 @@ class GMVaultLauncher(object):
         
         # add passwd
         parsed_args['db-dir']           = options.db_dir
+        
+        # add no deletion
+        parsed_args['delete-dry-run']   = options.delete_dry_run
      
         #verbose
         parsed_args['verbose']          = options.verbose

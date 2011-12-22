@@ -705,7 +705,7 @@ class GMVaulter(object):
                 print("gm_id %s not in imap. Delete it" % (gm_id))
                 gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
         
-    def sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress_on_disk = True, delete_dry_run = True):
+    def sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress_on_disk = True, delete_dry_run = False):
         """
            sync with db on disk
         """
@@ -713,7 +713,7 @@ class GMVaulter(object):
         imap_ids = self.src.search(imap_req)
         
         # create new emails in db and update existing emails
-        #self._create_update_sync(imap_ids, compress_on_disk)
+        self._create_update_sync(imap_ids, compress_on_disk)
         
         #delete supress emails from DB since last sync
         self._delete_sync(imap_ids, delete_dry_run)

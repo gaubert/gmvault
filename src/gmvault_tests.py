@@ -502,6 +502,40 @@ class TestGMVault(unittest.TestCase):
         
         #clean db dir
         delete_db_dir(args['db-dir'])
+    
+    def test_delete_sync_gmv(self):
+        """
+           delete sync via command line
+        """
+        import sys
+        #first request to have the extra dirs
+        sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', '993', '--imap-request', 'Since 1-Nov-2011 Before 8-Nov-2011', '--email', self.login, \
+                    '--passwd', self.passwd, '--db-dir', '/tmp/new-db-1']
+    
+        gmvaultLauncher = gmv.GMVaultLauncher()
+        
+        args = gmvaultLauncher.parse_args()
+    
+        gmvaultLauncher.run(args)
+        
+        #second requests so all files after the 5 should disappear 
+        sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', '993', '--imap-request', 'Since 1-Nov-2011 Before 5-Nov-2011', '--email', self.login, \
+                    '--passwd', self.passwd, '--db-dir', '/tmp/new-db-1']
+    
+        args = gmvaultLauncher.parse_args()
+        gmvaultLauncher.run(args)
+    
+        #check all stored gmail ids
+        gstorer = gmvault.GmailStorer(args['db-dir'])
+        
+        ids = gstorer.get_all_existing_gmail_ids()
+        
+        self.assertEquals(len(ids), 5)
+        
+        self.assertEquals(ids, {1384403887202624608L: '2011-11', 1384486067720566818L: '2011-11', 1384313269332005293L: '2011-11', 1384545182050901969L: '2011-11', 1384578279292583731L: '2011-11'})
+        
+        #clean db dir
+        delete_db_dir(args['db-dir'])
         
         
         
