@@ -498,7 +498,7 @@ class GMVaulter(object):
            First part of the double pass strategy: 
            create and update emails in db
         """
-        ignore_ids = [] # ids that cannot be retrieved on gmail for a buggy reason
+        ignored_ids = [] # ids that cannot be retrieved on gmail for a buggy reason
         
         for id in imap_ids:
             
@@ -564,9 +564,12 @@ class GMVaulter(object):
                         gmail_id = None
                     
                     #add ignored id
-                    ignore_ids.append((id, gmail_id))
+                    ignored_ids.append((id, gmail_id))
                 else:
                     raise error #rethrow error
+        
+        
+        print("list of ignored ids %s" % (ignored_ids))
        
     
     
