@@ -12,7 +12,9 @@ import time
 import os
 import itertools
 
+import imaplib  #for the exception
 from imapclient import IMAPClient
+
 import gmvault_utils as gmvault_utils
 
 class MonkeyIMAPClient(IMAPClient):
@@ -31,10 +33,10 @@ class MonkeyIMAPClient(IMAPClient):
         self.deflator = None
 
     def enable_compression(self):
-      """ enable compression on the socket (RFC 4978) """
+        """ enable compression on the socket (RFC 4978) """
   
-      self.deflator = zlib.decompressobj(-15)
-      self.inflator = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
+        self.deflator = zlib.decompressobj(-15)
+        self.inflator = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
 
         
         
@@ -496,49 +498,75 @@ class GMVaulter(object):
            First part of the double pass strategy: 
            create and update emails in db
         """
+        ignore_ids = [] # ids that cannot be retrieved on gmail for a buggy reason
+        
         for id in imap_ids:
             
-            print("Process imap id %s\n" %(id))
-            
-            #ids[0] should be the oldest so get the date and start from here
-            curr = self.src.fetch(id, GIMAPFetcher.GET_ALL_BUT_DATA )
-            
-            yy_mon = gmvault_utils.get_ym_from_datetime(curr[id][GIMAPFetcher.IMAP_INTERNALDATE])
-            
-            dir  = '%s/%s' % (self.db_root_dir, \
-                              yy_mon)
-            
-            gstorer, curr_metadata = GMVaulter.check_email_on_disk(dir, curr[id][GIMAPFetcher.GMAIL_ID])
-            
-            #if on disk check that the data is not different
-            if curr_metadata:
+            try:
+                print("Process imap id %s\n" %(id))
                 
-                print("metadata for %s already exists. Check if different" % (curr[id][GIMAPFetcher.GMAIL_ID]))
+                #ids[0] should be the oldest so get the date and start from here
+                curr = self.src.fetch(id, GIMAPFetcher.GET_ALL_BUT_DATA )
                 
-                new_metadata = self.src.fetch(id, GIMAPFetcher.GET_ALL_BUT_DATA)
+                yy_mon = gmvault_utils.get_ym_from_datetime(curr[id][GIMAPFetcher.IMAP_INTERNALDATE])
                 
-                if self._metadata_needs_update(curr_metadata, new_metadata[id]):
-                    #restore everything at the moment
+                dir  = '%s/%s' % (self.db_root_dir, \
+                                  yy_mon)
+                
+                gstorer, curr_metadata = GMVaulter.check_email_on_disk(dir, curr[id][GIMAPFetcher.GMAIL_ID])
+                
+                #if on disk check that the data is not different
+                if curr_metadata:
+                    
+                    print("metadata for %s already exists. Check if different" % (curr[id][GIMAPFetcher.GMAIL_ID]))
+                    
+                    new_metadata = self.src.fetch(id, GIMAPFetcher.GET_ALL_BUT_DATA)
+                    
+                    if self._metadata_needs_update(curr_metadata, new_metadata[id]):
+                        #restore everything at the moment
+                        #retrieve email from destination email account
+                        data = self.src.fetch(id, GIMAPFetcher.GET_ALL_INFO)
+                
+                        gid  = gstorer.store_email(data[id], compress = compress)
+                        
+                        print("update email with imap id %s and gmail id %s\n" % (id, gid))
+                        
+                        #update local index id gid => index per directory to be thought out
+                else:
+                    
+                    # store data on disk within year month dir 
+                    gstorer =  GmailStorer(dir)  
+                    
                     #retrieve email from destination email account
                     data = self.src.fetch(id, GIMAPFetcher.GET_ALL_INFO)
-            
-                    gid  = gstorer.store_email(data[id], compress = compress)
-                    
-                    print("update email with imap id %s and gmail id %s\n" % (id, gid))
+                
+                    gid  = gstorer.bury_email(data[id], compress = compress)
                     
                     #update local index id gid => index per directory to be thought out
-            else:
-                
-                # store data on disk within year month dir 
-                gstorer =  GmailStorer(dir)  
-                
-                #retrieve email from destination email account
-                data = self.src.fetch(id, GIMAPFetcher.GET_ALL_INFO)
+                    print("Create and store email  with imap id %s, gmail id %s\n" % (id, gid))   
             
-                gid  = gstorer.bury_email(data[id], compress = compress)
+            except imaplib.IMAP4.error, error:
+                # check if this is a cannot be fetched error 
+                # I do not like to do string guessing within an exception but I do not have any choice here
                 
-                #update local index id gid => index per directory to be thought out
-                print("Create and store email  with imap id %s, gmail id %s\n" % (id, gid))    
+                print("Error [%s]" % error.message )
+                
+                if error.message == "fetch failed: 'Some messages could not be FETCHed (Failure)'":
+                    try:
+                        #try to get the gmail_id
+                        curr = self.src.fetch(id, GIMAPFetcher.GET_GMAIL_ID) 
+                    except Exception, ignored:
+                        curr = None
+                    
+                    if curr:
+                        gmail_id = curr[id][GIMAPFetcher.GMAIL_ID]
+                    else:
+                        gmail_id = None
+                    
+                    #add ignored id
+                    ignore_ids.append((id, gmail_id))
+                else:
+                    raise error #rethrow error
        
     
     
