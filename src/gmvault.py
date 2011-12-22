@@ -30,21 +30,6 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL):
         
         imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
         
-    def enable_compression(self):
-        """enable_compression()
-        Ask the server to start compressing the connection.
-        Should be called from user of this class after instantiation, as in:
-            if 'COMPRESS=DEFLATE' in imapobj.capabilities:
-                imapobj.enable_compression()"""
-
-        try:
-            typ, dat = self._simple_command('COMPRESS', 'DEFLATE')
-            if typ == 'OK':
-                self.enable_compression()
-                if __debug__: self._log(1, 'Enabled COMPRESS=DEFLATE')
-        finally:
-            self._release_state_change()
-        
     def activate_compression(self):
         """
            activate_compressing()
@@ -56,21 +41,20 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL):
         
     
     def read(self, size):
-      """Read 'size' bytes from remote."""
-      # sslobj.read() sometimes returns < size bytes
-      chunks = []
-      read = 0
-      while read < size:
-        data = self._intern_read(min(size-read, 16384))
-        read += len(data)
-        chunks.append(data)
-
-      return ''.join(chunks)
+        """Read 'size' bytes from remote."""
+        # sslobj.read() sometimes returns < size bytes
+        chunks = []
+        read = 0
+        while read < size:
+            data = self._intern_read(min(size-read, 16384))
+            read += len(data)
+            chunks.append(data)
+        
+        return ''.join(chunks)
   
     def _intern_read(self, size):
         """
-        data = read(size)
-        Read at most 'size' bytes from remote.
+            Read at most 'size' bytes from remote.
         """
 
         if self.decompressor is None:
@@ -84,50 +68,20 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL):
         return self.decompressor.decompress(data, size)
     
     def readline(self):
-      """Read line from remote."""
-      line = cStringIO.StringIO()
-      while 1:
-        char = self.read(1)
-        line.write(char)
-        if char in ("\n", ""): 
-          line.seek(0)
-          return line.read()
-  
-    def send(self, data):
-      """send(data)
-      Send 'data' to remote."""
-      if self.compressor is not None:
-        data = self.compressor.compress(data)
-        data += self.compressor.flush(zlib.Z_SYNC_FLUSH)
-      self.sslobj.sendall(data)
-    
-    
-    def oreadline(self):
         """Read line from remote."""
         line = []
         while 1:
             char = self.read(1)
             line.append(char)
             if char in ("\n", ""): return ''.join(line)
-    
-    def osend(self, data):
+  
+    def send(self, data):
         """send(data)
         Send 'data' to remote."""
-
         if self.compressor is not None:
             data = self.compressor.compress(data)
             data += self.compressor.flush(zlib.Z_SYNC_FLUSH)
-
-        if hasattr(self.sock, "sendall"):
-            self.sock.sendall(data)
-        else:
-            bytes = len(data)
-            while bytes > 0:
-                sent = self.sslobj.write(data)
-                if sent == bytes:
-                    break    # avoid copy
-                data = data[sent:]
-                bytes = bytes - sent
+        self.sslobj.sendall(data)
     
 class MonkeyIMAPClient(IMAPClient):
     """
@@ -146,6 +100,22 @@ class MonkeyIMAPClient(IMAPClient):
         #ImapClass = self.ssl and imaplib.IMAP4_SSL or imaplib.IMAP4
         ImapClass = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
         return ImapClass(self.host, self.port)
+    
+    def enable_compression(self):
+        """
+        enable_compression()
+        Ask the server to start compressing the connection.
+        Should be called from user of this class after instantiation, as in:
+            if 'COMPRESS=DEFLATE' in imapobj.capabilities:
+                imapobj.enable_compression()
+        """
+        ret_code, data = self.uid('COMPRESS', 'DEFLATE')
+        if ret_code == 'OK':
+            self.server.activate_compression()
+        else:
+            #no errors for the moment
+            pass
+        
 
         
         
@@ -215,6 +185,12 @@ class GIMAPFetcher(object):
         # set to GMAIL_ALL dir by default and in readonly
         if go_to_all_folder:
             self.server.select_folder(self._all_mail_folder, readonly = self.readonly_folder)
+    
+    def enable_compression(self):
+        """
+           Try to enable the compression
+        """
+        self.server.enable_compression()
     
     def find_all_mail_folder(self):
         """
