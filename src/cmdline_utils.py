@@ -12,6 +12,10 @@ from optparse import OptionParser
 
 class CmdLineParser(OptionParser): #pylint: disable-msg=R0904
     """ Added service on OptionParser """ 
+    
+    BOOL_TRUE  = ['yes', 'true', '1']
+    BOOL_FALSE = ['no', 'false', '0']
+    BOOL_VALS  = BOOL_TRUE + BOOL_FALSE
    
     def __init__(self, *args, **kwargs): 
         """ constructor """    
@@ -22,6 +26,20 @@ class CmdLineParser(OptionParser): #pylint: disable-msg=R0904
         self.add_option('-h', '--help', action='help', help='Show this message and exit.') 
            
         self.epilogue = None 
+    
+    @classmethod 
+    def convert_to_boolean(cls, val):
+        """
+           Convert yes, True, true, YES to boolean True and
+           no, False, false, NO to boolean NO
+        """
+        lower_val = val.lower()
+        if lower_val in cls.BOOL_TRUE:
+            return True
+        elif lower_val in cls.BOOL_FALSE:
+            return False
+        else:
+            raise Exception("val %s should be in %s to be convertible to a boolean." % (val, cls.BOOL_VALS))
    
     def print_help(self, out=sys.stderr): 
         """ 

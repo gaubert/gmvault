@@ -5,6 +5,7 @@ Created on Dec 16, 2011
 '''
 from cmdline_utils  import CmdLineParser
 import gmvault
+import cmdline_utils
 
 
 HELP_USAGE = """ gmvault [options]
@@ -45,46 +46,46 @@ class GMVaultLauncher(object):
         
         parser = CmdLineParser()
         
-        parser.add_option("-s", "--sync", help = "full synchronisation between gmail with local db. (default sync mode)", \
+        parser.add_option("-s", "--sync", help = "Full synchronisation between gmail with local db. (default sync mode).", \
                           action ="store_true", dest="sync", default= False)
         
-        parser.add_option("-q", "--quick-sync", help = "quick synchronisation between  gmail with local db", \
+        parser.add_option("-q", "--quick-sync", help = "Quick synchronisation between  gmail with local db.", \
                           action ="store_true", dest="qsync", default= False)
         
-        parser.add_option("-n", "--inc-sync", help = "incremental synchronisation between gmail with local db", \
+        parser.add_option("-n", "--inc-sync", help = "Incremental synchronisation between gmail with local db.", \
                           action ="store_true", dest="isync", default= False)
         
         parser.add_option("-i", "--imap-server", metavar = "HOSTNAME", \
-                          help="gmail imap server hostname",\
+                          help="Gmail imap server hostname.",\
                           dest="host", default="imap.gmail.com")
         
         parser.add_option("-t", "--imap-port", metavar = "PORT", \
-                          help="gmail imap server port",\
+                          help="Gmail imap server port.",\
                           dest="port", default=993)
         
         parser.add_option("-l", "--email", \
-                          help="gmail email",\
+                          help="Gmail email.",\
                           dest="email", default=None)
         
         parser.add_option("-p", "--passwd", \
-                          help="gmail password",\
+                          help="Gmail password.",\
                           dest="passwd", default=None)
         
         parser.add_option("-r", "--imap-request", metavar = "REQ",\
-                          help="imap request to restrict sync",\
+                          help="Imap request to restrict sync.",\
                           dest="request", default="ALL")
         
         parser.add_option("-d", "--db-dir", \
-                          help="database root directory",\
+                          help="Database root directory.",\
                           dest="db_dir", default="./gmvault-db")
         
         parser.add_option("-o", "--oauth-token", metavar = "TOK", \
-                          help="oauth-token",\
+                          help="Oauth-token.",\
                           dest="oauth_token", default=None)
         
-        parser.add_option("-z", "--no-db-cleaning", \
-                          help="do not delete db emails that are not on imap gmail",\
-                          action ="store_true", dest="delete_dry_run", default=False)
+        parser.add_option("-z", "--db-cleaning", \
+                          help="To activate or deactive the disk db cleaning. Automatically deactivated if a imap req is passed in args.",\
+                          dest="db_cleaning", default=None)
         
         parser.add_option("-v", "--verbose", \
                           help="Activate the verbose mode.",\
@@ -152,9 +153,20 @@ class GMVaultLauncher(object):
         # add passwd
         parsed_args['db-dir']           = options.db_dir
         
-        # add no deletion
-        parsed_args['delete-dry-run']   = options.delete_dry_run
-     
+        # add db-cleaning
+        # if request passed put it False unless it has been forced by the user
+        # default is True (db-cleaning done)
+    
+        #default 
+        parsed_args['db-cleaning'] = True
+        
+        # if there is a value then it is forced
+        if options.db_cleaning: 
+            parsed_args['db-cleaning'] = parser.convert_to_boolean(options.db_cleaning)
+        elif parsed_args['request'] and not options.db_cleaning:
+            #else if we have a request and not forced put it to false
+            parsed_args['db-cleaning'] = False
+            
         #verbose
         parsed_args['verbose']          = options.verbose
         
@@ -162,6 +174,8 @@ class GMVaultLauncher(object):
         parsed_args['parser'] = parser
         
         return parsed_args
+            
+    
     
     def run(self, args):
         """
@@ -172,7 +186,7 @@ class GMVaultLauncher(object):
                                        args['email'], args['passwd'])
             
             
-            syncer.sync(args['request'])
+            syncer.sync(args['request'], compress_on_disk = True, db_cleaning = args['db-cleaning'])
         except KeyboardInterrupt, kb:
             args['parser'].message("CRTL^C. Stop all operations.")
         

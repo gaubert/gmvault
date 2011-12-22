@@ -657,7 +657,7 @@ class GMVaulter(object):
        
     
     
-    def _delete_sync(self, imap_ids, delete_dry_run):
+    def _delete_sync(self, imap_ids, db_cleaning):
         """
            Delete emails from the database if necessary
            imap_ids      : all remote imap_ids to check
@@ -700,12 +700,12 @@ class GMVaulter(object):
                 break
             
         print("Will delete %s imap from disk db" % (len(db_gmail_ids)) )
-        if not delete_dry_run: #delete if not a simulation dry_run
+        if db_cleaning: #delete if db_cleaning ordered
             for gm_id in db_gmail_ids:
                 print("gm_id %s not in imap. Delete it" % (gm_id))
                 gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
         
-    def sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress_on_disk = True, delete_dry_run = False):
+    def sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False):
         """
            sync with db on disk
         """
@@ -716,7 +716,7 @@ class GMVaulter(object):
         self._create_update_sync(imap_ids, compress_on_disk)
         
         #delete supress emails from DB since last sync
-        self._delete_sync(imap_ids, delete_dry_run)
+        self._delete_sync(imap_ids, db_cleaning)
     
     def remote_sync(self):
         """

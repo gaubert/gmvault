@@ -509,7 +509,7 @@ class TestGMVault(unittest.TestCase):
         """
         import sys
         #first request to have the extra dirs
-        sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', '993', '--imap-request', 'Since 1-Nov-2011 Before 8-Nov-2011', '--email', self.login, \
+        sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', '993', '--imap-request', 'Since 1-Nov-2011 Before 7-Nov-2011', '--email', self.login, \
                     '--passwd', self.passwd, '--db-dir', '/tmp/new-db-1']
     
         gmvaultLauncher = gmv.GMVaultLauncher()
@@ -520,7 +520,7 @@ class TestGMVault(unittest.TestCase):
         
         #second requests so all files after the 5 should disappear 
         sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', '993', '--imap-request', 'Since 1-Nov-2011 Before 5-Nov-2011', '--email', self.login, \
-                    '--passwd', self.passwd, '--db-dir', '/tmp/new-db-1']
+                    '--passwd', self.passwd, '--db-dir', '/tmp/new-db-1', '--db-cleaning', 'yes']
     
         args = gmvaultLauncher.parse_args()
         gmvaultLauncher.run(args)

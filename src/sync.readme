@@ -65,4 +65,7 @@ want to restart from the moment when it failed.
 
 
 Maybe redo the sync_delete as all the gm id are retrieve from filesystem (see if it scales)
+
+# db-cleaning deactivated when there is search req 
+# to force it db-cleaning=
  
