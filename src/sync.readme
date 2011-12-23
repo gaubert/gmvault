@@ -1,4 +1,3 @@
-
 => To Do
 - Fix issue with internal date when restored on an account
 - Add support for compression in the imap communication
@@ -68,4 +67,11 @@ Maybe redo the sync_delete as all the gm id are retrieve from filesystem (see if
 
 # db-cleaning deactivated when there is search req 
 # to force it db-cleaning=
+
+Add XOAuth support
+=================
+run trhough in python
+http://code.google.com/p/google-mail-xoauth-tools/wiki/XoauthDotPyRunThrough
+python lib: https://github.com/simplegeo/python-oauth2
+Also available in IMAPClient: http://imapclient.freshfoo.com/browser/imapclient/imapclient.py
  
