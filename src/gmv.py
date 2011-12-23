@@ -203,8 +203,8 @@ class GMVaultLauncher(object):
             LOG.critical("CRTL^C. Stop all operations.")
             on_error = False
         except socket.error:
-            LOG.critical("Network error. Please check your gmail server hostname, the internet connection or your network setup")
-            LOG.critical("For more information see log file")
+            LOG.critical("ERROR: Network problem. Please check your gmail server hostname, the internet connection or your network setup.")
+            LOG.critical("For more information see log file.\n")
         except Exception, err:
             LOG.critical("Error %s. For more information see log file" % (err) )
             LOG.exception(err)
@@ -224,6 +224,8 @@ def bootstrap_run():
     """ temporary bootstrap """
     
     init_logging()
+    
+    LOG.critical("")
     
     gmvault = GMVaultLauncher()
     
