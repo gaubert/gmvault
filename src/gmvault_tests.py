@@ -55,7 +55,7 @@ class TestGMVault(unittest.TestCase):
     def setUp(self):
         self.login, self.passwd = read_password_file('/homespace/gaubert/.ssh/passwd')
         
-        self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
+        #self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         
     
     def ztest_gmvault_connect_error(self):
@@ -90,7 +90,7 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals( True , gimap.check_gmailness())
     
-    def test_gmvault_compression(self):
+    def ztest_gmvault_compression(self):
         """
            Test simple retrieval
         """
@@ -193,7 +193,7 @@ class TestGMVault(unittest.TestCase):
             
         self.assertEquals(labels, j_results['labels'])
     
-    def test_gmvault_compress_retrieve_email_store_and_read(self):
+    def ztest_gmvault_compress_retrieve_email_store_and_read(self):
         """
            Activate compression and retrieve an email store it on disk and read it
         """
@@ -536,6 +536,34 @@ class TestGMVault(unittest.TestCase):
         
         #clean db dir
         delete_db_dir(args['db-dir'])
+        
+    def ztest_logger(self):
+        """
+        """
+        
+        import log_utils
+        log_utils.LoggerFactory.setup_cli_app_handler('./gmv.log') 
+        
+        LOG = log_utils.LoggerFactory.get_logger('gmv')
+        
+        LOG.info("On Info")
+        
+        LOG.warning("On Warning")
+        
+        LOG.error("On Error")
+        
+        LOG.notice("On Notice")
+        
+        try:
+           raise Exception("Exception. This is my exception")
+        except Exception, e:
+            LOG.exception("eeror,", e)
+            pass
+        
+        LOG.critical("On Critical")
+        
+        
+            
         
         
         

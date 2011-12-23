@@ -128,10 +128,4 @@ def dirwalk(a_dir, a_wildcards= '*'):
     for sub_dir in sub_dirs:
         fullpath = os.path.join(a_dir, sub_dir)
         for p_elem in dirwalk(fullpath, a_wildcards):
-            yield p_elem
-        
-            
-if __name__ == '__main__':
-  
-  for item in dirwalk('/tmp/gmail_bk','*.meta'):
-      print(item)    
+            yield p_elem 

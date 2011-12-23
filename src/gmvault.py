@@ -16,6 +16,10 @@ import imaplib  #for the exception
 from imapclient import IMAPClient
 
 import gmvault_utils as gmvault_utils
+import log_utils
+
+
+LOG = log_utils.LoggerFactory.get_logger('gmvault')
 
 #monkey patching add compress in COMMANDS of imap
 imaplib.Commands['COMPRESS'] = ('AUTH', 'SELECTED')
@@ -518,7 +522,7 @@ class GMVaulter(object):
             
             file_path = gstorer.bury_email(data[id], compress = compress)
             
-            print("Stored email %d in %s" %(id, file_path))
+            LOG.critical("Stored email %d in %s" %(id, file_path))
         
     def _get_next_date(self, a_current_date, start_month_beginning = False):
         """
@@ -587,7 +591,7 @@ class GMVaulter(object):
         for id in imap_ids:
             
             try:
-                print("Process imap id %s\n" %(id))
+                LOG.critical("Process imap id %s\n" %(id))
                 
                 #ids[0] should be the oldest so get the date and start from here
                 curr = self.src.fetch(id, GIMAPFetcher.GET_ALL_BUT_DATA )
@@ -602,7 +606,7 @@ class GMVaulter(object):
                 #if on disk check that the data is not different
                 if curr_metadata:
                     
-                    print("metadata for %s already exists. Check if different" % (curr[id][GIMAPFetcher.GMAIL_ID]))
+                    LOG.critical("metadata for %s already exists. Check if different" % (curr[id][GIMAPFetcher.GMAIL_ID]))
                     
                     new_metadata = self.src.fetch(id, GIMAPFetcher.GET_ALL_BUT_DATA)
                     
@@ -613,7 +617,7 @@ class GMVaulter(object):
                 
                         gid  = gstorer.store_email(data[id], compress = compress)
                         
-                        print("update email with imap id %s and gmail id %s\n" % (id, gid))
+                        LOG.critical("update email with imap id %s and gmail id %s\n" % (id, gid))
                         
                         #update local index id gid => index per directory to be thought out
                 else:
@@ -627,13 +631,13 @@ class GMVaulter(object):
                     gid  = gstorer.bury_email(data[id], compress = compress)
                     
                     #update local index id gid => index per directory to be thought out
-                    print("Create and store email  with imap id %s, gmail id %s\n" % (id, gid))   
+                    LOG.critical("Create and store email  with imap id %s, gmail id %s\n" % (id, gid))   
             
             except imaplib.IMAP4.error, error:
                 # check if this is a cannot be fetched error 
                 # I do not like to do string guessing within an exception but I do not have any choice here
                 
-                print("Error [%s]" % error.message )
+                LOG.exception("Error [%s]" % error.message, error )
                 
                 if error.message == "fetch failed: 'Some messages could not be FETCHed (Failure)'":
                     try:
@@ -653,7 +657,7 @@ class GMVaulter(object):
                     raise error #rethrow error
         
         
-        print("list of ignored ids %s" % (ignored_ids))
+        LOG.critical("list of ignored ids %s" % (ignored_ids))
        
     
     
@@ -665,12 +669,12 @@ class GMVaulter(object):
         """ 
         gstorer = GmailStorer(self.db_root_dir)
         
-        print("get all existing ids from disk")
+        LOG.critical("get all existing ids from disk")
         
         #get gmail_ids from db
         db_gmail_ids_info = gstorer.get_all_existing_gmail_ids()
         
-        print("got all existing id from disk nb of ids to check: %s" % (len(db_gmail_ids_info)) )
+        LOG.critical("got all existing id from disk nb of ids to check: %s" % (len(db_gmail_ids_info)) )
         
         #create a set of keys
         db_gmail_ids = set(db_gmail_ids_info.keys())
@@ -699,10 +703,10 @@ class GMVaulter(object):
             if len(db_gmail_ids) == 0:
                 break
             
-        print("Will delete %s imap from disk db" % (len(db_gmail_ids)) )
+        LOG.critical("Will delete %s imap from disk db" % (len(db_gmail_ids)) )
         if db_cleaning: #delete if db_cleaning ordered
             for gm_id in db_gmail_ids:
-                print("gm_id %s not in imap. Delete it" % (gm_id))
+                LOG.critical("gm_id %s not in imap. Delete it" % (gm_id))
                 gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
         
     def sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False):

@@ -4,8 +4,10 @@ Created on Dec 16, 2011
 @author: guillaume.aubert@gmail.com
 '''
 from cmdline_utils  import CmdLineParser
+import log_utils
 import gmvault
-import cmdline_utils
+
+
 
 
 HELP_USAGE = """ gmvault [options]
@@ -27,6 +29,8 @@ c) restrict synchronisation with an IMAP request
 #> gmvault --imap-request 'Since 1-Nov-2011 Before 10-Nov-2011' --imap-server imap.googlemail.com --email foo.bar@gmail.com --passwd sosecrtpasswd 
 
 """
+
+LOG = log_utils.LoggerFactory.get_logger('gmv')
 
 class GMVaultLauncher(object):
     
@@ -188,7 +192,7 @@ class GMVaultLauncher(object):
             
             syncer.sync(args['request'], compress_on_disk = True, db_cleaning = args['db-cleaning'])
         except KeyboardInterrupt, kb:
-            args['parser'].message("CRTL^C. Stop all operations.")
+            LOG.critical("CRTL^C. Stop all operations.")
         
         
     
@@ -203,10 +207,9 @@ def bootstrap_run():
    
     
 if __name__ == '__main__':
-    import sys
-    #sys.argv = ['gmvault.py', '--sync','--host', 'imap.gmail.com', '--port', '1452', '--login', 'foo', '--passwd', 'bar']
     
-    #print(sys.argv)
+    #setup application logs: one handler for stdout and one for a log file
+    log_utils.LoggerFactory.setup_cli_app_handler('./gmv.log') 
     
     bootstrap_run()
     
