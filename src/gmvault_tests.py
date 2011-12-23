@@ -507,6 +507,8 @@ class TestGMVault(unittest.TestCase):
         """
            delete sync via command line
         """
+        gmv.init_logging()
+        
         import sys
         #first request to have the extra dirs
         sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', '993', '--imap-request', 'Since 1-Nov-2011 Before 7-Nov-2011', '--email', self.login, \

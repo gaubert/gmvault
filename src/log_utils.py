@@ -85,15 +85,13 @@ class LoggerFactory(object):
         handler.push_application() 
         
     @classmethod
-    def setup_cli_app_handler(cls, file_path):
+    def setup_cli_app_handler(cls, activate_log_file=False, file_path='./gmvault.log'):
         """
            Setup a handler for communicating with the user and still log everything in a logfile
         """
         null_handler      = logbook.NullHandler()
         
         out_handler       = StdoutHandler(format_string='{record.message}', level = 'CRITICAL', bubble = False)
-        
-        file_handler      = logbook.FileHandler(file_path, mode='w', format_string='[{record.time:%Y-%m-%d %H:%M}]:{record.level_name}:{record.channel}:{record.message}', level = 2, bubble = True)
         
         # first stack null handler to not have anything else logged 
         null_handler.push_application()
@@ -102,7 +100,10 @@ class LoggerFactory(object):
         out_handler.push_application() 
         
         # add file Handler
-        file_handler.push_application() 
+        if activate_log_file:
+            file_handler      = logbook.FileHandler(file_path, mode='w', format_string='[{record.time:%Y-%m-%d %H:%M}]:{record.level_name}:{record.channel}:{record.message}', level = 2, bubble = True)
+            
+            file_handler.push_application() 
 
         
         

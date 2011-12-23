@@ -193,11 +193,19 @@ class GMVaultLauncher(object):
             syncer.sync(args['request'], compress_on_disk = True, db_cleaning = args['db-cleaning'])
         except KeyboardInterrupt, kb:
             LOG.critical("CRTL^C. Stop all operations.")
-        
+ 
+def init_logging():
+     """
+        init logging infrastructure
+     """       
+     #setup application logs: one handler for stdout and one for a log file
+     log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, file_path="./gmvault.log") 
         
     
 def bootstrap_run():
     """ temporary bootstrap """
+    
+    init_logging()
     
     gmvault = GMVaultLauncher()
     
@@ -207,9 +215,6 @@ def bootstrap_run():
    
     
 if __name__ == '__main__':
-    
-    #setup application logs: one handler for stdout and one for a log file
-    log_utils.LoggerFactory.setup_cli_app_handler('./gmv.log') 
     
     bootstrap_run()
     
