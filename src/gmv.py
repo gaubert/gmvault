@@ -3,6 +3,9 @@ Created on Dec 16, 2011
 
 @author: guillaume.aubert@gmail.com
 '''
+import socket
+import sys
+
 from cmdline_utils  import CmdLineParser
 import log_utils
 import gmvault
@@ -185,14 +188,29 @@ class GMVaultLauncher(object):
         """
            Run the grep with the given args 
         """
+        on_error = True
+        
         try:
             syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
                                        args['email'], args['passwd'])
             
             
             syncer.sync(args['request'], compress_on_disk = True, db_cleaning = args['db-cleaning'])
+        
+            on_error = False
+        
         except KeyboardInterrupt, kb:
             LOG.critical("CRTL^C. Stop all operations.")
+            on_error = False
+        except socket.error:
+            LOG.critical("Network error. Please check your gmail server hostname, the internet connection or your network setup")
+            LOG.critical("For more information see log file")
+        except Exception, err:
+            LOG.critical("Error %s. For more information see log file" % (err) )
+            LOG.exception(err)
+        finally: 
+            if on_error:
+                args['parser'].die_with_usage()
  
 def init_logging():
      """

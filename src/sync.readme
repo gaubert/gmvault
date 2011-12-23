@@ -45,22 +45,27 @@ When Id is retrieved it is working. The problem is there when the data is retrie
 
 To Do 22-12-2012:
 -----------------
-- sync_delete can be redone as all the gm_id are retrieved from the filesystem at once 
+1) sync_delete can be redone as all the gm_id are retrieved from the filesystem at once 
 (test if it scales)
-=> instead of iterating on the remote gmail ids, iterate (with generator) by group of 30 elements on the
+
+No need as scan all dirs is very fast (on linux at least)
+
+2) instead of iterating on the remote gmail ids, iterate (with generator) by group of 30 elements on the
 disk saved ids. This should scale for ever whatever the number of you have
-- Test disconnection and see what is going on (error generated)
-- Potentially add a reconnection mode (try to reconect 3 times before to quit)
-- Add a way to restart from an imap id. Could be used when you have a very large mailbox and 
+
+
+3) Test disconnection and see what is going on (error generated)
+4) Potentially add a reconnection mode (try to reconect 3 times before to quit)
+5) Add a way to restart from an imap id. Could be used when you have a very large mailbox and 
 want to restart from the moment when it failed.
-- add logging now otherwise it might be too late
-- test why labels cannot be hierarchically recreated
-- add oauth and a way to save the token.
-- manage a .gmvault dir in your home
-- add progress bar and better logging outputs with verbose and non verbose mode
-- release v0.5 
-- add cloud saves
-- add Mac Gui, Linux or chrome GUI
+6) add logging now otherwise it might be too late
+7) test why labels cannot be hierarchically recreated
+8) add oauth and a way to save the token.
+9) manage a .gmvault dir in your home
+10) add progress bar and better logging outputs with verbose and non verbose mode
+11) release v0.5 
+12) add cloud saves
+13) add Mac Gui, Linux or chrome GUI
 
 
 Maybe redo the sync_delete as all the gm id are retrieve from filesystem (see if it scales)

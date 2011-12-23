@@ -76,8 +76,9 @@ class CmdLineParser(OptionParser): #pylint: disable-msg=R0904
         """ 
         if msg != None: 
             print >> sys.stderr, msg 
-            self.print_help(sys.stderr) 
-            sys.exit(exit_code) 
+        
+        self.print_help(sys.stderr) 
+        sys.exit(exit_code) 
    
     def error(self, msg): 
         """ 

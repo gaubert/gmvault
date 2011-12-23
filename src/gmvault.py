@@ -541,11 +541,14 @@ class GMVaulter(object):
         """
            Factory method to create the object if it exists
         """
-        # look for a_storage_dir/a_id.meta
-        if os.path.exists('%s/%s.meta' % (a_storage_dir, a_id)):
-            gs = GmailStorer(a_storage_dir)
-            metadata = gs.unbury_metadata(a_id) 
-            return gs, metadata
+        try:
+            # look for a_storage_dir/a_id.meta
+            if os.path.exists('%s/%s.meta' % (a_storage_dir, a_id)):
+                gs = GmailStorer(a_storage_dir)
+                metadata = gs.unbury_metadata(a_id) 
+                return gs, metadata
+        except ValueError, jsonError:
+            LOG.exception("Cannot read file %s. Try to fetch the data again" % ('%s/%s.meta' % (a_storage_dir, a_id)), jsonError )
         
         return None, None
     
