@@ -301,16 +301,16 @@ class GIMAPFetcher(object):
         """
         for lab in labels:
            
-           #get existing directories (or label parts)
-           folders = [ directory for (i, parent, directory) in self.server.list_folders() ]
-           
-           labs = self._get_dir_from_labels(lab)
-           
-           for directory in labs:
-               if directory not in folders:
-                   if self.server.create_folder(directory) != 'Success':
-                       raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
-                   
+            #get existing directories (or label parts)
+            folders = [ directory for (_, _, directory) in self.server.list_folders() ]
+            
+            labs = self._get_dir_from_labels(lab)
+            
+            for directory in labs:
+                if directory not in folders:
+                    if self.server.create_folder(directory) != 'Success':
+                        raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
+                    
     
     def delete_gmail_labels(self, labels):
         """
@@ -372,23 +372,6 @@ class GmailStorer(object):
         self._top_dir = a_storage_dir
         
         gmvault_utils.makedirs(a_storage_dir)
-        
-    def store_index(self, index_obj):
-        """
-           Store the index file that create the IMAP_ID:GM_ID relation
-        """
-        
-        index_path = "%s/index.dx" % (self._top_dir)
-        fd = open(index_path, "w")
-        
-        json.dump(index_obj, fd , ensure_ascii = False)
-        
-    def load_index(self):
-        """ load the index of the current dir """
-        
-        index_path = "%s/index.dx" % (self._top_dir)
-        
-        return json.load( open(index_path) )
     
     def get_all_existing_gmail_ids(self):
         """
@@ -785,7 +768,15 @@ class GMVaulter(object):
            Sync with a remote source (IMAP mirror or cloud storage area)
         """
         #sync remotely 
-                         
+        
+    def sync_with_gmail_acc(self):
+        
+        """
+           Test method to restore in gmail 
+        """
+        
+        #read disk db (maybe will need requests to restrict by date)     
+                    
             
             
         
