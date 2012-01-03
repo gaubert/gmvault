@@ -268,8 +268,63 @@ class GIMAPFetcher(object):
             labels_str = '%s%s' % (labels_str[:-1],')')
         
         return labels_str
-        
     
+    def _get_dir_from_labels(self, label):
+        """
+           Get the dirs to create from the labels
+           
+           label: label name with / in it
+        """
+        
+        dirs = []
+        
+        i = 0
+        for lab in label.split('/'):
+            if i == 0:
+                dirs.append(lab)
+            else:
+                dirs.append('%s/%s' % (dirs[i-1], lab))
+            
+            i += 1
+        
+        return dirs
+    
+    def create_gmail_labels(self, labels):
+        """
+           Create folders and subfolders on Gmail in order
+           to recreate the label hierarchy before to upload emails
+           Note that adding labels with +X-GM-LABELS create only nested labels
+           but not nested ones. This is why this trick must be used to 
+           recreate the label hierarchy
+           
+           labels: list of labels to create
+        """
+        for lab in labels:
+           
+           #get existing directories (or label parts)
+           folders = [ directory for (i, parent, directory) in self.server.list_folders() ]
+           
+           labs = self._get_dir_from_labels(lab)
+           
+           for directory in labs:
+               if directory not in folders:
+                   if self.server.create_folder(directory) != 'Success':
+                       raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
+                   
+    
+    def delete_gmail_labels(self, labels):
+        """
+           Delete passed labels
+        """
+        for label in labels:
+            
+            labs = self._get_dir_from_labels(label)
+            
+            for directory in reversed(labs):
+                if self.server.folder_exists(directory): #call server exists each time
+                    self.server.delete_folder(directory)
+                    
+            
     def push_email(self, a_body, a_flags, a_internal_time, a_labels):
         """
            Push a complete email body 

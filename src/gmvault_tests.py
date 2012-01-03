@@ -107,7 +107,7 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals(len(ids), 33629)
         
-    def test_created_nested_dirs(self):
+    def ztest_created_nested_dirs(self):
         """ Try to create nested dirs """
         client = gmvault.MonkeyIMAPClient('imap.gmail.com', port = 993, use_uid = True, ssl= True)
         
@@ -138,6 +138,34 @@ class TestGMVault(unittest.TestCase):
         if dir not in folders:
             res = client.create_folder(dir)
             print(res)
+    
+    def test_create_gmail_labels(self):
+        """
+           validate the label creation at the imap fetcher level
+        """
+        gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
+        
+        gimap.connect()
+        
+        labels_to_create = ['a','b/c', 'e/f/g', 'b/c/d']
+        
+        gimap.create_gmail_labels(labels_to_create)
+        
+        #get existing directories (or label parts)
+        folders = [ directory for (_, _, directory) in gimap.get_all_folders() ]
+        
+        for label in labels_to_create:
+            self.assertTrue( (label in folders) )   
+        
+        gimap.delete_gmail_labels(labels_to_create)
+        
+        #get existing directories (or label parts)
+        folders = [ directory for (_, _, directory) in gimap.get_all_folders() ]
+        
+        for label in labels_to_create: #check that they have been deleted
+            self.assertFalse( (label in folders) )
+            
+        
         
     def ztest_gmvault_simple_search(self):
         """
