@@ -776,7 +776,10 @@ class GMVaulter(object):
         """
         
         #read disk db (maybe will need requests to restrict by date)     
-                    
+        # get list of existing ids
+        # for each id unbury email info (contains everything)
+        # maintain a list of folders and create them if they do not exist (set of labels))
+        # push email (maybe will push multiple emails)            
             
             
         
