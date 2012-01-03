@@ -55,7 +55,7 @@ class TestGMVault(unittest.TestCase):
     def setUp(self):
         self.login, self.passwd = read_password_file('/homespace/gaubert/.ssh/passwd')
         
-        #self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
+        self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         
     
     def ztest_gmvault_connect_error(self):
@@ -106,6 +106,38 @@ class TestGMVault(unittest.TestCase):
         ids = gimap.search(criteria)
         
         self.assertEquals(len(ids), 33629)
+        
+    def test_created_nested_dirs(self):
+        """ Try to create nested dirs """
+        client = gmvault.MonkeyIMAPClient('imap.gmail.com', port = 993, use_uid = True, ssl= True)
+        
+        client.login(self.gmvault_login, self.gmvault_passwd)
+        
+        #res = client.xlist_folders()
+        
+        #print(res)
+        
+        folders_info = client.list_folders()
+        
+        print(folders_info)
+        
+        folders = [ dir for (i, parent, dir) in folders_info ]
+        
+        print('folders %s\n' %(folders))
+        dir = 'ECMWF-Archive'
+        #dir = 'test'
+        if dir not in folders:
+            res = client.create_folder(dir)
+            print(res)
+        
+        folders = [ dir for (i, parent, dir) in folders_info ]
+        
+        print('folders %s\n' %(folders))
+        dir = 'ECMWF-Archive/ecmwf-simdat'
+        #dir = 'test/test-1'
+        if dir not in folders:
+            res = client.create_folder(dir)
+            print(res)
         
     def ztest_gmvault_simple_search(self):
         """
@@ -503,7 +535,7 @@ class TestGMVault(unittest.TestCase):
         #clean db dir
         delete_db_dir(args['db-dir'])
     
-    def test_delete_sync_gmv(self):
+    def ztest_delete_sync_gmv(self):
         """
            delete sync via command line
         """
