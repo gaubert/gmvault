@@ -304,6 +304,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            recreate the label hierarchy
            
            labels: list of labels to create
+           
         """
         for lab in labels:
            
@@ -363,13 +364,15 @@ class GmailStorer(object):
     '''
        Store emails
     ''' 
-    ID_FLAG = "#ID:"
-    THREAD_ID_FLAG = "#THRID:"
-    LABELS_FLAG = "#LABELS:"
-    EMAIL_FLAG = "#EMAIL:"
-    
     DATA_FNAME     = "%s/%s.eml"
     METADATA_FNAME = "%s/%s.meta"
+    
+    ID_K         = 'id'
+    EMAIL_K      = 'email'
+    THREAD_IDS_K = 'thread_ids'
+    LABELS_K     = 'labels'
+    INT_DATE_K   = 'internal_date'
+    FLAGS_K      = 'flags'
     
     def __init__(self, a_storage_dir):
         """
@@ -410,18 +413,18 @@ class GmailStorer(object):
         meta_desc = open(meta_path, 'w')
              
         #create json structure
-        data_obj = { 'id'            : email_info[GIMAPFetcher.GMAIL_ID],
-                    'email'         : email_info[GIMAPFetcher.EMAIL_BODY],
-                    'thread_ids'    : email_info[GIMAPFetcher.GMAIL_THREAD_ID],
-                    'labels'        : email_info[GIMAPFetcher.GMAIL_LABELS],
-                    'internal_date' : gmvault_utils.datetime2e(email_info[GIMAPFetcher.IMAP_INTERNALDATE]),
-                    'flags'         : email_info[GIMAPFetcher.IMAP_FLAGS]}
+        data_obj = { self.ID_K         : email_info[GIMAPFetcher.GMAIL_ID],
+                     self.EMAIL_K      : email_info[GIMAPFetcher.EMAIL_BODY],
+                     self.THREAD_IDS_K : email_info[GIMAPFetcher.GMAIL_THREAD_ID],
+                     self.LABELS_K     : email_info[GIMAPFetcher.GMAIL_LABELS],
+                     self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[GIMAPFetcher.IMAP_INTERNALDATE]),
+                     self.FLAGS_K      : email_info[GIMAPFetcher.IMAP_FLAGS]}
         
         json.dump(data_obj, data_desc, ensure_ascii = False)
         
-        meta_obj = { 'id'     : email_info[GIMAPFetcher.GMAIL_ID],
-                     'labels' : email_info[GIMAPFetcher.GMAIL_LABELS],
-                     'flags'  : email_info[GIMAPFetcher.IMAP_FLAGS]}
+        meta_obj = { self.ID_K     : email_info[GIMAPFetcher.GMAIL_ID],
+                     self.LABELS_K : email_info[GIMAPFetcher.GMAIL_LABELS],
+                     self.FLAGS_K  : email_info[GIMAPFetcher.IMAP_FLAGS]}
         
         json.dump(meta_obj, meta_desc, ensure_ascii = False)
         
@@ -796,9 +799,28 @@ class GMVaulter(object):
         
         LOG.critical("got all existing ids from disk. Will have to restore %s emails" % (len(db_gmail_ids_info)) )
         
+        seen_labels = set() #set of seen labels to not call create_gmail_labels all the time
+        
         for gm_id in db_gmail_ids_info:
             email_info = gstorer.unbury_email(gm_id)
             
+            # get list of labels to create 
+            labels_to_create = [ label for label in email_info[gstorer.LABELS_K] if label not in seen_labels]
+            
+            #create the non existing labels
+            gdestination.create_gmail_labels(labels_to_create)
+            
+            #update seen
+            seen_labels.update(set(labels_to_create))
+            
+            #restore email
+            gdestination.push_email(email_info[gstorer.EMAIL_K], \
+                                    email_info[gstorer.FLAGS_K] , \
+                                    email_info[gstorer.INT_DATE_K], \
+                                    email_info[gstorer.LABELS_K])
+            
+            # TODO need something to avoid pushing twice the same email 
+            #perform a gmail search with wathever is possible or a imap search
             
             
         
