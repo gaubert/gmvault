@@ -27,8 +27,8 @@ def read_password_file(a_path):
     """
        Read log:pass from a file in my home
     """
-    f = open(a_path)
-    line = f.readline()
+    pass_file = open(a_path)
+    line = pass_file.readline()
     (login, passwd) = line.split(":")
     
     return (deobfuscate_string(login.strip()), deobfuscate_string(passwd.strip()))
@@ -40,7 +40,10 @@ def delete_db_dir(a_db_dir):
     gmvault_utils.delete_all_under(a_db_dir, delete_top_dir = True)
 
 
-class TestGMVault(unittest.TestCase):
+class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
+    """
+       Current Main test class
+    """
 
     def __init__(self, stuff):
         """ constructor """
@@ -52,7 +55,7 @@ class TestGMVault(unittest.TestCase):
         self.gmvault_login  = None
         self.gmvault_passwd = None 
     
-    def setUp(self):
+    def setUp(self): #pylint:disable-msg=C0103
         self.login, self.passwd = read_password_file('/homespace/gaubert/.ssh/passwd')
         
         self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
@@ -78,7 +81,11 @@ class TestGMVault(unittest.TestCase):
         
         gimap.connect()
         
-        self.assertEquals(('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH') , gimap.get_capabilities())
+        self.assertEquals(('IMAP4REV1', 'UNSELECT', \
+                           'IDLE', 'NAMESPACE', \
+                           'QUOTA', 'ID', 'XLIST', \
+                           'CHILDREN', 'X-GM-EXT-1', \
+                           'XYZZY', 'SASL-IR', 'AUTH=XOAUTH') , gimap.get_capabilities())
     
     def ztest_gmvault_check_gmailness(self):
         """
@@ -113,33 +120,29 @@ class TestGMVault(unittest.TestCase):
         
         client.login(self.gmvault_login, self.gmvault_passwd)
         
-        #res = client.xlist_folders()
-        
-        #print(res)
-        
         folders_info = client.list_folders()
         
         print(folders_info)
         
-        folders = [ dir for (i, parent, dir) in folders_info ]
+        folders = [ the_dir for (_, _, dir) in folders_info ]
         
         print('folders %s\n' %(folders))
-        dir = 'ECMWF-Archive'
+        the_dir = 'ECMWF-Archive'
         #dir = 'test'
-        if dir not in folders:
+        if the_dir not in folders:
             res = client.create_folder(dir)
             print(res)
         
-        folders = [ dir for (i, parent, dir) in folders_info ]
+        folders = [ the_dir for (_, _, dir) in folders_info ]
         
         print('folders %s\n' %(folders))
-        dir = 'ECMWF-Archive/ecmwf-simdat'
+        the_dir = 'ECMWF-Archive/ecmwf-simdat'
         #dir = 'test/test-1'
-        if dir not in folders:
-            res = client.create_folder(dir)
+        if the_dir not in folders:
+            res = client.create_folder(the_dir)
             print(res)
     
-    def test_create_gmail_labels(self):
+    def ztest_create_gmail_labels(self):
         """
            validate the label creation at the imap fetcher level
         """
@@ -147,7 +150,7 @@ class TestGMVault(unittest.TestCase):
         
         gimap.connect()
         
-        labels_to_create = ['a','b/c', 'e/f/g', 'b/c/d']
+        labels_to_create = ['a', 'b/c', 'e/f/g', 'b/c/d']
         
         gimap.create_gmail_labels(labels_to_create)
         
@@ -171,7 +174,6 @@ class TestGMVault(unittest.TestCase):
         """
            search all emails before 01.01.2005
         """
-        has_ssl = True
         gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gimap.connect()
@@ -181,7 +183,7 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals(len(ids), 33629)
         
-    def ztest_gmvault_retrieve_gmail_ids(self):
+    def ztest_retrieve_gmail_ids(self):
         """
            Get all uid before Sep 2004
            Retrieve all GMAIL IDs 
@@ -198,7 +200,7 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals(res, {27362: {'X-GM-MSGID': 1147537963432096749L, 'SEQ': 14535}, 27363: {'X-GM-MSGID': 1147537994018957026L, 'SEQ': 14536}})
         
-    def ztest_gmvault_retrieve_all_params(self):
+    def ztest_retrieve_all_params(self):
         """
            Get all params for a uid
            Retrieve all parts for one email
@@ -217,9 +219,10 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals(res[ids[0]][gimap.GMAIL_ID], 1147537963432096749L)
         
-        self.assertEquals(res[ids[0]][gimap.EMAIL_BODY],'Message-ID: <6999505.1094377483218.JavaMail.wwwadm@chewbacca.ecmwf.int>\r\nDate: Sun, 5 Sep 2004 09:44:43 +0000 (GMT)\r\nFrom: Guillaume.Aubert@ecmwf.int\r\nReply-To: Guillaume.Aubert@ecmwf.int\r\nTo: aubert_guillaume@yahoo.fr\r\nSubject: Fwd: [Flickr] Guillaume Aubert wants you to see their photos\r\nMime-Version: 1.0\r\nContent-Type: text/plain; charset=us-ascii\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: jwma\r\nStatus: RO\r\nX-Status: \r\nX-Keywords:                 \r\nX-UID: 1\r\n\r\n\r\n')
+        self.assertEquals(res[ids[0]][gimap.EMAIL_BODY], \
+                          'Message-ID: <6999505.1094377483218.JavaMail.wwwadm@chewbacca.ecmwf.int>\r\nDate: Sun, 5 Sep 2004 09:44:43 +0000 (GMT)\r\nFrom: Guillaume.Aubert@ecmwf.int\r\nReply-To: Guillaume.Aubert@ecmwf.int\r\nTo: aubert_guillaume@yahoo.fr\r\nSubject: Fwd: [Flickr] Guillaume Aubert wants you to see their photos\r\nMime-Version: 1.0\r\nContent-Type: text/plain; charset=us-ascii\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: jwma\r\nStatus: RO\r\nX-Status: \r\nX-Keywords:                 \r\nX-UID: 1\r\n\r\n\r\n') #pylint:disable-msg=C0301
         
-    def ztest_gmvault_retrieve_email_store_and_read(self):
+    def ztest_gmvault_retrieve_email_store_and_read(self): #pylint:disable-msg=C0103
         """
            Retrieve an email store it on disk and read it
         """
@@ -253,7 +256,7 @@ class TestGMVault(unittest.TestCase):
             
         self.assertEquals(labels, j_results['labels'])
     
-    def ztest_gmvault_compress_retrieve_email_store_and_read(self):
+    def ztest_gmvault_compress_retrieve_email_store_and_read(self): #pylint:disable-msg=C0103
         """
            Activate compression and retrieve an email store it on disk and read it
         """
@@ -290,7 +293,7 @@ class TestGMVault(unittest.TestCase):
             
         self.assertEquals(labels, j_results['labels'])
     
-    def ztest_gmvault_retrieve_multiple_emails_store_and_read(self):
+    def ztest_gmvault_retrieve_multiple_emails_store_and_read(self): #pylint:disable-msg=C0103
         """
            Retrieve emails store them it on disk and read it
         """
@@ -328,7 +331,7 @@ class TestGMVault(unittest.TestCase):
                 
             self.assertEquals(labels, j_results['labels'])
         
-    def ztest_gmvault_store_gzip_email_and_read(self):
+    def ztest_gmvault_store_gzip_email_and_read(self): #pylint:disable-msg=C0103
         """
            Retrieve emails store them it on disk and read it
         """
@@ -391,7 +394,7 @@ class TestGMVault(unittest.TestCase):
         for elem in existing_labels:
             test_labels.append(elem)
             
-        dest_id = gdestination.push_email(source_email[the_id][gsource.EMAIL_BODY],\
+        dest_id = gdestination.push_email(source_email[the_id][gsource.EMAIL_BODY], \
                                            source_email[the_id][gsource.IMAP_FLAGS] , \
                                            source_email[the_id][gsource.IMAP_INTERNALDATE], test_labels)
         
@@ -409,9 +412,9 @@ class TestGMVault(unittest.TestCase):
         """
            Restore 10 emails
         """
-        read_only_folder = False
         gsource      = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
-        gdestination = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd, readonly_folder = False)
+        gdestination = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd, \
+                                             readonly_folder = False)
         
         gsource.connect()
         gdestination.connect()
@@ -459,19 +462,19 @@ class TestGMVault(unittest.TestCase):
         
         storage_dir = "%s/%s" % ('/tmp/gmail_bk', '2011-11')
         
-        gs, metadata = gmvault.GMVaulter.check_email_on_disk(storage_dir, 1384313269332005293)
+        _, metadata = gmvault.GMVaulter.check_email_on_disk(storage_dir, 1384313269332005293)
         
         self.assertEquals(metadata['id'], 1384313269332005293)
         
-        gs, metadata = gmvault.GMVaulter.check_email_on_disk(storage_dir, 1384403887202624608)
+        _, metadata = gmvault.GMVaulter.check_email_on_disk(storage_dir, 1384403887202624608)
         
         self.assertEquals(metadata['id'], 1384403887202624608)
             
-        gs, metadata = gmvault.GMVaulter.check_email_on_disk(storage_dir, 1384486067720566818)
+        _, metadata = gmvault.GMVaulter.check_email_on_disk(storage_dir, 1384486067720566818)
         
         self.assertEquals(metadata['id'], 1384486067720566818)
         
-    def ztest_few_days_syncer_with_deletion(self):
+    def ztest_few_days_syncer_with_deletion(self): #pylint:disable-msg=C0103
         """
            check that there was a deletion
         """
@@ -494,18 +497,19 @@ class TestGMVault(unittest.TestCase):
         """
            Test the cli interface bad option
         """
-        import sys
-        sys.argv = ['gmvault.py', '--sync','--host', 'imap.gmail.com', '--port', '1452', '--login', 'foo', '--passwd', 'bar']
+        sys.argv = ['gmvault.py', '--sync', '--host', \
+                    'imap.gmail.com', '--port', '1452', \
+                    '--login', 'foo', '--passwd', 'bar']
     
-        gmvault = gmv.GMVaultLauncher()
+        gmvaulter = gmv.GMVaultLauncher()
     
         try:
-            args = gmvault.parse_args()
-        except SystemExit, e:
-            self.assertEquals(type(e), type(SystemExit()))
-            self.assertEquals(e.code, 2)
-        except Exception, e:
-            self.fail('unexpected exception: %s' % e)
+            _ = gmvaulter.parse_args()
+        except SystemExit, err:
+            self.assertEquals(type(err), type(SystemExit()))
+            self.assertEquals(err.code, 2)
+        except Exception, err:
+            self.fail('unexpected exception: %s' % err)
         else:
             self.fail('SystemExit exception expected')
 
@@ -513,43 +517,45 @@ class TestGMVault(unittest.TestCase):
         """
            Test the cli interface bad option
         """
-        import sys
-        sys.argv = ['gmvault','--imap-server', 'imap.gmail.com', '--imap-port', 993, '--imap-request', 'Since 1-Nov-2011 Before 10-Nov-2011', '--email', 'foo', '--passwd', 'bar']
+        sys.argv = ['gmvault', '--imap-server', 'imap.gmail.com', \
+                    '--imap-port', 993, '--imap-request', \
+                    'Since 1-Nov-2011 Before 10-Nov-2011', \
+                    '--email', 'foo', '--passwd', 'bar']
     
-        gmvault = gmv.GMVaultLauncher()
+        gmvaulter = gmv.GMVaultLauncher()
     
         try:
-            args = gmvault.parse_args()
+            args = gmvaulter.parse_args()
             
             self.assertFalse(args['verbose'])
             self.assertEquals(args['sync-mode'],'full-sync')
             self.assertEquals(args['email'],'foo')
             self.assertEquals(args['passwd'],'bar')
             self.assertEquals(args['request'], 'Since 1-Nov-2011 Before 10-Nov-2011')
-            self.assertEquals(args['oauth-token'],None)
+            self.assertEquals(args['oauth-token'], None)
             self.assertEquals(args['host'],'imap.gmail.com')
             self.assertEquals(args['port'], 993)
             self.assertEquals(args['db-dir'],'./gmvault-db')
             
-            print(args)
-            
-        except SystemExit, e:
-            self.fail("SystemExit Exception: %s"  % e)
-        except Exception, e:
-            self.fail('unexpected exception: %s' % e)
+        except SystemExit, err:
+            self.fail("SystemExit Exception: %s"  % err)
+        except Exception, err:
+            self.fail('unexpected exception: %s' % err)
     
     def ztest_full_sync_gmv(self):
         """
            full test via the command line
         """
-        import sys
-        sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', '993', '--imap-request', 'Since 1-Nov-2011 Before 5-Nov-2011', '--email', self.login, '--passwd', self.passwd]
+        sys.argv = ['gmvault.py', '--imap-server', 'imap.gmail.com', \
+                    '--imap-port', '993', '--imap-request', \
+                    'Since 1-Nov-2011 Before 5-Nov-2011', '--email', \
+                    self.login, '--passwd', self.passwd]
     
-        gmvaultLauncher = gmv.GMVaultLauncher()
+        gmvault_launcher = gmv.GMVaultLauncher()
         
-        args = gmvaultLauncher.parse_args()
+        args = gmvault_launcher.parse_args()
     
-        gmvaultLauncher.run(args)
+        gmvault_launcher.run(args)
         
         #check all stored gmail ids
         gstorer = gmvault.GmailStorer(args['db-dir'])
@@ -558,7 +564,11 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals(len(ids), 5)
         
-        self.assertEquals(ids, {1384403887202624608L: '2011-11', 1384486067720566818L: '2011-11', 1384313269332005293L: '2011-11', 1384545182050901969L: '2011-11', 1384578279292583731L: '2011-11'})
+        self.assertEquals(ids, {1384403887202624608L: '2011-11', \
+                                1384486067720566818L: '2011-11', \
+                                1384313269332005293L: '2011-11', \
+                                1384545182050901969L: '2011-11', \
+                                1384578279292583731L: '2011-11'})
         
         #clean db dir
         delete_db_dir(args['db-dir'])
@@ -569,23 +579,27 @@ class TestGMVault(unittest.TestCase):
         """
         gmv.init_logging()
         
-        import sys
         #first request to have the extra dirs
-        sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', '993', '--imap-request', 'Since 1-Nov-2011 Before 7-Nov-2011', '--email', self.login, \
+        sys.argv = ['gmvault.py', '--imap-server', 'imap.gmail.com', \
+                    '--imap-port', '993', '--imap-request', \
+                    'Since 1-Nov-2011 Before 7-Nov-2011', \
+                    '--email', self.login, \
                     '--passwd', self.passwd, '--db-dir', '/tmp/new-db-1']
     
-        gmvaultLauncher = gmv.GMVaultLauncher()
+        gmvault_launcher = gmv.GMVaultLauncher()
         
-        args = gmvaultLauncher.parse_args()
+        args = gmvault_launcher.parse_args()
     
-        gmvaultLauncher.run(args)
+        gmvault_launcher.run(args)
         
         #second requests so all files after the 5 should disappear 
-        sys.argv = ['gmvault.py','--imap-server', 'imap.gmail.com', '--imap-port', '993', '--imap-request', 'Since 1-Nov-2011 Before 5-Nov-2011', '--email', self.login, \
+        sys.argv = ['gmvault.py', '--imap-server', 'imap.gmail.com', \
+                    '--imap-port', '993', '--imap-request', \
+                    'Since 1-Nov-2011 Before 5-Nov-2011', '--email', self.login, \
                     '--passwd', self.passwd, '--db-dir', '/tmp/new-db-1', '--db-cleaning', 'yes']
     
-        args = gmvaultLauncher.parse_args()
-        gmvaultLauncher.run(args)
+        args = gmvault_launcher.parse_args()
+        gmvault_launcher.run(args)
     
         #check all stored gmail ids
         gstorer = gmvault.GmailStorer(args['db-dir'])
@@ -594,19 +608,24 @@ class TestGMVault(unittest.TestCase):
         
         self.assertEquals(len(ids), 5)
         
-        self.assertEquals(ids, {1384403887202624608L: '2011-11', 1384486067720566818L: '2011-11', 1384313269332005293L: '2011-11', 1384545182050901969L: '2011-11', 1384578279292583731L: '2011-11'})
+        self.assertEquals(ids, {1384403887202624608L: '2011-11', \
+                                1384486067720566818L: '2011-11', \
+                                1384313269332005293L: '2011-11', \
+                                1384545182050901969L: '2011-11', \
+                                1384578279292583731L: '2011-11'})
         
         #clean db dir
         delete_db_dir(args['db-dir'])
         
     def ztest_logger(self):
         """
+           Test the logging mechanism
         """
         
         import log_utils
         log_utils.LoggerFactory.setup_cli_app_handler('./gmv.log') 
         
-        LOG = log_utils.LoggerFactory.get_logger('gmv')
+        LOG = log_utils.LoggerFactory.get_logger('gmv') #pylint:disable-msg=C0103
         
         LOG.info("On Info")
         
@@ -617,10 +636,10 @@ class TestGMVault(unittest.TestCase):
         LOG.notice("On Notice")
         
         try:
-           raise Exception("Exception. This is my exception")
-        except Exception, e:
-            LOG.exception("eeror,", e)
-            pass
+            raise Exception("Exception. This is my exception")
+            self.fail("Should never arrive here") #pylint:disable-msg=W0101
+        except Exception, err: #pylint:disable-msg=W0101, W0703
+            LOG.exception("error,", err)
         
         LOG.critical("On Critical")
         
@@ -631,6 +650,9 @@ class TestGMVault(unittest.TestCase):
         
 
 def tests():
+    """
+       main test function
+    """
     suite = unittest.TestLoader().loadTestsFromTestCase(TestGMVault)
     unittest.TextTestRunner(verbosity=2).run(suite)
  
