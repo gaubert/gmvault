@@ -648,10 +648,13 @@ class GMVaulter(object):
                 #ids[0] should be the oldest so get the date and start from here
                 curr = self.src.fetch(the_id, GIMAPFetcher.GET_ALL_BUT_DATA )
                 
-                yy_mon = gmvault_utils.get_ym_from_datetime(curr[the_id][GIMAPFetcher.IMAP_INTERNALDATE])
+                #yy_mon = gmvault_utils.get_ym_from_datetime(curr[the_id][GIMAPFetcher.IMAP_INTERNALDATE])
+                
+                the_dir = '%s/%s' % (self.db_root_dir, \
+                                     gmvault_utils.get_ym_from_datetime(curr[the_id][GIMAPFetcher.IMAP_INTERNALDATE]))
                 
                 #pass the dir and the ID
-                gstorer, curr_metadata = GMVaulter.check_email_on_disk( '%s/%s' % (self.db_root_dir, yy_mon) , \
+                gstorer, curr_metadata = GMVaulter.check_email_on_disk( the_dir , \
                                                                        curr[the_id][GIMAPFetcher.GMAIL_ID])
                 
                 #if on disk check that the data is not different
@@ -674,7 +677,7 @@ class GMVaulter(object):
                 else:
                     
                     # store data on disk within year month dir 
-                    gstorer =  GmailStorer(dir)  
+                    gstorer =  GmailStorer(the_dir)  
                     
                     #retrieve email from destination email account
                     data = self.src.fetch(the_id, GIMAPFetcher.GET_ALL_INFO)
@@ -788,6 +791,8 @@ class GMVaulter(object):
         # connect to destination email account
         gdestination = GIMAPFetcher(gm_server, gm_port, gm_login, gm_password, readonly_folder = False)
         
+        gdestination.connect()
+        
         LOG.critical("restore email database in gmail account %s" % (gm_login) ) 
         
         gstorer = GmailStorer(self.db_root_dir)
@@ -801,8 +806,11 @@ class GMVaulter(object):
         
         seen_labels = set() #set of seen labels to not call create_gmail_labels all the time
         
-        for gm_id in db_gmail_ids_info:
-            email_info = gstorer.unbury_email(gm_id)
+        for gm_id, yy_dir in db_gmail_ids_info.iteritems():
+            
+            dummy_storer = GmailStorer('%s/%s' % (self.db_root_dir, yy_dir))
+            
+            email_info = dummy_storer.unbury_email(gm_id)
             
             # get list of labels to create 
             labels_to_create = [ label for label in email_info[gstorer.LABELS_K] if label not in seen_labels]

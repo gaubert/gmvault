@@ -213,12 +213,12 @@ class GMVaultLauncher(object):
                 args['parser'].die_with_usage()
  
 def init_logging():
-     """
-        init logging infrastructure
-     """       
-     #setup application logs: one handler for stdout and one for a log file
-     log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, file_path="./gmvault.log") 
-        
+    """
+       init logging infrastructure
+    """       
+    #setup application logs: one handler for stdout and one for a log file
+    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, file_path="./gmvault.log") 
+    
     
 def bootstrap_run():
     """ temporary bootstrap """

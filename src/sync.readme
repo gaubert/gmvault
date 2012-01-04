@@ -80,3 +80,5 @@ Implement the restore emails
 ============================
 
 See how to create tests
+
+Check the gmail labels that already exists cannot be created (badly created)

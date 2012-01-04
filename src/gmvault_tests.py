@@ -643,8 +643,25 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         LOG.critical("On Critical")
         
+    def test_restore_on_gmail(self):
+        """
+           clean db disk
+           sync with gmail for few emails
+           restore them on gmail test
+        """
         
+        db_dir = '/tmp/gmail_bk'
+        
+        #clean db dir
+        delete_db_dir(db_dir)
+        
+        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, self.passwd)
+        
+        syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
+        
+        syncer. sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
             
+        print("Done \n")
         
         
         
