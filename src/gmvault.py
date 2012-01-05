@@ -10,6 +10,7 @@ import re
 import datetime
 import os
 import itertools
+import base64
 
 import imaplib  #for the exception
 from imapclient import IMAPClient
@@ -142,6 +143,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     IMAP_ALL          = 'ALL'
     
     EMAIL_BODY        = 'BODY[]'
+    
+    GMAIL_SPECIAL_DIRS = ['\\Inbox', '\\Starred', '\\Sent', '\\Draft', '\\Important']
     
     #to be removed
     EMAIL_BODY_OLD        = 'RFC822' #set msg as seen
@@ -286,6 +289,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         i = 0
         for lab in label.split('/'):
+            
             if i == 0:
                 dirs.append(lab)
             else:
@@ -314,7 +318,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             labs = self._get_dir_from_labels(lab)
             
             for directory in labs:
-                if directory not in folders:
+                if (directory not in folders) and (directory not in self.GMAIL_SPECIAL_DIRS):
                     if self.server.create_folder(directory) != 'Success':
                         raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
                     
@@ -394,7 +398,6 @@ class GmailStorer(object):
             gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
     
         return gmail_ids
-            
         
     def bury_email(self, email_info, compress = False):
         """
@@ -414,7 +417,7 @@ class GmailStorer(object):
              
         #create json structure
         data_obj = { self.ID_K         : email_info[GIMAPFetcher.GMAIL_ID],
-                     self.EMAIL_K      : email_info[GIMAPFetcher.EMAIL_BODY],
+                     self.EMAIL_K      : base64.b64encode(email_info[GIMAPFetcher.EMAIL_BODY]),
                      self.THREAD_IDS_K : email_info[GIMAPFetcher.GMAIL_THREAD_ID],
                      self.LABELS_K     : email_info[GIMAPFetcher.GMAIL_LABELS],
                      self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[GIMAPFetcher.IMAP_INTERNALDATE]),
@@ -486,7 +489,9 @@ class GmailStorer(object):
         
         res = json.load(data_fd)
         
-        res['internal_date'] =  gmvault_utils.e2datetime(res['internal_date'])
+        res[self.EMAIL_K] = base64.b64decode(res[self.EMAIL_K])
+        
+        res[self.INT_DATE_K] =  gmvault_utils.e2datetime(res[self.INT_DATE_K])
         
         return res
     
@@ -809,6 +814,8 @@ class GMVaulter(object):
         for gm_id, yy_dir in db_gmail_ids_info.iteritems():
             
             dummy_storer = GmailStorer('%s/%s' % (self.db_root_dir, yy_dir))
+            
+            LOG.critical("restore email with id %s" % (gm_id))
             
             email_info = dummy_storer.unbury_email(gm_id)
             
