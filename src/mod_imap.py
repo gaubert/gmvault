@@ -80,18 +80,6 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
             data = self.compressor.compress(data)
             data += self.compressor.flush(zlib.Z_SYNC_FLUSH)
         self.sslobj.sendall(data)
-        
-
-def datetime_to_imap(dt):
-    """Convert a datetime instance to a IMAP datetime string.
-    
-    If timezone information is missing the current system
-    timezone is used.
-    """
-    #if not dt.tzinfo:
-    #    dt = dt.replace(tzinfo=FixedOffset.for_system())
-    #return dt.strftime("%d-%b-%Y %H:%M:%S %z")
-    return dt.strftime("%d-%b-%Y %H:%M:%S")
 
 def seq_to_parenlist(flags):
     """Convert a sequence of strings into parenthised list string for
@@ -142,7 +130,6 @@ class MonkeyIMAPClient(IMAPClient): #pylint:disable-msg=R0903
         Returns the APPEND response as returned by the server.
         """
         if msg_time:
-            #time_val = '"%s"' % datetime_to_imap(msg_time)
             time_val = time.mktime(msg_time.timetuple())
         else:
             time_val = None
