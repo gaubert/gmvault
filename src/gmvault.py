@@ -399,10 +399,10 @@ class GmailStorer(object):
     
         return gmail_ids
         
-    def bury_email(self, email_info, compress = False):
+    def old_bury_email(self, email_info, compress = False):
         """
-           store a json structure with all email elements in a file
-           If compress is True, use gzip compression
+            store a json structure with all email elements in a file
+            If compress is True, use gzip compression
         """
         meta_path = self.METADATA_FNAME % (self._top_dir, email_info[GIMAPFetcher.GMAIL_ID])
         data_path = self.DATA_FNAME % (self._top_dir, email_info[GIMAPFetcher.GMAIL_ID])
@@ -416,23 +416,61 @@ class GmailStorer(object):
         meta_desc = open(meta_path, 'w')
              
         #create json structure
-        data_obj = { self.ID_K         : email_info[GIMAPFetcher.GMAIL_ID],
-                     self.EMAIL_K      : base64.b64encode(email_info[GIMAPFetcher.EMAIL_BODY]),
+        data_obj = { self.ID_K : email_info[GIMAPFetcher.GMAIL_ID],
+                     self.EMAIL_K : base64.b64encode(email_info[GIMAPFetcher.EMAIL_BODY]),
                      self.THREAD_IDS_K : email_info[GIMAPFetcher.GMAIL_THREAD_ID],
-                     self.LABELS_K     : email_info[GIMAPFetcher.GMAIL_LABELS],
-                     self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[GIMAPFetcher.IMAP_INTERNALDATE]),
-                     self.FLAGS_K      : email_info[GIMAPFetcher.IMAP_FLAGS]}
+                     self.LABELS_K : email_info[GIMAPFetcher.GMAIL_LABELS],
+                     self.INT_DATE_K : gmvault_utils.datetime2e(email_info[GIMAPFetcher.IMAP_INTERNALDATE]),
+                     self.FLAGS_K : email_info[GIMAPFetcher.IMAP_FLAGS]}
         
         json.dump(data_obj, data_desc, ensure_ascii = False)
         
-        meta_obj = { self.ID_K     : email_info[GIMAPFetcher.GMAIL_ID],
+        meta_obj = { self.ID_K : email_info[GIMAPFetcher.GMAIL_ID],
                      self.LABELS_K : email_info[GIMAPFetcher.GMAIL_LABELS],
-                     self.FLAGS_K  : email_info[GIMAPFetcher.IMAP_FLAGS]}
+                     self.FLAGS_K : email_info[GIMAPFetcher.IMAP_FLAGS]}
         
         json.dump(meta_obj, meta_desc, ensure_ascii = False)
         
         meta_desc.flush()
+        meta_desc.close()
+        
+        data_desc.flush()
+        data_desc.close()
+        
+        return email_info[GIMAPFetcher.GMAIL_ID]
+    
+    def bury_email(self, email_info, compress = False):
+        """
+           store all email info in 2 files (.meta and .eml files)
+           If compress is True, use gzip compression
+        """
+        meta_path = self.METADATA_FNAME % (self._top_dir, email_info[GIMAPFetcher.GMAIL_ID])
+        data_path = self.DATA_FNAME % (self._top_dir, email_info[GIMAPFetcher.GMAIL_ID])
+        
+        if compress:
+            data_path = '%s.gz' % (data_path)
+            data_desc = gzip.open(data_path, 'wb')
+        else:
+            data_desc = open(data_path, 'wb')
+            
+        meta_desc = open(meta_path, 'w')
+             
+        data_desc.write(email_info[GIMAPFetcher.EMAIL_BODY])
+        
+        #create json structure for metadata
+        meta_obj = { 
+                     self.ID_K         : email_info[GIMAPFetcher.GMAIL_ID],
+                     self.LABELS_K     : email_info[GIMAPFetcher.GMAIL_LABELS],
+                     self.FLAGS_K      : email_info[GIMAPFetcher.IMAP_FLAGS],
+                     self.THREAD_IDS_K : email_info[GIMAPFetcher.GMAIL_THREAD_ID],
+                     self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[GIMAPFetcher.IMAP_INTERNALDATE]),
+                     self.FLAGS_K      : email_info[GIMAPFetcher.IMAP_FLAGS]
+                   }
+        
+        json.dump(meta_obj, meta_desc, ensure_ascii = False)
+        
         meta_desc.flush()
+        meta_desc.close()
         
         data_desc.flush()
         data_desc.close()
@@ -480,7 +518,7 @@ class GmailStorer(object):
         return open(meta_p)
         
     
-    def unbury_email(self, a_id):
+    def old_unbury_email(self, a_id):
         """
            Restore email info from info stored on disk
         """
@@ -495,6 +533,16 @@ class GmailStorer(object):
         
         return res
     
+    def unbury_email(self, a_id):
+        """
+           Restore email info from info stored on disk
+           Return a tuple (meta, data)
+        """
+        
+        data_fd = self._get_data_file_from_id(a_id)
+        
+        return (self.unbury_metadata(a_id), data_fd.read())
+    
     def unbury_metadata(self, a_id):
         """
            Get metadata info from DB
@@ -502,6 +550,8 @@ class GmailStorer(object):
         meta_fd = self._get_metadata_file_from_id(a_id)
         
         metadata = json.load(meta_fd)
+        
+        metadata[self.INT_DATE_K] =  gmvault_utils.e2datetime(metadata[self.INT_DATE_K])
         
         return metadata
     
@@ -541,8 +591,7 @@ class GMVaulter(object):
         
         #create dir if it doesn't exist
         gmvault_utils.makedirs(self.db_root_dir)
-        
-        
+            
         # create source and try to connect
         self.src = GIMAPFetcher(host, port, login, passwd)
         
@@ -817,10 +866,10 @@ class GMVaulter(object):
             
             LOG.critical("restore email with id %s" % (gm_id))
             
-            email_info = dummy_storer.unbury_email(gm_id)
+            email_meta, email_data = dummy_storer.unbury_email(gm_id)
             
             # get list of labels to create 
-            labels_to_create = [ label for label in email_info[gstorer.LABELS_K] if label not in seen_labels]
+            labels_to_create = [ label for label in email_meta[gstorer.LABELS_K] if label not in seen_labels]
             
             #create the non existing labels
             gdestination.create_gmail_labels(labels_to_create)
@@ -829,10 +878,10 @@ class GMVaulter(object):
             seen_labels.update(set(labels_to_create))
             
             #restore email
-            gdestination.push_email(email_info[gstorer.EMAIL_K], \
-                                    email_info[gstorer.FLAGS_K] , \
-                                    email_info[gstorer.INT_DATE_K], \
-                                    email_info[gstorer.LABELS_K])
+            gdestination.push_email(email_data, \
+                                    email_meta[gstorer.FLAGS_K] , \
+                                    email_meta[gstorer.INT_DATE_K], \
+                                    email_meta[gstorer.LABELS_K])
             
             # TODO need something to avoid pushing twice the same email 
             #perform a gmail search with wathever is possible or a imap search
