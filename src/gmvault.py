@@ -839,7 +839,7 @@ class GMVaulter(object):
     def sync_with_gmail_acc(self, gm_server, gm_port, gm_login, gm_password):
         
         """
-           Test method to restore in gmail 
+           Test method to restore emails in gmail 
         """
         
         # connect to destination email account
