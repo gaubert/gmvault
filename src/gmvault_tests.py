@@ -370,7 +370,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                 
             self.assertEquals(labels, metadata['labels'])
         
-    def test_restore_one_email(self):
+    def ztest_restore_one_email(self):
         """
            get one email from one account and restore it
         """
@@ -394,6 +394,8 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         for elem in existing_labels:
             test_labels.append(elem)
             
+        #source_email[the_id][gsource.IMAP_INTERNALDATE] = source_email[the_id][gsource.IMAP_INTERNALDATE].replace(tzinfo= gmvault_utils.UTC_TZ)
+            
         dest_id = gdestination.push_email(source_email[the_id][gsource.EMAIL_BODY], \
                                            source_email[the_id][gsource.IMAP_FLAGS] , \
                                            source_email[the_id][gsource.IMAP_INTERNALDATE], test_labels)
@@ -406,7 +408,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.assertEquals(dest_email[dest_id][gsource.GMAIL_LABELS], source_email[the_id][gsource.GMAIL_LABELS])
             
         #should be ok to be checked
-        #self.assertEquals(dest_email[dest_id][gsource.IMAP_INTERNALDATE], source_email[the_id][gsource.IMAP_INTERNALDATE])
+        self.assertEquals(dest_email[dest_id][gsource.IMAP_INTERNALDATE], source_email[the_id][gsource.IMAP_INTERNALDATE])
         
     def ztest_restore_10_emails(self):
         """

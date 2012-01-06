@@ -8,7 +8,27 @@ import os
 import datetime
 import calendar
 import fnmatch
-from pip import main
+
+ZERO = datetime.timedelta(0) 
+
+# A UTC class.    
+class UTC(datetime.tzinfo):    
+    """UTC Timezone"""    
+    
+    def utcoffset(self, a_dt):  
+        ''' return utcoffset '''  
+        return ZERO    
+    
+    def tzname(self, a_dt):
+        ''' return tzname '''    
+        return "UTC"    
+        
+    def dst(self, a_dt):  
+        ''' return dst '''      
+        return ZERO  
+
+# pylint: enable-msg=W0613    
+UTC_TZ = UTC()
 
 def get_ym_from_datetime(a_datetime):
     """

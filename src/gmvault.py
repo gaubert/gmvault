@@ -8,6 +8,7 @@ import zlib
 import gzip
 import re
 import datetime
+import time
 import os
 import itertools
 import base64
@@ -90,6 +91,28 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
             data = self.compressor.compress(data)
             data += self.compressor.flush(zlib.Z_SYNC_FLUSH)
         self.sslobj.sendall(data)
+        
+
+def datetime_to_imap(dt):
+    """Convert a datetime instance to a IMAP datetime string.
+    
+    If timezone information is missing the current system
+    timezone is used.
+    """
+    #if not dt.tzinfo:
+    #    dt = dt.replace(tzinfo=FixedOffset.for_system())
+    #return dt.strftime("%d-%b-%Y %H:%M:%S %z")
+    return dt.strftime("%d-%b-%Y %H:%M:%S")
+
+def seq_to_parenlist(flags):
+    """Convert a sequence of strings into parenthised list string for
+    use with IMAP commands.
+    """
+    if isinstance(flags, str):
+        flags = (flags,)
+    elif not isinstance(flags, (tuple, list)):
+        raise ValueError('invalid flags list: %r' % flags)
+    return '(%s)' % ' '.join(flags)
     
 class MonkeyIMAPClient(IMAPClient): #pylint:disable-msg=R0903
     """
@@ -111,6 +134,37 @@ class MonkeyIMAPClient(IMAPClient): #pylint:disable-msg=R0903
         #ImapClass = self.ssl and imaplib.IMAP4_SSL or imaplib.IMAP4
         ImapClass = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
         return ImapClass(self.host, self.port)
+    
+    def append(self, folder, msg, flags=(), msg_time=None):
+        """Append a message to *folder*.
+
+        *msg* should be a string contains the full message including
+        headers.
+
+        *flags* should be a sequence of message flags to set. If not
+        specified no flags will be set.
+
+        *msg_time* is an optional datetime instance specifying the
+        date and time to set on the message. The server will set a
+        time if it isn't specified. If *msg_time* contains timezone
+        information (tzinfo), this will be honoured. Otherwise the
+        local machine's time zone sent to the server.
+
+        Returns the APPEND response as returned by the server.
+        """
+        if msg_time:
+            #time_val = '"%s"' % datetime_to_imap(msg_time)
+            time_val = time.mktime(msg_time.timetuple())
+        else:
+            time_val = None
+
+        flags_list = seq_to_parenlist(flags)
+
+        typ, data = self._imap.append(self._encode_folder_name(folder),
+                                      flags_list, time_val, msg)
+        self._checkok('append', typ, data)
+
+        return data[0]
     
     def enable_compression(self):
         """
