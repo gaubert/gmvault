@@ -93,3 +93,6 @@ german letters). Now email body has it own file.
 - Fix the internal date problem. The internal date cannot be set using the IMAP Internal date
 definition as it is used in IMAPClient. The way to do it is to pass epoch seconds to imaplib.
 I don't know why but it works. See if there is another wat.
+
+Error with 137784L id check and handle bug (1 Sep to 30 Nov)
+Sent label is not well managed (problem due to Sent Message) => fixed to be checked

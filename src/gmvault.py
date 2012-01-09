@@ -161,11 +161,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         # add GMAIL LABELS 
         labels_str = None
         if a_labels and len(a_labels) > 0:
-            labels_str = '('
-            for label in a_labels:
-                labels_str += '%s ' % (label)
-            labels_str = '%s%s' % (labels_str[:-1],')')
-        
+            labels_str = '("%s")' % ('" "'.join(labels)) 
+           
         return labels_str
     
     @classmethod
