@@ -60,9 +60,12 @@ disk saved ids. This should scale for ever whatever the number of you have
 want to restart from the moment when it failed.
 6) add logging now otherwise it might be too late => PARTLY DONE
 7) test why labels cannot be hierarchically recreated => DONE
-7.1) Check the Internal Date on a restore: it doesn't seem to be set properly => partially DONE
-7.2) Implement the restore
+7.1) Check the Internal Date on a restore: it doesn't seem to be set properly => DONE
+7.2) Implement the restore => being tested
 8) add oauth and a way to save the token.
+8.1) add a way to add a restore label
+8.2) encrypt email data with possibly a pure python method (if not too slow) => make it optional
+8.3) work on win support
 9) manage a .gmvault dir in your home
 10) add progress bar and better logging outputs with verbose and non verbose mode
 11) release v0.5 
@@ -71,7 +74,7 @@ want to restart from the moment when it failed.
 
 Add XOAuth support
 =================
-run trhough in python
+run through in python
 http://code.google.com/p/google-mail-xoauth-tools/wiki/XoauthDotPyRunThrough
 python lib: https://github.com/simplegeo/python-oauth2
 Also available in IMAPClient: http://imapclient.freshfoo.com/browser/imapclient/imapclient.py
@@ -94,5 +97,7 @@ german letters). Now email body has it own file.
 definition as it is used in IMAPClient. The way to do it is to pass epoch seconds to imaplib.
 I don't know why but it works. See if there is another wat.
 
+09.01.12
+--------
 Error with 137784L id check and handle bug (1 Sep to 30 Nov)
 Sent label is not well managed (problem due to Sent Message) => fixed to be checked
