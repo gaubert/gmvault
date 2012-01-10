@@ -734,7 +734,7 @@ class GMVaulter(object):
         """
         #sync remotely 
         
-    def sync_with_gmail_acc(self, gm_server, gm_port, gm_login, gm_password, extra_labels = None):
+    def sync_with_gmail_acc(self, gm_server, gm_port, gm_login, gm_password, extra_labels = []):
         
         """
            Test method to restore in gmail 
