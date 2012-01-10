@@ -101,3 +101,34 @@ I don't know why but it works. See if there is another wat.
 --------
 Error with 137784L id check and handle bug (1 Sep to 30 Nov)
 Sent label is not well managed (problem due to Sent Message) => fixed to be checked
+
+error:
+[2012-01-09 19:18] CRITICAL: gmvault: got all existing ids from disk. Will have to restore 2019 emails
+[2012-01-09 19:18] CRITICAL: gmvault: restore email with id 1348177681428950932
+[2012-01-09 19:18] CRITICAL: gmvault: restore email with id 1364080007563825280
+[2012-01-09 19:18] CRITICAL: gmvault: restore email with id 1381017713405903808
+ERROR
+
+2011-09
+{"thread_ids": 1381017713405903808, "labels": ["\\Important", "EUMETSAT", "\\Starred"], "flags": ["\\Flagged", "\\Seen"], "id": 1381017713405903808, "internal_date": 1317048323}
+
+======================================================================
+ERROR: test_restore_on_gmail (__main__.TestGMVault)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/aubert/workspace/gmvault/src/gmvault_tests.py", line 666, in test_restore_on_gmail
+    syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
+  File "/home/aubert/Dev/projects/gmvault/src/gmvault.py", line 772, in sync_with_gmail_acc
+    email_meta[gstorer.LABELS_K])
+  File "/home/aubert/Dev/projects/gmvault/src/gmvault.py", line 247, in push_email
+    ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
+  File "/usr/lib/python2.6/imaplib.py", line 753, in uid
+    typ, dat = self._simple_command(name, command, *args)
+  File "/usr/lib/python2.6/imaplib.py", line 1060, in _simple_command
+    return self._command_complete(name, self._command(name, *args))
+  File "/usr/lib/python2.6/imaplib.py", line 895, in _command_complete
+    raise self.error('%s command error: %s %s' % (name, typ, data))
+error: UID command error: BAD ['Could not parse command']
+
+----------------------------------------------------------------------
+Ran 1 test in 1110.371s

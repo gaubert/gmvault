@@ -158,11 +158,19 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            Create IMAP label string from list of given labels
            a_labels: List of labels
         """
-        # add GMAIL LABELS 
+        # add GMAIL LABELS
         labels_str = None
         if a_labels and len(a_labels) > 0:
-            labels_str = '("%s")' % ('" "'.join(labels)) 
-           
+            labels_str = '('
+            for label in a_labels:
+                if label.find(' ') >=0 :
+                    labels_str += '\"%s\" ' % (label)
+                else:
+                    labels_str += '%s ' % (label)
+            
+            labels_str = '%s%s' % (labels_str[:-1],')')
+        
+        print("created labels %s\n" %(labels_str))
         return labels_str
     
     @classmethod
@@ -245,6 +253,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         if labels_str:  
             #has labels so update email  
             ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
+            #response = self.server._store(result_uid, '+X-GM-LABELS', labels_str)
+            #print(response)
         
             # check if it is ok otherwise exception
             if ret_code != 'OK':
@@ -724,7 +734,7 @@ class GMVaulter(object):
         """
         #sync remotely 
         
-    def sync_with_gmail_acc(self, gm_server, gm_port, gm_login, gm_password):
+    def sync_with_gmail_acc(self, gm_server, gm_port, gm_login, gm_password, extra_labels = None):
         
         """
            Test method to restore in gmail 
@@ -756,8 +766,13 @@ class GMVaulter(object):
             
             email_meta, email_data = dummy_storer.unbury_email(gm_id)
             
+            labels = email_meta[gstorer.LABELS_K]
+            for lab in extra_labels:
+                if lab not in labels: labels.append(lab)
+            
+            
             # get list of labels to create 
-            labels_to_create = [ label for label in email_meta[gstorer.LABELS_K] if label not in seen_labels]
+            labels_to_create = [ label for label in labels if label not in seen_labels]
             
             #create the non existing labels
             gdestination.create_gmail_labels(labels_to_create)
@@ -769,7 +784,7 @@ class GMVaulter(object):
             gdestination.push_email(email_data, \
                                     email_meta[gstorer.FLAGS_K] , \
                                     email_meta[gstorer.INT_DATE_K], \
-                                    email_meta[gstorer.LABELS_K])
+                                    labels)
             
             # TODO need something to avoid pushing twice the same email 
             #perform a gmail search with wathever is possible or a imap search

@@ -645,7 +645,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         LOG.critical("On Critical")
         
-    def test_restore_on_gmail(self):
+    def ztest_restore_on_gmail(self):
         """
            clean db disk
            sync with gmail for few emails
@@ -661,11 +661,29 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         #syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
         
-        syncer.sync(imap_req = "Since 1-Sep-2011 Before 1-Dec-2011")
+        syncer.sync(imap_req = "Since 1-Sep-2010 Before 1-Dec-2011")
         
         syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
             
         print("Done \n")
+        
+    def test_restore_labels(self):
+        """
+           test all kind of labels that can be restored
+        """
+        
+        db_dir = '/tmp/gmail_bk'
+        
+        #clean db dir
+        delete_db_dir(db_dir)
+        
+        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, self.passwd)
+        
+        #syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
+        syncer.sync(imap_req = "Since 1-Nov-2011 Before 3-Nov-2011")
+        
+        syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd, ["The Beginning", "EUMETSAT", "Very Important", "\\Important", "\\Starred","The End"])
+        
         
         
         
