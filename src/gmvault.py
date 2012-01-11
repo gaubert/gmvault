@@ -170,7 +170,6 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             
             labels_str = '%s%s' % (labels_str[:-1],')')
         
-        print("created labels %s\n" %(labels_str))
         return labels_str
     
     @classmethod
@@ -766,10 +765,9 @@ class GMVaulter(object):
             
             email_meta, email_data = dummy_storer.unbury_email(gm_id)
             
-            labels = email_meta[gstorer.LABELS_K]
-            for lab in extra_labels:
-                if lab not in labels: labels.append(lab)
-            
+            #labels for this email => real_labels U extra_labels
+            labels = set(email_meta[gstorer.LABELS_K])
+            labels = labels.union(extra_labels)
             
             # get list of labels to create 
             labels_to_create = [ label for label in labels if label not in seen_labels]
@@ -777,7 +775,7 @@ class GMVaulter(object):
             #create the non existing labels
             gdestination.create_gmail_labels(labels_to_create)
             
-            #update seen
+            #update seen labels
             seen_labels.update(set(labels_to_create))
             
             #restore email
