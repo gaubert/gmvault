@@ -188,7 +188,8 @@ class GMVaultLauncher(object):
         """
            Run the grep with the given args 
         """
-        on_error = True
+        on_error       = True
+        die_with_usage = True
         
         try:
             syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
@@ -205,11 +206,12 @@ class GMVaultLauncher(object):
         except socket.error:
             LOG.critical("ERROR: Network problem. Please check your gmail server hostname, the internet connection or your network setup.")
             LOG.critical("For more information see log file.\n")
+            die_with_usage = False
         except Exception, err:
             LOG.critical("Error %s. For more information see log file" % (err) )
             LOG.exception(err)
         finally: 
-            if on_error:
+            if on_error and die_with_usage:
                 args['parser'].die_with_usage()
  
 def init_logging():

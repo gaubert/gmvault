@@ -36,6 +36,10 @@ def retry(a_nb_tries = 3):
                     
                     LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback(err)))
                     
+                    LOG.critical("Cannot reach the gmail server. Wait 3 seconds and retrying")
+                    
+                    # add 3 sec of wait
+                    
                     # go in retry mode if less than 3 tries
                     if nb_tries < a_nb_tries and err.message.startswith('fetch failed:') :
                         nb_tries += 1
@@ -105,6 +109,9 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         self.server.login(self.login, self.password)
         
+        # check gmailness
+        self.check_gmailness()
+        
         self._all_mail_folder = None
         
         #find the all mail folder
@@ -172,12 +179,11 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
         return self.server.search(a_criteria)
     
-    @retry(1)
+    @retry(3) # add a retry 3 times
     def fetch(self, a_ids, a_attributes):
         """
            Return all attributes associated to each message
         """
-        
         return self.server.fetch(a_ids, a_attributes)
     
     def old_fetch(self, a_ids, a_attributes):
