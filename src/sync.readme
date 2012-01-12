@@ -55,7 +55,7 @@ disk saved ids. This should scale for ever whatever the number of you have
 
 
 3) Test disconnection and see what is going on (error generated)
-4) Potentially add a reconnection mode (try to reconect 3 times before to quit)
+4) Potentially add a reconnection mode (try to reconect 3 times before to quit) => Done for Fetch 
 5) Add a way to restart from an imap id. Could be used when you have a very large mailbox and 
 want to restart from the moment when it failed.
 6) add logging now otherwise it might be too late => PARTLY DONE
@@ -97,15 +97,4 @@ german letters). Now email body has it own file.
 definition as it is used in IMAPClient. The way to do it is to pass epoch seconds to imaplib.
 I don't know why but it works. See if there is another way.
 
-09.01.12
---------
-Error with 137784L id check and handle bug (1 Sep to 30 Nov)
-Sent label is not well managed (problem due to Sent Message) => fixed to be checked
 
-error:
-[2012-01-09 19:18] CRITICAL: gmvault: got all existing ids from disk. Will have to restore 2019 emails
-[2012-01-09 19:18] CRITICAL: gmvault: restore email with id 1348177681428950932
-[2012-01-09 19:18] CRITICAL: gmvault: restore email with id 1364080007563825280
-[2012-01-09 19:18] CRITICAL: gmvault: restore email with id 1381017713405903808
-
-Need to add x times command sent before to go on error because sometimes gmail imap server has gliches
