@@ -46,30 +46,6 @@ def retry(a_nb_tries = 3):
         return functools.wraps(fn)(wrapper)
     return inner_retry
 
-
-#retry decoartor
-def old_retry(fn, a_nb_tries = 3):
-    def wrapper(*args, **kwargs):
-        nb_tries = 0
-        while True:
-            try:
-                
-                return fn(*args, **kwargs)
-                
-            except imaplib.IMAP4.error, err:
-                
-                LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback(err)))
-                
-                # go in retry mode if less than 3 tries
-                if nb_tries < a_nb_tries and err.message.startswith('fetch failed:') :
-                    nb_tries += 1
-                else:
-                    #cascade error
-                    raise err
-        
-    return functools.wraps(fn)(wrapper)
-
-        
 class GIMAPFetcher(object): #pylint:disable-msg=R0902
     '''
     IMAP Class reading the information
