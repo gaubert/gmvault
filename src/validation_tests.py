@@ -76,7 +76,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         #syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
         
-        syncer.sync(imap_req = "Since 1-Sep-2008 Before 1-Sep-2011")
+        syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
         
         syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
             
