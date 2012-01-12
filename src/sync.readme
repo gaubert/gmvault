@@ -107,3 +107,5 @@ error:
 [2012-01-09 19:18] CRITICAL: gmvault: restore email with id 1348177681428950932
 [2012-01-09 19:18] CRITICAL: gmvault: restore email with id 1364080007563825280
 [2012-01-09 19:18] CRITICAL: gmvault: restore email with id 1381017713405903808
+
+Need to add x times command sent before to go on error because sometimes gmail imap server has gliches

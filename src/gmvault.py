@@ -19,14 +19,42 @@ import log_utils
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault')
 
+import functools
+
+
+#retry decorator with nb of tries
+def retry(a_nb_tries = 3):
+    def inner_retry(fn):
+        def wrapper(*args, **kwargs):
+            nb_tries = 0
+            while True:
+                try:
+                    
+                    return fn(*args, **kwargs)
+                    
+                except imaplib.IMAP4.error, err:
+                    
+                    LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback(err)))
+                    
+                    # go in retry mode if less than 3 tries
+                    if nb_tries < a_nb_tries and err.message.startswith('fetch failed:') :
+                        nb_tries += 1
+                    else:
+                        #cascade error
+                        raise err
+            
+        return functools.wraps(fn)(wrapper)
+    return inner_retry
+
+
 #retry decoartor
-def retry(fn, a_nb_tries = 3):
-    def wrapped():
+def old_retry(fn, a_nb_tries = 3):
+    def wrapper(*args, **kwargs):
         nb_tries = 0
         while True:
             try:
                 
-                return fn()
+                return fn(*args, **kwargs)
                 
             except imaplib.IMAP4.error, err:
                 
@@ -39,7 +67,7 @@ def retry(fn, a_nb_tries = 3):
                     #cascade error
                     raise err
         
-    return wrapped
+    return functools.wraps(fn)(wrapper)
 
         
 class GIMAPFetcher(object): #pylint:disable-msg=R0902
@@ -168,7 +196,15 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
         return self.server.search(a_criteria)
     
+    @retry(1)
     def fetch(self, a_ids, a_attributes):
+        """
+           Return all attributes associated to each message
+        """
+        
+        return self.server.fetch(a_ids, a_attributes)
+    
+    def old_fetch(self, a_ids, a_attributes):
         """
            Return all attributes associated to each message
         """
