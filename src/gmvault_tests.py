@@ -61,7 +61,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         
     
-    def test_gmvault_connect_error(self):
+    def ztest_gmvault_connect_error(self):
         """
            Test connect error (connect to a wrong port). Too long to check
         """
@@ -76,21 +76,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             
             if msg != '[Errno 8] _ssl.c:480: EOF occurred in violation of protocol':
                 self.fail('received %s. Bad error message' % (msg))
-    
-    def test_gmvault_bad_password(self):
-        """
-           bad password
-        """
-        gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, "badpassword")
         
-        try:
-            gimap.connect()
-        except Exception, err:
-            print(gmvault_utils.get_exception_traceback())
-            print(type(err))
-    
-        
-            
     def ztest_gmvault_get_capabilities(self):
         """
            Test simple retrieval
@@ -512,130 +498,6 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.assertFalse(os.path.exists('%s/2384403887202624608.meta' % (storage_dir)))
         self.assertTrue(os.path.exists('%s/1384313269332005293.meta' % (storage_dir)))
         self.assertTrue(os.path.exists('%s/1384313269332005293.eml.gz' % (storage_dir)))
-
-    def ztest_cli_host_error(self):
-        """
-           Test the cli interface bad option
-        """
-        sys.argv = ['gmvault.py', '--sync', '--host', \
-                    'imap.gmail.com', '--port', '1452', \
-                    '--login', 'foo', '--passwd', 'bar']
-    
-        gmvaulter = gmv.GMVaultLauncher()
-    
-        try:
-            _ = gmvaulter.parse_args()
-        except SystemExit, err:
-            self.assertEquals(type(err), type(SystemExit()))
-            self.assertEquals(err.code, 2)
-        except Exception, err:
-            self.fail('unexpected exception: %s' % err)
-        else:
-            self.fail('SystemExit exception expected')
-
-    def ztest_cli_(self):
-        """
-           Test the cli interface bad option
-        """
-        sys.argv = ['gmvault', '--imap-server', 'imap.gmail.com', \
-                    '--imap-port', 993, '--imap-request', \
-                    'Since 1-Nov-2011 Before 10-Nov-2011', \
-                    '--email', 'foo', '--passwd', 'bar']
-    
-        gmvaulter = gmv.GMVaultLauncher()
-    
-        try:
-            args = gmvaulter.parse_args()
-            
-            self.assertFalse(args['verbose'])
-            self.assertEquals(args['sync-mode'],'full-sync')
-            self.assertEquals(args['email'],'foo')
-            self.assertEquals(args['passwd'],'bar')
-            self.assertEquals(args['request'], 'Since 1-Nov-2011 Before 10-Nov-2011')
-            self.assertEquals(args['oauth-token'], None)
-            self.assertEquals(args['host'],'imap.gmail.com')
-            self.assertEquals(args['port'], 993)
-            self.assertEquals(args['db-dir'],'./gmvault-db')
-            
-        except SystemExit, err:
-            self.fail("SystemExit Exception: %s"  % err)
-        except Exception, err:
-            self.fail('unexpected exception: %s' % err)
-    
-    def ztest_full_sync_gmv(self):
-        """
-           full test via the command line
-        """
-        sys.argv = ['gmvault.py', '--imap-server', 'imap.gmail.com', \
-                    '--imap-port', '993', '--imap-request', \
-                    'Since 1-Nov-2011 Before 5-Nov-2011', '--email', \
-                    self.login, '--passwd', self.passwd]
-    
-        gmvault_launcher = gmv.GMVaultLauncher()
-        
-        args = gmvault_launcher.parse_args()
-    
-        gmvault_launcher.run(args)
-        
-        #check all stored gmail ids
-        gstorer = gmvault.GmailStorer(args['db-dir'])
-        
-        ids = gstorer.get_all_existing_gmail_ids()
-        
-        self.assertEquals(len(ids), 5)
-        
-        self.assertEquals(ids, {1384403887202624608L: '2011-11', \
-                                1384486067720566818L: '2011-11', \
-                                1384313269332005293L: '2011-11', \
-                                1384545182050901969L: '2011-11', \
-                                1384578279292583731L: '2011-11'})
-        
-        #clean db dir
-        delete_db_dir(args['db-dir'])
-    
-    def ztest_delete_sync_gmv(self):
-        """
-           delete sync via command line
-        """
-        gmv.init_logging()
-        
-        #first request to have the extra dirs
-        sys.argv = ['gmvault.py', '--imap-server', 'imap.gmail.com', \
-                    '--imap-port', '993', '--imap-request', \
-                    'Since 1-Nov-2011 Before 7-Nov-2011', \
-                    '--email', self.login, \
-                    '--passwd', self.passwd, '--db-dir', '/tmp/new-db-1']
-    
-        gmvault_launcher = gmv.GMVaultLauncher()
-        
-        args = gmvault_launcher.parse_args()
-    
-        gmvault_launcher.run(args)
-        
-        #second requests so all files after the 5 should disappear 
-        sys.argv = ['gmvault.py', '--imap-server', 'imap.gmail.com', \
-                    '--imap-port', '993', '--imap-request', \
-                    'Since 1-Nov-2011 Before 5-Nov-2011', '--email', self.login, \
-                    '--passwd', self.passwd, '--db-dir', '/tmp/new-db-1', '--db-cleaning', 'yes']
-    
-        args = gmvault_launcher.parse_args()
-        gmvault_launcher.run(args)
-    
-        #check all stored gmail ids
-        gstorer = gmvault.GmailStorer(args['db-dir'])
-        
-        ids = gstorer.get_all_existing_gmail_ids()
-        
-        self.assertEquals(len(ids), 5)
-        
-        self.assertEquals(ids, {1384403887202624608L: '2011-11', \
-                                1384486067720566818L: '2011-11', \
-                                1384313269332005293L: '2011-11', \
-                                1384545182050901969L: '2011-11', \
-                                1384578279292583731L: '2011-11'})
-        
-        #clean db dir
-        delete_db_dir(args['db-dir'])
         
     def ztest_logger(self):
         """
@@ -662,48 +524,6 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             LOG.exception("error,", err)
         
         LOG.critical("On Critical")
-        
-    def ztest_restore_on_gmail(self):
-        """
-           clean db disk
-           sync with gmail for few emails
-           restore them on gmail test
-        """
-        
-        db_dir = '/tmp/gmail_bk'
-        
-        #clean db dir
-        delete_db_dir(db_dir)
-        
-        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, self.passwd)
-        
-        #syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
-        
-        syncer.sync(imap_req = "Since 1-Sep-2008 Before 1-Sep-2011")
-        
-        syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
-            
-        print("Done \n")
-        
-    def ztest_restore_labels(self):
-        """
-           test all kind of labels that can be restored
-        """
-        
-        db_dir = '/tmp/gmail_bk'
-        
-        #clean db dir
-        delete_db_dir(db_dir)
-        
-        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, self.passwd)
-        
-        #syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
-        syncer.sync(imap_req = "Since 1-Nov-2011 Before 3-Nov-2011")
-        
-        syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd, ["The Beginning", "EUMETSAT", "Very Important", "\\Important", "\\Starred","The End"])
-        
-        
-        
         
 
 def tests():
