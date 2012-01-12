@@ -19,29 +19,33 @@ import log_utils
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault')
 
-#retry decorator
-def retry(fn, a_nb_tries = 3):
-    def wrapped():
-        nb_tries = 0
-        while True:
-            try:
-                
-                return fn()
-                
-            except imaplib.IMAP4.error, err:
-                
-                LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback(err)))
-                
-                # go in retry mode if less than 3 tries
-                if nb_tries < a_nb_tries and err.message.startswith('fetch failed:') :
-                    nb_tries += 1
-                else:
-                    #cascade error
-                    raise err
-        
-    return wrapped
+import functools
 
-        
+
+#retry decorator with nb of tries
+def retry(a_nb_tries = 3):
+    def inner_retry(fn):
+        def wrapper(*args, **kwargs):
+            nb_tries = 0
+            while True:
+                try:
+                    
+                    return fn(*args, **kwargs)
+                    
+                except imaplib.IMAP4.error, err:
+                    
+                    LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback(err)))
+                    
+                    # go in retry mode if less than 3 tries
+                    if nb_tries < a_nb_tries and err.message.startswith('fetch failed:') :
+                        nb_tries += 1
+                    else:
+                        #cascade error
+                        raise err
+            
+        return functools.wraps(fn)(wrapper)
+    return inner_retry
+
 class GIMAPFetcher(object): #pylint:disable-msg=R0902
     '''
     IMAP Class reading the information
@@ -168,7 +172,15 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
         return self.server.search(a_criteria)
     
+    @retry(1)
     def fetch(self, a_ids, a_attributes):
+        """
+           Return all attributes associated to each message
+        """
+        
+        return self.server.fetch(a_ids, a_attributes)
+    
+    def old_fetch(self, a_ids, a_attributes):
         """
            Return all attributes associated to each message
         """
@@ -209,7 +221,6 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             
             labels_str = '%s%s' % (labels_str[:-1],')')
         
-        print("created labels %s\n" %(labels_str))
         return labels_str
     
     @classmethod
@@ -805,10 +816,9 @@ class GMVaulter(object):
             
             email_meta, email_data = dummy_storer.unbury_email(gm_id)
             
-            labels = email_meta[gstorer.LABELS_K]
-            for lab in extra_labels:
-                if lab not in labels: labels.append(lab)
-            
+            #labels for this email => real_labels U extra_labels
+            labels = set(email_meta[gstorer.LABELS_K])
+            labels = labels.union(extra_labels)
             
             # get list of labels to create 
             labels_to_create = [ label for label in labels if label not in seen_labels]
@@ -816,7 +826,7 @@ class GMVaulter(object):
             #create the non existing labels
             gdestination.create_gmail_labels(labels_to_create)
             
-            #update seen
+            #update seen labels
             seen_labels.update(set(labels_to_create))
             
             #restore email
