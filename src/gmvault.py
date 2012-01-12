@@ -4,128 +4,21 @@ Created on Nov 16, 2011
 @author: guillaume.aubert@gmail.com
 '''
 import json
-import zlib
 import gzip
 import re
 import datetime
 import os
 import itertools
+import imaplib
 import base64
 
-import imaplib  #for the exception
-from imapclient import IMAPClient
-
 import gmvault_utils as gmvault_utils
+import mod_imap as mimap
 import log_utils
 
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault')
 
-#monkey patching add compress in COMMANDS of imap
-imaplib.Commands['COMPRESS'] = ('AUTH', 'SELECTED')
-
-class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
-    """
-       Add support for compression inspired by inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
-    """
-    def __init__(self, host = '', port = imaplib.IMAP4_SSL_PORT, keyfile = None, certfile = None):
-        """
-           constructor
-        """
-        self.compressor = None
-        self.decompressor = None
-        
-        imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
-        
-    def activate_compression(self):
-        """
-           activate_compressing()
-           Enable deflate compression on the socket (RFC 4978).
-        """
-        # rfc 1951 - pure DEFLATE, so use -15 for both windows
-        self.decompressor = zlib.decompressobj(-15)
-        self.compressor   = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
-        
-    
-    def read(self, size):
-        """Read 'size' bytes from remote."""
-        # sslobj.read() sometimes returns < size bytes
-        chunks = []
-        read = 0
-        while read < size:
-            data = self._intern_read(min(size-read, 16384))
-            read += len(data)
-            chunks.append(data)
-        
-        return ''.join(chunks)
-  
-    def _intern_read(self, size):
-        """
-            Read at most 'size' bytes from remote.
-        """
-
-        if self.decompressor is None:
-            return self.sslobj.read(size)
-
-        if self.decompressor.unconsumed_tail:
-            data = self.decompressor.unconsumed_tail
-        else:
-            data = self.sslobj.read(8192)
-
-        return self.decompressor.decompress(data, size)
-    
-    def readline(self):
-        """Read line from remote."""
-        line = []
-        while 1:
-            char = self.read(1)
-            line.append(char)
-            if char in ("\n", ""): 
-                return ''.join(line)
-  
-    def send(self, data):
-        """send(data)
-        Send 'data' to remote."""
-        if self.compressor is not None:
-            data = self.compressor.compress(data)
-            data += self.compressor.flush(zlib.Z_SYNC_FLUSH)
-        self.sslobj.sendall(data)
-    
-class MonkeyIMAPClient(IMAPClient): #pylint:disable-msg=R0903
-    """
-       Need to extend the IMAPClient to do more things such as compression
-       Compression inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
-    """
-    
-    def __init__(self, host, port=None, use_uid=True, ssl=False):
-        """
-           constructor
-        """
-        super(MonkeyIMAPClient, self).__init__(host, port, use_uid, ssl)
-    
-    def _create_IMAP4(self): #pylint:disable-msg=C0103
-        """
-           Factory method creating an IMAPCOMPSSL or a standard IMAP4 Class
-        """
-        # Create the IMAP instance in a separate method to make unit tests easier
-        #ImapClass = self.ssl and imaplib.IMAP4_SSL or imaplib.IMAP4
-        ImapClass = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
-        return ImapClass(self.host, self.port)
-    
-    def enable_compression(self):
-        """
-        enable_compression()
-        Ask the server to start compressing the connection.
-        Should be called from user of this class after instantiation, as in:
-            if 'COMPRESS=DEFLATE' in imapobj.capabilities:
-                imapobj.enable_compression()
-        """
-        ret_code, _ = self._imap._simple_command('COMPRESS', 'DEFLATE')
-        if ret_code == 'OK':
-            self._imap.activate_compression()
-        else:
-            #no errors for the moment
-            pass
         
 class GIMAPFetcher(object): #pylint:disable-msg=R0902
     '''
@@ -182,7 +75,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
            connect to the IMAP server
         """
-        self.server = MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, ssl= self.ssl)
+        self.server = mimap.MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, ssl= self.ssl)
         
         self.server.login(self.login, self.password)
         
@@ -222,8 +115,6 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             #Error
             raise Exception("Cannot find global dir %s or %s. Are you sure it is a GMail account" % \
                             (GIMAPFetcher.GMAIL_ALL, GIMAPFetcher.GOOGLE_MAIL_ALL))
-            
-        
     
     def get_all_folders(self): 
         """
@@ -267,14 +158,19 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            Create IMAP label string from list of given labels
            a_labels: List of labels
         """
-        # add GMAIL LABELS 
+        # add GMAIL LABELS
         labels_str = None
         if a_labels and len(a_labels) > 0:
             labels_str = '('
             for label in a_labels:
-                labels_str += '%s ' % (label)
+                if label.find(' ') >=0 :
+                    labels_str += '\"%s\" ' % (label)
+                else:
+                    labels_str += '%s ' % (label)
+            
             labels_str = '%s%s' % (labels_str[:-1],')')
         
+        print("created labels %s\n" %(labels_str))
         return labels_str
     
     @classmethod
@@ -357,6 +253,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         if labels_str:  
             #has labels so update email  
             ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
+            #response = self.server._store(result_uid, '+X-GM-LABELS', labels_str)
+            #print(response)
         
             # check if it is ok otherwise exception
             if ret_code != 'OK':
@@ -836,7 +734,7 @@ class GMVaulter(object):
         """
         #sync remotely 
         
-    def sync_with_gmail_acc(self, gm_server, gm_port, gm_login, gm_password):
+    def sync_with_gmail_acc(self, gm_server, gm_port, gm_login, gm_password, extra_labels = []):
         
         """
            Test method to restore emails in gmail 
@@ -868,8 +766,13 @@ class GMVaulter(object):
             
             email_meta, email_data = dummy_storer.unbury_email(gm_id)
             
+            labels = email_meta[gstorer.LABELS_K]
+            for lab in extra_labels:
+                if lab not in labels: labels.append(lab)
+            
+            
             # get list of labels to create 
-            labels_to_create = [ label for label in email_meta[gstorer.LABELS_K] if label not in seen_labels]
+            labels_to_create = [ label for label in labels if label not in seen_labels]
             
             #create the non existing labels
             gdestination.create_gmail_labels(labels_to_create)
@@ -881,7 +784,7 @@ class GMVaulter(object):
             gdestination.push_email(email_data, \
                                     email_meta[gstorer.FLAGS_K] , \
                                     email_meta[gstorer.INT_DATE_K], \
-                                    email_meta[gstorer.LABELS_K])
+                                    labels)
             
             # TODO need something to avoid pushing twice the same email 
             #perform a gmail search with wathever is possible or a imap search
