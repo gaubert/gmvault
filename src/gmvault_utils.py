@@ -9,7 +9,30 @@ import datetime
 import calendar
 import fnmatch
 
+import StringIO
+import sys
+import traceback
+
 ZERO = datetime.timedelta(0) 
+
+def get_exception_traceback():
+    """
+            return the exception traceback (stack info and so on) in a string
+        
+            Args:
+               None
+               
+            Returns:
+               return a string that contains the exception traceback
+        
+            Raises:
+               
+    """
+   
+    the_file = StringIO.StringIO()
+    exception_type, exception_value, exception_traceback = sys.exc_info() #IGNORE:W0702
+    traceback.print_exception(exception_type, exception_value, exception_traceback, file = the_file)
+    return the_file.getvalue()
 
 # A UTC class.    
 class UTC(datetime.tzinfo):    

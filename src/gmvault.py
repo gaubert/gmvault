@@ -19,6 +19,28 @@ import log_utils
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault')
 
+#retry decoartor
+def retry(fn, a_nb_tries = 3):
+    def wrapped():
+        nb_tries = 0
+        while True:
+            try:
+                
+                return fn()
+                
+            except imaplib.IMAP4.error, err:
+                
+                LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback(err)))
+                
+                # go in retry mode if less than 3 tries
+                if nb_tries < a_nb_tries and err.message.startswith('fetch failed:') :
+                    nb_tries += 1
+                else:
+                    #cascade error
+                    raise err
+        
+    return wrapped
+
         
 class GIMAPFetcher(object): #pylint:disable-msg=R0902
     '''
@@ -150,7 +172,24 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
            Return all attributes associated to each message
         """
-        return self.server.fetch(a_ids, a_attributes)
+        
+        nb_tries = 1
+        while True:
+            try:
+                
+                return self.server.fetch(a_ids, a_attributes)
+                
+            except imaplib.IMAP4.error, err:
+                
+                LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback(err)))
+                
+                # go in retry mode if less than 3 tries
+                if nb_tries < 3 and err.message.startswith('fetch failed:') :
+                    nb_tries += 1
+                else:
+                    #cascade error
+                    raise err
+                
     
     @classmethod
     def _build_labels_str(cls, a_labels):
@@ -736,7 +775,7 @@ class GMVaulter(object):
     def sync_with_gmail_acc(self, gm_server, gm_port, gm_login, gm_password, extra_labels = []):
         
         """
-           Test method to restore in gmail 
+           Test method to restore emails in gmail 
         """
         
         # connect to destination email account
