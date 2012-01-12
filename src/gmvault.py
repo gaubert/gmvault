@@ -19,7 +19,7 @@ import log_utils
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault')
 
-#retry decoartor
+#retry decorator
 def retry(fn, a_nb_tries = 3):
     def wrapped():
         nb_tries = 0
