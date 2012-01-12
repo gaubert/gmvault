@@ -8,6 +8,8 @@ import sys
 
 from cmdline_utils  import CmdLineParser
 import log_utils
+import imaplib
+import gmvault_utils
 import gmvault
 
 
@@ -76,7 +78,7 @@ class GMVaultLauncher(object):
         
         parser.add_option("-p", "--passwd", \
                           help="Gmail password.",\
-                          dest="passwd", default=None)
+                          dest="passwd", default='empty_passwd')
         
         parser.add_option("-r", "--imap-request", metavar = "REQ",\
                           help="Imap request to restrict sync.",\
@@ -207,9 +209,17 @@ class GMVaultLauncher(object):
             LOG.critical("ERROR: Network problem. Please check your gmail server hostname, the internet connection or your network setup.")
             LOG.critical("For more information see log file.\n")
             die_with_usage = False
+        except imaplib.IMAP4.error, imap_err:
+            #bad login or password
+            if str(imap_err) in ['[AUTHENTICATIONFAILED] Invalid credentials (Failure)', '[ALERT] Web login required: http://support.google.com/mail/bin/answer.py?answer=78754 (Failure)'] :
+                LOG.critical("ERROR: Invalid credentials, cannot login to the gmail server. Please check your login and password.")
+                die_with_usage = False
+            else:
+               LOG.critical("Error %s. For more information see log file" % (err) )
+               LOG.exception(gmvault_utils.get_exception_traceback())
         except Exception, err:
             LOG.critical("Error %s. For more information see log file" % (err) )
-            LOG.exception(err)
+            LOG.exception(gmvault_utils.get_exception_traceback())
         finally: 
             if on_error and die_with_usage:
                 args['parser'].die_with_usage()

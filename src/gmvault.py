@@ -34,7 +34,7 @@ def retry(a_nb_tries = 3):
                     
                 except imaplib.IMAP4.error, err:
                     
-                    LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback(err)))
+                    LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
                     
                     LOG.critical("Cannot reach the gmail server. Wait 3 seconds and retrying")
                     

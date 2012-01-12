@@ -61,7 +61,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         
     
-    def ztest_gmvault_connect_error(self):
+    def test_gmvault_connect_error(self):
         """
            Test connect error (connect to a wrong port). Too long to check
         """
@@ -71,8 +71,26 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         try:
             gimap.connect()
         except ssl.SSLError, err:
-            self.assertEquals(str(err), '[Errno 1] _ssl.c:480: error:140770FC:SSL routines:SSL23_GET_SERVER_HELLO:unknown protocol')
+            
+            msg = str(err)
+            
+            if msg != '[Errno 8] _ssl.c:480: EOF occurred in violation of protocol':
+                self.fail('received %s. Bad error message' % (msg))
     
+    def test_gmvault_bad_password(self):
+        """
+           bad password
+        """
+        gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, "badpassword")
+        
+        try:
+            gimap.connect()
+        except Exception, err:
+            print(gmvault_utils.get_exception_traceback())
+            print(type(err))
+    
+        
+            
     def ztest_gmvault_get_capabilities(self):
         """
            Test simple retrieval
@@ -87,7 +105,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                            'CHILDREN', 'X-GM-EXT-1', \
                            'XYZZY', 'SASL-IR', 'AUTH=XOAUTH') , gimap.get_capabilities())
     
-    def ztest_gmvault_check_gmailness(self):
+    def test_gmvault_check_gmailness(self):
         """
            Test simple retrieval
         """
@@ -645,7 +663,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         LOG.critical("On Critical")
         
-    def test_restore_on_gmail(self):
+    def ztest_restore_on_gmail(self):
         """
            clean db disk
            sync with gmail for few emails

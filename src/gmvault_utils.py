@@ -13,7 +13,7 @@ import StringIO
 import sys
 import traceback
 
-ZERO = datetime.timedelta(0) 
+
 
 def get_exception_traceback():
     """
@@ -33,6 +33,8 @@ def get_exception_traceback():
     exception_type, exception_value, exception_traceback = sys.exc_info() #IGNORE:W0702
     traceback.print_exception(exception_type, exception_value, exception_traceback, file = the_file)
     return the_file.getvalue()
+
+ZERO = datetime.timedelta(0) 
 
 # A UTC class.    
 class UTC(datetime.tzinfo):    
