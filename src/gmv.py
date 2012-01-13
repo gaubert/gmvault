@@ -15,9 +15,9 @@ import gmvault
 
 
 
-HELP_USAGE = """ gmvault [options]
+HELP_USAGE = """ gmv [options]
                                      
-Arguments: a list of request files or an inline request."""
+Arguments: None"""
 
 HELP_EPILOGUE = """Examples:
 
@@ -65,11 +65,11 @@ class GMVaultLauncher(object):
                           action ="store_true", dest="isync", default= False)
         
         parser.add_option("-i", "--imap-server", metavar = "HOSTNAME", \
-                          help="Gmail imap server hostname.",\
+                          help="Gmail imap server hostname. (default: imap.gmail.com)",\
                           dest="host", default="imap.gmail.com")
         
         parser.add_option("-t", "--imap-port", metavar = "PORT", \
-                          help="Gmail imap server port.",\
+                          help="Gmail imap server port. (default: 993)",\
                           dest="port", default=993)
         
         parser.add_option("-l", "--email", \
@@ -81,16 +81,16 @@ class GMVaultLauncher(object):
                           dest="passwd", default='empty_passwd')
         
         parser.add_option("-r", "--imap-request", metavar = "REQ",\
-                          help="Imap request to restrict sync.",\
+                          help="Imap request to restrict sync. (default: ALL)",\
                           dest="request", default="ALL")
-        
-        parser.add_option("-d", "--db-dir", \
-                          help="Database root directory.",\
-                          dest="db_dir", default="./gmvault-db")
         
         parser.add_option("-o", "--oauth-token", metavar = "TOK", \
                           help="Oauth-token.",\
                           dest="oauth_token", default=None)
+        
+        parser.add_option("-d", "--db-dir", \
+                          help="Database root directory. (default: ./gmvault-db)",\
+                          dest="db_dir", default="./gmvault-db")
         
         parser.add_option("-z", "--db-cleaning", \
                           help="To activate or deactive the disk db cleaning. Automatically deactivated if a imap req is passed in args.",\
