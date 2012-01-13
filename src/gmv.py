@@ -80,7 +80,7 @@ class GMVaultLauncher(object):
                           help="Gmail password.",\
                           dest="passwd", default='empty_passwd')
         
-        parser.add_option("-r", "--imap-request", metavar = "REQ",\
+        parser.add_option("-r", "--imap-request", metavar = "REQ", \
                           help="Imap request to restrict sync. (default: ALL)",\
                           dest="request", default="ALL")
         
@@ -202,7 +202,7 @@ class GMVaultLauncher(object):
         
             on_error = False
         
-        except KeyboardInterrupt, kb:
+        except KeyboardInterrupt, _:
             LOG.critical("CRTL^C. Stop all operations.")
             on_error = False
         except socket.error:
@@ -211,12 +211,13 @@ class GMVaultLauncher(object):
             die_with_usage = False
         except imaplib.IMAP4.error, imap_err:
             #bad login or password
-            if str(imap_err) in ['[AUTHENTICATIONFAILED] Invalid credentials (Failure)', '[ALERT] Web login required: http://support.google.com/mail/bin/answer.py?answer=78754 (Failure)'] :
+            if str(imap_err) in ['[AUTHENTICATIONFAILED] Invalid credentials (Failure)', \
+                                 '[ALERT] Web login required: http://support.google.com/mail/bin/answer.py?answer=78754 (Failure)'] :
                 LOG.critical("ERROR: Invalid credentials, cannot login to the gmail server. Please check your login and password.")
                 die_with_usage = False
             else:
-               LOG.critical("Error %s. For more information see log file" % (err) )
-               LOG.exception(gmvault_utils.get_exception_traceback())
+                LOG.critical("Error %s. For more information see log file" % (imap_err) )
+                LOG.exception(gmvault_utils.get_exception_traceback())
         except Exception, err:
             LOG.critical("Error %s. For more information see log file" % (err) )
             LOG.exception(gmvault_utils.get_exception_traceback())
