@@ -85,7 +85,9 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     
     GET_ALL_INFO      = [ IMAP_MORE_BODY, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_BODY_PEEK, IMAP_FLAGS]
 
-    GET_ALL_BUT_DATA  = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_FLAGS]
+    GET_ALL_BUT_DATA  = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_FLAGS, IMAP_BODY_PEEK]
+    
+    GET_DATA_ONLY     = [GMAIL_ID, IMAP_BODY_PEEK]
  
     GET_GMAIL_ID      = [ GMAIL_ID ]
     
@@ -615,31 +617,24 @@ class GMVaulter(object):
             try:
                 LOG.critical("Process imap id %s\n" % ( the_id ))
                 
-                #ids[0] should be the oldest so get the date and start from here
-                curr = self.src.fetch(the_id, GIMAPFetcher.GET_ALL_BUT_DATA )
-                
-                #yy_mon = gmvault_utils.get_ym_from_datetime(curr[the_id][GIMAPFetcher.IMAP_INTERNALDATE])
+                #get everything once for all
+                new_data = self.src.fetch(the_id, GIMAPFetcher.GET_ALL_INFO )
                 
                 the_dir = '%s/%s' % (self.db_root_dir, \
-                                     gmvault_utils.get_ym_from_datetime(curr[the_id][GIMAPFetcher.IMAP_INTERNALDATE]))
+                                     gmvault_utils.get_ym_from_datetime(new_data[the_id][GIMAPFetcher.IMAP_INTERNALDATE]))
                 
                 #pass the dir and the ID
                 gstorer, curr_metadata = GMVaulter.check_email_on_disk( the_dir , \
-                                                                       curr[the_id][GIMAPFetcher.GMAIL_ID])
+                                                                       new_data[the_id][GIMAPFetcher.GMAIL_ID])
                 
                 #if on disk check that the data is not different
                 if curr_metadata:
                     
-                    LOG.critical("metadata for %s already exists. Check if different" % (curr[id][GIMAPFetcher.GMAIL_ID]))
+                    LOG.critical("metadata for %s already exists. Check if different" % (new_data[id][GIMAPFetcher.GMAIL_ID]))
                     
-                    new_metadata = self.src.fetch(the_id, GIMAPFetcher.GET_ALL_BUT_DATA)
-                    
-                    if self._metadata_needs_update(curr_metadata, new_metadata[the_id]):
+                    if self._metadata_needs_update(curr_metadata, new_data[the_id]):
                         #restore everything at the moment
-                        #retrieve email from destination email account
-                        data = self.src.fetch(the_id, GIMAPFetcher.GET_ALL_INFO)
-                
-                        gid  = gstorer.store_email(data[the_id], compress = compress)
+                        gid  = gstorer.bury_email(new_data[the_id], compress = compress)
                         
                         LOG.critical("update email with imap id %s and gmail id %s\n" % (the_id, gid))
                         
@@ -648,11 +643,8 @@ class GMVaulter(object):
                     
                     # store data on disk within year month dir 
                     gstorer =  GmailStorer(the_dir, self.encrypt_key)  
-                    
-                    #retrieve email from destination email account
-                    data = self.src.fetch(the_id, GIMAPFetcher.GET_ALL_INFO)
                 
-                    gid  = gstorer.bury_email(data[the_id], compress = compress)
+                    gid  = gstorer.bury_email(new_data[the_id], compress = compress)
                     
                     #update local index id gid => index per directory to be thought out
                     LOG.critical("Create and store email  with imap id %s, gmail id %s\n" % (the_id, gid))   
