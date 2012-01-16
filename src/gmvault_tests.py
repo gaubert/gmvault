@@ -561,8 +561,8 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         gimap.connect()
        
-        criteria = ['X-GM-MSGID 1254269417797093924'] #broken one
-        #criteria = ['X-GM-MSGID 1254267782370534098']
+        #criteria = ['X-GM-MSGID 1254269417797093924'] #broken one
+        criteria = ['X-GM-MSGID 1254267782370534098']
         #criteria = ['ALL']
         ids = gimap.search(criteria)
         

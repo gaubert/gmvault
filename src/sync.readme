@@ -128,6 +128,7 @@ error: APPEND command error: BAD ['Invalid Arguments: Unable to parse message']
 
 This message has no header and seems to be only a body in base64 => cannot restore it
 It should be put in a containement directory and flagged.
+Add Message-ID email 
 
 
 

@@ -73,19 +73,19 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     GMAIL_SPECIAL_DIRS = ['\\Inbox', '\\Starred', '\\Sent', '\\Draft', '\\Important']
     
     #to be removed
-    EMAIL_BODY_OLD        = 'RFC822' #set msg as seen
-    IMAP_BODY_PEEK    = 'BODY.PEEK[]' #get body without setting msg as seen
+    EMAIL_BODY_OLD      = 'RFC822' #set msg as seen
+    IMAP_BODY_PEEK      = 'BODY.PEEK[]' #get body without setting msg as seen
     
-    IMAP_MORE_BODY    = 'BODY[HEADER.FIELDS (SUBJECT Message-ID)]'
+    IMAP_HEADER_FIELDS  = 'BODY[HEADER.FIELDS (Message-ID SUBJECT)]'
     
     #GET_IM_UID_RE
     APPENDUID         = '^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'
     
     APPENDUID_RE      = re.compile(APPENDUID)
     
-    GET_ALL_INFO      = [ IMAP_MORE_BODY, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_BODY_PEEK, IMAP_FLAGS]
+    GET_ALL_INFO      = [ GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_BODY_PEEK, IMAP_FLAGS, IMAP_HEADER_FIELDS]
 
-    GET_ALL_BUT_DATA  = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_FLAGS]
+    GET_ALL_BUT_DATA  = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_FLAGS, IMAP_HEADER_FIELDS]
  
     GET_GMAIL_ID      = [ GMAIL_ID ]
     
