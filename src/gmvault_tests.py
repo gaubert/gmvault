@@ -480,7 +480,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         self.assertEquals(metadata['id'], 1384486067720566818)
         
-    def test_few_days_syncer_with_deletion(self): #pylint:disable-msg=C0103
+    def ztest_few_days_syncer_with_deletion(self): #pylint:disable-msg=C0103
         """
            check that there was a deletion
         """
@@ -579,6 +579,19 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         print(ids)
         
+    def test_regexpr(self):
+        """
+           regexpr for 
+        """
+        import re
+        str = "Subject: Marta Gutierrez commented on her Wall post.\nMessage-ID: <c5b5deee29e373ca42cec75e4ef8384e@www.facebook.com>"
+        regexpr = "Subject:\s+(?P<subject>.*)\s+Message-ID:\s+<(?P<msgid>.*)>"
+        reg = re.compile(regexpr)
+        
+        matched = reg.match(str)
+        if matched:
+            print("Matched")
+            print("subject=[%s],messageid=[%s]" % (matched.group('subject'), matched.group('msgid')))
 
 def tests():
     """

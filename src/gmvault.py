@@ -74,7 +74,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     
     #to be removed
     EMAIL_BODY_OLD        = 'RFC822' #set msg as seen
-    IMAP_BODY_PEEK    = 'BODY.PEEK[]' #get body without setting msg as seen
+    IMAP_BODY_PEEK     = 'BODY.PEEK[]' #get body without setting msg as seen
     
     IMAP_HEADER_FIELDS = 'BODY[HEADER.FIELDS (SUBJECT Message-ID)]'
     
@@ -315,12 +315,18 @@ class GmailStorer(object):
     DATA_FNAME     = "%s/%s.eml"
     METADATA_FNAME = "%s/%s.meta"
     
-    ID_K         = 'id'
+    ID_K         = 'gmid'
     EMAIL_K      = 'email'
     THREAD_IDS_K = 'thread_ids'
     LABELS_K     = 'labels'
     INT_DATE_K   = 'internal_date'
     FLAGS_K      = 'flags'
+    SUBJECT_K    = 'subject'
+    MSGID_K      = 'msg_id'
+    
+    HFIELDS_PATTERN = "Subject:\s+(?P<subject>.*)\s+Message-ID:\s+<(?P<msgid>.*)>"
+    HFIELDS_REG     = re.compile(HFIELDS_PATTERN)
+        
     
     def __init__(self, a_storage_dir, a_encrypt_key = None):
         """
@@ -340,6 +346,17 @@ class GmailStorer(object):
             self._cipher.initCTR()
         else:
             self._cipher = None
+    
+    def parse_header_fields(self, header_fields):
+        """
+           extract subject and message ids from the given header fields 
+        """
+        
+        matched = reg.match(header_fields)
+        if matched:
+            return (matched.group('subject'), matched.group('msgid'))
+        else:
+            return None, None
     
     def get_all_existing_gmail_ids(self):
         """
@@ -378,6 +395,9 @@ class GmailStorer(object):
             data_desc.write(self._cipher.encryptCTR(email_info[GIMAPFetcher.EMAIL_BODY]))
         else:
             data_desc.write(email_info[GIMAPFetcher.EMAIL_BODY])
+            
+        # parse header fields to extract subject and msgid
+        subject, msgid = self.parse_header_fields(email_info[GIMAPFetcher.IMAP_HEADER_FIELDS])
         
         #create json structure for metadata
         meta_obj = { 
@@ -386,7 +406,9 @@ class GmailStorer(object):
                      self.FLAGS_K      : email_info[GIMAPFetcher.IMAP_FLAGS],
                      self.THREAD_IDS_K : email_info[GIMAPFetcher.GMAIL_THREAD_ID],
                      self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[GIMAPFetcher.IMAP_INTERNALDATE]),
-                     self.FLAGS_K      : email_info[GIMAPFetcher.IMAP_FLAGS]
+                     self.FLAGS_K      : email_info[GIMAPFetcher.IMAP_FLAGS],
+                     self.SUBJECT_K    : subject,
+                     self.MSGID_K      : msgid
                    }
         
         json.dump(meta_obj, meta_desc, ensure_ascii = False)
@@ -789,11 +811,15 @@ class GMVaulter(object):
             #update seen labels
             seen_labels.update(set(labels_to_create))
             
-            #restore email
-            gdestination.push_email(email_data, \
+            try:
+                #restore email
+                gdestination.push_email(email_data, \
                                     email_meta[gstorer.FLAGS_K] , \
                                     email_meta[gstorer.INT_DATE_K], \
                                     labels)
+            except Exception, err:
+                # problem with this email, put it in quarantine
+                pass
             
             # TODO need something to avoid pushing twice the same email 
             #perform a gmail search with wathever is possible or a imap search
