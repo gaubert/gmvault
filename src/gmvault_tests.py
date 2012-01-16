@@ -91,7 +91,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                            'CHILDREN', 'X-GM-EXT-1', \
                            'XYZZY', 'SASL-IR', 'AUTH=XOAUTH') , gimap.get_capabilities())
     
-    def test_gmvault_check_gmailness(self):
+    def ztest_gmvault_check_gmailness(self):
         """
            Test simple retrieval
         """
@@ -525,7 +525,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         LOG.critical("On Critical")
         
-    def test_encrypt_restore_on_gmail(self):
+    def ztest_encrypt_restore_on_gmail(self):
         """
            clean db disk
            sync with gmail for few emails
@@ -546,6 +546,36 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
             
         print("Done \n")
+        
+    def test_search_with_gmid(self):
+        """
+           Search with a gm id
+        """
+        db_dir = '/tmp/gmail_bk'
+        
+        #clean db dir
+        delete_db_dir(db_dir)
+        
+        gstorer = gmvault.GmailStorer(db_dir)
+        gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        
+        gimap.connect()
+       
+        criteria = ['X-GM-MSGID 1254269417797093924'] #broken one
+        #criteria = ['X-GM-MSGID 1254267782370534098']
+        #criteria = ['ALL']
+        ids = gimap.search(criteria)
+        
+        for the_id in ids:
+            res          = gimap.fetch(the_id, gimap.GET_ALL_INFO)
+            
+            gm_id = gstorer.bury_email(res[the_id], compress = True)
+            
+            print("restore email index %d\n" % (index))
+            metadata, data = gstorer.unbury_email(gm_id)
+        
+        
+        print(ids)
         
 
 def tests():

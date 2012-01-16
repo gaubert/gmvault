@@ -76,13 +76,14 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     EMAIL_BODY_OLD        = 'RFC822' #set msg as seen
     IMAP_BODY_PEEK    = 'BODY.PEEK[]' #get body without setting msg as seen
     
+    IMAP_MORE_BODY    = 'BODY[HEADER.FIELDS (SUBJECT Message-ID)]'
     
     #GET_IM_UID_RE
     APPENDUID         = '^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'
     
     APPENDUID_RE      = re.compile(APPENDUID)
     
-    GET_ALL_INFO      = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_BODY_PEEK, IMAP_FLAGS]
+    GET_ALL_INFO      = [ IMAP_MORE_BODY, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_BODY_PEEK, IMAP_FLAGS]
 
     GET_ALL_BUT_DATA  = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_FLAGS]
  
@@ -188,28 +189,6 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            Return all attributes associated to each message
         """
         return self.server.fetch(a_ids, a_attributes)
-    
-    def old_fetch(self, a_ids, a_attributes):
-        """
-           Return all attributes associated to each message
-        """
-        
-        nb_tries = 1
-        while True:
-            try:
-                
-                return self.server.fetch(a_ids, a_attributes)
-                
-            except imaplib.IMAP4.error, err:
-                
-                LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback(err)))
-                
-                # go in retry mode if less than 3 tries
-                if nb_tries < 3 and err.message.startswith('fetch failed:') :
-                    nb_tries += 1
-                else:
-                    #cascade error
-                    raise err
                 
     
     @classmethod
@@ -320,6 +299,12 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 raise Exception("Cannot add Labels %s to email with uid %d. Error:%s" % (labels_str, result_uid, data))
         
         return result_uid
+    
+    def fetch_with_gmid(self, a_gm_id):
+        """
+           fetch an email with it gmailID
+        """
+        pass
             
 class GmailStorer(object):
     '''

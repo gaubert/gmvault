@@ -54,6 +54,7 @@ disk saved ids. This should scale for ever whatever the number of you have.
 5) Add a way to restart from an imap id. Could be used when you have a very large mailbox and 
 want to restart from the moment when it failed.
 5.1) Add support for Chat emails => restore them in a default label. Give the possibility to name it.
+5.2) All_Mail IMAP dir needs to be enabled in gmail => handle this error
 6) add logging now otherwise it might be too late => PARTLY DONE
 7) test why labels cannot be hierarchically recreated => DONE
 7.1) Check the Internal Date on a restore: it doesn't seem to be set properly => DONE
@@ -92,5 +93,41 @@ german letters). Now email body has it own file.
 - Fix the internal date problem. The internal date cannot be set using the IMAP Internal date
 definition as it is used in IMAPClient. The way to do it is to pass epoch seconds to imaplib.
 I don't know why but it works. See if there is another way.
+
+error to check:
+[2012-01-14 01:56] CRITICAL: gmvault: restore email with id 1307167500404956043
+[2012-01-14 01:56] CRITICAL: gmvault: restore email with id 1273388864995368204
+[2012-01-14 01:56] CRITICAL: gmvault: restore email with id 1251355540850533440
+[2012-01-14 01:56] CRITICAL: gmvault: restore email with id 1242411549344126344
+[2012-01-14 01:57] CRITICAL: gmvault: restore email with id 1254263853986778928
+[2012-01-14 01:57] CRITICAL: gmvault: restore email with id 1254269417797093924
+ERROR
+
+======================================================================
+ERROR: test_restore_on_gmail (__main__.TestGMVault)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/aubert/workspace/gmvault/src/validation_tests.py", line 81, in test_restore_on_gmail
+    syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
+  File "/home/aubert/Dev/projects/gmvault/src/gmvault.py", line 819, in sync_with_gmail_acc
+    labels)
+  File "/home/aubert/Dev/projects/gmvault/src/gmvault.py", line 302, in push_email
+    res = self.server.append(self._all_mail_folder, a_body, a_flags, a_internal_time)
+  File "/home/aubert/Dev/projects/gmvault/src/mod_imap.py", line 140, in append
+    flags_list, time_val, msg)
+  File "/usr/lib/python2.6/imaplib.py", line 317, in append
+    return self._simple_command(name, mailbox, flags, date_time)
+  File "/usr/lib/python2.6/imaplib.py", line 1060, in _simple_command
+    return self._command_complete(name, self._command(name, *args))
+  File "/usr/lib/python2.6/imaplib.py", line 895, in _command_complete
+    raise self.error('%s command error: %s %s' % (name, typ, data))
+error: APPEND command error: BAD ['Invalid Arguments: Unable to parse message']
+
+13H55m29 1254269417797093924
+2007-11 => prob
+
+This message has no header and seems to be only a body in base64 => cannot restore it
+It should be put in a containement directory and flagged.
+
 
 
