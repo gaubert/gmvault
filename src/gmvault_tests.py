@@ -480,12 +480,14 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         self.assertEquals(metadata['id'], 1384486067720566818)
         
-    def ztest_few_days_syncer_with_deletion(self): #pylint:disable-msg=C0103
+    def test_few_days_syncer_with_deletion(self): #pylint:disable-msg=C0103
         """
            check that there was a deletion
         """
         #copy test email in dest dir
         storage_dir = "%s/%s" % ('/tmp/gmail_bk', '2011-11')
+        
+        gmvault_utils.makedirs(storage_dir)
         
         shutil.copyfile('../etc/tests/test_few_days_syncer/2384403887202624608.eml.gz','%s/2384403887202624608.eml.gz' % (storage_dir))
         shutil.copyfile('../etc/tests/test_few_days_syncer/2384403887202624608.meta','%s/2384403887202624608.meta' % (storage_dir))
@@ -547,7 +549,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             
         print("Done \n")
         
-    def test_search_with_gmid(self):
+    def ztest_search_with_gmid(self):
         """
            Search with a gm id
         """

@@ -131,4 +131,9 @@ It should be put in a containement directory and flagged.
 Add Message-ID email 
 
 
+Parse these info => 
+str: Subject: Marta Gutierrez commented on her Wall post.
+Message-ID: <c5b5deee29e373ca42cec75e4ef8384e@www.facebook.com>
+
+
 
