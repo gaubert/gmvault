@@ -136,4 +136,30 @@ str: Subject: Marta Gutierrez commented on her Wall post.
 Message-ID: <c5b5deee29e373ca42cec75e4ef8384e@www.facebook.com>
 
 
+Connection Error after timeout (no connection)
+Traceback (most recent call last):
+  File "/home/aubert/workspace/gmvault/src/gmvault_tests.py", line 564, in test_search_with_gmid
+    gimap.connect()
+  File "/home/aubert/Dev/projects/gmvault/src/gmvault.py", line 114, in connect
+    self.server = mimap.MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, ssl= self.ssl)
+  File "/home/aubert/Dev/projects/gmvault/src/mod_imap.py", line 104, in __init__
+    super(MonkeyIMAPClient, self).__init__(host, port, use_uid, ssl)
+  File "/home/aubert/local_python/lib/python2.6/site-packages/imapclient/imapclient.py", line 104, in __init__
+    self._imap = self._create_IMAP4()
+  File "/home/aubert/Dev/projects/gmvault/src/mod_imap.py", line 113, in _create_IMAP4
+    return ImapClass(self.host, self.port)
+  File "/home/aubert/Dev/projects/gmvault/src/mod_imap.py", line 28, in __init__
+    imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
+  File "/usr/lib/python2.6/imaplib.py", line 1138, in __init__
+    IMAP4.__init__(self, host, port)
+  File "/usr/lib/python2.6/imaplib.py", line 163, in __init__
+    self.open(host, port)
+  File "/usr/lib/python2.6/imaplib.py", line 1149, in open
+    self.sock = socket.create_connection((host, port))
+  File "/usr/lib/python2.6/socket.py", line 500, in create_connection
+    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
+gaierror: [Errno -2] Name or service not known
+
+-----------------------------------
+
 

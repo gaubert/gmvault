@@ -250,7 +250,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         metadata, data = gstorer.unbury_email(gm_id)
         
-        self.assertEquals(res[the_id][gimap.GMAIL_ID], metadata['id'])
+        self.assertEquals(res[the_id][gimap.GMAIL_ID], metadata['gm_id'])
         self.assertEquals(res[the_id][gimap.EMAIL_BODY], data)
         self.assertEquals(res[the_id][gimap.GMAIL_THREAD_ID], metadata['thread_ids'])
         
@@ -287,7 +287,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         metadata, data = gstorer.unbury_email(gm_id)
         
-        self.assertEquals(res[the_id][gimap.GMAIL_ID], metadata['id'])
+        self.assertEquals(res[the_id][gimap.GMAIL_ID], metadata['gm_id'])
         self.assertEquals(res[the_id][gimap.EMAIL_BODY], data)
         self.assertEquals(res[the_id][gimap.GMAIL_THREAD_ID], metadata['thread_ids'])
         
@@ -325,7 +325,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             print("restore email index %d\n" % (index))
             metadata, data = gstorer.unbury_email(gm_id)
             
-            self.assertEquals(res[the_id][gimap.GMAIL_ID], metadata['id'])
+            self.assertEquals(res[the_id][gimap.GMAIL_ID], metadata['gm_id'])
             self.assertEquals(res[the_id][gimap.EMAIL_BODY], data)
             self.assertEquals(res[the_id][gimap.GMAIL_THREAD_ID], metadata['thread_ids'])
             
@@ -364,7 +364,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             print("restore email index %d\n" % (index))
             metadata, data = gstorer.unbury_email(gm_id)
             
-            self.assertEquals(res[the_id][gimap.GMAIL_ID], metadata['id'])
+            self.assertEquals(res[the_id][gimap.GMAIL_ID], metadata['gm_id'])
             self.assertEquals(res[the_id][gimap.EMAIL_BODY], data)
             self.assertEquals(res[the_id][gimap.GMAIL_THREAD_ID], metadata['thread_ids'])
             
@@ -470,15 +470,15 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         _, metadata = gmvault.GMVaulter.check_email_on_disk(storage_dir, 1384313269332005293)
         
-        self.assertEquals(metadata['id'], 1384313269332005293)
+        self.assertEquals(metadata['gm_id'], 1384313269332005293)
         
         _, metadata = gmvault.GMVaulter.check_email_on_disk(storage_dir, 1384403887202624608)
         
-        self.assertEquals(metadata['id'], 1384403887202624608)
+        self.assertEquals(metadata['gm_id'], 1384403887202624608)
             
         _, metadata = gmvault.GMVaulter.check_email_on_disk(storage_dir, 1384486067720566818)
         
-        self.assertEquals(metadata['id'], 1384486067720566818)
+        self.assertEquals(metadata['gm_id'], 1384486067720566818)
         
     def ztest_few_days_syncer_with_deletion(self): #pylint:disable-msg=C0103
         """
@@ -549,9 +549,9 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             
         print("Done \n")
         
-    def ztest_search_with_gmid(self):
+    def test_search_with_gm_id(self):
         """
-           Search with a gm id
+           Search with a gm_id
         """
         db_dir = '/tmp/gmail_bk'
         
@@ -571,15 +571,21 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         for the_id in ids:
             res          = gimap.fetch(the_id, gimap.GET_ALL_INFO)
             
+            for key in res[the_id]:
+                print("key=[%s]" % (key))
+                
+            print('val = %s' % (res[the_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]']))
+            
             gm_id = gstorer.bury_email(res[the_id], compress = True)
             
-            print("restore email index %d\n" % (index))
+            print("restore email index %d\n" % (gm_id))
             metadata, data = gstorer.unbury_email(gm_id)
+            #print(metadata)
+            
+            self.assertEquals(metadata['gm_id'], 1254267782370534098L)
+            self.assertEquals(metadata['msg_id'], u'4301E7E3.4010803@ecmwf.int')
         
-        
-        print(ids)
-        
-    def test_regexpr(self):
+    def ztest_regexpr(self):
         """
            regexpr for 
         """

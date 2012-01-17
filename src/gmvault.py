@@ -76,7 +76,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     EMAIL_BODY_OLD        = 'RFC822' #set msg as seen
     IMAP_BODY_PEEK     = 'BODY.PEEK[]' #get body without setting msg as seen
     
-    IMAP_HEADER_FIELDS = 'BODY[HEADER.FIELDS (SUBJECT Message-ID)]'
+    IMAP_HEADER_FIELDS = 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]'
     
     #GET_IM_UID_RE
     APPENDUID         = '^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'
@@ -315,7 +315,7 @@ class GmailStorer(object):
     DATA_FNAME     = "%s/%s.eml"
     METADATA_FNAME = "%s/%s.meta"
     
-    ID_K         = 'gmid'
+    ID_K         = 'gm_id'
     EMAIL_K      = 'email'
     THREAD_IDS_K = 'thread_ids'
     LABELS_K     = 'labels'
@@ -324,8 +324,8 @@ class GmailStorer(object):
     SUBJECT_K    = 'subject'
     MSGID_K      = 'msg_id'
     
-    HFIELDS_PATTERN = "Subject:\s+(?P<subject>.*)\s+Message-ID:\s+<(?P<msgid>.*)>"
-    HFIELDS_REG     = re.compile(HFIELDS_PATTERN)
+    HFIELDS_PATTERN = "Message-ID:\s+<(?P<msgid>.*)>\s+Subject:\s+(?P<subject>.*)\s*"
+    HFIELDS_RE     = re.compile(HFIELDS_PATTERN)
         
     
     def __init__(self, a_storage_dir, a_encrypt_key = None):
@@ -352,7 +352,7 @@ class GmailStorer(object):
            extract subject and message ids from the given header fields 
         """
         
-        matched = reg.match(header_fields)
+        matched = GmailStorer.HFIELDS_RE.match(header_fields)
         if matched:
             return (matched.group('subject'), matched.group('msgid'))
         else:
@@ -390,9 +390,9 @@ class GmailStorer(object):
             data_desc = open(data_path, 'wb')
             
         meta_desc = open(meta_path, 'w')
-
+        
         if self._cipher:
-            data_desc.write(self._cipher.encryptCTR(email_info[GIMAPFetcher.EMAIL_BODY]))
+            data_desc.write(self._cipher.encryptCTR(email_info[GIMAPFetcher.IMAP_HEADER_FIELDS]))
         else:
             data_desc.write(email_info[GIMAPFetcher.EMAIL_BODY])
             
