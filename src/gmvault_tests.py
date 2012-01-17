@@ -581,7 +581,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         
         #check that the file has been quarantine
-        quarantine_dir = '%s/quarantine'
+        quarantine_dir = '%s/quarantine' %(db_dir)
         
         self.assertTrue(os.path.exists('%s/1254269417797093924.eml.gz' % (quarantine_dir)))
         self.assertTrue(os.path.exists('%s/1254269417797093924.meta' % (quarantine_dir)))

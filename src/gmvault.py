@@ -856,7 +856,8 @@ class GMVaulter(object):
             except imaplib.IMAP4.error, err:
                 # problem with this email, put it in quarantine
                 if str(err) == "APPEND command error: BAD ['Invalid Arguments: Unable to parse message']":
-                    LOG.critical("Quarantine email with gm id %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, str(err)))
+                    LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, yy_dir, str(err)))
+                    gstorer.quarantine_email(gm_id)
             except Exception, err:
                 print("Catch the following exception %s" % (str(err)))
                 raise err
