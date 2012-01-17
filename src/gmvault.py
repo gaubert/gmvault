@@ -807,11 +807,9 @@ class GMVaulter(object):
         
         for gm_id, yy_dir in db_gmail_ids_info.iteritems():
             
-            dummy_storer = GmailStorer('%s/%s' % (self.db_root_dir, yy_dir), self.encrypt_key)
-            
             LOG.critical("restore email with id %s" % (gm_id))
             
-            email_meta, email_data = dummy_storer.unbury_email(gm_id)
+            email_meta, email_data = gstorer.unbury_email(gm_id)
             
             #labels for this email => real_labels U extra_labels
             labels = set(email_meta[gstorer.LABELS_K])
