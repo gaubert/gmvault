@@ -458,7 +458,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             self.assertEquals(dest_email[dest_id][gsource.EMAIL_BODY], source_email[the_id][gsource.EMAIL_BODY])
             self.assertEquals(dest_email[dest_id][gsource.GMAIL_LABELS], source_email[the_id][gsource.GMAIL_LABELS])
         
-    def test_few_days_syncer(self):
+    def ztest_few_days_syncer(self):
         """
            Test with the Syncer object
         """
@@ -565,8 +565,8 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         gimap.connect()
        
-        #criteria = ['X-GM-MSGID 1254269417797093924'] #broken one
-        criteria = ['X-GM-MSGID 1254267782370534098']
+        criteria = ['X-GM-MSGID 1254269417797093924'] #broken one
+        #criteria = ['X-GM-MSGID 1254267782370534098']
         #criteria = ['ALL']
         ids = gimap.search(criteria)
         
@@ -580,12 +580,27 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             
             gm_id = gstorer.bury_email(res[the_id], compress = True)
             
-            print("restore email index %d\n" % (gm_id))
-            metadata, data = gstorer.unbury_email(gm_id)
+            syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, self.passwd)
+        
+            syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
+        
+            
+            #print("restore email index %d\n" % (gm_id))
+            #metadata, data = gstorer.unbury_email(gm_id)
             #print(metadata)
             
-            self.assertEquals(metadata['gm_id'], 1254267782370534098L)
-            self.assertEquals(metadata['msg_id'], u'4301E7E3.4010803@ecmwf.int')
+            #self.assertEquals(metadata['gm_id'], 1254267782370534098L)
+            #self.assertEquals(metadata['msg_id'], u'4301E7E3.4010803@ecmwf.int')
+    
+    def test_copyfile(self):   
+        """
+           Copyfile
+        """
+        db_dir = '/tmp/gmail_bk'
+        
+        gstorer = gmvault.GmailStorer(db_dir)
+        
+        gstorer.quarantine_email(1254269417797093924L)
         
     def ztest_regexpr(self):
         """

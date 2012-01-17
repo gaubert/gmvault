@@ -12,6 +12,7 @@ import itertools
 import imaplib
 import functools
 import fnmatch
+import shutil
 
 import blowfish
 import log_utils
@@ -478,6 +479,28 @@ class GmailStorer(object):
         
         return open(meta_p)
     
+    def quarantine_email(self, a_id):
+        """
+           Quarantine the 
+        """
+        #get the dir where the email is stored
+        the_dir = self._get_directory_from_id(a_id)
+        
+        data = self.DATA_FNAME % (the_dir, a_id)
+        
+        # check if encrypted and compressed or not
+        if os.path.exists('%s.crypt.gz' % (data)):
+            data = '%s.crypt.gz' % (data)
+        elif os.path.exists('%s.gz' % (data)):
+            data = '%s.gz' % (data)
+        elif os.path.exists('%s.crypt' % (data)):
+            data = '%s.crypt' % (data)
+        
+        meta = self.METADATA_FNAME % (the_dir, a_id)
+        
+        shutil.move(data, self._quarantine_dir)
+        shutil.move(meta, self._quarantine_dir)
+    
     def unbury_email(self, a_id):
         """
            Restore email info from info stored on disk
@@ -830,9 +853,13 @@ class GMVaulter(object):
                                     email_meta[gstorer.FLAGS_K] , \
                                     email_meta[gstorer.INT_DATE_K], \
                                     labels)
-            except Exception, err:
+            except imaplib.IMAP4.error, err:
                 # problem with this email, put it in quarantine
-                pass
+                if str(err) == "APPEND command error: BAD ['Invalid Arguments: Unable to parse message']":
+                    LOG.critical("Quarantine email with gm id %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, str(err)))
+            except Exception, err:
+                print("Catch the following exception %s" % (str(err)))
+                raise err
             
             # TODO need something to avoid pushing twice the same email 
             #perform a gmail search with wathever is possible or a imap search
