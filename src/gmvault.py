@@ -10,8 +10,8 @@ import datetime
 import os
 import itertools
 import imaplib
-import base64
 import functools
+import fnmatch
 
 import blowfish
 import log_utils
@@ -439,27 +439,23 @@ class GmailStorer(object):
         
         return email_info[GIMAPFetcher.GMAIL_ID]
     
-    def _get_db_files_from_id(self, a_id): 
+    def _get_directory_from_id(self, a_id):
         """
-           build data and metadata file from the given id
+           Return the directory path if id located.
+           Return None if not found
         """
-        meta_p = self.METADATA_FNAME % (self._db_dir, a_id)
-        data_p = self.DATA_FNAME % (self._db_dir, a_id)
+        filename = '%s.meta' % (a_id)
+        for dirs, subdirs, files in os.walk(os.path.abspath(self._db_dir)):
+            for filename in fnmatch.filter(files, filename):
+                return path
         
-        # check if it compressed or not
-        if os.path.exists('%s.gz' % (data_p)):
-            data_fd = gzip.open('%s.gz' % (data_p), 'r')
-        else:
-            data_fd = open(data_p)
-            
-        
-        return open(meta_p), data_fd
+        return None
     
-    def _get_data_file_from_id(self, a_id):
+    def _get_data_file_from_id(self, a_dir, a_id):
         """
            Return data file from the id
         """
-        data_p = self.DATA_FNAME % (self._db_dir, a_id)
+        data_p = self.DATA_FNAME % (a_dir, a_id)
         
         # check if encrypted and compressed or not
         if os.path.exists('%s.crypt.gz' % (data_p)):
@@ -470,15 +466,14 @@ class GmailStorer(object):
             data_fd = open('%s.crypt' % (data_p), 'r')
         else:
             data_fd = open(data_p)
-            
         
         return data_fd
     
-    def _get_metadata_file_from_id(self, a_id):
+    def _get_metadata_file_from_id(self, a_dir, a_id):
         """
            metadata file
         """
-        meta_p = self.METADATA_FNAME % (self._db_dir, a_id)
+        meta_p = self.METADATA_FNAME % (a_dir, a_id)
         
         return open(meta_p)
     
@@ -487,21 +482,25 @@ class GmailStorer(object):
            Restore email info from info stored on disk
            Return a tuple (meta, data)
         """
+        the_dir = self._get_directory_from_id(a_id)
         
-        data_fd = self._get_data_file_from_id(a_id)
+        data_fd = self._get_data_file_from_id(the_dir, a_id)
         
         if self._cipher:
             data = self._cipher.decryptCTR(data_fd.read())
         else:
             data = data_fd.read()
         
-        return (self.unbury_metadata(a_id), data)
+        return (self.unbury_metadata(a_id, the_dir), data)
     
-    def unbury_metadata(self, a_id):
+    def unbury_metadata(self, a_id, a_id_dir = None):
         """
            Get metadata info from DB
         """
-        meta_fd = self._get_metadata_file_from_id(a_id)
+        if not a_id_dir:
+            a_id_dir = self._get_directory_from_id(a_id)
+        
+        meta_fd = self._get_metadata_file_from_id(a_id_dir, a_id)
         
         metadata = json.load(meta_fd)
         
