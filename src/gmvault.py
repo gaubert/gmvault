@@ -325,7 +325,10 @@ class GmailStorer(object):
     MSGID_K      = 'msg_id'
     
     HFIELDS_PATTERN = "Message-ID:\s+<(?P<msgid>.*)>\s+Subject:\s+(?P<subject>.*)\s*"
-    HFIELDS_RE     = re.compile(HFIELDS_PATTERN)
+    HFIELDS_RE      = re.compile(HFIELDS_PATTERN)
+    
+    DB_AREA         = 'db'
+    QUARANTINE_AREA = 'quarantine'
         
     
     def __init__(self, a_storage_dir, a_encrypt_key = None):
@@ -337,7 +340,12 @@ class GmailStorer(object):
         """
         self._top_dir = a_storage_dir
         
-        gmvault_utils.makedirs(a_storage_dir)
+        self._db_dir          = '%s/%s' % (a_storage_dir, GmailStorer.DB_AREA)
+        self._quarantine_dir  = '%s/%s' % (a_storage_dir, GmailStorer.QUARANTINE_AREA)
+        
+        #make dirs
+        gmvault_utils.makedirs(self._db_dir)
+        gmvault_utils.makedirs(self._quarantine_dir)
         
         if a_encrypt_key:
             #create blowfish cipher
@@ -363,7 +371,7 @@ class GmailStorer(object):
            get all existing gmail_ids from the database
         """
         gmail_ids = {}
-        the_iter = gmvault_utils.dirwalk(self._top_dir, "*.meta")
+        the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
         
         for filepath in the_iter:
             directory, fname = os.path.split(filepath)
@@ -371,13 +379,23 @@ class GmailStorer(object):
     
         return gmail_ids
         
-    def bury_email(self, email_info, compress = False):
+    def bury_email(self, email_info, local_dir = None, compress = False):
         """
            store all email info in 2 files (.meta and .eml files)
-           If compress is True, use gzip compression
+           Arguments:
+             email_info: info
+             local_dir : intermdiary dir (month dir)
+             compress  : If compress is True, use gzip compression
         """
-        meta_path = self.METADATA_FNAME % (self._top_dir, email_info[GIMAPFetcher.GMAIL_ID])
-        data_path = self.DATA_FNAME % (self._top_dir, email_info[GIMAPFetcher.GMAIL_ID])
+        
+        if local_dir:
+            the_dir = '%s/%s' % (self._db_dir, local_dir)
+        else:
+            the_dir = self._db_dir
+        
+        
+        meta_path = self.METADATA_FNAME % (the_dir, email_info[GIMAPFetcher.GMAIL_ID])
+        data_path = self.DATA_FNAME % (the_dir, email_info[GIMAPFetcher.GMAIL_ID])
         
         # manage filename for the cipher
         if self._cipher:
@@ -425,8 +443,8 @@ class GmailStorer(object):
         """
            build data and metadata file from the given id
         """
-        meta_p = self.METADATA_FNAME % (self._top_dir, a_id)
-        data_p = self.DATA_FNAME % (self._top_dir, a_id)
+        meta_p = self.METADATA_FNAME % (self._db_dir, a_id)
+        data_p = self.DATA_FNAME % (self._db_dir, a_id)
         
         # check if it compressed or not
         if os.path.exists('%s.gz' % (data_p)):
@@ -441,7 +459,7 @@ class GmailStorer(object):
         """
            Return data file from the id
         """
-        data_p = self.DATA_FNAME % (self._top_dir, a_id)
+        data_p = self.DATA_FNAME % (self._db_dir, a_id)
         
         # check if encrypted and compressed or not
         if os.path.exists('%s.crypt.gz' % (data_p)):
@@ -460,7 +478,7 @@ class GmailStorer(object):
         """
            metadata file
         """
-        meta_p = self.METADATA_FNAME % (self._top_dir, a_id)
+        meta_p = self.METADATA_FNAME % (self._db_dir, a_id)
         
         return open(meta_p)
     
@@ -497,7 +515,7 @@ class GmailStorer(object):
         """
         for (a_id, date_dir) in emails_info:
             
-            the_dir = '%s/%s' % (self._top_dir, date_dir)
+            the_dir = '%s/%s' % (self._db_dir, date_dir)
             
             data_p      = self.DATA_FNAME % (the_dir, a_id)
             comp_data_p = '%s.gz' % (data_p)
@@ -579,20 +597,19 @@ class GMVaulter(object):
         return dummy_date + datetime.timedelta(days=31)
         
     @classmethod
-    def check_email_on_disk(cls, a_storage_dir, a_id):
+    def check_email_on_disk(cls, a_storage_dir, a_gstorer, a_id):
         """
            Factory method to create the object if it exists
         """
         try:
             # look for a_storage_dir/a_id.meta
             if os.path.exists('%s/%s.meta' % (a_storage_dir, a_id)):
-                gstorer = GmailStorer(a_storage_dir, self.encrypt_key)
                 metadata = gstorer.unbury_metadata(a_id) 
-                return gstorer, metadata
+                return metadata
         except ValueError, json_error:
             LOG.exception("Cannot read file %s. Try to fetch the data again" % ('%s/%s.meta' % (a_storage_dir, a_id)), json_error )
         
-        return None, None
+        return None
     
     @classmethod
     def _metadata_needs_update(cls, curr_metadata, new_metadata):
@@ -634,6 +651,8 @@ class GMVaulter(object):
         """
         ignored_ids = [] # ids that cannot be retrieved on gmail for a buggy reason
         
+        gstorer =  GmailStorer(self.db_root_dir, self.encrypt_key)
+        
         for the_id in imap_ids:
             
             try:
@@ -642,12 +661,15 @@ class GMVaulter(object):
                 #get everything once for all
                 new_data = self.src.fetch(the_id, GIMAPFetcher.GET_ALL_INFO )
                 
-                the_dir = '%s/%s' % (self.db_root_dir, \
+                the_full_dir = '%s/%s' % (self.db_root_dir, \
                                      gmvault_utils.get_ym_from_datetime(new_data[the_id][GIMAPFetcher.IMAP_INTERNALDATE]))
                 
+                the_dir      = gmvault_utils.get_ym_from_datetime(new_data[the_id][GIMAPFetcher.IMAP_INTERNALDATE])
+                
+                
                 #pass the dir and the ID
-                gstorer, curr_metadata = GMVaulter.check_email_on_disk( the_dir , \
-                                                                       new_data[the_id][GIMAPFetcher.GMAIL_ID])
+                curr_metadata = GMVaulter.check_email_on_disk( the_full_dir , \
+                                                               new_data[the_id][GIMAPFetcher.GMAIL_ID])
                 
                 #if on disk check that the data is not different
                 if curr_metadata:
@@ -664,9 +686,7 @@ class GMVaulter(object):
                 else:
                     
                     # store data on disk within year month dir 
-                    gstorer =  GmailStorer(the_dir, self.encrypt_key)  
-                
-                    gid  = gstorer.bury_email(new_data[the_id], compress = compress)
+                    gid  = gstorer.bury_email(new_data[the_id], local_dir = the_dir, compress = compress)
                     
                     #update local index id gid => index per directory to be thought out
                     LOG.critical("Create and store email  with imap id %s, gmail id %s\n" % (the_id, gid))   

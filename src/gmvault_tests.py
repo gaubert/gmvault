@@ -458,7 +458,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             self.assertEquals(dest_email[dest_id][gsource.EMAIL_BODY], source_email[the_id][gsource.EMAIL_BODY])
             self.assertEquals(dest_email[dest_id][gsource.GMAIL_LABELS], source_email[the_id][gsource.GMAIL_LABELS])
         
-    def ztest_few_days_syncer(self):
+    def test_few_days_syncer(self):
         """
            Test with the Syncer object
         """
@@ -466,7 +466,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
         
-        storage_dir = "%s/%s" % ('/tmp/gmail_bk', '2011-11')
+        storage_dir = "%s/%s" % ('/tmp/gmail_bk/db', '2011-11')
         
         _, metadata = gmvault.GMVaulter.check_email_on_disk(storage_dir, 1384313269332005293)
         
@@ -549,7 +549,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             
         print("Done \n")
         
-    def test_search_with_gm_id(self):
+    def ztest_search_with_gm_id(self):
         """
            Search with a gm_id
         """
