@@ -10,6 +10,7 @@ import shutil
 import os
 
 import ssl
+import mod_imap
 import gmvault
 import gmvault_utils
 import gmv
@@ -74,7 +75,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             
             msg = str(err)
             
-            if msg != '[Errno 8] _ssl.c:480: EOF occurred in violation of protocol':
+            if not msg.startswith('[Errno 8] _ssl.c:') or not msg.endswith('EOF occurred in violation of protocol'):
                 self.fail('received %s. Bad error message' % (msg))
         
     def ztest_gmvault_get_capabilities(self):
@@ -116,11 +117,11 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         criteria = ['Before 1-Jan-2011']
         ids = gimap.search(criteria)
         
-        self.assertEquals(len(ids), 33629)
+        self.assertEquals(len(ids), 33577)
         
     def ztest_created_nested_dirs(self):
         """ Try to create nested dirs """
-        client = gmvault.MonkeyIMAPClient('imap.gmail.com', port = 993, use_uid = True, ssl= True)
+        client = mod_imap.MonkeyIMAPClient('imap.gmail.com', port = 993, use_uid = True, ssl= True)
         
         client.login(self.gmvault_login, self.gmvault_passwd)
         
@@ -128,7 +129,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         print(folders_info)
         
-        folders = [ the_dir for (_, _, dir) in folders_info ]
+        folders = [ the_dir for (_, _, the_dir) in folders_info ]
         
         print('folders %s\n' %(folders))
         the_dir = 'ECMWF-Archive'
@@ -185,7 +186,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         criteria = ['Before 1-Jan-2011']
         ids = gimap.search(criteria)
         
-        self.assertEquals(len(ids), 33629)
+        self.assertEquals(len(ids), 33577)
         
     def ztest_retrieve_gmail_ids(self):
         """
@@ -456,7 +457,18 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             # do the checkings
             self.assertEquals(dest_email[dest_id][gsource.IMAP_FLAGS], source_email[the_id][gsource.IMAP_FLAGS])
             self.assertEquals(dest_email[dest_id][gsource.EMAIL_BODY], source_email[the_id][gsource.EMAIL_BODY])
-            self.assertEquals(dest_email[dest_id][gsource.GMAIL_LABELS], source_email[the_id][gsource.GMAIL_LABELS])
+            
+            dest_labels = []
+            for elem in dest_email[dest_id][gsource.GMAIL_LABELS]:
+                if not elem == '\\Important':
+                    dest_labels.append(elem)
+            
+            src_labels = []
+            for elem in source_email[the_id][gsource.GMAIL_LABELS]:
+                if not elem == '\\Important':
+                    src_labels.append(elem)
+            
+            self.assertEquals(dest_labels, src_labels)
         
     def ztest_few_days_syncer(self):
         """
