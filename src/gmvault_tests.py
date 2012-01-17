@@ -551,9 +551,9 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             
         print("Done \n")
         
-    def ztest_search_with_gm_id(self):
+    def test_search_broken_gm_id_and_quarantine(self):
         """
-           Search with a gm_id
+           Search with a gm_id and quarantine it
         """
         db_dir = '/tmp/gmail_bk'
         
@@ -572,27 +572,21 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         for the_id in ids:
             res          = gimap.fetch(the_id, gimap.GET_ALL_INFO)
-            
-            for key in res[the_id]:
-                print("key=[%s]" % (key))
-                
-            print('val = %s' % (res[the_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]']))
-            
+          
             gm_id = gstorer.bury_email(res[the_id], compress = True)
             
             syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, self.passwd)
         
             syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
         
-            
-            #print("restore email index %d\n" % (gm_id))
-            #metadata, data = gstorer.unbury_email(gm_id)
-            #print(metadata)
-            
-            #self.assertEquals(metadata['gm_id'], 1254267782370534098L)
-            #self.assertEquals(metadata['msg_id'], u'4301E7E3.4010803@ecmwf.int')
-    
-    def test_copyfile(self):   
+        
+        #check that the file has been quarantine
+        quarantine_dir = '%s/quarantine'
+        
+        self.assertTrue(os.path.exists('%s/1254269417797093924.eml.gz' % (quarantine_dir)))
+        self.assertTrue(os.path.exists('%s/1254269417797093924.meta' % (quarantine_dir)))
+        
+    def ztest_copyfile(self):   
         """
            Copyfile
         """
