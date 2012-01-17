@@ -545,7 +545,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         LOG.critical("On Critical")
         
-    def ztest_encrypt_restore_on_gmail(self):
+    def test_encrypt_restore_on_gmail(self):
         """
            Doesn't work to be fixed
            clean db disk

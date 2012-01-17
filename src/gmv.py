@@ -31,7 +31,7 @@ b) full synchronisation for german users that have to use googlemail instead of 
 
 c) restrict synchronisation with an IMAP request
 
-#> gmvault --imap-request 'Since 1-Nov-2011 Before 10-Nov-2011' --imap-server imap.googlemail.com --email foo.bar@gmail.com --passwd sosecrtpasswd 
+#> gmvault --imap-request 'Since 1-Nov-2011 Before 10-Nov-2011' --email foo.bar@gmail.com --passwd sosecrtpasswd 
 
 """
 

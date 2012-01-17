@@ -412,7 +412,7 @@ class GmailStorer(object):
         meta_desc = open(meta_path, 'w')
         
         if self._cipher:
-            data_desc.write(self._cipher.encryptCTR(email_info[GIMAPFetcher.IMAP_HEADER_FIELDS]))
+            data_desc.write(self._cipher.encryptCTR(email_info[GIMAPFetcher.EMAIL_BODY]))
         else:
             data_desc.write(email_info[GIMAPFetcher.EMAIL_BODY])
             
