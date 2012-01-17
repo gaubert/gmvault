@@ -468,15 +468,17 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         storage_dir = "%s/%s" % ('/tmp/gmail_bk/db', '2011-11')
         
-        _, metadata = gmvault.GMVaulter.check_email_on_disk(storage_dir, 1384313269332005293)
+        gstorer = gmvault.GmailStorer('/tmp/gmail_bk')
+        
+        metadata = gmvault.GMVaulter.check_email_on_disk(gstorer, 1384313269332005293)
         
         self.assertEquals(metadata['gm_id'], 1384313269332005293)
         
-        _, metadata = gmvault.GMVaulter.check_email_on_disk(storage_dir, 1384403887202624608)
+        metadata = gmvault.GMVaulter.check_email_on_disk(gstorer, 1384403887202624608)
         
         self.assertEquals(metadata['gm_id'], 1384403887202624608)
             
-        _, metadata = gmvault.GMVaulter.check_email_on_disk(storage_dir, 1384486067720566818)
+        metadata = gmvault.GMVaulter.check_email_on_disk(gstorer, 1384486067720566818)
         
         self.assertEquals(metadata['gm_id'], 1384486067720566818)
         

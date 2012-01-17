@@ -390,6 +390,7 @@ class GmailStorer(object):
         
         if local_dir:
             the_dir = '%s/%s' % (self._db_dir, local_dir)
+            gmvault_utils.makedirs(the_dir)
         else:
             the_dir = self._db_dir
         
@@ -447,7 +448,7 @@ class GmailStorer(object):
         filename = '%s.meta' % (a_id)
         for dirs, subdirs, files in os.walk(os.path.abspath(self._db_dir)):
             for filename in fnmatch.filter(files, filename):
-                return path
+                return dirs
         
         return None
     
@@ -596,15 +597,14 @@ class GMVaulter(object):
         return dummy_date + datetime.timedelta(days=31)
         
     @classmethod
-    def check_email_on_disk(cls, a_storage_dir, a_gstorer, a_id):
+    def check_email_on_disk(cls, a_gstorer, a_id):
         """
            Factory method to create the object if it exists
         """
         try:
-            # look for a_storage_dir/a_id.meta
-            if os.path.exists('%s/%s.meta' % (a_storage_dir, a_id)):
-                metadata = gstorer.unbury_metadata(a_id) 
-                return metadata
+            the_dir = a_gstorer._get_directory_from_id(a_id)
+            if the_dir:
+                return a_gstorer.unbury_metadata(a_id, the_dir) 
         except ValueError, json_error:
             LOG.exception("Cannot read file %s. Try to fetch the data again" % ('%s/%s.meta' % (a_storage_dir, a_id)), json_error )
         
@@ -615,7 +615,7 @@ class GMVaulter(object):
         """
            Needs update
         """
-        if curr_metadata['id'] != new_metadata['X-GM-MSGID']:
+        if curr_metadata[GmailStorer.ID_K] != new_metadata['X-GM-MSGID']:
             raise Exception("Gmail id has changed for %s" % (curr_metadata['id']))
                 
         #check flags   
@@ -660,20 +660,16 @@ class GMVaulter(object):
                 #get everything once for all
                 new_data = self.src.fetch(the_id, GIMAPFetcher.GET_ALL_INFO )
                 
-                the_full_dir = '%s/%s' % (self.db_root_dir, \
-                                     gmvault_utils.get_ym_from_datetime(new_data[the_id][GIMAPFetcher.IMAP_INTERNALDATE]))
-                
                 the_dir      = gmvault_utils.get_ym_from_datetime(new_data[the_id][GIMAPFetcher.IMAP_INTERNALDATE])
                 
-                
                 #pass the dir and the ID
-                curr_metadata = GMVaulter.check_email_on_disk( the_full_dir , \
+                curr_metadata = GMVaulter.check_email_on_disk( gstorer , \
                                                                new_data[the_id][GIMAPFetcher.GMAIL_ID])
                 
                 #if on disk check that the data is not different
                 if curr_metadata:
                     
-                    LOG.critical("metadata for %s already exists. Check if different" % (new_data[id][GIMAPFetcher.GMAIL_ID]))
+                    LOG.critical("metadata for %s already exists. Check if different" % (new_data[the_id][GIMAPFetcher.GMAIL_ID]))
                     
                     if self._metadata_needs_update(curr_metadata, new_data[the_id]):
                         #restore everything at the moment
