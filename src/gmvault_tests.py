@@ -486,8 +486,12 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            check that there was a deletion
         """
+        db_dir = '/tmp/gmail_bk'
+        #clean db dir
+        delete_db_dir(db_dir)
+        
         #copy test email in dest dir
-        storage_dir = "%s/%s" % ('/tmp/gmail_bk', '2011-11')
+        storage_dir = "%s/db/%s" % (db_dir, '2011-11')
         
         gmvault_utils.makedirs(storage_dir)
         
@@ -496,7 +500,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         syncer = gmvault.GMVaulter('/tmp/gmail_bk', 'imap.gmail.com', 993, self.login, self.passwd)
         
-        syncer.sync(imap_req = "Since 1-Nov-2011 Before 2-Nov-2011")
+        syncer.sync(imap_req = "Since 1-Nov-2011 Before 2-Nov-2011", db_cleaning = True)
         
         self.assertFalse(os.path.exists('%s/2384403887202624608.eml.gz' % (storage_dir)))
         self.assertFalse(os.path.exists('%s/2384403887202624608.meta' % (storage_dir)))
@@ -531,6 +535,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
     def ztest_encrypt_restore_on_gmail(self):
         """
+           Doesn't work to be fixed
            clean db disk
            sync with gmail for few emails
            restore them on gmail test
@@ -551,7 +556,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             
         print("Done \n")
         
-    def test_search_broken_gm_id_and_quarantine(self):
+    def ztest_search_broken_gm_id_and_quarantine(self):
         """
            Search with a gm_id and quarantine it
         """

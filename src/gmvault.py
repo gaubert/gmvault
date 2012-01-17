@@ -553,7 +553,8 @@ class GmailStorer(object):
                 os.remove(comp_data_p)
             elif os.path.exists(crypt_comp_data_p):
                 os.remove(comp_data_p)   
-            elif os.path.exists(metadata_p):
+            
+            if os.path.exists(metadata_p):
                 os.remove(metadata_p)
    
 class GMVaulter(object):
@@ -778,12 +779,14 @@ class GMVaulter(object):
             #quit loop if db set is already empty
             if len(db_gmail_ids) == 0:
                 break
-            
-        LOG.critical("Will delete %s imap from disk db" % (len(db_gmail_ids)) )
+
         if db_cleaning: #delete if db_cleaning ordered
+            LOG.critical("Will delete %s email from disk db" % (len(db_gmail_ids)) )
             for gm_id in db_gmail_ids:
                 LOG.critical("gm_id %s not in imap. Delete it" % (gm_id))
                 gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
+        else:
+            LOG.debug("db_cleaning is off so ignore cleaning of %s emails from the db" % (len(db_gmail_ids)))
         
     def sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False):
         """
