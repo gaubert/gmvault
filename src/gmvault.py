@@ -28,6 +28,9 @@ LOG = log_utils.LoggerFactory.get_logger('gmvault')
 
 #retry decorator with nb of tries
 def retry(a_nb_tries = 3):
+    """
+      Decorator for retrying command when it failed
+    """
     def inner_retry(fn):
         def wrapper(*args, **kwargs):
             nb_tries = 0
@@ -351,8 +354,6 @@ class GmailStorer(object):
         if a_encrypt_key:
             #create blowfish cipher
             self._cipher = blowfish.Blowfish(a_encrypt_key)
-            #init cipher
-            self._cipher.initCTR()
         else:
             self._cipher = None
     
@@ -412,6 +413,8 @@ class GmailStorer(object):
         meta_desc = open(meta_path, 'w')
         
         if self._cipher:
+            # need to be done for every encryption
+            self._cipher.initCTR()
             data_desc.write(self._cipher.encryptCTR(email_info[GIMAPFetcher.EMAIL_BODY]))
         else:
             data_desc.write(email_info[GIMAPFetcher.EMAIL_BODY])
@@ -511,6 +514,8 @@ class GmailStorer(object):
         data_fd = self._get_data_file_from_id(the_dir, a_id)
         
         if self._cipher:
+            # need to be done for every encryption
+            self._cipher.initCTR()
             data = self._cipher.decryptCTR(data_fd.read())
         else:
             data = data_fd.read()

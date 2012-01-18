@@ -545,7 +545,33 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         LOG.critical("On Critical")
         
-    def test_encrypt_restore_on_gmail(self):
+    def test_encrypt_blowfish(self):
+        """
+           Test encryption with blowfish
+        """
+        file_path = '../etc/tests/test_few_days_syncer/2384403887202624608.eml.gz'
+        import gzip
+        import blowfish
+        
+        #create blowfish cipher
+        cipher = blowfish.Blowfish('VerySeCretKey')
+         
+        gz_fd = gzip.open(file_path)
+        
+        content = gz_fd.read()
+        
+        cipher.initCTR()
+        crypted = cipher.encryptCTR(content)
+        
+        cipher.initCTR()
+        decrypted = cipher.decryptCTR(crypted)
+        
+        self.assertEquals(decrypted, content)
+        
+        
+        
+        
+    def ztest_encrypt_restore_on_gmail(self):
         """
            Doesn't work to be fixed
            clean db disk
