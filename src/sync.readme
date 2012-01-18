@@ -167,3 +167,24 @@ gaierror: [Errno -2] Name or service not known
 
 ===> Work on interface now => gmv (store password, xauthToken)
 
+tentative 1:
+1)interactive mode with the password by default:
+sync --email b.f@gmail.com --passwd
+enter password:
+
+2)possibility to store the password in ~.gmvault/passwds/b.f(at)gmail.com.passwd => encrypted
+sync --email b.f@gmail.com --passwd --save-passwd
+enter password:
+
+Password has been saved in ~/.gmvault/passwd
+3) use password in non interactive mode possible
+sync --email b.f@gmail.com --passwd --non-interactive
+look in ~.gmvault/passwd for the password
+
+4) use token (first time save it and next time use it)
+sync --email b.f@gmail.com --token the_token
+if token is repassed resave it
+
+
+
+
