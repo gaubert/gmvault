@@ -62,8 +62,9 @@ want to restart from the moment when it failed.
 7.3) add password save in .gmvault/.passwd => encrypted if possible at least obfuscated
 8) add oauth and a way to save the token.
 8.1) add a way to add a restore label
-8.2) encrypt email data with possibly a pure python method (if not too slow) => DOne but doesn't work on MAC
-8.3) work on win support
+8.2) encrypt email data with possibly a pure python method (if not too slow) => Fixed and work on both Mac and Linux
+8.3) currently decision to decrypt is only taken with the fact that there is a cipher but we should also check that file is .crypt
+8.4) work on win support
 9) manage a .gmvault dir in your home
 10) add progress bar and better logging outputs with verbose and non verbose mode
 11) release v0.5 
@@ -166,6 +167,13 @@ gaierror: [Errno -2] Name or service not known
 -----------------------------------
 
 ===> Work on interface now => gmv (store password, xauthToken)
+
+sync -email a.b@gmail.com --passwd
+
+empty_passwd
+
+if empty password look if there is saved passwd and take it otherwise go for a interactive sequence
+if you want to redefine the passwd --passwd --interactive --save-passwd
 
 tentative 1:
 1)interactive mode with the password by default:

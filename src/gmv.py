@@ -5,6 +5,8 @@ Created on Dec 16, 2011
 '''
 import socket
 import sys
+import os
+import getpass
 
 from cmdline_utils  import CmdLineParser
 import log_utils
@@ -37,11 +39,19 @@ c) restrict synchronisation with an IMAP request
 
 LOG = log_utils.LoggerFactory.get_logger('gmv')
 
+def passwd_handling(option, opt_str, value, parser):
+    """
+       to differenciate between a seen and non seen passwd command
+    """
+    # there is a passwd but it might be empty
+    setattr(parser.values, option.dest, 'empty_passwd')
+
 class GMVaultLauncher(object):
     
     def __init__(self):
         """ constructor """
         super(GMVaultLauncher, self).__init__()
+
 
     def parse_args(self):
         """ Parse command line arguments 
@@ -55,13 +65,13 @@ class GMVaultLauncher(object):
         
         parser = CmdLineParser()
         
-        parser.add_option("-s", "--sync", help = "Full synchronisation between gmail with local db. (default sync mode).", \
+        parser.add_option("-S", "--sync", help = "Full synchronisation between gmail with local db. (default sync mode).", \
                           action ="store_true", dest="sync", default= False)
         
-        parser.add_option("-q", "--quick-sync", help = "Quick synchronisation between  gmail with local db.", \
+        parser.add_option("-Q", "--quick-sync", help = "Quick synchronisation between  gmail with local db.", \
                           action ="store_true", dest="qsync", default= False)
         
-        parser.add_option("-n", "--inc-sync", help = "Incremental synchronisation between gmail with local db.", \
+        parser.add_option("-N", "--inc-sync", help = "Incremental synchronisation between gmail with local db.", \
                           action ="store_true", dest="isync", default= False)
         
         parser.add_option("-i", "--imap-server", metavar = "HOSTNAME", \
@@ -76,9 +86,12 @@ class GMVaultLauncher(object):
                           help="Gmail email.",\
                           dest="email", default=None)
         
-        parser.add_option("-p", "--passwd", \
-                          help="Gmail password.",\
-                          dest="passwd", default='empty_passwd')
+        parser.add_option("-p", "--passwd",
+                          action="callback", callback=passwd_handling, dest="passwd", default='not_seen_passwd')
+        
+        parser.add_option("-s", "--save-passwd", \
+                          help="Save gmail password in conf file.",\
+                          action="store_true", dest="save_passwd", default=False)
         
         parser.add_option("-r", "--imap-request", metavar = "REQ", \
                           help="Imap request to restrict sync. (default: ALL)",\
@@ -183,6 +196,58 @@ class GMVaultLauncher(object):
         parsed_args['parser'] = parser
         
         return parsed_args
+    
+    
+    GMVAULT_DIR    = "GMVAULT_DIR"
+    
+    @classmethod
+    def read_password(cls, email):
+        """
+
+           Read credentials.
+           Look for the ddefined in env GMVAULT_DIR so by default to ~/.gmvault
+           Look for file GMVAULT_DIR/email.cred
+        """
+        gmv_dir = os.getenv(cls.GMVAULT_DIR, None)
+
+        # check by default in user[HOME]
+        if not gmv_dir:
+            LOG.critical("no ENV variable $GMVAULT_DIR defined. Set by default $GMVAULT_DIR to $HOME/.gmvault")
+            gmv_dir = "%s/.gmvault" % (os.getenv("HOME", "."))
+
+        #look for nms_client.cred in NMS_USER_DIR
+        user_passwd_file_path = "%s/%s.passwd" % (gmv_dir,email)
+
+        if os.path.exists(user_passwd_file_path):
+            passwd_file = open(user_passwd_file_path)
+            password = passwd_file.readline()
+
+            LOG.debug("password=[%s]" % (password))
+
+            return password
+            
+    def deal_with_credentials(self, args):
+        """
+           Deal with the credentials.
+           1) Password
+           --passwd passed. If --passwd passed and not password given if no password saved go in interactive mode
+           2) XOAuth Token
+        """
+        #if empty password look if there is saved passwd and take it otherwise go for a interactive sequence
+        #if you want to redefine the passwd --passwd --interactive --save-passwd
+        
+        if args['passwd'] == 'empty_passwd': 
+            # --passwd is here so look if there is a passwd in conf file 
+            # or go in interactive mode
+            if not args.get('email', None):
+                raise Exception("No email passed, Need to pass an email")
+            else:
+                passwd = self.read_password(args['email'])
+                
+                if not passwd: # go to interactive mode
+                    passwd = getpass.getpass('Please enter gmail password for %s' % (args['email']))
+                    print('passwd %s' % (passwd))
+                    #store it in dir if asked for
             
     
     
@@ -194,6 +259,10 @@ class GMVaultLauncher(object):
         die_with_usage = True
         
         try:
+            
+            self.deal_with_credentials(args)
+            
+            
             syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
                                        args['email'], args['passwd'])
             
