@@ -101,7 +101,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         except SystemExit, err:
             print("In Error success")
             
-    def test_cli_bad_login(self):
+    def ztest_cli_bad_login(self):
         """
            Test the cli interface bad option
         """
@@ -247,8 +247,54 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         #clean db dir
         delete_db_dir(args['db-dir'])
         
-
+    def test_credentials_handling(self):
+        """
+           Test all credentials handling
+        """
+        gmv.init_logging()
         
+        # test 1: enter passwd and go to interactive mode
+
+        sys.argv = ['gmvault.py', '--imap-request', \
+                    'Since 1-Nov-2011 Before 7-Nov-2011', \
+                    '--email', self.login, \
+                    '--passwd', '--interactive', '--db-dir', '/tmp/new-db-1']
+    
+        gmvault_launcher = gmv.GMVaultLauncher()
+        
+        args = gmvault_launcher.parse_args()
+        
+        credential = gmvault_launcher.get_credential(args, test_mode = {'activate': True, 'value' : 'a_password'}) #test_mode needed to avoid calling get_pass
+    
+        self.assertEquals(credential, {'type': 'passwd', 'value': 'a_password'})
+        
+        # store passwd and re-read it
+        sys.argv = ['gmvault.py', '--imap-request', \
+                    'Since 1-Nov-2011 Before 7-Nov-2011', \
+                    '--email', self.login, \
+                    '--passwd', '--save-passwd', '--db-dir', '/tmp/new-db-1']
+        
+        gmvault_launcher = gmv.GMVaultLauncher()
+        
+        args = gmvault_launcher.parse_args()
+        
+        credential = gmvault_launcher.get_credential(args, test_mode = {'activate': True, 'value' : 'a_new_password'})
+        
+        self.assertEquals(credential, {'type': 'passwd', 'option': 'saved', 'value': 'a_new_password'})
+        
+        # now read the password
+        sys.argv = ['gmvault.py', '--imap-request', \
+                    'Since 1-Nov-2011 Before 7-Nov-2011', \
+                    '--email', self.login, \
+                    '--passwd', '--db-dir', '/tmp/new-db-1']
+        
+        gmvault_launcher = gmv.GMVaultLauncher()
+        
+        args = gmvault_launcher.parse_args()
+        
+        credential = gmvault_launcher.get_credential(args, test_mode = {'activate': True, 'value' : "don't care"})
+        
+        self.assertEquals(credential, {'type': 'passwd', 'option': 'read', 'value': 'a_new_password'})
         
         
 

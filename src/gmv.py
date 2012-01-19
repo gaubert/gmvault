@@ -11,6 +11,7 @@ import getpass
 from cmdline_utils  import CmdLineParser
 import log_utils
 import imaplib
+import blowfish
 import gmvault_utils
 import gmvault
 
@@ -89,9 +90,13 @@ class GMVaultLauncher(object):
         parser.add_option("-p", "--passwd",
                           action="callback", callback=passwd_handling, dest="passwd", default='not_seen_passwd')
         
-        parser.add_option("-s", "--save-passwd", \
+        parser.add_option("--save-passwd", \
                           help="Save gmail password in conf file.",\
                           action="store_true", dest="save_passwd", default=False)
+        
+        parser.add_option("--interactive", \
+                          help="force interactive mode to redefine the password",\
+                          action="store_true", dest="force_interactive", default=False)
         
         parser.add_option("-r", "--imap-request", metavar = "REQ", \
                           help="Imap request to restrict sync. (default: ALL)",\
@@ -164,16 +169,22 @@ class GMVaultLauncher(object):
             self.error("Only one authentication mode can be used (password or oauth-token)")
         
         # add passwd
-        parsed_args['passwd']           = options.passwd
+        parsed_args['passwd']            = options.passwd
         
         # add imap request
-        parsed_args['request']          = options.request
+        parsed_args['request']           = options.request
 
         # add oauth token
-        parsed_args['oauth-token']      = options.oauth_token
+        parsed_args['oauth-token']       = options.oauth_token
         
         # add passwd
-        parsed_args['db-dir']           = options.db_dir
+        parsed_args['db-dir']            = options.db_dir
+        
+        # add save_password
+        parsed_args['save_passwd']       = options.save_passwd
+        
+        #force interactive mode
+        parsed_args['force_interactive'] = options.force_interactive
         
         # add db-cleaning
         # if request passed put it False unless it has been forced by the user
@@ -199,56 +210,125 @@ class GMVaultLauncher(object):
     
     
     GMVAULT_DIR    = "GMVAULT_DIR"
+
+    @classmethod 
+    @gmvault_utils.memoized
+    def get_home_dir_path(cls):
+        """
+           Get the Home dir
+        """
+        gmvault_dir = os.getenv(cls.GMVAULT_DIR, None)
+    
+        # check by default in user[HOME]
+        if not gmvault_dir:
+            LOG.info("no ENV variable $GMVAULT_DIR defined. Set by default $GMVAULT_DIR to $HOME/.gmvault")
+            gmvault_dir = "%s/.gmvault" % (os.getenv("HOME", "."))
+        
+        #create dir if not there
+        gmvault_utils.makedirs(gmvault_dir)
+    
+        return gmvault_dir
+    
+    
+    @classmethod
+    def get_secret(cls):
+        """
+           Get a secret from secret file or generate it
+        """
+        secret_file_path = '%s/token.sec' % (cls.get_home_dir_path())
+        if os.path.exists(secret_file_path):
+            secret = open(secret_file_path).read()
+        else:
+            secret = gmvault_utils.make_password()
+            fdesc = open(secret_file_path, 'w+')
+            fdesc.write(secret)
+            fdesc.close()
+        
+        return secret
+    
+    @classmethod
+    def store_passwd(cls, email, passwd):
+        """
+        """
+        passwd_file = '%s/%s.passwd' % (cls.get_home_dir_path(), email)
+    
+        fdesc = open(passwd_file, "w+")
+        
+        cipher       = blowfish.Blowfish(cls.get_secret())
+        cipher.initCTR()
+    
+        fdesc.write(cipher.encryptCTR(passwd))
+    
+        fdesc.close()
     
     @classmethod
     def read_password(cls, email):
         """
-
            Read credentials.
            Look for the ddefined in env GMVAULT_DIR so by default to ~/.gmvault
-           Look for file GMVAULT_DIR/email.cred
+           Look for file GMVAULT_DIR/email.passwd
         """
-        gmv_dir = os.getenv(cls.GMVAULT_DIR, None)
+        gmv_dir = cls.get_home_dir_path()
+        
+        #look for email.passwed in GMV_DIR
+        user_passwd_file_path = "%s/%s.passwd" % (gmv_dir, email)
 
-        # check by default in user[HOME]
-        if not gmv_dir:
-            LOG.critical("no ENV variable $GMVAULT_DIR defined. Set by default $GMVAULT_DIR to $HOME/.gmvault")
-            gmv_dir = "%s/.gmvault" % (os.getenv("HOME", "."))
-
-        #look for nms_client.cred in NMS_USER_DIR
-        user_passwd_file_path = "%s/%s.passwd" % (gmv_dir,email)
-
+        password = None
         if os.path.exists(user_passwd_file_path):
-            passwd_file = open(user_passwd_file_path)
-            password = passwd_file.readline()
+            passwd_file  = open(user_passwd_file_path)
+            
+            password = passwd_file.read()
+            cipher       = blowfish.Blowfish(cls.get_secret())
+            cipher.initCTR()
+            password     = cipher.decryptCTR(password)
 
             LOG.debug("password=[%s]" % (password))
-
-            return password
+        
+        return password
             
-    def deal_with_credentials(self, args):
+    def get_credential(self, args, test_mode = {'activate': False, 'value' : 'test_password'}):
         """
            Deal with the credentials.
            1) Password
            --passwd passed. If --passwd passed and not password given if no password saved go in interactive mode
            2) XOAuth Token
         """
-        #if empty password look if there is saved passwd and take it otherwise go for a interactive sequence
-        #if you want to redefine the passwd --passwd --interactive --save-passwd
-        
+        credential = { }
         if args['passwd'] == 'empty_passwd': 
             # --passwd is here so look if there is a passwd in conf file 
             # or go in interactive mode
             if not args.get('email', None):
                 raise Exception("No email passed, Need to pass an email")
             else:
-                passwd = self.read_password(args['email'])
+                # --passwd try to read password in conf file otherwise go to interactive mode and save it
+                passwd = None
+                # no interactive and no forced save password so try to read it
+                if not args['force_interactive'] and not args['save_passwd']:
+                    #try to read the password
+                    passwd = self.read_password(args['email'])
                 
                 if not passwd: # go to interactive mode
-                    passwd = getpass.getpass('Please enter gmail password for %s' % (args['email']))
-                    print('passwd %s' % (passwd))
-                    #store it in dir if asked for
+                    if not test_mode.get('activate', False):
+                        passwd = getpass.getpass('Please enter gmail password for %s and press enter:' % (args['email']))
+                    else:
+                        passwd = test_mode.get('value', 'no_password_given')
+                        
+                    credential = { 'type' : 'passwd', 'value' : passwd}
+                    
+                    #store it in dir if asked for --save_passwd
+                    if args['save_passwd']:
+                        self.store_passwd(args['email'], passwd)
+                        credential['option'] = 'saved'
+                else:
+                    credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read'}
+                        
+                        
+        elif args['passwd'] == 'not_seen_passwd' and args['oauth_token']:
+            print("Go in xauth token mode\n")
             
+            credential = { 'type' : 'oauth', 'value' : 'fake_oauth'}
+                        
+        return credential  
     
     
     def run(self, args):
@@ -259,9 +339,6 @@ class GMVaultLauncher(object):
         die_with_usage = True
         
         try:
-            
-            self.deal_with_credentials(args)
-            
             
             syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
                                        args['email'], args['passwd'])
@@ -309,11 +386,13 @@ def bootstrap_run():
     
     LOG.critical("")
     
-    gmvault = GMVaultLauncher()
+    gmvlt = GMVaultLauncher()
     
-    args = gmvault.parse_args()
+    args = gmvlt.parse_args()
     
-    gmvault.run(args)
+    gmvlt.get_credential(args)
+    
+    gmvlt.run(args)
    
     
 if __name__ == '__main__':

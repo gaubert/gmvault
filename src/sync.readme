@@ -186,7 +186,11 @@ enter password:
 
 Password has been saved in ~/.gmvault/passwd
 3) use password in non interactive mode possible
-sync --email b.f@gmail.com --passwd --non-interactive
+sync --email b.f@gmail.com --passwd
+look in ~.gmvault/passwd for the password
+
+3.1) use password in interactive mode even if password saved and overwrite saved password
+sync --email b.f@gmail.com --passwd --interactive --save-passwd
 look in ~.gmvault/passwd for the password
 
 4) use token (first time save it and next time use it)
