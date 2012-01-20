@@ -83,7 +83,7 @@ def get_oauth_tok_sec(email, a_webbrowser = None, debug=False):
 
     return (final_token.key, final_token.secret)
 
-def generate_xoauth(token, secret, email, two_legged=False):
+def generate_xoauth_str(token, secret, email, two_legged=False):
     nonce = str(random.randrange(2**64 - 1))
     timestamp = str(int(time.time()))
     if two_legged:

@@ -12,6 +12,7 @@ from cmdline_utils  import CmdLineParser
 import log_utils
 import imaplib
 import blowfish
+import oauth_utils
 import gmvault_utils
 import gmvault
 
@@ -260,12 +261,26 @@ class GMVaultLauncher(object):
         fdesc.write(cipher.encryptCTR(passwd))
     
         fdesc.close()
+        
+    @classmethod
+    def store_oauth_credentials(cls, email, token, secret):
+        """
+        """
+        oauth_file = '%s/%s.oauth' % (cls.get_home_dir_path(), email)
+    
+        fdesc = open(oauth_file, "w+")
+        
+        fdesc.write(token)
+        fdesc.write('\n')
+        fdesc.write(secret)
+    
+        fdesc.close()
     
     @classmethod
     def read_password(cls, email):
         """
-           Read credentials.
-           Look for the ddefined in env GMVAULT_DIR so by default to ~/.gmvault
+           Read password credentials
+           Look for the defined in env GMVAULT_DIR so by default to ~/.gmvault
            Look for file GMVAULT_DIR/email.passwd
         """
         gmv_dir = cls.get_home_dir_path()
@@ -285,6 +300,28 @@ class GMVaultLauncher(object):
             LOG.debug("password=[%s]" % (password))
         
         return password
+    
+    @classmethod
+    def read_oauth_tok_sec(cls, email):
+        """
+           Read oauth token secret credential
+           Look for the defined in env GMVAULT_DIR so by default to ~/.gmvault
+           Look for file GMVAULT_DIR/email.oauth
+        """
+        gmv_dir = cls.get_home_dir_path()
+        
+        #look for email.passwed in GMV_DIR
+        user_oauth_file_path = "%s/%s.oauth" % (gmv_dir, email)
+
+        token  = None
+        secret = None
+        if os.path.exists(user_oauth_file_path):
+            oauth_file  = open(user_oauth_file_path)
+            
+            token, secret = oauth_file.read().split('\n')
+            LOG.debug("token=[%s], secret=[%s]" % (token, secret))
+        
+        return token, secret
             
     def get_credential(self, args, test_mode = {'activate': False, 'value' : 'test_password'}):
         """
@@ -320,18 +357,29 @@ class GMVaultLauncher(object):
                         self.store_passwd(args['email'], passwd)
                         credential['option'] = 'saved'
                 else:
-                    credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read'}
+                    credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read' }
                         
                         
         elif args['passwd'] == 'not_seen_passwd' and args['oauth_token']:
             print("Go in xauth token mode\n")
             
-            credential = { 'type' : 'oauth', 'value' : 'fake_oauth'}
+            # get token secret
+            # if they are in a file then no need to call get_oauth_tok_sec
+            # will have to add 2 legged or 3 legged
+            token, secret = self.read_oauth_tok_sec(args['email'])
+           
+            if not token: 
+                token, secret = get_oauth_tok_sec(args['email'], a_webbrowser = webbrowser)
+                print('token = %s, secret = %s' % (token,secret) )
+                
+            xoauth_req = generate_xoauth(token, secret, args['email'])
+
+            credential = { 'type' : 'xoauth', 'value' : xoauth_req, 'option':None }
                         
         return credential  
     
     
-    def run(self, args):
+    def run(self, args, credential):
         """
            Run the grep with the given args 
         """
@@ -340,6 +388,7 @@ class GMVaultLauncher(object):
         
         try:
             
+            # hanlde credential in all levels
             syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
                                        args['email'], args['passwd'])
             
@@ -390,9 +439,9 @@ def bootstrap_run():
     
     args = gmvlt.parse_args()
     
-    gmvlt.get_credential(args)
+    credential = gmvlt.get_credential(args)
     
-    gmvlt.run(args)
+    gmvlt.run(args, credential)
    
     
 if __name__ == '__main__':

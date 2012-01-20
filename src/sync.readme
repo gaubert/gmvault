@@ -197,6 +197,6 @@ look in ~.gmvault/passwd for the password
 sync --email b.f@gmail.com --token the_token
 if token is repassed resave it
 
-
+Handle Credentials in all levels IMAP, GMVAULIMAP and the rest
 
 
