@@ -8,7 +8,6 @@ Created on Jan 19, 2012
  and xauth part of gyb http://code.google.com/p/got-your-back/source/browse/trunk/gyb.py
 
 '''
-import sys
 import gdata.service
 import webbrowser
 import random
@@ -83,7 +82,7 @@ def get_oauth_tok_sec(email, a_webbrowser = None, debug=False):
 
     return (final_token.key, final_token.secret)
 
-def generate_xoauth_str(token, secret, email, two_legged=False):
+def generate_xoauth_req(token, secret, email, two_legged=False):
     nonce = str(random.randrange(2**64 - 1))
     timestamp = str(int(time.time()))
     if two_legged:
@@ -116,6 +115,6 @@ do not use atom to create the request (no need to get a fake dependency
     
     token, secret = get_oauth_tok_sec('guillaume.aubert@gmail.com', a_webbrowser = webbrowser)
     print('token = %s, secret = %s' % (token,secret) )
-    req = generate_xoauth(token, secret, 'guillaume.aubert@gmail.com')
+    req = generate_xoauth_req(token, secret, 'guillaume.aubert@gmail.com')
     
     print(req)

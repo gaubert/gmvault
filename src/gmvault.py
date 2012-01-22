@@ -450,7 +450,7 @@ class GmailStorer(object):
            Return None if not found
         """
         filename = '%s.meta' % (a_id)
-        for dirs, subdirs, files in os.walk(os.path.abspath(self._db_dir)):
+        for dirs, _, files in os.walk(os.path.abspath(self._db_dir)):
             for filename in fnmatch.filter(files, filename):
                 return dirs
         
@@ -556,7 +556,7 @@ class GmailStorer(object):
                 os.remove(data_p)
             elif os.path.exists(comp_data_p):
                 os.remove(comp_data_p)
-            elif os.path.exists(crypt_comp_data_p):
+            elif os.path.exists(cryp_comp_data_p):
                 os.remove(comp_data_p)   
             
             if os.path.exists(metadata_p):
@@ -635,7 +635,7 @@ class GMVaulter(object):
             if the_dir:
                 return a_gstorer.unbury_metadata(a_id, the_dir) 
         except ValueError, json_error:
-            LOG.exception("Cannot read file %s. Try to fetch the data again" % ('%s/%s.meta' % (a_storage_dir, a_id)), json_error )
+            LOG.exception("Cannot read file %s. Try to fetch the data again" % ('%s.meta' % (a_id)), json_error )
         
         return None
     
