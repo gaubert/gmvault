@@ -60,7 +60,8 @@ want to restart from the moment when it failed.
 7.1) Check the Internal Date on a restore: it doesn't seem to be set properly => DONE
 7.2) Implement the restore => being tested
 7.3) add password save in .gmvault/.passwd => encrypted if possible at least obfuscated
-8) add oauth and a way to save the token.
+8) add oauth and a way to save the token. => miss integration in gmv
+8.0) need to go in error and --oauth-token and --password are passed together and email is mandatory
 8.1) add a way to add a restore label
 8.2) encrypt email data with possibly a pure python method (if not too slow) => Fixed and work on both Mac and Linux
 8.3) currently decision to decrypt is only taken with the fact that there is a cipher but we should also check that file is .crypt

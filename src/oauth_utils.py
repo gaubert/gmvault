@@ -19,7 +19,7 @@ import log_utils
 
 LOG = log_utils.LoggerFactory.get_logger('oauth')
 
-def get_oauth_tok_sec(email, a_webbrowser = None, debug=False):
+def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
     '''
        Generate token and secret
     '''
@@ -59,9 +59,9 @@ def get_oauth_tok_sec(email, a_webbrowser = None, debug=False):
               'Press enter to open the browser. Once you\'ve granted access you can switch back to gmvault.')
     
     # run web browser otherwise print message with url
-    if a_webbrowser:
+    if use_webbrowser:
         try:
-            a_webbrowser.open(str(auth_url))  
+            webbrowser.open(str(auth_url))  
         except Exception, err:
             LOG.exception(err)
         

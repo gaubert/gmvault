@@ -41,12 +41,12 @@ c) restrict synchronisation with an IMAP request
 
 LOG = log_utils.LoggerFactory.get_logger('gmv')
 
-def passwd_handling(option, opt_str, value, parser):
+def empty_handling(option, opt_str, value, parser):
     """
        to differenciate between a seen and non seen passwd command
     """
     # there is a passwd but it might be empty
-    setattr(parser.values, option.dest, 'empty_passwd')
+    setattr(parser.values, option.dest, 'empty')
 
 class GMVaultLauncher(object):
     
@@ -89,7 +89,7 @@ class GMVaultLauncher(object):
                           dest="email", default=None)
         
         parser.add_option("-p", "--passwd",
-                          action="callback", callback=passwd_handling, dest="passwd", default='not_seen_passwd')
+                          action="callback", callback = empty_handling, dest="passwd", default='not_seen')
         
         parser.add_option("--save-passwd", \
                           help="Save gmail password in conf file.",\
@@ -105,7 +105,8 @@ class GMVaultLauncher(object):
         
         parser.add_option("-o", "--oauth-token", metavar = "TOK", \
                           help="Oauth-token.",\
-                          dest="oauth_token", default=None)
+                          action="callback", callback = empty_handling, dest="oauth_token", default='not_seen')
+        
         
         parser.add_option("-d", "--db-dir", \
                           help="Database root directory. (default: ./gmvault-db)",\
@@ -156,7 +157,7 @@ class GMVaultLauncher(object):
                 port = int(options.port)
             else:
                 port = options.port
-        except Exception, e:
+        except Exception, _:
             self.error("port option %s is not a number. Please check the port value" % (port))
         
         # add port
@@ -166,8 +167,8 @@ class GMVaultLauncher(object):
         parsed_args['email']            = options.email
         
         # Cannot have passwd and oauth-token at the same time
-        if options.passwd and options.oauth_token:
-            self.error("Only one authentication mode can be used (password or oauth-token)")
+        #if options.passwd and options.oauth_token:
+        #    self.error("Only one authentication mode can be used (password or oauth-token)")
         
         # add passwd
         parsed_args['passwd']            = options.passwd
@@ -176,7 +177,7 @@ class GMVaultLauncher(object):
         parsed_args['request']           = options.request
 
         # add oauth token
-        parsed_args['oauth-token']       = options.oauth_token
+        parsed_args['oauth_token']       = options.oauth_token
         
         # add passwd
         parsed_args['db-dir']            = options.db_dir
@@ -331,7 +332,7 @@ class GMVaultLauncher(object):
            2) XOAuth Token
         """
         credential = { }
-        if args['passwd'] == 'empty_passwd': 
+        if args['passwd'] == 'empty': 
             # --passwd is here so look if there is a passwd in conf file 
             # or go in interactive mode
             if not args.get('email', None):
@@ -360,7 +361,7 @@ class GMVaultLauncher(object):
                     credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read' }
                         
                         
-        elif args['passwd'] == 'not_seen_passwd' and args['oauth_token']:
+        elif args['passwd'] == 'not_seen' and args['oauth_token']:
             print("Go in xauth token mode\n")
             
             # get token secret
@@ -369,10 +370,10 @@ class GMVaultLauncher(object):
             token, secret = self.read_oauth_tok_sec(args['email'])
            
             if not token: 
-                token, secret = get_oauth_tok_sec(args['email'], a_webbrowser = webbrowser)
+                token, secret = oauth_utils.get_oauth_tok_sec(args['email'], use_webbrowser = True)
                 print('token = %s, secret = %s' % (token,secret) )
                 
-            xoauth_req = generate_xoauth(token, secret, args['email'])
+            xoauth_req = oauth_utils.generate_xoauth_req(token, secret, args['email'])
 
             credential = { 'type' : 'xoauth', 'value' : xoauth_req, 'option':None }
                         
