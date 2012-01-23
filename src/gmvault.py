@@ -118,8 +118,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             self.server.login(self.login, self.password)
         elif self.credential['type'] == 'xoauth':
             #connect with xoauth
-            val = self.credential['value']
-            self.server.xoauth_login(val)
+            self.server.xoauth_login(self.credential['value'])
         else:
             raise Exception("Unknown authentication method %s. Please use xoauth or passwd authentication " % (self.credential['type']))
             

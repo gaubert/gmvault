@@ -305,7 +305,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         # test 1: enter passwd and go to interactive mode
 
         sys.argv = ['gmvault.py', '--imap-request', \
-                    'Since 1-Nov-2011 Before 7-Nov-2011', \
+                    'Since 1-Nov-2011 Before 4-Nov-2011', \
                     '--email', self.login, \
                     '--db-dir', '/tmp/new-db-1']
     

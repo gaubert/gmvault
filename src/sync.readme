@@ -60,13 +60,13 @@ want to restart from the moment when it failed.
 7.1) Check the Internal Date on a restore: it doesn't seem to be set properly => DONE
 7.2) Implement the restore => being tested
 7.3) add password save in .gmvault/.passwd => encrypted if possible at least obfuscated
-8) add oauth and a way to save the token. => miss integration in gmv
+8) add oauth and a way to save the token. => integration done. Now need testing
 8.0) need to go in error and --oauth-token and --password are passed together and email is mandatory
 8.1) add a way to add a restore label
 8.2) encrypt email data with possibly a pure python method (if not too slow) => Fixed and work on both Mac and Linux
 8.3) currently decision to decrypt is only taken with the fact that there is a cipher but we should also check that file is .crypt
 8.4) work on win support
-9) manage a .gmvault dir in your home
+9) manage a .gmvault dir in your home => done
 10) add progress bar and better logging outputs with verbose and non verbose mode
 11) release v0.5 
 12) add cloud saves
@@ -96,15 +96,6 @@ german letters).  => Now email body has it own file.
 - Fix the internal date problem. The internal date cannot be set using the IMAP Internal date
 definition as it is used in IMAPClient. The way to do it is to pass epoch seconds to imaplib.
 I don't know why but it works. See if there is another way. => Now OK
-
-error to check:
-[2012-01-14 01:56] CRITICAL: gmvault: restore email with id 1307167500404956043
-[2012-01-14 01:56] CRITICAL: gmvault: restore email with id 1273388864995368204
-[2012-01-14 01:56] CRITICAL: gmvault: restore email with id 1251355540850533440
-[2012-01-14 01:56] CRITICAL: gmvault: restore email with id 1242411549344126344
-[2012-01-14 01:57] CRITICAL: gmvault: restore email with id 1254263853986778928
-[2012-01-14 01:57] CRITICAL: gmvault: restore email with id 1254269417797093924
-ERROR
 
 ======================================================================
 ERROR: test_restore_on_gmail (__main__.TestGMVault)

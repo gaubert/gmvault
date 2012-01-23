@@ -287,7 +287,7 @@ class GMVaultLauncher(object):
         fdesc = open(oauth_file, "w+")
         
         fdesc.write(token)
-        fdesc.write('\n')
+        fdesc.write('::')
         fdesc.write(secret)
     
         fdesc.close()
@@ -333,11 +333,10 @@ class GMVaultLauncher(object):
         secret = None
         if os.path.exists(user_oauth_file_path):
             oauth_file  = open(user_oauth_file_path)
-            
-            token, secret = oauth_file.read().split('\n')
+            token, secret = oauth_file.read().split('::')
             LOG.debug("token=[%s], secret=[%s]" % (token, secret))
         
-        return token, secret
+        return token.strip(), secret.strip()
             
     def get_credential(self, args, test_mode = {'activate': False, 'value' : 'test_password'}):
         """
@@ -427,8 +426,9 @@ class GMVaultLauncher(object):
         except imaplib.IMAP4.error, imap_err:
             #bad login or password
             if str(imap_err) in ['[AUTHENTICATIONFAILED] Invalid credentials (Failure)', \
-                                 '[ALERT] Web login required: http://support.google.com/mail/bin/answer.py?answer=78754 (Failure)'] :
-                LOG.critical("ERROR: Invalid credentials, cannot login to the gmail server. Please check your login and password.")
+                                 '[ALERT] Web login required: http://support.google.com/mail/bin/answer.py?answer=78754 (Failure)', \
+                                 '[ALERT] Invalid credentials (Failure)'] :
+                LOG.critical("ERROR: Invalid credentials, cannot login to the gmail server. Please check your login and password or xoauth token.")
                 die_with_usage = False
             else:
                 LOG.critical("Error %s. For more information see log file" % (imap_err) )

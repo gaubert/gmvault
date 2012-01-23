@@ -75,7 +75,6 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
     try:
         final_token = gdata_serv.UpgradeToOAuthAccessToken(request_token)
     except gdata.service.TokenUpgradeFailed:
-        print 'Failed to upgrade the token. Did you grant GYB access in your browser?'
         LOG.critical('Token upgrade failed! Could not get OAuth access token.\n Did you grant gmvault access in your browser ?')
 
         return (None, None)
@@ -92,13 +91,11 @@ def generate_xoauth_req(a_token, a_secret, email, two_legged=False):
     if two_legged:
         request = atom.http_core.HttpRequest('https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s' % (email, urllib.quote(email)), 'GET')
          
-        print(str(request))
         signature = gdata.gauth.generate_hmac_signature(http_request=request, consumer_key=a_token, consumer_secret=a_secret, \
                                                         timestamp=timestamp, nonce=nonce, version='1.0', next=None)
         return '''GET https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s oauth_consumer_key="%s",oauth_nonce="%s",oauth_signature="%s",oauth_signature_method="HMAC-SHA1",oauth_timestamp="%s",oauth_version="1.0"''' % (email, urllib.quote(email), a_token, nonce, urllib.quote(signature), timestamp)
     else:
         request = atom.http_core.HttpRequest('https://mail.google.com/mail/b/%s/imap/' % email, 'GET')
-        print(str(request))
         signature = gdata.gauth.generate_hmac_signature(
             http_request=request, consumer_key='anonymous', consumer_secret='anonymous', timestamp=timestamp,
             nonce=nonce, version='1.0', next=None, token = a_token, token_secret= a_secret)
