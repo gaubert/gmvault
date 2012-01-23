@@ -11,9 +11,9 @@ import os
 
 import ssl
 import mod_imap
-import gmvault
-import gmvault_utils
-import gmv
+import gmv.gmvault as gmvault
+import gmv.gmvault_utils as gmvault
+import gmv as gmv
 
 
 def obfuscate_string(a_str):
