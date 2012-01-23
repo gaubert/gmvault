@@ -12,90 +12,63 @@
 => 2 syncing ways => checking info such as labels mainly and syncing only data
 
 
-Next Steps:
-- start packaging
-- start building the command line (full sync, incremental sync, mirror)
-- Add proper logging
-
-Commandline:
-gmvault --sync --imap-server --login --passwd --db-dir 
-gmvault --sync --imap-server --oauth-token --db-dir
-gmvault --inc-sync --imap-server --oauth-token --db-dir
-gmvault --quick-sync --imap-server --oauth-token --db-dir
-
-gmvault --restore --imap-server --login --passwd --db-dir 
-gmvault --restore --imap-server --oauth-token --db-dir
-
-gmvault --mirror --type=s3 --token
-
-NEXT => add restore mode,
-     => add mirror mode,
-     => create gui
-     
-     
- 
-strategy reconnect retry abort ?
-
-Apparently it seems to be some corrupted messages (http://www.google.com/support/forum/p/gmail/thread?tid=1acf74d2c4c1ed46&hl=en)
-This is worrying but the message should be flagged and maybe deleted later one.
-Let's see. In any case, the exception needs to be catched in 
-
-When Id is retrieved it is working. The problem is there when the data is retrieved
-
-
-To Do 22-12-2012:
------------------
-1) sync_delete can be redone as all the gm_id are retrieved from the filesystem at once 
-(test if it scales) => No need as scan all dirs is very fast (on linux at least)
-2) instead of iterating on the remote gmail ids, iterate (with generator) by group of 30 elements on the
-disk saved ids. This should scale for ever whatever the number of you have. 
-3) Test disconnection and see what is going on (error generated) => partly handled
-4) Potentially add a reconnection mode (try to reconect 3 times before to quit) => Done for Fetch 
-5) Add a way to restart from an imap id. Could be used when you have a very large mailbox and 
-want to restart from the moment when it failed.
-5.1) Add support for Chat emails => restore them in a default label. Give the possibility to name it.
-5.2) All_Mail IMAP dir needs to be enabled in gmail => handle this error
-6) add logging now otherwise it might be too late => PARTLY DONE
-7) test why labels cannot be hierarchically recreated => DONE
-7.1) Check the Internal Date on a restore: it doesn't seem to be set properly => DONE
-7.2) Implement the restore => being tested
-7.3) add password save in .gmvault/.passwd => encrypted if possible at least obfuscated
-8) add oauth and a way to save the token. => integration done. Now need testing
-8.0) need to go in error and --oauth-token and --password are passed together and email is mandatory
-8.1) add a way to add a restore label
-8.2) encrypt email data with possibly a pure python method (if not too slow) => Fixed and work on both Mac and Linux
-8.3) currently decision to decrypt is only taken with the fact that there is a cipher but we should also check that file is .crypt
-8.4) work on win support
-9) manage a .gmvault dir in your home => done
-10) add progress bar and better logging outputs with verbose and non verbose mode
-11) release v0.5 
-12) add cloud saves
-13) add Mac Gui, Linux or chrome GUI
-
 Add XOAuth support
 =================
 run through in python
 http://code.google.com/p/google-mail-xoauth-tools/wiki/XoauthDotPyRunThrough
 python lib: https://github.com/simplegeo/python-oauth2
 Also available in IMAPClient: http://imapclient.freshfoo.com/browser/imapclient/imapclient.py
- 
-Implement the restore emails
-============================
-
-See how to create tests
-
-Check the gmail labels that already exists cannot be created (badly created)
 
 06.01.12
 --------
 - Had to change the way email body was stored. Before it was in a json persisting struct.
 It is not possible because of encoding issues. Problem with iso-81.. (latin encoding for
 german letters).  => Now email body has it own file. 
-- 
 
-- Fix the internal date problem. The internal date cannot be set using the IMAP Internal date
-definition as it is used in IMAPClient. The way to do it is to pass epoch seconds to imaplib.
-I don't know why but it works. See if there is another way. => Now OK
+To Do 22-12-2012:
+-----------------
+CLOSED 1) sync_delete can be redone as all the gm_id are retrieved from the filesystem at once 
+(test if it scales) => No need as scan all dirs is very fast (on linux at least)
+CLOSED 2) instead of iterating on the remote gmail ids, iterate (with generator) by group of 30 elements on the
+disk saved ids. This should scale for ever whatever the number of you have. => Not done but not necessary
+CLOSED 3) Test disconnection and see what is going on (error generated) => to be validated with tests if possible
+CLOSED 7) test why labels cannot be hierarchically recreated => DONE
+CLOSED 7.1) Check the Internal Date on a restore: it doesn't seem to be set properly => DONE
+CLOSED 7.3) add password save in .gmvault/.passwd => encrypted if possible at least obfuscated => Done
+CLOSED 8.0) need to go in error and --oauth-token and --password are passed together and email is mandatory => DONE
+CLOSED 9) manage a .gmvault dir in your home => done
+4) potentially add a reconnection mode (try to reconect 3 times before to quit) => Done for Fetch 
+5) add a way to restart from an imap id. Could be used when you have a very large mailbox and 
+want to restart from the moment when it failed. => not sure it will be useful at the moment
+5.1) add support for Chat emails => restore them in a default label. Give the possibility to name it.
+5.2) All_Mail IMAP dir needs to be enabled in gmail => handle this error
+6) add logging now otherwise it might be too late => PARTLY DONE
+7.2) Implement the restore => being tested
+8) add oauth and a way to save the token. => integration done. Now need testing
+8.1) add a way to add a restore label
+8.2) encrypt email data with possibly a pure python method (if not too slow) => Fixed and work on both Mac and Linux
+8.3) currently decision to decrypt is only taken with the fact that there is a cipher but we should also check that file is .crypt
+8.4) work on win support
+8.5) test two legged oauth (need an admin password) 
+10) add progress bar and better logging outputs with verbose and non verbose mode
+11) release v0.5 
+12) add cloud saves
+13) add Mac Gui, Linux or chrome GUI
+ 
+
+====== gmail corruption problems ======
+There are 2 problems:
+- gmail email cannot be Fetched from imap 
+
+Apparently there seem to be some corrupted messages (http://www.google.com/support/forum/p/gmail/thread?tid=1acf74d2c4c1ed46&hl=en)
+This is worrying but the message should be flagged and maybe deleted later one.
+Let's see. In any case, the exception needs to be catched in 
+
+When Id is retrieved it is working. The problem is there when the data is retrieved
+
+The error is now handled and ids will be flagged
+
+- gmail email can be Fetched from imap but they stay unreadable. They cannot be restored in an email account
 
 ======================================================================
 ERROR: test_restore_on_gmail (__main__.TestGMVault)
@@ -124,37 +97,7 @@ This message has no header and seems to be only a body in base64 => cannot resto
 It should be put in a containement directory and flagged.
 Add Message-ID email 
 
-
-Parse these info => 
-str: Subject: Marta Gutierrez commented on her Wall post.
-Message-ID: <c5b5deee29e373ca42cec75e4ef8384e@www.facebook.com>
-
-=> Store now subject and message id => use it to check if the message should be revived
-
-
-Connection Error after timeout (no connection)
-Traceback (most recent call last):
-  File "/home/aubert/workspace/gmvault/src/gmvault_tests.py", line 564, in test_search_with_gmid
-    gimap.connect()
-  File "/home/aubert/Dev/projects/gmvault/src/gmvault.py", line 114, in connect
-    self.server = mimap.MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, ssl= self.ssl)
-  File "/home/aubert/Dev/projects/gmvault/src/mod_imap.py", line 104, in __init__
-    super(MonkeyIMAPClient, self).__init__(host, port, use_uid, ssl)
-  File "/home/aubert/local_python/lib/python2.6/site-packages/imapclient/imapclient.py", line 104, in __init__
-    self._imap = self._create_IMAP4()
-  File "/home/aubert/Dev/projects/gmvault/src/mod_imap.py", line 113, in _create_IMAP4
-    return ImapClass(self.host, self.port)
-  File "/home/aubert/Dev/projects/gmvault/src/mod_imap.py", line 28, in __init__
-    imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
-  File "/usr/lib/python2.6/imaplib.py", line 1138, in __init__
-    IMAP4.__init__(self, host, port)
-  File "/usr/lib/python2.6/imaplib.py", line 163, in __init__
-    self.open(host, port)
-  File "/usr/lib/python2.6/imaplib.py", line 1149, in open
-    self.sock = socket.create_connection((host, port))
-  File "/usr/lib/python2.6/socket.py", line 500, in create_connection
-    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
-gaierror: [Errno -2] Name or service not known
+Messages are put in the quarantine dir so that they will not be restored. 
 
 -----------------------------------
 
@@ -186,7 +129,7 @@ sync --email b.f@gmail.com --passwd --interactive --save-passwd
 look in ~.gmvault/passwd for the password
 
 4) use token (first time save it and next time use it)
-sync --email b.f@gmail.com --token the_token
+sync --email b.f@gmail.com --oauth-token the_token --save-token 
 if token is repassed resave it
 
 Handle Credentials in all levels IMAP, GMVAULIMAP and the rest
