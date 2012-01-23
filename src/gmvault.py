@@ -111,14 +111,15 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
            connect to the IMAP server
         """
-        
+        # create imap object
+        self.server = mimap.MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, ssl= self.ssl)
         # connect with password or xoauth
         if self.credential['type'] == 'passwd':
-            self.server = mimap.MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, ssl= self.ssl)
             self.server.login(self.login, self.password)
         elif self.credential['type'] == 'xoauth':
             #connect with xoauth
-            self.server.xoauth_login(self.credential['value'])
+            val = self.credential['value']
+            self.server.xoauth_login(val)
         else:
             raise Exception("Unknown authentication method %s. Please use xoauth or passwd authentication " % (self.credential['type']))
             

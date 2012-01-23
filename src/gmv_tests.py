@@ -247,7 +247,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         #clean db dir
         delete_db_dir(args['db-dir'])
         
-    def test_credentials_handling(self):
+    def ztest_password_handling(self):
         """
            Test all credentials handling
         """
@@ -295,6 +295,28 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         credential = gmvault_launcher.get_credential(args, test_mode = {'activate': True, 'value' : "don't care"})
         
         self.assertEquals(credential, {'type': 'passwd', 'option': 'read', 'value': 'a_new_password'})
+        
+    def test_oauth_tok_handling(self):
+        """
+           test connection with oauth
+        """
+        gmv.init_logging()
+        
+        # test 1: enter passwd and go to interactive mode
+
+        sys.argv = ['gmvault.py', '--imap-request', \
+                    'Since 1-Nov-2011 Before 7-Nov-2011', \
+                    '--email', self.login, \
+                    '--db-dir', '/tmp/new-db-1']
+    
+        gmvault_launcher = gmv.GMVaultLauncher()
+        
+        args = gmvault_launcher.parse_args()
+        
+        credential = gmvault_launcher.get_credential(args) #test_mode needed to avoid calling get_pass
+    
+        gmvault_launcher.run(args, credential)
+    
         
         
 
