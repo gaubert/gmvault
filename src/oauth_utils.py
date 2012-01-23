@@ -62,7 +62,7 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
     if use_webbrowser:
         try:
             webbrowser.open(str(auth_url))  
-        except Exception, err:
+        except Exception, err: 
             LOG.exception(err)
         
         raw_input("You should now see the web page on your browser now. "\
@@ -82,23 +82,27 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
 
     return (final_token.key, final_token.secret)
 
-def generate_xoauth_req(token, secret, email, two_legged=False):
+def generate_xoauth_req(a_token, a_secret, email, two_legged=False):
+    """
+       generate the xoauth req from a user token and secret.
+       Handle two_legged xoauth for admins.
+    """
     nonce = str(random.randrange(2**64 - 1))
     timestamp = str(int(time.time()))
     if two_legged:
         request = atom.http_core.HttpRequest('https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s' % (email, urllib.quote(email)), 'GET')
          
         print(str(request))
-        signature = gdata.gauth.generate_hmac_signature(http_request=request, consumer_key=token, consumer_secret=secret, \
+        signature = gdata.gauth.generate_hmac_signature(http_request=request, consumer_key=a_token, consumer_secret=a_secret, \
                                                         timestamp=timestamp, nonce=nonce, version='1.0', next=None)
-        return '''GET https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s oauth_consumer_key="%s",oauth_nonce="%s",oauth_signature="%s",oauth_signature_method="HMAC-SHA1",oauth_timestamp="%s",oauth_version="1.0"''' % (email, urllib.quote(email), token, nonce, urllib.quote(signature), timestamp)
+        return '''GET https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s oauth_consumer_key="%s",oauth_nonce="%s",oauth_signature="%s",oauth_signature_method="HMAC-SHA1",oauth_timestamp="%s",oauth_version="1.0"''' % (email, urllib.quote(email), a_token, nonce, urllib.quote(signature), timestamp)
     else:
         request = atom.http_core.HttpRequest('https://mail.google.com/mail/b/%s/imap/' % email, 'GET')
         print(str(request))
         signature = gdata.gauth.generate_hmac_signature(
             http_request=request, consumer_key='anonymous', consumer_secret='anonymous', timestamp=timestamp,
-            nonce=nonce, version='1.0', next=None, token=token, token_secret=secret)
-        return '''GET https://mail.google.com/mail/b/%s/imap/ oauth_consumer_key="anonymous",oauth_nonce="%s",oauth_signature="%s",oauth_signature_method="HMAC-SHA1",oauth_timestamp="%s",oauth_token="%s",oauth_version="1.0"''' % (email, nonce, urllib.quote(signature), timestamp, urllib.quote(token))
+            nonce=nonce, version='1.0', next=None, token = a_token, token_secret= a_secret)
+        return '''GET https://mail.google.com/mail/b/%s/imap/ oauth_consumer_key="anonymous",oauth_nonce="%s",oauth_signature="%s",oauth_signature_method="HMAC-SHA1",oauth_timestamp="%s",oauth_token="%s",oauth_version="1.0"''' % (email, nonce, urllib.quote(signature), timestamp, urllib.quote(a_token))
 
 if __name__ == '__main__':
     

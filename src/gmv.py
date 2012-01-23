@@ -158,13 +158,28 @@ class GMVaultLauncher(object):
             else:
                 port = options.port
         except Exception, _:
-            self.error("port option %s is not a number. Please check the port value" % (port))
+            parser.error("--port option %s is not a number. Please check the port value" % (port))
+            
         
         # add port
         parsed_args['port']             = port
         
+        if options.email == None:
+            parser.error("--email (-l) is a mandatory option. Please pass your email address")
+        
         # add login
         parsed_args['email']            = options.email
+        
+        if options.passwd == 'empty' and options.oauth_token == 'empty':
+            parser.error('You have to use one credential method. Please choose between xoauth and password (recommend xoauth).')
+        
+        # handle the credential
+        if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
+            #default to xoauth
+            LOG.critical('Default to xoauth authentication')
+            options.oauth_token = 'empty'
+            
+        
         
         # Cannot have passwd and oauth-token at the same time
         #if options.passwd and options.oauth_token:
@@ -331,39 +346,41 @@ class GMVaultLauncher(object):
            --passwd passed. If --passwd passed and not password given if no password saved go in interactive mode
            2) XOAuth Token
         """
+        
+        
         credential = { }
+        
+        #first check that there is an email
+        if not args.get('email', None):
+                raise Exception("No email passed, Need to pass an email")
+        
         if args['passwd'] == 'empty': 
             # --passwd is here so look if there is a passwd in conf file 
             # or go in interactive mode
-            if not args.get('email', None):
-                raise Exception("No email passed, Need to pass an email")
-            else:
-                # --passwd try to read password in conf file otherwise go to interactive mode and save it
-                passwd = None
-                # no interactive and no forced save password so try to read it
-                if not args['force_interactive'] and not args['save_passwd']:
-                    #try to read the password
-                    passwd = self.read_password(args['email'])
-                
-                if not passwd: # go to interactive mode
-                    if not test_mode.get('activate', False):
-                        passwd = getpass.getpass('Please enter gmail password for %s and press enter:' % (args['email']))
-                    else:
-                        passwd = test_mode.get('value', 'no_password_given')
-                        
-                    credential = { 'type' : 'passwd', 'value' : passwd}
-                    
-                    #store it in dir if asked for --save_passwd
-                    if args['save_passwd']:
-                        self.store_passwd(args['email'], passwd)
-                        credential['option'] = 'saved'
-                else:
-                    credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read' }
-                        
-                        
-        elif args['passwd'] == 'not_seen' and args['oauth_token']:
-            print("Go in xauth token mode\n")
+
+            # --passwd try to read password in conf file otherwise go to interactive mode and save it
+            passwd = None
+            # no interactive and no forced save password so try to read it
+            if not args['force_interactive'] and not args['save_passwd']:
+                #try to read the password
+                passwd = self.read_password(args['email'])
             
+            if not passwd: # go to interactive mode
+                if not test_mode.get('activate', False):
+                    passwd = getpass.getpass('Please enter gmail password for %s and press enter:' % (args['email']))
+                else:
+                    passwd = test_mode.get('value', 'no_password_given')
+                    
+                credential = { 'type' : 'passwd', 'value' : passwd}
+                
+                #store it in dir if asked for --save_passwd
+                if args['save_passwd']:
+                    self.store_passwd(args['email'], passwd)
+                    credential['option'] = 'saved'
+            else:
+                credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read' }
+                               
+        elif args['passwd'] == 'not_seen' and args['oauth_token']:
             # get token secret
             # if they are in a file then no need to call get_oauth_tok_sec
             # will have to add 2 legged or 3 legged
@@ -372,6 +389,8 @@ class GMVaultLauncher(object):
             if not token: 
                 token, secret = oauth_utils.get_oauth_tok_sec(args['email'], use_webbrowser = True)
                 print('token = %s, secret = %s' % (token,secret) )
+                #store newly created token
+                self.store_oauth_credentials(args['email'], token, secret)
                 
             xoauth_req = oauth_utils.generate_xoauth_req(token, secret, args['email'])
 
