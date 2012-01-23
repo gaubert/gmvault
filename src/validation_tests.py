@@ -12,8 +12,6 @@ import os
 import ssl
 import gmv.gmvault as gmvault
 import gmv.gmvault_utils as gmvault_utils
-import gmv.gmv as gmv
-
 
 def obfuscate_string(a_str):
     """ use base64 to obfuscate a string """

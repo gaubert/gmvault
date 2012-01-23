@@ -10,10 +10,10 @@ import shutil
 import os
 
 import ssl
-import mod_imap
+import gmv.mod_imap as mod_imap
 import gmv.gmvault as gmvault
-import gmv.gmvault_utils as gmvault
-import gmv as gmv
+import gmv.gmvault_utils as gmvault_utils
+import gmv.gmv_cmd as gmv_cmd
 
 
 def obfuscate_string(a_str):
@@ -524,7 +524,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
            Test the logging mechanism
         """
         
-        import log_utils
+        import gmv.log_utils as log_utils
         log_utils.LoggerFactory.setup_cli_app_handler('./gmv.log') 
         
         LOG = log_utils.LoggerFactory.get_logger('gmv') #pylint:disable-msg=C0103
@@ -550,11 +550,12 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
            Test encryption with blowfish
         """
         file_path = '../etc/tests/test_few_days_syncer/2384403887202624608.eml.gz'
+        
         import gzip
-        import blowfish
+        import gmv.blowfish
         
         #create blowfish cipher
-        cipher = blowfish.Blowfish('VerySeCretKey')
+        cipher = gmv.blowfish.Blowfish('VerySeCretKey')
          
         gz_fd = gzip.open(file_path)
         

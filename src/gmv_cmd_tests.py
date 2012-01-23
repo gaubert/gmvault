@@ -10,10 +10,10 @@ import shutil
 import os
 
 import ssl
-import gmvault
-import gmvault_utils
-import gmv
 import imaplib
+import gmv.gmvault as gmvault
+import gmv.gmvault_utils as gmvault_utils
+import gmv.gmv_cmd as gmv_cmd
 
 
 def obfuscate_string(a_str):
@@ -70,7 +70,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     'Since 1-Nov-2011 Before 4-Nov-2011', \
                     '--email', self.login, '--passwd', 'bar']
     
-        gmvaulter = gmv.GMVaultLauncher()
+        gmvaulter = gmv_cmd.GMVaultLauncher()
         
         args = gmvaulter.parse_args()
     
@@ -90,7 +90,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     'Since 1-Nov-2011 Before 4-Nov-2011', \
                     '--email', self.login, '--passwd', 'bar']
     
-        gmvaulter = gmv.GMVaultLauncher()
+        gmvaulter = gmv_cmd.GMVaultLauncher()
         
         args = gmvaulter.parse_args()
     
@@ -110,7 +110,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     'Since 1-Nov-2011 Before 4-Nov-2011', \
                     '--email', 'jjj', '--passwd', 'bar']
     
-        gmvaulter = gmv.GMVaultLauncher()
+        gmvaulter = gmv_cmd.GMVaultLauncher()
         
         args = gmvaulter.parse_args()
     
@@ -131,7 +131,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     'imap.gmail.com', '--port', '1452', \
                     '--login', 'foo', '--passwd', 'bar']
     
-        gmvaulter = gmv.GMVaultLauncher()
+        gmvaulter = gmv_cmd.GMVaultLauncher()
     
         try:
             _ = gmvaulter.parse_args()
@@ -152,7 +152,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     'Since 1-Nov-2011 Before 10-Nov-2011', \
                     '--email', 'foo', '--passwd', 'bar']
     
-        gmvaulter = gmv.GMVaultLauncher()
+        gmvaulter = gmv_cmd.GMVaultLauncher()
     
         try:
             args = gmvaulter.parse_args()
@@ -181,7 +181,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     'Since 1-Nov-2011 Before 5-Nov-2011', '--email', \
                     self.login, '--passwd', self.passwd]
     
-        gmvault_launcher = gmv.GMVaultLauncher()
+        gmvault_launcher = gmv_cmd.GMVaultLauncher()
         
         args = gmvault_launcher.parse_args()
     
@@ -207,7 +207,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            delete sync via command line
         """
-        gmv.init_logging()
+        gmv_cmd.init_logging()
         
         #first request to have the extra dirs
         sys.argv = ['gmvault.py', '--imap-server', 'imap.gmail.com', \
@@ -216,7 +216,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     '--email', self.login, \
                     '--passwd', self.passwd, '--db-dir', '/tmp/new-db-1']
     
-        gmvault_launcher = gmv.GMVaultLauncher()
+        gmvault_launcher = gmv_cmd.GMVaultLauncher()
         
         args = gmvault_launcher.parse_args()
     
@@ -251,7 +251,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            Test all credentials handling
         """
-        gmv.init_logging()
+        gmv_cmd.init_logging()
         
         # test 1: enter passwd and go to interactive mode
 
@@ -260,7 +260,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     '--email', self.login, \
                     '--passwd', '--interactive', '--db-dir', '/tmp/new-db-1']
     
-        gmvault_launcher = gmv.GMVaultLauncher()
+        gmvault_launcher = gmv_cmd.GMVaultLauncher()
         
         args = gmvault_launcher.parse_args()
         
@@ -274,7 +274,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     '--email', self.login, \
                     '--passwd', '--save-passwd', '--db-dir', '/tmp/new-db-1']
         
-        gmvault_launcher = gmv.GMVaultLauncher()
+        gmvault_launcher = gmv_cmd.GMVaultLauncher()
         
         args = gmvault_launcher.parse_args()
         
@@ -288,7 +288,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     '--email', self.login, \
                     '--passwd', '--db-dir', '/tmp/new-db-1']
         
-        gmvault_launcher = gmv.GMVaultLauncher()
+        gmvault_launcher = gmv_cmd.GMVaultLauncher()
         
         args = gmvault_launcher.parse_args()
         
@@ -300,7 +300,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            test connection with oauth
         """
-        gmv.init_logging()
+        gmv_cmd.init_logging()
         
         # test 1: enter passwd and go to interactive mode
 
@@ -309,7 +309,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     '--email', self.login, \
                     '--db-dir', '/tmp/new-db-1']
     
-        gmvault_launcher = gmv.GMVaultLauncher()
+        gmvault_launcher = gmv_cmd.GMVaultLauncher()
         
         args = gmvault_launcher.parse_args()
         
