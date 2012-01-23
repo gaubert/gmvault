@@ -20,11 +20,7 @@ import gmvault_utils as gmvault_utils
 import mod_imap as mimap
 
 
-
 LOG = log_utils.LoggerFactory.get_logger('gmvault')
-
-
-
 
 #retry decorator with nb of tries
 def retry(a_nb_tries = 3):
@@ -97,14 +93,14 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     
     GET_GMAIL_ID_DATE = [ GMAIL_ID,  IMAP_INTERNALDATE]
 
-    def __init__(self, host, port, login, password, readonly_folder = True): #pylint:disable-msg=R0913
+    def __init__(self, host, port, login, credential, readonly_folder = True): #pylint:disable-msg=R0913
         '''
             Constructor
         '''
         self.host             = host
         self.port             = port
         self.login            = login
-        self.password         = password
+        self.credential       = credential
         self.ssl              = True
         self.use_uid          = True
         self.readonly_folder  = readonly_folder
@@ -115,10 +111,17 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
            connect to the IMAP server
         """
-        self.server = mimap.MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, ssl= self.ssl)
         
-        self.server.login(self.login, self.password)
-        
+        # connect with password or xoauth
+        if self.credential['type'] == 'passwd':
+            self.server = mimap.MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, ssl= self.ssl)
+            self.server.login(self.login, self.password)
+        elif self.credential['type'] == 'xoauth':
+            #connect with xoauth
+            self.server.xoauth_login(self.credential['value'])
+        else:
+            raise Exception("Unknown authentication method %s. Please use xoauth or passwd authentication " % (self.credential['type']))
+            
         # check gmailness
         self.check_gmailness()
         
@@ -568,7 +571,7 @@ class GMVaulter(object):
     """ 
     NB_GRP_OF_ITEMS = 100
     
-    def __init__(self, db_root_dir, host, port, login, passwd, encrypt_key = None): #pylint:disable-msg=R0913
+    def __init__(self, db_root_dir, host, port, login, credential, encrypt_key = None): #pylint:disable-msg=R0913
         """
            constructor
         """   
@@ -578,7 +581,7 @@ class GMVaulter(object):
         gmvault_utils.makedirs(self.db_root_dir)
             
         # create source and try to connect
-        self.src = GIMAPFetcher(host, port, login, passwd)
+        self.src = GIMAPFetcher(host, port, login, credential)
         
         self.src.connect()
         

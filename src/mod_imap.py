@@ -112,6 +112,16 @@ class MonkeyIMAPClient(IMAPClient): #pylint:disable-msg=R0903
         ImapClass = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
         return ImapClass(self.host, self.port)
     
+    def xoauth_login(self, xoauth_cred ):
+        """
+           Connect with xoauth
+           Redefine this method to suppress dependency to oauth2 (non-necessary)
+        """
+
+        typ, data = self._imap.authenticate('XOAUTH', lambda x: xoauth_cred)
+        self._checkok('authenticate', typ, data)
+        return data[0]         
+    
     def append(self, folder, msg, flags=(), msg_time=None):
         """Append a message to *folder*.
 

@@ -410,7 +410,7 @@ class GMVaultLauncher(object):
             
             # hanlde credential in all levels
             syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
-                                       args['email'], args['passwd'])
+                                       args['email'], credential)
             
             
             syncer.sync(args['request'], compress_on_disk = True, db_cleaning = args['db-cleaning'])
