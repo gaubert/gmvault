@@ -336,7 +336,10 @@ class GMVaultLauncher(object):
             token, secret = oauth_file.read().split('::')
             LOG.debug("token=[%s], secret=[%s]" % (token, secret))
         
-        return token.strip(), secret.strip()
+        if token: token   = token.strip()
+        if secret: secret = secret.trip() 
+        
+        return token, secret
             
     def get_credential(self, args, test_mode = {'activate': False, 'value' : 'test_password'}):
         """
