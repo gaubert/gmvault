@@ -1,0 +1,50 @@
+#!/bin/sh
+#set -x
+
+# force a friendly umask
+umask 002
+
+# Runs on Linux
+#################################
+## GMVAULT Distribution home directory
+#################################
+GMVAULT_HOME=..
+
+#################################
+## if GMVAULT_HOME is relative,
+## build the absolute path
+#################################
+D=`dirname "$GMVAULT_HOME"`
+B=`basename "$GMVAULT_HOME"`
+GMVAULT_HOME="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
+
+#################################
+## GMVAULT necessary information
+#################################
+PYTHON_BIN=$GMVAULT_HOME/lib/python-lib/bin/python
+export PYTHONPATH=$GMVAULT_HOME/lib:$PYTHONPATH
+
+###################################
+## create bootstrap and launch program
+## the bootstrap is always under
+## /tmp/rnpicker.bootstrap
+###################################
+
+
+# keep args in variables
+ARGS="$@"
+
+cat > /tmp/rnpicker.bootstrap.$$ << EOF
+import gmv.gmv_cmd as runner
+runner.bootstrap_run()
+EOF
+
+#./generate_arr $ARGS
+$PYTHON_BIN /tmp/rnpicker.bootstrap.$$ $ARGS
+res="$?"
+
+rm -f /tmp/rnpicker.bootstrap.$$
+
+exit $res
+
+
