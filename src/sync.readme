@@ -54,6 +54,12 @@ want to restart from the moment when it failed. => not sure it will be useful at
 11) release v0.5 
 12) add cloud saves
 13) add Mac Gui, Linux or chrome GUI
+
+Adding Makefile and setup.py
+1) make souce tarball
+2) make distribution for linux in a directory
+3) always have the possiblity to deploy in python/lib with setup.py
+4) make egg and make windows version
  
 
 ====== gmail corruption problems ======
