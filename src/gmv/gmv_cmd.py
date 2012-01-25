@@ -337,7 +337,7 @@ class GMVaultLauncher(object):
             LOG.debug("token=[%s], secret=[%s]" % (token, secret))
         
         if token: token   = token.strip()
-        if secret: secret = secret.trip() 
+        if secret: secret = secret.strip() 
         
         return token, secret
             
