@@ -36,7 +36,21 @@ c) restrict synchronisation with an IMAP request
 
 LOG = log_utils.LoggerFactory.get_logger('gmv')
 
+def empty_handling(option, opt_str, value, parser):
+    """
+       to differenciate between a seen and non seen passwd command
+    """
+    # there is a passwd but it might be empty
+    setattr(parser.values, option.dest, 'empty')
 
+
+class NotSeenAction(argparse.Action):
+    """
+       to differenciate between a seen and non seen command
+    """
+    def __call__(self, parser, namespace, values, option_string=None):
+        prin("IN CALLL")
+        setattr(namespace, self.dest, 'empty')
 
 class GMVaultLauncher(object):
     
@@ -60,39 +74,48 @@ class GMVaultLauncher(object):
         # A sync command
         sync_parser = subparsers.add_parser('sync', formatter_class=argparse.ArgumentDefaultsHelpFormatter, help='synchronize with given gmail account')
         #email argument can be optional so it should be an option
-        sync_parser.add_argument('-l', '--email', action='store', dest='email', default='from-config', help='email to sync with')
+        sync_parser.add_argument('email', \
+                                 action='store', default='empty_$_email', help='email to sync with')
         # sync typ
-        sync_parser.add_argument('-t','--type', action='store', default='full-sync', help='type of synchronisation')
+        sync_parser.add_argument('-t','--type', \
+                                 action='store', dest='type', \
+                                 default='full-sync', help='type of synchronisation')
         
-        sync_parser.add_argument("-i", "--imap-server", metavar = "HOSTNAME", \
-                              help="Gmail imap server hostname. (default: imap.gmail.com)",\
+        sync_parser.add_argument("-d", "--db-dir", \
+                                 action='store', help="Database root directory",\
+                                 dest="db_dir", default="./gmvault-db")
+        
+        sync_parser.add_argument("-r", "--imap-req", metavar = "REQ", \
+                                 help="Imap request to restrict sync. (default: ALL)",\
+                                 dest="request", default="ALL")
+        
+        sync_parser.add_argument("-z", "--db-cleaning", \
+                          help="To activate or deactive the disk db cleaning. Automatically deactivated if a imap req is passed in args.",\
+                          dest="db_cleaning", default=None)
+        
+        # for both when seen add const empty otherwise not_seen
+        # this allow to distinguish between an empty value and a non seen option
+        sync_parser.add_argument("-o", "--oauth", \
+                          help="use oauth for authentication (default method)",\
+                          action='store_const', dest="oauth_token", const='empty', default='not_seen')
+        
+        sync_parser.add_argument("-p", "--passwd", \
+                          help="use password authentication (not recommended)",
+                          action='store_const', dest="passwd", const='empty', default='not_seen')
+        
+        sync_parser.add_argument("--server", metavar = "HOSTNAME", \
+                              action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
                               dest="host", default="imap.gmail.com")
             
-        sync_parser.add_argument("-p", "--imap-port", metavar = "PORT", \
-                              help="Gmail imap server port. (default: 993)",\
+        sync_parser.add_argument("--port", metavar = "PORT", \
+                              action='store', help="Gmail imap server port. (default: 993)",\
                               dest="port", default=993)
+        
         
         sync_parser.set_defaults(verb='sync')
     
         
         sync_parser.epilogue = SYNC_HELP_EPILOGUE
-        
-        # A restore command
-        restore_parser = subparsers.add_parser('restore', help='restore email to a given email account')
-        restore_parser.add_argument('-l', '--email', action='store', default='from-config', help='email to sync with')
-        
-        # restore typ
-        restore_parser.add_argument('-t','--type', action='store', default='full-restore', help='type of synchronisation')
-        
-        restore_parser.add_argument("-i", "--imap-server", metavar = "HOSTNAME", \
-                              help="Gmail imap server hostname. (default: imap.gmail.com)",\
-                              dest="host", default="imap.gmail.com")
-            
-        restore_parser.add_argument("-p", "--imap-port", metavar = "PORT", \
-                              help="Gmail imap server port. (default: 993)",\
-                              dest="port", default=993)
-        
-        restore_parser.set_defaults(verb='restore')
         
         # A config command
         config_parser = subparsers.add_parser('config', help='add/delete/modify properties in configuration')
@@ -112,6 +135,39 @@ class GMVaultLauncher(object):
         
         if parsed_args.get('command', '') == 'sync':
             
+            #add email
+            parsed_args['email']            = options.email
+            
+            
+            if options.passwd == 'empty' and options.oauth_token == 'empty':
+                parser.error('You have to use one credential method. Please choose between oauth and password (recommend oauth).')
+        
+            # handle the credential
+            if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
+                #default to xoauth
+                LOG.critical('Default to xoauth authentication')
+                options.oauth_token = 'empty'
+            
+        
+            # Cannot have passwd and oauth-token at the same time
+            #if options.passwd and options.oauth_token:
+            #    self.error("Only one authentication mode can be used (password or oauth-token)")
+            
+            # add passwd
+            parsed_args['passwd']           = options.passwd
+            
+            # add oauth tok
+            parsed_args['oauth']            = options.oauth_token
+            
+            #add sync type
+            parsed_args['type']             = options.type
+            
+            # add imap request
+            parsed_args['request']          = options.request
+            
+            #add db_dir
+            parsed_args['db-dir']           = options.db_dir
+            
             # add host
             parsed_args['host']             = options.host
             
@@ -128,9 +184,23 @@ class GMVaultLauncher(object):
                 
             # add port
             parsed_args['port']             = port
+            
+            # add db-cleaning
+            # if request passed put it False unless it has been forced by the user
+            # default is True (db-cleaning done)
         
-        
-        
+            #default 
+            parsed_args['db-cleaning'] = True
+            
+            # if there is a value then it is forced
+            if options.db_cleaning: 
+                parsed_args['db-cleaning'] = parser.convert_to_boolean(options.db_cleaning)
+            elif parsed_args['request'] and not options.db_cleaning:
+                #else if we have a request and not forced put it to false
+                parsed_args['db-cleaning'] = False
+            
+            #add parser
+            parsed_args['parser']           = parser
         
         
         return parsed_args
@@ -266,7 +336,7 @@ class GMVaultLauncher(object):
         
         #first check that there is an email
         if not args.get('email', None):
-                raise Exception("No email passed, Need to pass an email")
+            raise Exception("No email passed, Need to pass an email")
         
         if args['passwd'] == 'empty': 
             # --passwd is here so look if there is a passwd in conf file 
@@ -294,7 +364,7 @@ class GMVaultLauncher(object):
             else:
                 credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read' }
                                
-        elif args['passwd'] == 'not_seen' and args['oauth_token']:
+        elif args['passwd'] == 'not_seen' and args['oauth']:
             # get token secret
             # if they are in a file then no need to call get_oauth_tok_sec
             # will have to add 2 legged or 3 legged
@@ -374,17 +444,15 @@ def bootstrap_run():
     
     args = gmvlt.parse_args()
     
-    print(args)
+    credential = gmvlt.get_credential(args)
     
-    #credential = gmvlt.get_credential(args)
-    
-    #gmvlt.run(args, credential)
+    gmvlt.run(args, credential)
    
     
 if __name__ == '__main__':
     
     import sys
-    sys.argv = ['gmvault.py', 'sync']
+    sys.argv = ['gmvault.py', 'sync', 'guillaume.aubert@gmail.com']
     
     bootstrap_run()
     

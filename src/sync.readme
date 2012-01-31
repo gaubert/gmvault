@@ -138,6 +138,18 @@ look in ~.gmvault/passwd for the password
 sync --email b.f@gmail.com --oauth-token the_token --save-token 
 if token is repassed resave it
 
-Handle Credentials in all levels IMAP, GMVAULIMAP and the rest
+Handle Credentials in all levels IMAP, GMVAULIMAP and the rest => Done
+
+
+
+Change commandline to support actions
+default=argparse.SUPPRESS
+
+gmv sync guillaume.aubert@gmail.com => full-sync of this account to the default db-dir with xoauth token for this account save or interactively asked
+gmv sync [--imap-server] [--imap-port] [--db-dir] [--oauth-token] [--password]
+gmv sync 
+
+
+
 
 
