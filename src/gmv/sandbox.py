@@ -7,6 +7,14 @@ Created on Jan 30, 2012
 import argparse
 import sys
 
+""" 
+   Comments regarding usability of the lib. 
+   By default you want to print the default in the help if you had them so the default formatter should print them
+   Also new lines are eaten in the epilogue strings. You would use an epilogue to show examples most of the time so you
+   want to have the possiblity to go to a new line. There should be a way to format the epilogue differently from  the rest  
+
+"""
+
 class CmdLineParser(argparse.ArgumentParser): #pylint: disable-msg=R0904
     """ Added service on OptionParser """ 
     
@@ -47,7 +55,7 @@ class CmdLineParser(argparse.ArgumentParser): #pylint: disable-msg=R0904
           :param out: file desc where to write the usage message
          
         """ 
-        argparse.ArgumentParse.print_help(self, out) 
+        super(CmdLineParser, self).print_help(out)
         if self.epilogue: 
             #print >> out, '\n%s' % textwrap.fill(self.epilogue, 100, replace_whitespace = False) 
             print >> out, '\n%s' % self.epilogue
@@ -89,6 +97,23 @@ class CmdLineParser(argparse.ArgumentParser): #pylint: disable-msg=R0904
            Print a message 
         """
         print("%s: %s\n" % (self.get_prog_name(), msg))
+        
+        
+SYNC_HELP_EPILOGUE = """Examples:
+
+a) full synchronisation with email and password login
+
+#> gmvault --email foo.bar@gmail.com --passwd vrysecrtpasswd 
+
+b) full synchronisation for german users that have to use googlemail instead of gmail
+
+#> gmvault --imap-server imap.googlemail.com --email foo.bar@gmail.com --passwd sosecrtpasswd
+
+c) restrict synchronisation with an IMAP request
+
+#> gmvault --imap-request 'Since 1-Nov-2011 Before 10-Nov-2011' --email foo.bar@gmail.com --passwd sosecrtpasswd 
+
+"""
 
 def test_command_parser():
     """
@@ -96,39 +121,50 @@ def test_command_parser():
     """
     #parser = argparse.ArgumentParser()
     
-    parser = CmdLineParser()
     
+    parser = CmdLineParser()
     
     subparsers = parser.add_subparsers(help='commands')
     
     # A sync command
-    sync_parser = subparsers.add_parser('sync', help='synchronize with given gmail account')
+    sync_parser = subparsers.add_parser('sync', formatter_class=argparse.ArgumentDefaultsHelpFormatter, help='synchronize with given gmail account')
     sync_parser.add_argument('email', action='store', help='email to sync with')
-    sync_parser.add_argument('-t','--type', action='store', help='type of synchronisation')
+    sync_parser.add_argument('-t','--type', action='store', default='full-sync', help='type of synchronisation')
     sync_parser.set_defaults(verb='sync')
+
     
-    # A create command
-    create_parser = subparsers.add_parser('create', help='Create a directory')
+    sync_parser.epilogue = SYNC_HELP_EPILOGUE
+    
+    # A restore command
+    delete_parser = subparsers.add_parser('restore', help='restore email to a given email account')
+    delete_parser.add_argument('email', action='store', help='email to sync with')
+    delete_parser.add_argument('--recursive', '-r', default=False, action='store_true',
+                               help='Remove the contents of the directory, too',
+                               )
+    
+    # A config command
+    create_parser = subparsers.add_parser('config', help='add/delete/modify properties in configuration')
     create_parser.add_argument('dirname', action='store', help='New directory to create')
     create_parser.add_argument('--read-only', default=False, action='store_true',
                                help='Set permissions to prevent writing to the directory',
                                )
     
-    # A delete command
-    delete_parser = subparsers.add_parser('delete', help='Remove a directory')
-    delete_parser.add_argument('dirname', action='store', help='The directory to remove')
-    delete_parser.add_argument('--recursive', '-r', default=False, action='store_true',
-                               help='Remove the contents of the directory, too',
-                               )
-    
-    sys.argv = ['gmvault.py', 'sync', '-h']
-    
+    # global help
+    print("================ Global Help (-h)================")
+    sys.argv = ['gmvault.py', '-h']
     print(parser.parse_args())
     
-    sys.argv = ['gmvault.py', 'sync', 'guillaume.aubert@gmail.com', '--type', 'full_sync']
+    #print("================ Global Help (--help)================")
+    #sys.argv = ['gmvault.py', '--help']
+    #print(parser.parse_args())
     
-    print(parser.parse_args())
+    #print("================ Sync Help (--help)================"
+    #sys.argv = ['gmvault.py', 'sync', '-h']
+    #print(parser.parse_args())
     
+    #sys.argv = ['gmvault.py', 'sync', 'guillaume.aubert@gmail.com', '--type', 'quick-sync']
+    
+    #print(parser.parse_args())
     #print("options = %s\n" % (options))
     #print("args = %s\n" % (args))
     
