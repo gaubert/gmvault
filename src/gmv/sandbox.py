@@ -14,7 +14,6 @@ import sys
    want to have the possiblity to go to a new line. There should be a way to format the epilogue differently from  the rest  
 
 """
-
 class CmdLineParser(argparse.ArgumentParser): #pylint: disable-msg=R0904
     """ Added service on OptionParser """ 
     
@@ -128,8 +127,19 @@ def test_command_parser():
     
     # A sync command
     sync_parser = subparsers.add_parser('sync', formatter_class=argparse.ArgumentDefaultsHelpFormatter, help='synchronize with given gmail account')
-    sync_parser.add_argument('email', action='store', help='email to sync with')
+    #email argument can be optional so it should be an option
+    sync_parser.add_argument('-l', '--email', action='store', dest='email', help='email to sync with')
+    # sync typ
     sync_parser.add_argument('-t','--type', action='store', default='full-sync', help='type of synchronisation')
+    
+    sync_parser.add_argument("-i", "--imap-server", metavar = "HOSTNAME", \
+                          help="Gmail imap server hostname. (default: imap.gmail.com)",\
+                          dest="host", default="imap.gmail.com")
+        
+    sync_parser.add_argument("-p", "--imap-port", metavar = "PORT", \
+                          help="Gmail imap server port. (default: 993)",\
+                          dest="port", default=993)
+    
     sync_parser.set_defaults(verb='sync')
 
     
@@ -150,17 +160,17 @@ def test_command_parser():
                                )
     
     # global help
-    print("================ Global Help (-h)================")
-    sys.argv = ['gmvault.py', '-h']
-    print(parser.parse_args())
+    #print("================ Global Help (-h)================")
+    #sys.argv = ['gmvault.py', '-h']
+    #print(parser.parse_args())
     
     #print("================ Global Help (--help)================")
     #sys.argv = ['gmvault.py', '--help']
     #print(parser.parse_args())
     
-    #print("================ Sync Help (--help)================"
-    #sys.argv = ['gmvault.py', 'sync', '-h']
-    #print(parser.parse_args())
+    print("================ Sync Help (--help)================")
+    sys.argv = ['gmvault.py', 'sync', '-h']
+    print(parser.parse_args())
     
     #sys.argv = ['gmvault.py', 'sync', 'guillaume.aubert@gmail.com', '--type', 'quick-sync']
     
