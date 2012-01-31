@@ -89,13 +89,13 @@ class CmdLineParser(argparse.ArgumentParser): #pylint: disable-msg=R0904
           Overrides parent ``OptionParser`` class's ``error()`` method and 
           forces the full usage message on error. 
         """ 
-        self.die_with_usage("%s: error: %s\n" % (self.get_prog_name(), msg))
+        self.die_with_usage("%s: error: %s\n" % (self.prog, msg))
         
     def message(self, msg):
         """
            Print a message 
         """
-        print("%s: %s\n" % (self.get_prog_name(), msg))
+        print("%s: %s\n" % (self.prog, msg))
         
         
 SYNC_HELP_EPILOGUE = """Examples:
@@ -146,31 +146,38 @@ def test_command_parser():
     sync_parser.epilogue = SYNC_HELP_EPILOGUE
     
     # A restore command
-    delete_parser = subparsers.add_parser('restore', help='restore email to a given email account')
-    delete_parser.add_argument('email', action='store', help='email to sync with')
-    delete_parser.add_argument('--recursive', '-r', default=False, action='store_true',
+    restore_parser = subparsers.add_parser('restore', help='restore email to a given email account')
+    restore_parser.add_argument('email', action='store', help='email to sync with')
+    restore_parser.add_argument('--recursive', '-r', default=False, action='store_true',
                                help='Remove the contents of the directory, too',
                                )
     
+    restore_parser.set_defaults(verb='restore')
+    
     # A config command
-    create_parser = subparsers.add_parser('config', help='add/delete/modify properties in configuration')
-    create_parser.add_argument('dirname', action='store', help='New directory to create')
-    create_parser.add_argument('--read-only', default=False, action='store_true',
+    config_parser = subparsers.add_parser('config', help='add/delete/modify properties in configuration')
+    config_parser.add_argument('dirname', action='store', help='New directory to create')
+    config_parser.add_argument('--read-only', default=False, action='store_true',
                                help='Set permissions to prevent writing to the directory',
                                )
     
+    config_parser.set_defaults(verb='config')
+    
+    
+    
+    
     # global help
     #print("================ Global Help (-h)================")
-    #sys.argv = ['gmvault.py', '-h']
-    #print(parser.parse_args())
+    sys.argv = ['gmvault.py']
+    print(parser.parse_args())
     
     #print("================ Global Help (--help)================")
     #sys.argv = ['gmvault.py', '--help']
     #print(parser.parse_args())
     
-    print("================ Sync Help (--help)================")
-    sys.argv = ['gmvault.py', 'sync', '-h']
-    print(parser.parse_args())
+    #print("================ Sync Help (--help)================")
+    #sys.argv = ['gmvault.py', 'sync', '-h']
+    #print(parser.parse_args())
     
     #sys.argv = ['gmvault.py', 'sync', 'guillaume.aubert@gmail.com', '--type', 'quick-sync']
     
