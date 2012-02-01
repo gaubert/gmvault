@@ -16,6 +16,15 @@ import gmvault
 
 from cmdline_utils  import CmdLineParser, CredentialHelper
 
+GLOBAL_HELP_EPILOGUE="""Examples:
+
+a) Get help for each of the individual commands
+
+#> gmvault sync -h
+#> gmvault restore --help
+
+"""
+
 SYNC_HELP_EPILOGUE = """Examples:
 
 a) Full synchronisation with email and oauth login in ./gmvault-db
@@ -60,12 +69,14 @@ class GMVaultLauncher(object):
             
         """
         parser = CmdLineParser()
-    
-        subparsers = parser.add_subparsers(help='commands')
         
+        parser.epilogue = GLOBAL_HELP_EPILOGUE
+    
+        subparsers = parser.add_subparsers(help='commands (mandatory).')
+         
         # A sync command
         sync_parser = subparsers.add_parser('sync', \
-                                            help='synchronize with given gmail account')
+                                            help='synchronize with given gmail account.')
         #email argument can be optional so it should be an option
         sync_parser.add_argument('email', \
                                  action='store', default='empty_$_email', help='email to sync with.')
@@ -106,11 +117,10 @@ class GMVaultLauncher(object):
         
         sync_parser.set_defaults(verb='sync')
     
-        
         sync_parser.epilogue = SYNC_HELP_EPILOGUE
         
         # A config command
-        config_parser = subparsers.add_parser('config', help='add/delete/modify properties in configuration')
+        config_parser = subparsers.add_parser('config', help='add/delete/modify properties in configuration.')
         config_parser.add_argument('dirname', action='store', help='New directory to create')
         config_parser.add_argument('--read-only', default=False, action='store_true',
                                    help='Set permissions to prevent writing to the directory',
@@ -214,7 +224,6 @@ class GMVaultLauncher(object):
             #choose full sync. Ignore the request
             syncer.sync('ALL', compress_on_disk = True, db_cleaning = args['db-cleaning'])
             
-            on_error = False
         elif args.get('type', '') == 'quick':
             
             #sync only the last 2 months in order to be quick (cleaning is import here because recent days might move again
@@ -227,6 +236,7 @@ class GMVaultLauncher(object):
             end   = today + datetime.timedelta(1)
             
             syncer.sync(syncer.get_imap_request_btw_2_dates(begin, end), compress_on_disk = True, db_cleaning = args['db-cleaning'])
+            
             
             
         elif args.get('type', '') == 'custom':
@@ -247,6 +257,8 @@ class GMVaultLauncher(object):
             
             if args.get('command', '') == 'sync':
                 self._sync(args, credential)
+                
+                on_error = False
             elif args.get('command', '') == 'restore':
                 LOG.critical("Restore Something TBD.\n")
             elif args.get('command', '') == 'config':
