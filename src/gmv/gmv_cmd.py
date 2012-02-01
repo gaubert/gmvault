@@ -1,29 +1,21 @@
 '''
-Created on Dec 16, 2011
+Created on Jan 31, 2012
 
 @author: guillaume.aubert@gmail.com
 '''
 import socket
 import sys
-import os
 import getpass
 
-from cmdline_utils  import CmdLineParser
+import argparse
 import log_utils
 import imaplib
-import blowfish
-import oauth_utils
 import gmvault_utils
 import gmvault
 
+from sandbox  import CmdLineParser, CredentialHelper
 
-
-
-HELP_USAGE = """ gmv [options]
-                                     
-Arguments: None"""
-
-HELP_EPILOGUE = """Examples:
+SYNC_HELP_EPILOGUE = """Examples:
 
 a) full synchronisation with email and password login
 
@@ -41,19 +33,18 @@ c) restrict synchronisation with an IMAP request
 
 LOG = log_utils.LoggerFactory.get_logger('gmv')
 
-def empty_handling(option, opt_str, value, parser):
+class NotSeenAction(argparse.Action):
     """
-       to differenciate between a seen and non seen passwd command
+       to differenciate between a seen and non seen command
     """
-    # there is a passwd but it might be empty
-    setattr(parser.values, option.dest, 'empty')
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, 'empty')
 
 class GMVaultLauncher(object):
     
     def __init__(self):
         """ constructor """
         super(GMVaultLauncher, self).__init__()
-
 
     def parse_args(self):
         """ Parse command line arguments 
@@ -63,342 +54,144 @@ class GMVaultLauncher(object):
             :except Exception Error
             
         """
-        #print sys.argv
-        
         parser = CmdLineParser()
+    
+        subparsers = parser.add_subparsers(help='commands')
         
-        parser.add_option("-S", "--sync", help = "Full synchronisation between gmail with local db. (default sync mode).", \
-                          action ="store_true", dest="sync", default= False)
+        # A sync command
+        sync_parser = subparsers.add_parser('sync', \
+                                            formatter_class=argparse.ArgumentDefaultsHelpFormatter, \
+                                            help='synchronize with given gmail account')
+        #email argument can be optional so it should be an option
+        sync_parser.add_argument('email', \
+                                 action='store', default='empty_$_email', help='email to sync with')
+        # sync typ
+        sync_parser.add_argument('-t','--type', \
+                                 action='store', dest='type', \
+                                 default='full-sync', help='type of synchronisation')
         
-        parser.add_option("-Q", "--quick-sync", help = "Quick synchronisation between  gmail with local db.", \
-                          action ="store_true", dest="qsync", default= False)
+        sync_parser.add_argument("-d", "--db-dir", \
+                                 action='store', help="Database root directory",\
+                                 dest="db_dir", default="./gmvault-db")
         
-        parser.add_option("-N", "--inc-sync", help = "Incremental synchronisation between gmail with local db.", \
-                          action ="store_true", dest="isync", default= False)
+        sync_parser.add_argument("-r", "--imap-req", metavar = "REQ", \
+                                 help="Imap request to restrict sync. (default: ALL)",\
+                                 dest="request", default="ALL")
         
-        parser.add_option("-i", "--imap-server", metavar = "HOSTNAME", \
-                          help="Gmail imap server hostname. (default: imap.gmail.com)",\
-                          dest="host", default="imap.gmail.com")
-        
-        parser.add_option("-t", "--imap-port", metavar = "PORT", \
-                          help="Gmail imap server port. (default: 993)",\
-                          dest="port", default=993)
-        
-        parser.add_option("-l", "--email", \
-                          help="Gmail email.",\
-                          dest="email", default=None)
-        
-        parser.add_option("-p", "--passwd",
-                          action="callback", callback = empty_handling, dest="passwd", default='not_seen')
-        
-        parser.add_option("--save-passwd", \
-                          help="Save gmail password in conf file.",\
-                          action="store_true", dest="save_passwd", default=False)
-        
-        parser.add_option("--interactive", \
-                          help="force interactive mode to redefine the password",\
-                          action="store_true", dest="force_interactive", default=False)
-        
-        parser.add_option("-r", "--imap-request", metavar = "REQ", \
-                          help="Imap request to restrict sync. (default: ALL)",\
-                          dest="request", default="ALL")
-        
-        parser.add_option("-o", "--oauth-token", metavar = "TOK", \
-                          help="Oauth-token.",\
-                          action="callback", callback = empty_handling, dest="oauth_token", default='not_seen')
-        
-        
-        parser.add_option("-d", "--db-dir", \
-                          help="Database root directory. (default: ./gmvault-db)",\
-                          dest="db_dir", default="./gmvault-db")
-        
-        parser.add_option("-z", "--db-cleaning", \
+        sync_parser.add_argument("-z", "--db-cleaning", \
                           help="To activate or deactive the disk db cleaning. Automatically deactivated if a imap req is passed in args.",\
                           dest="db_cleaning", default=None)
         
-        parser.add_option("-v", "--verbose", \
-                          help="Activate the verbose mode.",\
-                          action="store_true", dest="verbose", default=False)
-       
-        """
-        dir_help =  "Directory where the result files will be stored.".ljust(66)
-        dir_help += "(Default =. the current dir)".ljust(66)
-        dir_help += "The directory will be created if it doesn't exist.".ljust(66)
+        # for both when seen add const empty otherwise not_seen
+        # this allow to distinguish between an empty value and a non seen option
+        sync_parser.add_argument("-o", "--oauth", \
+                          help="use oauth for authentication (default method)",\
+                          action='store_const', dest="oauth_token", const='empty', default='not_seen')
         
-        parser.add_option("-d", "--dir", metavar="DIR", \
-                          help = dir_help,\
-                          dest ="output_dir", default=".")
-        """
+        sync_parser.add_argument("-p", "--passwd", \
+                          help="use password authentication (not recommended)",
+                          action='store_const', dest="passwd", const='empty', default='not_seen')
         
-        # add custom usage and epilogue
-        parser.epilogue = HELP_EPILOGUE
-        parser.usage    = HELP_USAGE
+        sync_parser.add_argument("--server", metavar = "HOSTNAME", \
+                              action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
+                              dest="host", default="imap.gmail.com")
+            
+        sync_parser.add_argument("--port", metavar = "PORT", \
+                              action='store', help="Gmail imap server port. (default: 993)",\
+                              dest="port", default=993)
         
-        (options, args) = parser.parse_args() #pylint: disable-msg=W0612
+        sync_parser.set_defaults(verb='sync')
+    
+        
+        sync_parser.epilogue = SYNC_HELP_EPILOGUE
+        
+        # A config command
+        config_parser = subparsers.add_parser('config', help='add/delete/modify properties in configuration')
+        config_parser.add_argument('dirname', action='store', help='New directory to create')
+        config_parser.add_argument('--read-only', default=False, action='store_true',
+                                   help='Set permissions to prevent writing to the directory',
+                                   )
+        config_parser.set_defaults(verb='config') 
+        
+        options = parser.parse_args()
+        
+        print("Namespace = %s\n" % (options))
         
         parsed_args = { }
         
-        #check the sync mode
-        if options.qsync:
-            parsed_args['sync-mode'] = 'quick-sync'
-        elif options.isync:
-            parsed_args['sync-mode'] = 'inc-sync'
-        else:
-            parsed_args['sync-mode'] = 'full-sync'
+        parsed_args['command'] = options.verb
         
-        # add host
-        parsed_args['host']             = options.host
+        if parsed_args.get('command', '') == 'sync':
+            
+            #add email
+            parsed_args['email']            = options.email
+            
+            
+            if options.passwd == 'empty' and options.oauth_token == 'empty':
+                parser.error('You have to use one credential method. Please choose between oauth and password (recommend oauth).')
         
-        #convert to int if necessary
-        port_type = type(options.port)
-        
-        try:
-            if port_type == type('s') or port_type == type("s"):
-                port = int(options.port)
-            else:
-                port = options.port
-        except Exception, _:
-            parser.error("--port option %s is not a number. Please check the port value" % (port))
+            # handle the credential
+            if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
+                #default to xoauth
+                LOG.critical('Default to xoauth authentication')
+                options.oauth_token = 'empty'
             
         
-        # add port
-        parsed_args['port']             = port
-        
-        if options.email == None:
-            parser.error("--email (-l) is a mandatory option. Please pass your email address")
-        
-        # add login
-        parsed_args['email']            = options.email
-        
-        if options.passwd == 'empty' and options.oauth_token == 'empty':
-            parser.error('You have to use one credential method. Please choose between xoauth and password (recommend xoauth).')
-        
-        # handle the credential
-        if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
-            #default to xoauth
-            LOG.critical('Default to xoauth authentication')
-            options.oauth_token = 'empty'
+            # Cannot have passwd and oauth-token at the same time
+            #if options.passwd and options.oauth_token:
+            #    self.error("Only one authentication mode can be used (password or oauth-token)")
             
-        
-        
-        # Cannot have passwd and oauth-token at the same time
-        #if options.passwd and options.oauth_token:
-        #    self.error("Only one authentication mode can be used (password or oauth-token)")
-        
-        # add passwd
-        parsed_args['passwd']            = options.passwd
-        
-        # add imap request
-        parsed_args['request']           = options.request
-
-        # add oauth token
-        parsed_args['oauth_token']       = options.oauth_token
-        
-        # add passwd
-        parsed_args['db-dir']            = options.db_dir
-        
-        # add save_password
-        parsed_args['save_passwd']       = options.save_passwd
-        
-        #force interactive mode
-        parsed_args['force_interactive'] = options.force_interactive
-        
-        # add db-cleaning
-        # if request passed put it False unless it has been forced by the user
-        # default is True (db-cleaning done)
-    
-        #default 
-        parsed_args['db-cleaning'] = True
-        
-        # if there is a value then it is forced
-        if options.db_cleaning: 
-            parsed_args['db-cleaning'] = parser.convert_to_boolean(options.db_cleaning)
-        elif parsed_args['request'] and not options.db_cleaning:
-            #else if we have a request and not forced put it to false
-            parsed_args['db-cleaning'] = False
+            # add passwd
+            parsed_args['passwd']           = options.passwd
             
-        #verbose
-        parsed_args['verbose']          = options.verbose
+            # add oauth tok
+            parsed_args['oauth']            = options.oauth_token
+            
+            #add sync type
+            parsed_args['type']             = options.type
+            
+            # add imap request
+            parsed_args['request']          = options.request
+            
+            #add db_dir
+            parsed_args['db-dir']           = options.db_dir
+            
+            # add host
+            parsed_args['host']             = options.host
+            
+            #convert to int if necessary
+            port_type = type(options.port)
+            
+            try:
+                if port_type == type('s') or port_type == type("s"):
+                    port = int(options.port)
+                else:
+                    port = options.port
+            except Exception, _:
+                parser.error("--port option %s is not a number. Please check the port value" % (port))
+                
+            # add port
+            parsed_args['port']             = port
+            
+            # add db-cleaning
+            # if request passed put it False unless it has been forced by the user
+            # default is True (db-cleaning done)
         
-        #add parser itself for error handling
-        parsed_args['parser'] = parser
+            #default 
+            parsed_args['db-cleaning'] = True
+            
+            # if there is a value then it is forced
+            if options.db_cleaning: 
+                parsed_args['db-cleaning'] = parser.convert_to_boolean(options.db_cleaning)
+            elif parsed_args['request'] and not options.db_cleaning:
+                #else if we have a request and not forced put it to false
+                parsed_args['db-cleaning'] = False
+            
+            #add parser
+            parsed_args['parser']           = parser
+        
         
         return parsed_args
-    
-    
-    GMVAULT_DIR    = "GMVAULT_DIR"
-
-    @classmethod 
-    @gmvault_utils.memoized
-    def get_home_dir_path(cls):
-        """
-           Get the Home dir
-        """
-        gmvault_dir = os.getenv(cls.GMVAULT_DIR, None)
-    
-        # check by default in user[HOME]
-        if not gmvault_dir:
-            LOG.info("no ENV variable $GMVAULT_DIR defined. Set by default $GMVAULT_DIR to $HOME/.gmvault")
-            gmvault_dir = "%s/.gmvault" % (os.getenv("HOME", "."))
-        
-        #create dir if not there
-        gmvault_utils.makedirs(gmvault_dir)
-    
-        return gmvault_dir
-    
-    
-    @classmethod
-    def get_secret(cls):
-        """
-           Get a secret from secret file or generate it
-        """
-        secret_file_path = '%s/token.sec' % (cls.get_home_dir_path())
-        if os.path.exists(secret_file_path):
-            secret = open(secret_file_path).read()
-        else:
-            secret = gmvault_utils.make_password()
-            fdesc = open(secret_file_path, 'w+')
-            fdesc.write(secret)
-            fdesc.close()
-        
-        return secret
-    
-    @classmethod
-    def store_passwd(cls, email, passwd):
-        """
-        """
-        passwd_file = '%s/%s.passwd' % (cls.get_home_dir_path(), email)
-    
-        fdesc = open(passwd_file, "w+")
-        
-        cipher       = blowfish.Blowfish(cls.get_secret())
-        cipher.initCTR()
-    
-        fdesc.write(cipher.encryptCTR(passwd))
-    
-        fdesc.close()
-        
-    @classmethod
-    def store_oauth_credentials(cls, email, token, secret):
-        """
-        """
-        oauth_file = '%s/%s.oauth' % (cls.get_home_dir_path(), email)
-    
-        fdesc = open(oauth_file, "w+")
-        
-        fdesc.write(token)
-        fdesc.write('::')
-        fdesc.write(secret)
-    
-        fdesc.close()
-    
-    @classmethod
-    def read_password(cls, email):
-        """
-           Read password credentials
-           Look for the defined in env GMVAULT_DIR so by default to ~/.gmvault
-           Look for file GMVAULT_DIR/email.passwd
-        """
-        gmv_dir = cls.get_home_dir_path()
-        
-        #look for email.passwed in GMV_DIR
-        user_passwd_file_path = "%s/%s.passwd" % (gmv_dir, email)
-
-        password = None
-        if os.path.exists(user_passwd_file_path):
-            passwd_file  = open(user_passwd_file_path)
-            
-            password = passwd_file.read()
-            cipher       = blowfish.Blowfish(cls.get_secret())
-            cipher.initCTR()
-            password     = cipher.decryptCTR(password)
-
-            LOG.debug("password=[%s]" % (password))
-        
-        return password
-    
-    @classmethod
-    def read_oauth_tok_sec(cls, email):
-        """
-           Read oauth token secret credential
-           Look for the defined in env GMVAULT_DIR so by default to ~/.gmvault
-           Look for file GMVAULT_DIR/email.oauth
-        """
-        gmv_dir = cls.get_home_dir_path()
-        
-        #look for email.passwed in GMV_DIR
-        user_oauth_file_path = "%s/%s.oauth" % (gmv_dir, email)
-
-        token  = None
-        secret = None
-        if os.path.exists(user_oauth_file_path):
-            oauth_file  = open(user_oauth_file_path)
-            token, secret = oauth_file.read().split('::')
-            LOG.debug("token=[%s], secret=[%s]" % (token, secret))
-        
-        if token: token   = token.strip()
-        if secret: secret = secret.strip() 
-        
-        return token, secret
-            
-    def get_credential(self, args, test_mode = {'activate': False, 'value' : 'test_password'}):
-        """
-           Deal with the credentials.
-           1) Password
-           --passwd passed. If --passwd passed and not password given if no password saved go in interactive mode
-           2) XOAuth Token
-        """
-        
-        
-        credential = { }
-        
-        #first check that there is an email
-        if not args.get('email', None):
-                raise Exception("No email passed, Need to pass an email")
-        
-        if args['passwd'] == 'empty': 
-            # --passwd is here so look if there is a passwd in conf file 
-            # or go in interactive mode
-
-            # --passwd try to read password in conf file otherwise go to interactive mode and save it
-            passwd = None
-            # no interactive and no forced save password so try to read it
-            if not args['force_interactive'] and not args['save_passwd']:
-                #try to read the password
-                passwd = self.read_password(args['email'])
-            
-            if not passwd: # go to interactive mode
-                if not test_mode.get('activate', False):
-                    passwd = getpass.getpass('Please enter gmail password for %s and press enter:' % (args['email']))
-                else:
-                    passwd = test_mode.get('value', 'no_password_given')
-                    
-                credential = { 'type' : 'passwd', 'value' : passwd}
-                
-                #store it in dir if asked for --save_passwd
-                if args['save_passwd']:
-                    self.store_passwd(args['email'], passwd)
-                    credential['option'] = 'saved'
-            else:
-                credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read' }
-                               
-        elif args['passwd'] == 'not_seen' and args['oauth_token']:
-            # get token secret
-            # if they are in a file then no need to call get_oauth_tok_sec
-            # will have to add 2 legged or 3 legged
-            token, secret = self.read_oauth_tok_sec(args['email'])
-           
-            if not token: 
-                token, secret = oauth_utils.get_oauth_tok_sec(args['email'], use_webbrowser = True)
-                print('token = %s, secret = %s' % (token,secret) )
-                #store newly created token
-                self.store_oauth_credentials(args['email'], token, secret)
-                
-            xoauth_req = oauth_utils.generate_xoauth_req(token, secret, args['email'])
-
-            credential = { 'type' : 'xoauth', 'value' : xoauth_req, 'option':None }
-                        
-        return credential  
     
     
     def run(self, args, credential):
@@ -462,12 +255,15 @@ def bootstrap_run():
     
     args = gmvlt.parse_args()
     
-    credential = gmvlt.get_credential(args)
+    credential = CredentialHelper.get_credential(args)
     
     gmvlt.run(args, credential)
    
     
 if __name__ == '__main__':
+    
+    #import sys
+    #sys.argv = ['gmvault.py', 'sync', 'guillaume.aubert@gmail.com']
     
     bootstrap_run()
     
