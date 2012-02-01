@@ -333,6 +333,11 @@ class GMVaultLauncher(object):
         
         return parsed_args
     
+    def _restore(self, args, credential):
+        """
+           Execute All restore operations
+        """
+    
     
     def _sync(self, args, credential):
         """
@@ -382,13 +387,18 @@ class GMVaultLauncher(object):
         try:
             
             if args.get('command', '') == 'sync':
+                
                 self._sync(args, credential)
                 
-                on_error = False
             elif args.get('command', '') == 'restore':
-                LOG.critical("Restore Something TBD.\n")
+                
+                self._restore(args, credential)
+                
             elif args.get('command', '') == 'config':
+                
                 LOG.critical("Configure something. TBD.\n")
+            
+            on_error = False
         
         except KeyboardInterrupt, _:
             LOG.critical("CRTL^C. Stop all operations.\n")
