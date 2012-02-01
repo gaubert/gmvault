@@ -25,6 +25,9 @@ a) Get help for each of the individual commands
 
 """
 
+REST_HELP_EPILOGUE = """Examples:
+"""
+
 SYNC_HELP_EPILOGUE = """Examples:
 
 a) Full synchronisation with email and oauth login in ./gmvault-db
@@ -60,13 +63,11 @@ class GMVaultLauncher(object):
         """ constructor """
         super(GMVaultLauncher, self).__init__()
         
-    def parse_args(self):
-        """ Parse command line arguments 
-            
-            :returns: a dict that contains the arguments
-               
-            :except Exception Error
-            
+    @gmvault_utils.memoized
+    def _create_parser(self):
+        """
+           Create the argument parser
+           Return the created parser
         """
         parser = CmdLineParser()
         
@@ -119,6 +120,50 @@ class GMVaultLauncher(object):
     
         sync_parser.epilogue = SYNC_HELP_EPILOGUE
         
+        # restore command
+        rest_parser = subparsers.add_parser('restore', \
+                                            help='restore gmvault-db to a given email account.')
+        #email argument can be optional so it should be an option
+        rest_parser.add_argument('email', \
+                                 action='store', default='empty_$_email', help='email account to restore.')
+        # restore mode
+        rest_parser.add_argument('-t','--type', \
+                                 action='store', dest='type', \
+                                 default='full', help='restore modes: full|quick|mirror. (default: full)')
+        
+        # add a label
+        rest_parser.add_argument('-l','--label', \
+                                 action='store', dest='label', \
+                                 default=None, help='Apply a label to restored emails')
+        
+        rest_parser.add_argument("-d", "--db-dir", \
+                                 action='store', help="Database root directory. (default: ./gmvault-db)",\
+                                 dest="db_dir", default="./gmvault-db")
+               
+        # for both when seen add const empty otherwise not_seen
+        # this allow to distinguish between an empty value and a non seen option
+        rest_parser.add_argument("-o", "--oauth", \
+                          help="use oauth for authentication. (default method)",\
+                          action='store_const', dest="oauth_token", const='empty', default='not_seen')
+        
+        rest_parser.add_argument("-p", "--passwd", \
+                          help="use password authentication. (not recommended)",
+                          action='store_const', dest="passwd", const='empty', default='not_seen')
+        
+        rest_parser.add_argument("--server", metavar = "HOSTNAME", \
+                              action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
+                              dest="host", default="imap.gmail.com")
+            
+        rest_parser.add_argument("--port", metavar = "PORT", \
+                              action='store', help="Gmail imap server port. (default: 993)",\
+                              dest="port", default=993)
+        
+        rest_parser.set_defaults(verb='restore')
+    
+        rest_parser.epilogue = REST_HELP_EPILOGUE
+    
+        
+        
         # A config command
         config_parser = subparsers.add_parser('config', help='add/delete/modify properties in configuration.')
         config_parser.add_argument('dirname', action='store', help='New directory to create')
@@ -127,6 +172,20 @@ class GMVaultLauncher(object):
                                    )
         config_parser.set_defaults(verb='config') 
         
+        return parser
+      
+        
+    def parse_args(self):
+        """ Parse command line arguments 
+            
+            :returns: a dict that contains the arguments
+               
+            :except Exception Error
+            
+        """
+        
+        parser = self._create_parser()
+          
         options = parser.parse_args()
         
         print("Namespace = %s\n" % (options))
@@ -200,10 +259,77 @@ class GMVaultLauncher(object):
             elif parsed_args['request'] and not options.db_cleaning:
                 #else if we have a request and not forced put it to false
                 parsed_args['db-cleaning'] = False
+                
+        elif parsed_args.get('command', '') == 'restore':
             
-            #add parser
-            parsed_args['parser']           = parser
+            #add email
+            parsed_args['email']            = options.email
+            
+            
+            if options.passwd == 'empty' and options.oauth_token == 'empty':
+                parser.error('You have to use one credential method. Please choose between oauth and password (recommend oauth).')
         
+            # handle the credential
+            if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
+                #default to xoauth
+                ('Use ')
+                options.oauth_token = 'empty'
+            
+            # Cannot have passwd and oauth-token at the same time
+            #if options.passwd and options.oauth_token:
+            #    self.error("Only one authentication mode can be used (password or oauth-token)")
+            
+            # add passwd
+            parsed_args['passwd']           = options.passwd
+            
+            # add oauth tok
+            parsed_args['oauth']            = options.oauth_token
+            
+            #add sync type
+            parsed_args['type']             = options.type
+            
+            # add label
+            parsed_args['label']            = options.label
+            
+            #add db_dir
+            parsed_args['db-dir']           = options.db_dir
+            
+            # add host
+            parsed_args['host']             = options.host
+            
+            #convert to int if necessary
+            port_type = type(options.port)
+            
+            try:
+                if port_type == type('s') or port_type == type("s"):
+                    port = int(options.port)
+                else:
+                    port = options.port
+            except Exception, _:
+                parser.error("--port option %s is not a number. Please check the port value" % (port))
+                
+            # add port
+            parsed_args['port']             = port
+            
+            # add db-cleaning
+            # if request passed put it False unless it has been forced by the user
+            # default is True (db-cleaning done)
+        
+            #default 
+            parsed_args['db-cleaning'] = True
+            
+            # if there is a value then it is forced
+            if options.db_cleaning: 
+                parsed_args['db-cleaning'] = parser.convert_to_boolean(options.db_cleaning)
+            elif parsed_args['request'] and not options.db_cleaning:
+                #else if we have a request and not forced put it to false
+                parsed_args['db-cleaning'] = False
+    
+        elif parsed_args.get('command', '') == 'config':
+            pass
+    
+        #add parser
+        parsed_args['parser']           = parser
         
         return parsed_args
     

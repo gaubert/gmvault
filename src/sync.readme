@@ -143,7 +143,7 @@ Handle Credentials in all levels IMAP, GMVAULIMAP and the rest => Done
 
 
 Change commandline to support actions
-default=argparse.SUPPRESS
+default=argparse.SUPPRESS 
 
 gmv sync guillaume.aubert@gmail.com => full-sync of this account to the default db-dir with xoauth token for this account save or interactively asked
 gmv sync [--imap-server] [--imap-port] [--db-dir] [--oauth-token] [--password]
@@ -157,6 +157,12 @@ custom_sync: pass a request to sync only some specific emails => no cleaning app
 Work on custom sync (should support also GMAIL extension)
 
 => Work on the password problem => Save or not password (interactive always but mode to go in cmdline mode).
+
+gmv restore -t full guillaume.aubert@gmail.com => complete restore
+gmv restore -t quick guillaume.aubert@gmail.com => restore only the last 3 months
+gmv restore -t mirror guillaume.aubert@gmail.com => restore and clean mailbox to be like the database (destructive)
+
+gmv restore -t full --label "Blallh" => resotre and apply an extra label
 
 
 
