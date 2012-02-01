@@ -81,11 +81,11 @@ class GMVaultLauncher(object):
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
         sync_parser.add_argument("-o", "--oauth", \
-                          help="use oauth for authentication (default method)",\
+                          help="use oauth for authentication. (default method)",\
                           action='store_const', dest="oauth_token", const='empty', default='not_seen')
         
         sync_parser.add_argument("-p", "--passwd", \
-                          help="use password authentication (not recommended)",
+                          help="use password authentication. (not recommended)",
                           action='store_const', dest="passwd", const='empty', default='not_seen')
         
         sync_parser.add_argument("-r", "--imap-req", metavar = "REQ", \

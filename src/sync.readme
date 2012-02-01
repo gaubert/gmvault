@@ -154,6 +154,9 @@ full_sync:  scan the full gmail mail box and sync everything on disk
 quick_sync: sync the last month of email on disk
 custom_sync: pass a request to sync only some specific emails => no cleaning applied on db (might add something to prevent syncing with an existing db) 
 
+Work on custom sync (should support also GMAIL extension)
+
+=> Work on the password problem => Save or not password (interactive always but mode to go in cmdline mode).
 
 
 
