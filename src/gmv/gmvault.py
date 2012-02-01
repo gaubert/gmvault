@@ -351,6 +351,9 @@ class GmailStorer(object):
         self._quarantine_dir  = '%s/%s' % (a_storage_dir, GmailStorer.QUARANTINE_AREA)
         
         #make dirs
+        if not os.path.exists(self._db_dir):
+            LOG.critical("No Storage DB in %s. Create it.\n" % (a_storage_dir))
+        
         gmvault_utils.makedirs(self._db_dir)
         gmvault_utils.makedirs(self._quarantine_dir)
         
@@ -590,13 +593,18 @@ class GMVaulter(object):
         
         self.encrypt_key = encrypt_key
         
+    def get_imap_request_btw_2_dates(self, begin_date, end_date):
+        """
+           Return the imap request for those 2 dates
+        """
+        imap_req = 'Since %s Before %s' % (gmvault_utils.datetime2imapdate(begin_date), gmvault_utils.datetime2imapdate(end_date))
+        
+        return imap_req
+        
     def _sync_between(self, begin_date, end_date, storage_dir, compress = True):
         """
            sync between 2 dates
         """
-        #for the moment compress = False
-        #compress = False
-        
         #create storer
         gstorer = GmailStorer(storage_dir, a_encrypt_key = self.encrypt_key)
         
@@ -798,7 +806,7 @@ class GMVaulter(object):
         
     def sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False):
         """
-           sync with db on disk
+           sync mode 
         """
         # get all imap ids in All Mail
         imap_ids = self.src.search(imap_req)

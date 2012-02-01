@@ -149,6 +149,10 @@ gmv sync guillaume.aubert@gmail.com => full-sync of this account to the default 
 gmv sync [--imap-server] [--imap-port] [--db-dir] [--oauth-token] [--password]
 gmv sync 
 
+gmv sync -t full_sync|quick_sync|custom_sync
+full_sync:  scan the full gmail mail box and sync everything on disk
+quick_sync: sync the last month of email on disk
+custom_sync: pass a request to sync only some specific emails => no cleaning applied on db (might add something to prevent syncing with an existing db) 
 
 
 

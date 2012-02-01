@@ -106,6 +106,7 @@ MONTH_CONV = { 1: 'Jan', 4: 'Apr', 6: 'Jun', 7: 'Jul', 10: 'Oct' , 12: 'Dec',
                2: 'Feb', 5: 'May', 8: 'Aug', 9: 'Sep', 11: 'Nov',
                3: 'Mar'}
 
+
 def datetime2imapdate(a_datetime):
     """
        Transfrom in date format for IMAP Request

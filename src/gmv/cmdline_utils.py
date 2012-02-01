@@ -125,7 +125,7 @@ class CredentialHelper(object):
         token  = None
         secret = None
         if os.path.exists(user_oauth_file_path):
-            LOG.critical("There is a %s file. Get the oauth credentials from it." % (user_oauth_file_path))
+            LOG.critical("Use oauth credentials from %s." % (user_oauth_file_path))
             
             oauth_file  = open(user_oauth_file_path)
             
@@ -189,16 +189,20 @@ class CredentialHelper(object):
             # get token secret
             # if they are in a file then no need to call get_oauth_tok_sec
             # will have to add 2 legged or 3 legged
+            LOG.critical("Oauth will be used to authenticate user.\n")
+            
             token, secret = cls.read_oauth_tok_sec(args['email'])
            
             if not token: 
                 token, secret = oauth_utils.get_oauth_tok_sec(args['email'], use_webbrowser = True)
-                print('token = %s, secret = %s' % (token,secret) )
+                #print('token = %s, secret = %s' % (token,secret) )
                 #store newly created token
                 cls.store_oauth_credentials(args['email'], token, secret)
                
             LOG.debug("token=[%s], secret=[%s]" % (token, secret))
             xoauth_req = oauth_utils.generate_xoauth_req(token, secret, args['email'])
+            
+            LOG.critical("Successfully read oauth credentials.\n")
 
             credential = { 'type' : 'xoauth', 'value' : xoauth_req, 'option':None }
                         

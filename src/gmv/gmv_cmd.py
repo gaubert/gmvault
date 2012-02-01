@@ -6,6 +6,7 @@ Created on Jan 31, 2012
 import socket
 import sys
 import getpass
+import datetime
 
 import argparse
 import log_utils
@@ -13,21 +14,25 @@ import imaplib
 import gmvault_utils
 import gmvault
 
-from sandbox  import CmdLineParser, CredentialHelper
+from cmdline_utils  import CmdLineParser, CredentialHelper
 
 SYNC_HELP_EPILOGUE = """Examples:
 
-a) full synchronisation with email and password login
+a) Full synchronisation with email and oauth login in ./gmvault-db
 
-#> gmvault --email foo.bar@gmail.com --passwd vrysecrtpasswd 
+#> gmvault sync foo.bar@gmail.com
 
-b) full synchronisation for german users that have to use googlemail instead of gmail
+b) Full synchronisation for German users that have to use googlemail instead of gmail
 
-#> gmvault --imap-server imap.googlemail.com --email foo.bar@gmail.com --passwd sosecrtpasswd
+#> gmvault sync --imap-server imap.googlemail.com 'foo.bar@gmail.com'
 
-c) restrict synchronisation with an IMAP request
+c) Quick synchronisation (only the last 2 months are scanned)
 
-#> gmvault --imap-request 'Since 1-Nov-2011 Before 10-Nov-2011' --email foo.bar@gmail.com --passwd sosecrtpasswd 
+#> gmvault sync --type quick foo.bar@gmail.com
+
+g) Custom synchronisation with an IMAP request
+
+#> gmvault sync --type custom --imap-request 'Since 1-Nov-2011 Before 10-Nov-2011' 'foo.bar@gmail.com'
 
 """
 
@@ -45,7 +50,7 @@ class GMVaultLauncher(object):
     def __init__(self):
         """ constructor """
         super(GMVaultLauncher, self).__init__()
-
+        
     def parse_args(self):
         """ Parse command line arguments 
             
@@ -60,28 +65,19 @@ class GMVaultLauncher(object):
         
         # A sync command
         sync_parser = subparsers.add_parser('sync', \
-                                            formatter_class=argparse.ArgumentDefaultsHelpFormatter, \
                                             help='synchronize with given gmail account')
         #email argument can be optional so it should be an option
         sync_parser.add_argument('email', \
-                                 action='store', default='empty_$_email', help='email to sync with')
+                                 action='store', default='empty_$_email', help='email to sync with.')
         # sync typ
         sync_parser.add_argument('-t','--type', \
                                  action='store', dest='type', \
-                                 default='full-sync', help='type of synchronisation')
+                                 default='full', help='type of synchronisation: full|quick|custom. (default: full)')
         
         sync_parser.add_argument("-d", "--db-dir", \
-                                 action='store', help="Database root directory",\
+                                 action='store', help="Database root directory. (default: ./gmvault-db)",\
                                  dest="db_dir", default="./gmvault-db")
-        
-        sync_parser.add_argument("-r", "--imap-req", metavar = "REQ", \
-                                 help="Imap request to restrict sync. (default: ALL)",\
-                                 dest="request", default="ALL")
-        
-        sync_parser.add_argument("-z", "--db-cleaning", \
-                          help="To activate or deactive the disk db cleaning. Automatically deactivated if a imap req is passed in args.",\
-                          dest="db_cleaning", default=None)
-        
+               
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
         sync_parser.add_argument("-o", "--oauth", \
@@ -91,6 +87,14 @@ class GMVaultLauncher(object):
         sync_parser.add_argument("-p", "--passwd", \
                           help="use password authentication (not recommended)",
                           action='store_const', dest="passwd", const='empty', default='not_seen')
+        
+        sync_parser.add_argument("-r", "--imap-req", metavar = "REQ", \
+                                 help="Imap request to restrict sync.",\
+                                 dest="request", default="ALL")
+        
+        sync_parser.add_argument("-z", "--db-cleaning", \
+                          help="To activate or deactive the disk db cleaning. Automatically deactivated if a imap req is passed in args.",\
+                          dest="db_cleaning", default=None)
         
         sync_parser.add_argument("--server", metavar = "HOSTNAME", \
                               action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
@@ -133,7 +137,7 @@ class GMVaultLauncher(object):
             # handle the credential
             if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
                 #default to xoauth
-                LOG.critical('Default to xoauth authentication')
+                ('Use ')
                 options.oauth_token = 'empty'
             
         
@@ -194,6 +198,44 @@ class GMVaultLauncher(object):
         return parsed_args
     
     
+    def _sync(self, args, credential):
+        """
+           Execute All synchronisation operations
+        """
+        
+        LOG.critical("Connect to Gmail server.\n")
+        # handle credential in all levels
+        syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
+                                       args['email'], credential)
+        
+        #full sync is the first one
+        if args.get('type', '') == 'full':
+        
+            #choose full sync. Ignore the request
+            syncer.sync('ALL', compress_on_disk = True, db_cleaning = args['db-cleaning'])
+            
+            on_error = False
+        elif args.get('type', '') == 'quick':
+            
+            #sync only the last 2 months in order to be quick (cleaning is import here because recent days might move again
+            
+            # today - 2 months
+            today = datetime.date.today()
+            begin = today - datetime.timedelta(2*365/12)
+            
+            # today + 1 day
+            end   = today + datetime.timedelta(1)
+            
+            syncer.sync(syncer.get_imap_request_btw_2_dates(begin, end), compress_on_disk = True, db_cleaning = args['db-cleaning'])
+            
+            
+        elif args.get('type', '') == 'custom':
+            
+            # pass an imap request. Assume that the user know what to do here
+            syncer.sync(args['request'], compress_on_disk = True, db_cleaning = args['db-cleaning'])
+            
+    
+    
     def run(self, args, credential):
         """
            Run the grep with the given args 
@@ -203,17 +245,15 @@ class GMVaultLauncher(object):
         
         try:
             
-            # hanlde credential in all levels
-            syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
-                                       args['email'], credential)
-            
-            
-            syncer.sync(args['request'], compress_on_disk = True, db_cleaning = args['db-cleaning'])
-        
-            on_error = False
+            if args.get('command', '') == 'sync':
+                self._sync(args, credential)
+            elif args.get('command', '') == 'restore':
+                LOG.critical("Restore Something TBD.\n")
+            elif args.get('command', '') == 'config':
+                LOG.critical("Configure something. TBD.\n")
         
         except KeyboardInterrupt, _:
-            LOG.critical("CRTL^C. Stop all operations.")
+            LOG.critical("CRTL^C. Stop all operations.\n")
             on_error = False
         except socket.error:
             LOG.critical("ERROR: Network problem. Please check your gmail server hostname, the internet connection or your network setup.")
@@ -224,13 +264,13 @@ class GMVaultLauncher(object):
             if str(imap_err) in ['[AUTHENTICATIONFAILED] Invalid credentials (Failure)', \
                                  '[ALERT] Web login required: http://support.google.com/mail/bin/answer.py?answer=78754 (Failure)', \
                                  '[ALERT] Invalid credentials (Failure)'] :
-                LOG.critical("ERROR: Invalid credentials, cannot login to the gmail server. Please check your login and password or xoauth token.")
+                LOG.critical("ERROR: Invalid credentials, cannot login to the gmail server. Please check your login and password or xoauth token.\n")
                 die_with_usage = False
             else:
-                LOG.critical("Error %s. For more information see log file" % (imap_err) )
+                LOG.critical("Error %s. For more information see log file\n" % (imap_err) )
                 LOG.exception(gmvault_utils.get_exception_traceback())
         except Exception, err:
-            LOG.critical("Error %s. For more information see log file" % (err) )
+            LOG.critical("Error %s. For more information see log file\n" % (err) )
             LOG.exception(gmvault_utils.get_exception_traceback())
         finally: 
             if on_error and die_with_usage:
