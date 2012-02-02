@@ -172,5 +172,7 @@ latest_email_uid = 142221
 
 flag it as empty and ignore it
 
+#Do fix cmd_tests in order to start validating => boring but very useful
+
 
 

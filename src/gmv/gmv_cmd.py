@@ -392,7 +392,7 @@ class GMVaultLauncher(object):
             
     
     
-    def run(self, args, credential):
+    def run(self, args):
         """
            Run the grep with the given args 
         """
@@ -400,6 +400,8 @@ class GMVaultLauncher(object):
         die_with_usage = True
         
         try:
+            
+            credential = CredentialHelper.get_credential(args)
             
             if args.get('command', '') == 'sync':
                 
@@ -416,7 +418,7 @@ class GMVaultLauncher(object):
             on_error = False
         
         except KeyboardInterrupt, _:
-            LOG.critical("CRTL^C. Stop all operations.\n")
+            LOG.critical("\nCRTL^C. Stop all operations.\n")
             on_error = False
         except socket.error:
             LOG.critical("ERROR: Network problem. Please check your gmail server hostname, the internet connection or your network setup.")
@@ -458,9 +460,7 @@ def bootstrap_run():
     
     args = gmvlt.parse_args()
     
-    credential = CredentialHelper.get_credential(args)
-    
-    gmvlt.run(args, credential)
+    gmvlt.run(args)
    
     
 if __name__ == '__main__':
