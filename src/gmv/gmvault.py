@@ -598,6 +598,10 @@ class GMVaulter(object):
         
         self.encrypt_key = encrypt_key
         
+        #to report gmail imap problems
+        self.error_report { 'empty' : [] ,
+                            'cannot_be_fetched' : [] }
+        
     def get_imap_request_btw_2_dates(self, begin_date, end_date):
         """
            Return the imap request for those 2 dates
@@ -693,8 +697,6 @@ class GMVaulter(object):
            First part of the double pass strategy: 
            create and update emails in db
         """
-        ignored_ids = [] # ids that cannot be retrieved on gmail for a buggy reason
-        
         gstorer =  GmailStorer(self.db_root_dir, self.encrypt_key)
         
         for the_id in imap_ids:
@@ -735,7 +737,7 @@ class GMVaulter(object):
                 else:
                     # case when gmail IMAP server returns OK without any data whatsoever
                     # eg. imap uid 142221L ignore it
-                    ignored_ids.append((the_id, None))
+                    self.report['emtpy'].append((the_id, None))
             
             except imaplib.IMAP4.error, error:
                 # check if this is a cannot be fetched error 
@@ -756,14 +758,9 @@ class GMVaulter(object):
                         gmail_id = None
                     
                     #add ignored id
-                    ignored_ids.append((the_id, gmail_id))
+                    self.report['cannot_be_fetched'].append((the_id, gmail_id))
                 else:
                     raise error #rethrow error
-        
-        
-        LOG.critical("list of ignored ids %s" % (ignored_ids))
-       
-    
     
     def _delete_sync(self, imap_ids, db_cleaning):
         """
