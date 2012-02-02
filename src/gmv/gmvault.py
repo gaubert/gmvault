@@ -66,7 +66,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     
     IMAP_INTERNALDATE = 'INTERNALDATE'
     IMAP_FLAGS        = 'FLAGS'
-    IMAP_ALL          = 'ALL'
+    IMAP_ALL          = {'type':'imap', 'req':'ALL'}
     
     EMAIL_BODY        = 'BODY[]'
     
@@ -702,7 +702,7 @@ class GMVaulter(object):
         for the_id in imap_ids:
             
             try:
-                LOG.critical("Process imap id %s\n" % ( the_id ))
+                LOG.critical("\nProcess imap id %s" % ( the_id ))
                 
                 #get everything once for all
                 new_data = self.src.fetch(the_id, GIMAPFetcher.GET_ALL_INFO )
@@ -717,13 +717,13 @@ class GMVaulter(object):
                     #if on disk check that the data is not different
                     if curr_metadata:
                         
-                        LOG.critical("metadata for %s already exists. Check if different" % (new_data[the_id][GIMAPFetcher.GMAIL_ID]))
+                        LOG.critical("metadata for %s already exists. Check if different." % (new_data[the_id][GIMAPFetcher.GMAIL_ID]))
                         
                         if self._metadata_needs_update(curr_metadata, new_data[the_id]):
                             #restore everything at the moment
                             gid  = gstorer.bury_email(new_data[the_id], compress = compress)
                             
-                            LOG.critical("update email with imap id %s and gmail id %s\n" % (the_id, gid))
+                            LOG.critical("update email with imap id %s and gmail id %s." % (the_id, gid))
                             
                             #update local index id gid => index per directory to be thought out
                     else:
@@ -732,7 +732,7 @@ class GMVaulter(object):
                         gid  = gstorer.bury_email(new_data[the_id], local_dir = the_dir, compress = compress)
                         
                         #update local index id gid => index per directory to be thought out
-                        LOG.critical("Create and store email  with imap id %s, gmail id %s\n" % (the_id, gid))   
+                        LOG.critical("Create and store email  with imap id %s, gmail id %s." % (the_id, gid))   
                     
                 else:
                     # case when gmail IMAP server returns OK without any data whatsoever

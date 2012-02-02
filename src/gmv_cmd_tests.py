@@ -61,14 +61,35 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         
+    def test_custom_sync_mode(self):
+        """
+           Test custom sync mode
+        """
+        gmv_cmd.init_logging()
+        
+        # test 1: do imap search
+
+        sys.argv = ['gmvault.py', 'sync','-t', 'custom',
+                    '-r', 'Since 1-Nov-2011 Before 4-Nov-2011', \
+                    '--db-dir','/tmp/new-db-1', self.login]
+        
+        gmv_cmd.bootstrap_run()
+        
+        # test 2: do gmail search
+        sys.argv = ['gmvault.py', 'sync','-t', 'custom',
+                    '-g', 'subject:Chandeleur bis', \
+                    '--db-dir','/tmp/new-db-1', self.login]
+        
+        gmv_cmd.bootstrap_run()
+        
     def ztest_cli_bad_server(self):
         """
            Test the cli interface bad option
         """
-        sys.argv = ['gmvault', '--imap-server', 'imagp.gmail.com', \
-                    '--imap-port', 993, '--imap-request', \
+        sys.argv = ['gmvault', 'sync',  '--imap-server', 'imagp.gmail.com', \
+                    '--imap-port', 993, '--imap-req', \
                     'Since 1-Nov-2011 Before 4-Nov-2011', \
-                    '--email', self.login, '--passwd', 'bar']
+                    self.login]
     
         gmvaulter = gmv_cmd.GMVaultLauncher()
         
@@ -283,10 +304,10 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.assertEquals(credential, {'type': 'passwd', 'option': 'saved', 'value': 'a_new_password'})
         
         # now read the password
-        sys.argv = ['gmvault.py', '--imap-request', \
+        sys.argv = ['gmvault.py', 'sync', '--imap-req', \
                     'Since 1-Nov-2011 Before 7-Nov-2011', \
-                    '--email', self.login, \
-                    '--passwd', '--db-dir', '/tmp/new-db-1']
+                    '-t', 'custom', \
+                    '--passwd', '--db-dir', '/tmp/new-db-1', self.login]
         
         gmvault_launcher = gmv_cmd.GMVaultLauncher()
         
@@ -295,27 +316,6 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         credential = gmvault_launcher.get_credential(args, test_mode = {'activate': True, 'value' : "don't care"})
         
         self.assertEquals(credential, {'type': 'passwd', 'option': 'read', 'value': 'a_new_password'})
-        
-    def ztest_oauth_tok_handling(self):
-        """
-           test connection with oauth
-        """
-        gmv_cmd.init_logging()
-        
-        # test 1: enter passwd and go to interactive mode
-
-        sys.argv = ['gmvault.py', '--imap-request', \
-                    'Since 1-Nov-2011 Before 4-Nov-2011', \
-                    '--email', self.login, \
-                    '--db-dir', '/tmp/new-db-1']
-    
-        gmvault_launcher = gmv_cmd.GMVaultLauncher()
-        
-        args = gmvault_launcher.parse_args()
-        
-        credential = gmvault_launcher.get_credential(args) #test_mode needed to avoid calling get_pass
-    
-        gmvault_launcher.run(args, credential)
     
         
         

@@ -5,7 +5,6 @@ Created on Jan 31, 2012
 '''
 import socket
 import sys
-import getpass
 import datetime
 
 import argparse
@@ -44,7 +43,7 @@ c) Quick synchronisation (only the last 2 months are scanned)
 
 g) Custom synchronisation with an IMAP request
 
-#> gmvault sync --type custom --imap-request 'Since 1-Nov-2011 Before 10-Nov-2011' 'foo.bar@gmail.com'
+#> gmvault sync --type custom --imap-req 'Since 1-Nov-2011 Before 10-Nov-2011' 'foo.bar@gmail.com'
 
 """
 
@@ -102,7 +101,11 @@ class GMVaultLauncher(object):
         
         sync_parser.add_argument("-r", "--imap-req", metavar = "REQ", \
                                  help="Imap request to restrict sync.",\
-                                 dest="request", default="ALL")
+                                 dest="imap_request", default=None)
+        
+        sync_parser.add_argument("-g", "--gmail-req", metavar = "REQ", \
+                                 help="Gmail search request to restrict sync as defined in https://support.google.com/mail/bin/answer.py?hl=en&answer=7190",\
+                                 dest="gmail_request", default=None)
         
         sync_parser.add_argument("-z", "--db-cleaning", \
                           help="To activate or deactive the disk db cleaning. Automatically deactivated if a imap req is passed in args.",\
@@ -206,8 +209,18 @@ class GMVaultLauncher(object):
             # handle the credential
             if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
                 #default to xoauth
-                ('Use ')
                 options.oauth_token = 'empty'
+                
+            # handle the search requests (IMAP or GMAIL dialect)
+            if options.imap_request and options.gmail_request:
+                parser.error('Please use only one search request type. You can use --imap-req or --gmail-req.')
+            elif not options.imap_request and not options.gmail_request:
+                LOG.debug("No search request type passed: Get everything.")
+                request = {'type': 'imap', 'req':'ALL'}
+            elif options.gmail_request and not options.imap_request:
+                request = { 'type': 'gmail', 'req' : options.gmail_request}
+            else:
+                request = { 'type':'imap',   'req' : options.imap_request}
             
         
             # Cannot have passwd and oauth-token at the same time
@@ -224,7 +237,7 @@ class GMVaultLauncher(object):
             parsed_args['type']             = options.type
             
             # add imap request
-            parsed_args['request']          = options.request
+            parsed_args['request']          = request
             
             #add db_dir
             parsed_args['db-dir']           = options.db_dir
@@ -361,7 +374,7 @@ class GMVaultLauncher(object):
             
             # today - 2 months
             today = datetime.date.today()
-            begin = today - datetime.timedelta(12*365/12)
+            begin = today - datetime.timedelta(2*365/12)
             
             # today + 1 day
             end   = today + datetime.timedelta(1)
@@ -373,6 +386,8 @@ class GMVaultLauncher(object):
         elif args.get('type', '') == 'custom':
             
             # pass an imap request. Assume that the user know what to do here
+            LOG.critical("Perform custom synchronisation with request: %s" % (args['request']['req']))
+            
             syncer.sync(args['request'], compress_on_disk = True, db_cleaning = args['db-cleaning'])
             
     

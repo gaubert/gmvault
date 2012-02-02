@@ -120,7 +120,34 @@ class MonkeyIMAPClient(IMAPClient): #pylint:disable-msg=R0903
 
         typ, data = self._imap.authenticate('XOAUTH', lambda x: xoauth_cred)
         self._checkok('authenticate', typ, data)
-        return data[0]         
+        return data[0]  
+    
+    def search(self, criteria):
+        """
+           Perform a imap search or gmail search
+        """
+        if criteria.get('type','') == 'imap':
+            return super(MonkeyIMAPClient, self).search(criteria.get('req',''))
+        elif criteria.get('type','') == 'gmail':
+            return self.gmail_search(criteria.get('req',''))
+        else:
+            raise Exception("Unknown search type %s" % (criteria.get('type','no type passed')))
+    
+    def gmail_search(self, criteria):
+        """
+           perform a search with gmailsearch criteria.
+           eg, subject:Hello World
+        """  
+        criteria = criteria.replace('\\', '\\\\')
+        criteria = criteria.replace('"', '\\"')
+        
+        typ, data = self._imap.uid('SEARCH', 'X-GM-RAW', '"%s"' % (criteria))
+        
+        self._checkok('search', typ, data)
+        if data == [None]: # no untagged responses...
+            return [ ]
+
+        return [ long(i) for i in data[0].split() ]
     
     def append(self, folder, msg, flags=(), msg_time=None):
         """Append a message to *folder*.
