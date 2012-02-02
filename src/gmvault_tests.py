@@ -650,6 +650,16 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         if matched:
             print("Matched")
             print("subject=[%s],messageid=[%s]" % (matched.group('subject'), matched.group('msgid')))
+            
+    def test_fix_bug(self):
+        """
+           bug with uid 142221L
+        """
+        db_dir = '/tmp/gmail_bk'
+        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, self.passwd, 'verySecRetKeY')
+        
+        syncer._create_update_sync([142221L], compress = True)
+        
 
 def tests():
     """
