@@ -737,7 +737,7 @@ class GMVaulter(object):
                 else:
                     # case when gmail IMAP server returns OK without any data whatsoever
                     # eg. imap uid 142221L ignore it
-                    self.report['emtpy'].append((the_id, None))
+                    self.error_report['emtpy'].append((the_id, None))
             
             except imaplib.IMAP4.error, error:
                 # check if this is a cannot be fetched error 
@@ -758,7 +758,7 @@ class GMVaulter(object):
                         gmail_id = None
                     
                     #add ignored id
-                    self.report['cannot_be_fetched'].append((the_id, gmail_id))
+                    self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
                 else:
                     raise error #rethrow error
     
