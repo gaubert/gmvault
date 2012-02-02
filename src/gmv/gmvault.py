@@ -115,7 +115,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         self.server = mimap.MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, ssl= self.ssl)
         # connect with password or xoauth
         if self.credential['type'] == 'passwd':
-            self.server.login(self.login, self.password)
+            self.server.login(self.login, self.credential['value'])
         elif self.credential['type'] == 'xoauth':
             #connect with xoauth
             self.server.xoauth_login(self.credential['value'])
@@ -140,6 +140,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
         self.server.enable_compression()
     
+    @retry(3)
     def find_all_mail_folder(self):
         """
            depending on your account the all mail folder can be named 
@@ -162,12 +163,14 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             raise Exception("Cannot find global dir %s or %s. Are you sure it is a GMail account" % \
                             (GIMAPFetcher.GMAIL_ALL, GIMAPFetcher.GOOGLE_MAIL_ALL))
     
+    @retry(3)
     def get_all_folders(self): 
         """
            Return all folders mainly for debuging purposes
         """
         return self.server.list_folders()
         
+    @retry(3)
     def get_capabilities(self):
         """
            return the server capabilities
@@ -177,6 +180,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         return self.server.capabilities()
     
+    @retry(3)
     def check_gmailness(self):
         """
            Check that the server is a gmail server
@@ -186,6 +190,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         return True
     
+    @retry(3) #retry 3 times
     def search(self, a_criteria):
         """
            Return all found ids corresponding to the search
@@ -728,7 +733,8 @@ class GMVaulter(object):
                         LOG.critical("Create and store email  with imap id %s, gmail id %s\n" % (the_id, gid))   
                     
                 else:
-                    #add in ignored id
+                    # case when gmail IMAP server returns OK without any data whatsoever
+                    # eg. imap uid 142221L ignore it
                     ignored_ids.append((the_id, None))
             
             except imaplib.IMAP4.error, error:

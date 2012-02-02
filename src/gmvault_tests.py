@@ -656,7 +656,8 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
            bug with uid 142221L
         """
         db_dir = '/tmp/gmail_bk'
-        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, self.passwd, 'verySecRetKeY')
+        credential = { 'type' : 'passwd', 'value': self.passwd}
+        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, credential, 'verySecRetKeY')
         
         syncer._create_update_sync([142221L], compress = True)
         

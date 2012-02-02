@@ -164,5 +164,13 @@ gmv restore -t mirror guillaume.aubert@gmail.com => restore and clean mailbox to
 
 gmv restore -t full --label "Blallh" => resotre and apply an extra label
 
+Another Error uid fetch returns OK but not data:
+I have this kind of email uid 142221L
+latest_email_uid = 142221
+    result, data = mail.uid('fetch', latest_email_uid, '(X-GM-MSGID INTERNALDATE RFC822)')
+    raw_email = data[0][1]
+
+flag it as empty and ignore it
+
 
 
