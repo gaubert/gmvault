@@ -599,7 +599,7 @@ class GMVaulter(object):
         self.encrypt_key = encrypt_key
         
         #to report gmail imap problems
-        self.error_report { 'empty' : [] ,
+        self.error_report = { 'empty' : [] ,
                             'cannot_be_fetched' : [] }
         
     def get_imap_request_btw_2_dates(self, begin_date, end_date):

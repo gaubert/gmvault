@@ -361,7 +361,7 @@ class GMVaultLauncher(object):
             
             # today - 2 months
             today = datetime.date.today()
-            begin = today - datetime.timedelta(2*365/12)
+            begin = today - datetime.timedelta(12*365/12)
             
             # today + 1 day
             end   = today + datetime.timedelta(1)
