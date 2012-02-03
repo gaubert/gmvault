@@ -61,7 +61,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         
-    def test_args_custom_sync_mode(self):
+    def zztest_args_custom_sync_mode(self):
         """
            Test custom sync mode
         """
@@ -113,7 +113,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.assertEquals(args['db-dir'],'/tmp/new-db-1')
         
         
-    def test_cli_bad_server(self):
+    def zztest_cli_bad_server(self):
         """
            Test the cli interface bad option
         """
@@ -175,7 +175,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             
     
     
-    def test_cli_host_error(self):
+    def zztest_cli_host_error(self):
         """
            Test the cli interface bad option
         """
@@ -195,7 +195,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         else:
             self.fail('SystemExit exception expected')
 
-    def test_cli_(self):
+    def zztest_cli_(self):
         """
            Test the cli interface bad option
         """
@@ -348,7 +348,13 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         self.assertEquals(credential, {'type': 'passwd', 'option': 'read', 'value': 'a_new_password'})
     
+    def test_restore_with_labels(self):
+        """
+           Test restore with labels
+        """
+        sys.argv = ['gmvault.py', 'restore', '-l', 'mylabel03022012', self.gmvault_login]
         
+        gmv_cmd.bootstrap_run()
         
 
 def tests():

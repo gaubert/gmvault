@@ -311,7 +311,8 @@ class GMVaultLauncher(object):
         if args.get('type', '') == 'full':
             
             #call restore
-            restorer.restore(args['label'])
+            labels = [args['label']] if args['label'] else []
+            restorer.restore(extra_labels = labels)
             
         elif args.get('type', '') == 'quick':
             
@@ -324,7 +325,8 @@ class GMVaultLauncher(object):
             starting_dir = gmvault_utils.get_ym_from_datetime(begin)
             
             #call restore
-            restorer.restore(args['label'], starting_dir)
+            labels = [args['label']] if args['label'] else []
+            restorer.restore(pivot_dir = starting_dir, extra_labels = labels)
             
             
     def _sync(self, args, credential):
