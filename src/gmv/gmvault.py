@@ -391,7 +391,7 @@ class GmailStorer(object):
         else:
             
             # get all yy-mm dirs to list
-            dirs = gmvault_utils.get_all_directories_posterior_to(pivot_dir)
+            dirs = gmvault_utils.get_all_directories_posterior_to(pivot_dir, gmvault_utils.get_all_dirs_under(self._db_dir))
             
             #create all iterators and chain them to keep the same interface
             iter_dirs = [gmvault_utils.dirwalk('%s/%s' % (self._db_dir, dir), "*.meta") for dir in dirs]
@@ -592,7 +592,7 @@ class GMVaulter(object):
     """ 
     NB_GRP_OF_ITEMS = 100
     
-    def __init__(self, db_root_dir, host, port, login, credential, encrypt_key = None): #pylint:disable-msg=R0913
+    def __init__(self, db_root_dir, host, port, login, credential, read_only_access = True, encrypt_key = None): #pylint:disable-msg=R0913
         """
            constructor
         """   
@@ -605,7 +605,7 @@ class GMVaulter(object):
         self.login = login
             
         # create source and try to connect
-        self.src = GIMAPFetcher(host, port, login, credential)
+        self.src = GIMAPFetcher(host, port, login, credential, readonly_folder = read_only_access)
         
         self.src.connect()
         

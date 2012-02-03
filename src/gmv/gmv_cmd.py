@@ -206,10 +206,10 @@ class GMVaultLauncher(object):
         
         #add sync type
         if options.type:
-            if option.type.lower() in list_of_types:
-                parsed_args['type'] = option.type.lower()
+            if options.type.lower() in list_of_types:
+                parsed_args['type'] = options.type.lower()
             else:
-                paser.error('Unknown type for command %s. The type should be one of %s' % (parsed_args['command'], list_of_types))
+                parser.error('Unknown type for command %s. The type should be one of %s' % (parsed_args['command'], list_of_types))
         
         #add db_dir
         parsed_args['db-dir']           = options.db_dir
@@ -303,9 +303,9 @@ class GMVaultLauncher(object):
            Execute All restore operations
         """
         LOG.critical("Connect to Gmail server.\n")
-        # handle credential in all levels
+        # Create a gmvault releaving read_only_access
         restorer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
-                                       args['email'], credential)
+                                       args['email'], credential, read_only_access = False)
         
         #full sync is the first one
         if args.get('type', '') == 'full':
@@ -354,7 +354,7 @@ class GMVaultLauncher(object):
             # today + 1 day
             end   = today + datetime.timedelta(1)
             
-            syncer.sync(syncer.get_imap_request_btw_2_dates(begin, end), compress_on_disk = True, db_cleaning = args['db-cleaning'])
+            syncer.sync( { 'type': 'imap', 'req': syncer.get_imap_request_btw_2_dates(begin, end) }, compress_on_disk = True, db_cleaning = args['db-cleaning'])
             
             
             

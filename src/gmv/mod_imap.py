@@ -131,7 +131,7 @@ class MonkeyIMAPClient(IMAPClient): #pylint:disable-msg=R0903
         elif criteria.get('type','') == 'gmail':
             return self.gmail_search(criteria.get('req',''))
         else:
-            raise Exception("Unknown search type %s" % (criteria.get('type','no type passed')))
+            raise Exception("Unknown search type %s" % (criteria.get('type','no request type passed')))
     
     def gmail_search(self, criteria):
         """
