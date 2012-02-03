@@ -396,7 +396,7 @@ class GmailStorer(object):
             #create all iterators and chain them to keep the same interface
             iter_dirs = [gmvault_utils.dirwalk('%s/%s' % (self._db_dir, dir), "*.meta") for dir in dirs]
             
-            the_iter = itertools.chain(iter_dirs)
+            the_iter = itertools.chain.from_iterable(iter_dirs)
         
         #get all ids
         for filepath in the_iter:

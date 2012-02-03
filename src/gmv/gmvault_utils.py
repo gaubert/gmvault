@@ -112,7 +112,7 @@ REVERSE_MONTH_CONV = { 'Jan' : 1, 'Apr' : 4, 'Jun' : 6, 'Jul': 7, 'Oct': 10 , 'D
                    'Mar' : 3}
 
 
-MONTH_YEAR_PATTERN = r'(?P<year>(18|19|[2-5][0-9])\d\d)[-/.](?P<month>(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))'
+MONTH_YEAR_PATTERN = r'(?P<year>(18|19|[2-5][0-9])\d\d)[-/.](?P<month>(0[1-9]|1[012]|[1-9]))'
 MONTH_YEAR_RE = re.compile(MONTH_YEAR_PATTERN)
 
 def compare_yymm_dir(first, second):
@@ -127,17 +127,17 @@ def compare_yymm_dir(first, second):
     
     if matched:
         first_year  = int(matched.group('year'))
-        first_month = REVERSE_MONTH_CONV.get(matched.group('month'))
+        first_month = int(matched.group('month'))
         
         first_val   = (first_year * 1000) + first_month
     else:
-        raise Exception("Invalid Year-Month expression (%s). Please correct it" % (first))
+        raise Exception("Invalid Year-Month expression (%s). Please correct it to be yyyy-mm" % (first))
         
     matched = MONTH_YEAR_RE.match(second)
     
     if matched:
         second_year  = int(matched.group('year'))
-        second_month = REVERSE_MONTH_CONV.get(matched.group('month'))
+        second_month = int(matched.group('month'))
         
         second_val   = (second_year * 1000) + second_month
     else:

@@ -352,7 +352,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            Test restore with labels
         """
-        sys.argv = ['gmvault.py', 'restore', '-l', 'mylabel03022012', self.gmvault_login]
+        sys.argv = ['gmvault.py', 'restore', '-t', 'quick', self.gmvault_login]
         
         gmv_cmd.bootstrap_run()
         
