@@ -5,6 +5,7 @@ Created on Dec 1, 2011
 '''
 import os
 
+import re
 import datetime
 import calendar
 import fnmatch
@@ -106,6 +107,63 @@ MONTH_CONV = { 1: 'Jan', 4: 'Apr', 6: 'Jun', 7: 'Jul', 10: 'Oct' , 12: 'Dec',
                2: 'Feb', 5: 'May', 8: 'Aug', 9: 'Sep', 11: 'Nov',
                3: 'Mar'}
 
+REVERSE_MONTH_CONV = { 'Jan' : 1, 'Apr' : 4, 'Jun' : 6, 'Jul': 7, 'Oct': 10 , 'Dec':12,
+                   'Feb' : 2, 'May' : 5, 'Aug' : 8, 'Sep': 9, 'Nov': 11,
+                   'Mar' : 3}
+
+
+MONTH_YEAR_PATTERN = r'(?P<year>(18|19|[2-5][0-9])\d\d)[-/.](?P<month>(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))'
+MONTH_YEAR_RE = re.compile(MONTH_YEAR_PATTERN)
+
+def compare_yymm_dir(first, second):
+    """
+       Compare directory names in the form of Year-Month
+       Return 1 if first > second
+              0 if equal
+              -1 if second > first
+    """
+    
+    matched = MONTH_YEAR_RE.match(first)
+    
+    if matched:
+        first_year  = int(matched.group('year'))
+        first_month = REVERSE_MONTH_CONV.get(matched.group('month'))
+        
+        first_val   = (first_year * 1000) + first_month
+    else:
+        raise Exception("Invalid Year-Month expression (%s). Please correct it" % (first))
+        
+    matched = MONTH_YEAR_RE.match(second)
+    
+    if matched:
+        second_year  = int(matched.group('year'))
+        second_month = REVERSE_MONTH_CONV.get(matched.group('month'))
+        
+        second_val   = (second_year * 1000) + second_month
+    else:
+        raise Exception("Invalid Year-Month expression (%s). Please correct it" % (second))
+    
+    if first_val > second_val:
+        return 1
+    elif first_val == second_val:
+        return 0
+    else:
+        return -1
+    
+def get_all_directories_posterior_to(a_dir, dirs):
+    """
+           get all directories posterior
+    """
+    #sort the passed dirs list and return all dirs posterior to a_dir
+         
+    return [ name for name in sorted(dirs, key=functools.cmp_to_key(compare_yymm_dir))\
+             if compare_yymm_dir(a_dir, name) <= 0 ]
+
+def get_all_dirs_under(root_dir):
+    """
+       Get all directory names under (1 level only) the root dir
+    """
+    return [ name for name in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, name)) ]
 
 def datetime2imapdate(a_datetime):
     """
@@ -213,3 +271,8 @@ def dirwalk(a_dir, a_wildcards= '*'):
         fullpath = os.path.join(a_dir, sub_dir)
         for p_elem in dirwalk(fullpath, a_wildcards):
             yield p_elem 
+            
+if __name__ == '__main__':
+   
+    print(get_all_directories_posterior_to('2011-Apr', ['2011-Mar', '2010-Feb', '2012-Mar', '2011-Apr', '2011-May']))
+  

@@ -58,6 +58,9 @@ class NotSeenAction(argparse.Action):
 
 class GMVaultLauncher(object):
     
+    SYNC_TYPES    = ['full', 'quick', 'custom']
+    RESTORE_TYPES = ['full', 'quick']
+    
     def __init__(self):
         """ constructor """
         super(GMVaultLauncher, self).__init__()
@@ -129,10 +132,11 @@ class GMVaultLauncher(object):
         #email argument can be optional so it should be an option
         rest_parser.add_argument('email', \
                                  action='store', default='empty_$_email', help='email account to restore.')
-        # restore mode
+        
+        # sync typ
         rest_parser.add_argument('-t','--type', \
                                  action='store', dest='type', \
-                                 default='full', help='restore modes: full|quick|mirror. (default: full)')
+                                 default='full', help='type of restoration: full|quick. (default: full)')
         
         # add a label
         rest_parser.add_argument('-l','--label', \
@@ -178,7 +182,7 @@ class GMVaultLauncher(object):
         return parser
       
     
-    def _parse_common_args(self, options, parser, parsed_args):
+    def _parse_common_args(self, options, parser, parsed_args, list_of_types = []):
         """
            Parse the common arguments for sync and restore
         """
@@ -194,17 +198,6 @@ class GMVaultLauncher(object):
             #default to xoauth
             options.oauth_token = 'empty'
             
-        # handle the search requests (IMAP or GMAIL dialect)
-        if options.imap_request and options.gmail_request:
-            parser.error('Please use only one search request type. You can use --imap-req or --gmail-req.')
-        elif not options.imap_request and not options.gmail_request:
-            LOG.debug("No search request type passed: Get everything.")
-            parsed_args['request']   = {'type': 'imap', 'req':'ALL'}
-        elif options.gmail_request and not options.imap_request:
-            parsed_args['request']   = { 'type': 'gmail', 'req' : options.gmail_request}
-        else:
-            parsed_args['request']    = { 'type':'imap',   'req' : options.imap_request}
-            
         # add passwd
         parsed_args['passwd']           = options.passwd
         
@@ -212,7 +205,11 @@ class GMVaultLauncher(object):
         parsed_args['oauth']            = options.oauth_token
         
         #add sync type
-        parsed_args['type']             = options.type
+        if options.type:
+            if option.type.lower() in list_of_types:
+                parsed_args['type'] = option.type.lower()
+            else:
+                paser.error('Unknown type for command %s. The type should be one of %s' % (parsed_args['command'], list_of_types))
         
         #add db_dir
         parsed_args['db-dir']           = options.db_dir
@@ -258,7 +255,18 @@ class GMVaultLauncher(object):
         if parsed_args.get('command', '') == 'sync':
             
             # parse common arguments for sync and restore
-            self._parse_common_args(options, parser, parsed_args)
+            self._parse_common_args(options, parser, parsed_args, self.SYNC_TYPES)
+            
+            # handle the search requests (IMAP or GMAIL dialect)
+            if options.imap_request and options.gmail_request:
+                parser.error('Please use only one search request type. You can use --imap-req or --gmail-req.')
+            elif not options.imap_request and not options.gmail_request:
+                LOG.debug("No search request type passed: Get everything.")
+                parsed_args['request']   = {'type': 'imap', 'req':'ALL'}
+            elif options.gmail_request and not options.imap_request:
+                parsed_args['request']   = { 'type': 'gmail', 'req' : options.gmail_request}
+            else:
+                parsed_args['request']    = { 'type':'imap',   'req' : options.imap_request}
         
             # add db-cleaning
             # if request passed put it False unless it has been forced by the user
@@ -276,19 +284,11 @@ class GMVaultLauncher(object):
         elif parsed_args.get('command', '') == 'restore':
             
             # parse common arguments for sync and restore
-            self._parse_common_args(options, parser, parsed_args)
+            self._parse_common_args(options, parser, parsed_args, self.RESTORE_TYPES)
             
-            # add db-cleaning
-            # if request passed put it False unless it has been forced by the user
-            # default is True (db-cleaning done)
-            parsed_args['db-cleaning'] = True
-            
-            # if there is a value then it is forced
-            if options.db_cleaning: 
-                parsed_args['db-cleaning'] = parser.convert_to_boolean(options.db_cleaning)
-            elif parsed_args['request'] and not options.db_cleaning:
-                #else if we have a request and not forced put it to false
-                parsed_args['db-cleaning'] = False
+            # add restore label if there is any
+            parsed_args['label'] = options.label
+
     
         elif parsed_args.get('command', '') == 'config':
             pass
@@ -302,8 +302,31 @@ class GMVaultLauncher(object):
         """
            Execute All restore operations
         """
-    
-    
+        LOG.critical("Connect to Gmail server.\n")
+        # handle credential in all levels
+        restorer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
+                                       args['email'], credential)
+        
+        #full sync is the first one
+        if args.get('type', '') == 'full':
+            
+            #call restore
+            restorer.restore(args['label'])
+            
+        elif args.get('type', '') == 'quick':
+            
+            #take the last two to 3 months depending on the current date
+            
+            # today - 2 months
+            today = datetime.date.today()
+            begin = today - datetime.timedelta(2*365/12)
+            
+            starting_dir = gmvault_utils.get_ym_from_datetime(begin)
+            
+            #call restore
+            restorer.restore(args['label'], starting_dir)
+            
+            
     def _sync(self, args, credential):
         """
            Execute All synchronisation operations

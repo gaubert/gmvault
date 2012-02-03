@@ -378,14 +378,27 @@ class GmailStorer(object):
             return (matched.group('subject'), matched.group('msgid'))
         else:
             return None, None
-    
-    def get_all_existing_gmail_ids(self):
+         
+    def get_all_existing_gmail_ids(self, pivot_dir = None):
         """
-           get all existing gmail_ids from the database
+           get all existing gmail_ids from the database within the passed month 
+           and all posterior months
         """
         gmail_ids = {}
-        the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
         
+        if pivot_dir == None:
+            the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
+        else:
+            
+            # get all yy-mm dirs to list
+            dirs = gmvault_utils.get_all_directories_posterior_to(pivot_dir)
+            
+            #create all iterators and chain them to keep the same interface
+            iter_dirs = [gmvault_utils.dirwalk('%s/%s' % (self._db_dir, dir), "*.meta") for dir in dirs]
+            
+            the_iter = itertools.chain(iter_dirs)
+        
+        #get all ids
         for filepath in the_iter:
             directory, fname = os.path.split(filepath)
             gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
@@ -587,6 +600,9 @@ class GMVaulter(object):
         
         #create dir if it doesn't exist
         gmvault_utils.makedirs(self.db_root_dir)
+        
+        #keep track of login email
+        self.login = login
             
         # create source and try to connect
         self.src = GIMAPFetcher(host, port, login, credential)
@@ -600,7 +616,8 @@ class GMVaulter(object):
         
         #to report gmail imap problems
         self.error_report = { 'empty' : [] ,
-                            'cannot_be_fetched' : [] }
+                              'cannot_be_fetched'  : [],
+                              'emails_in_quarantine' : []}
         
     def get_imap_request_btw_2_dates(self, begin_date, end_date):
         """
@@ -831,33 +848,28 @@ class GMVaulter(object):
         """
         #sync remotely 
         
-    def sync_with_gmail_acc(self, gm_server, gm_port, gm_login, gm_password, extra_labels = []):
+    def restore(self, pivot_dir = None, extra_labels = []):
         
         """
            Test method to restore emails in gmail 
         """
+        LOG.critical("Restore email database in gmail account %s." % (self.login) ) 
         
-        # connect to destination email account
-        gdestination = GIMAPFetcher(gm_server, gm_port, gm_login, gm_password, readonly_folder = False)
-        
-        gdestination.connect()
-        
-        LOG.critical("restore email database in gmail account %s" % (gm_login) ) 
-        
+        #crack email database
         gstorer = GmailStorer(self.db_root_dir, self.encrypt_key)
         
-        LOG.critical("get all existing gmail ids from disk")
+        LOG.critical("Read email info from gmvault-db in %s." % (self.db_root_dir))
         
         #get gmail_ids from db
-        db_gmail_ids_info = gstorer.get_all_existing_gmail_ids()
+        db_gmail_ids_info = gstorer.get_all_existing_gmail_ids(pivot_dir)
         
-        LOG.critical("got all existing ids from disk. Will have to restore %s emails" % (len(db_gmail_ids_info)) )
+        LOG.critical("Got all existing ids from disk. Will have to restore %s emails." % (len(db_gmail_ids_info)) )
         
         seen_labels = set() #set of seen labels to not call create_gmail_labels all the time
         
         for gm_id, yy_dir in db_gmail_ids_info.iteritems():
             
-            LOG.critical("restore email with id %s" % (gm_id))
+            LOG.critical("Restore email with id %s" % (gm_id))
             
             email_meta, email_data = gstorer.unbury_email(gm_id)
             
@@ -869,14 +881,14 @@ class GMVaulter(object):
             labels_to_create = [ label for label in labels if label not in seen_labels]
             
             #create the non existing labels
-            gdestination.create_gmail_labels(labels_to_create)
+            self.src.create_gmail_labels(labels_to_create)
             
             #update seen labels
             seen_labels.update(set(labels_to_create))
             
             try:
                 #restore email
-                gdestination.push_email(email_data, \
+                self.src.push_email(email_data, \
                                     email_meta[gstorer.FLAGS_K] , \
                                     email_meta[gstorer.INT_DATE_K], \
                                     labels)
@@ -885,6 +897,9 @@ class GMVaulter(object):
                 if str(err) == "APPEND command error: BAD ['Invalid Arguments: Unable to parse message']":
                     LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, yy_dir, str(err)))
                     gstorer.quarantine_email(gm_id)
+                    
+                    self.error_report['emails_in_quarantine'].append(gm_id)
+                    
             except Exception, err:
                 print("Catch the following exception %s" % (str(err)))
                 raise err
