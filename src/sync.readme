@@ -174,5 +174,18 @@ flag it as empty and ignore it
 
 #Do fix cmd_tests in order to start validating => boring but very useful
 
+# Restore: currently non destructive restore for the restore mailbox (never delete labels and never delete message).
+# the idea was to have an incremental restore that would apply the changes to your mailbox but it isn't a good idea as 
+# labels have to be maintained. Could avoid touching an email that is already in the mailbox (I have the email id which is unique)
+# but 2 restores will a new label everytime will add several labels to the same email.
+
+str = "Message-Id: <RNTM.AvUE~wq7DP8SE6v9GtQe~yL~Jvsq~zP~hqcRKzr~.0.1323147480.0BHEC8IbGQ!!@rnmdca01.int.rightnowtech.com>
+Subject: Magic Online Personal Summary -- December 5, 2011"
+
+header_fields = {{Message-Id: <RNTM.AvUE~wq7DP8SE6v9GtQe~yL~Jvsq~zP~hqcRKzr~.0.1323147480.0BHEC8IbGQ!!@rnmdca01.int.rightnowtech.com>
+Subject: Magic Online Personal Summary -- December 5, 2011
+
+}}
+
 
 

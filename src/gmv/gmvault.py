@@ -372,7 +372,6 @@ class GmailStorer(object):
         """
            extract subject and message ids from the given header fields 
         """
-        
         matched = GmailStorer.HFIELDS_RE.match(header_fields)
         if matched:
             return (matched.group('subject'), matched.group('msgid'))

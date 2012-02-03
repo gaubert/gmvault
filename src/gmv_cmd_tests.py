@@ -348,11 +348,19 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         self.assertEquals(credential, {'type': 'passwd', 'option': 'read', 'value': 'a_new_password'})
     
-    def test_restore_with_labels(self):
+    def ztest_restore_with_labels(self):
         """
            Test restore with labels
         """
         sys.argv = ['gmvault.py', 'restore', '-t', 'quick', self.gmvault_login]
+        
+        gmv_cmd.bootstrap_run()
+    
+    def test_sync_with_labels(self):
+        """
+           Test restore with labels
+        """
+        sys.argv = ['gmvault.py', 'sync', '-t', 'quick', self.login]
         
         gmv_cmd.bootstrap_run()
         
