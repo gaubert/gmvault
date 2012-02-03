@@ -187,5 +187,23 @@ Subject: Magic Online Personal Summary -- December 5, 2011
 
 }}
 
+Ideal Restore Modes:
+- Full: Restore everthing from scratch brute force. 
+- Quick: Would not be destructive but at least fix the labels (if one label has been deleted remove it from the email)
+- Mirror: Would mirror the mailbox as it is on disk => destructive.
+
+The problem, is that it is will be very slow to mirror or even have the quick mode. It should be
+a second batch of features. Let's descope them
+
+Now interesting features:
+- A restore can be very long and it could fail, you would need a restart mode (need to track where we are).
+- You could have a custom restore that a particular set of months 
+- Packaging for windows also is interesting
+- An import eml in gmail is also interesting
+
+
+
+
+
 
 

@@ -297,6 +297,17 @@ def dirwalk(a_dir, a_wildcards= '*'):
             yield p_elem 
             
 if __name__ == '__main__':
+    
+    str = "Message-Id: <RNTM.AvUE~wq7DP8SE6v9GtQe~yL~Jvsq~zP~hqcRKzr~.0.1323147480.0BHEC8IbGQ!!@rnmdca01.int.rightnowtech.com>\nSubject: Magic Online Personal Summary -- December 5, 2011\n"  
+    #HFIELDS_PATTERN = "Message-ID:\s+<(?P<msgid>.*)>\s+Subject:\s+(?P<subject>.*)\s*"
+    HFIELDS_PATTERN = "[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>\s+Subject:\s+(?P<subject>.*)\s*"
+    HFIELDS_RE      = re.compile(HFIELDS_PATTERN)
+    
+    m = HFIELDS_RE.match(str)
+    
+    if m:
+        print(m.groups())
+  
    
-    print(get_all_directories_posterior_to('2011-Apr', ['2011-Mar', '2010-Feb', '2012-Mar', '2011-Apr', '2011-May']))
+    #print(get_all_directories_posterior_to('2011-Apr', ['2011-Mar', '2010-Feb', '2012-Mar', '2011-Apr', '2011-May']))
   

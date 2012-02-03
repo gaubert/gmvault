@@ -336,7 +336,7 @@ class GmailStorer(object):
     SUBJECT_K    = 'subject'
     MSGID_K      = 'msg_id'
     
-    HFIELDS_PATTERN = "Message-ID:\s+<(?P<msgid>.*)>\s+Subject:\s+(?P<subject>.*)\s*"
+    HFIELDS_PATTERN = "[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>\s+Subject:\s+(?P<subject>.*)\s*"
     HFIELDS_RE      = re.compile(HFIELDS_PATTERN)
     
     DB_AREA         = 'db'
