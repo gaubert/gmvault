@@ -177,6 +177,64 @@ class GMVaultLauncher(object):
         
         return parser
       
+    
+    def _parse_common_args(self, options, parser, parsed_args):
+        """
+           Parse the common arguments for sync and restore
+        """
+        #add email
+        parsed_args['email']            = options.email
+        
+        #user entered both authentication methods
+        if options.passwd == 'empty' and options.oauth_token == 'empty':
+            parser.error('You have to use one credential method. Please choose between oauth and password (recommend oauth).')
+        
+        # user entered no authentication methods => go to default oauth
+        if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
+            #default to xoauth
+            options.oauth_token = 'empty'
+            
+        # handle the search requests (IMAP or GMAIL dialect)
+        if options.imap_request and options.gmail_request:
+            parser.error('Please use only one search request type. You can use --imap-req or --gmail-req.')
+        elif not options.imap_request and not options.gmail_request:
+            LOG.debug("No search request type passed: Get everything.")
+            parsed_args['request']   = {'type': 'imap', 'req':'ALL'}
+        elif options.gmail_request and not options.imap_request:
+            parsed_args['request']   = { 'type': 'gmail', 'req' : options.gmail_request}
+        else:
+            parsed_args['request']    = { 'type':'imap',   'req' : options.imap_request}
+            
+        # add passwd
+        parsed_args['passwd']           = options.passwd
+        
+        # add oauth tok
+        parsed_args['oauth']            = options.oauth_token
+        
+        #add sync type
+        parsed_args['type']             = options.type
+        
+        #add db_dir
+        parsed_args['db-dir']           = options.db_dir
+        
+        # add host
+        parsed_args['host']             = options.host
+        
+        #convert to int if necessary
+        port_type = type(options.port)
+        
+        try:
+            if port_type == type('s') or port_type == type("s"):
+                port = int(options.port)
+            else:
+                port = options.port
+        except Exception, _:
+            parser.error("--port option %s is not a number. Please check the port value" % (port))
+            
+        # add port
+        parsed_args['port']             = port
+             
+        return parsed_args
         
     def parse_args(self):
         """ Parse command line arguments 
@@ -199,70 +257,12 @@ class GMVaultLauncher(object):
         
         if parsed_args.get('command', '') == 'sync':
             
-            #add email
-            parsed_args['email']            = options.email
-            
-            
-            if options.passwd == 'empty' and options.oauth_token == 'empty':
-                parser.error('You have to use one credential method. Please choose between oauth and password (recommend oauth).')
+            # parse common arguments for sync and restore
+            self._parse_common_args(options, parser, parsed_args)
         
-            # handle the credential
-            if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
-                #default to xoauth
-                options.oauth_token = 'empty'
-                
-            # handle the search requests (IMAP or GMAIL dialect)
-            if options.imap_request and options.gmail_request:
-                parser.error('Please use only one search request type. You can use --imap-req or --gmail-req.')
-            elif not options.imap_request and not options.gmail_request:
-                LOG.debug("No search request type passed: Get everything.")
-                request = {'type': 'imap', 'req':'ALL'}
-            elif options.gmail_request and not options.imap_request:
-                request = { 'type': 'gmail', 'req' : options.gmail_request}
-            else:
-                request = { 'type':'imap',   'req' : options.imap_request}
-            
-        
-            # Cannot have passwd and oauth-token at the same time
-            #if options.passwd and options.oauth_token:
-            #    self.error("Only one authentication mode can be used (password or oauth-token)")
-            
-            # add passwd
-            parsed_args['passwd']           = options.passwd
-            
-            # add oauth tok
-            parsed_args['oauth']            = options.oauth_token
-            
-            #add sync type
-            parsed_args['type']             = options.type
-            
-            # add imap request
-            parsed_args['request']          = request
-            
-            #add db_dir
-            parsed_args['db-dir']           = options.db_dir
-            
-            # add host
-            parsed_args['host']             = options.host
-            
-            #convert to int if necessary
-            port_type = type(options.port)
-            
-            try:
-                if port_type == type('s') or port_type == type("s"):
-                    port = int(options.port)
-                else:
-                    port = options.port
-            except Exception, _:
-                parser.error("--port option %s is not a number. Please check the port value" % (port))
-                
-            # add port
-            parsed_args['port']             = port
-            
             # add db-cleaning
             # if request passed put it False unless it has been forced by the user
             # default is True (db-cleaning done)
-        
             #default 
             parsed_args['db-cleaning'] = True
             
@@ -275,60 +275,12 @@ class GMVaultLauncher(object):
                 
         elif parsed_args.get('command', '') == 'restore':
             
-            #add email
-            parsed_args['email']            = options.email
-            
-            
-            if options.passwd == 'empty' and options.oauth_token == 'empty':
-                parser.error('You have to use one credential method. Please choose between oauth and password (recommend oauth).')
-        
-            # handle the credential
-            if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
-                #default to xoauth
-                ('Use ')
-                options.oauth_token = 'empty'
-            
-            # Cannot have passwd and oauth-token at the same time
-            #if options.passwd and options.oauth_token:
-            #    self.error("Only one authentication mode can be used (password or oauth-token)")
-            
-            # add passwd
-            parsed_args['passwd']           = options.passwd
-            
-            # add oauth tok
-            parsed_args['oauth']            = options.oauth_token
-            
-            #add sync type
-            parsed_args['type']             = options.type
-            
-            # add label
-            parsed_args['label']            = options.label
-            
-            #add db_dir
-            parsed_args['db-dir']           = options.db_dir
-            
-            # add host
-            parsed_args['host']             = options.host
-            
-            #convert to int if necessary
-            port_type = type(options.port)
-            
-            try:
-                if port_type == type('s') or port_type == type("s"):
-                    port = int(options.port)
-                else:
-                    port = options.port
-            except Exception, _:
-                parser.error("--port option %s is not a number. Please check the port value" % (port))
-                
-            # add port
-            parsed_args['port']             = port
+            # parse common arguments for sync and restore
+            self._parse_common_args(options, parser, parsed_args)
             
             # add db-cleaning
             # if request passed put it False unless it has been forced by the user
             # default is True (db-cleaning done)
-        
-            #default 
             parsed_args['db-cleaning'] = True
             
             # if there is a value then it is forced
