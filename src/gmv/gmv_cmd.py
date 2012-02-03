@@ -343,7 +343,7 @@ class GMVaultLauncher(object):
         if args.get('type', '') == 'full':
         
             #choose full sync. Ignore the request
-            syncer.sync('ALL', compress_on_disk = True, db_cleaning = args['db-cleaning'])
+            syncer.sync({ 'type': 'imap', 'req': 'ALL' } , compress_on_disk = True, db_cleaning = args['db-cleaning'])
             
         elif args.get('type', '') == 'quick':
             
