@@ -90,8 +90,10 @@ class LoggerFactory(object):
            Setup a handler for communicating with the user and still log everything in a logfile
         """
         null_handler      = logbook.NullHandler()
+        #level = 'CRITICAL'
+        level = 'DEBUG'
         
-        out_handler       = StdoutHandler(format_string='{record.message}', level = 'CRITICAL', bubble = False)
+        out_handler       = StdoutHandler(format_string='{record.message}', level = level , bubble = False)
         
         # first stack null handler to not have anything else logged 
         null_handler.push_application()

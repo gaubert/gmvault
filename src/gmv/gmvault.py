@@ -291,8 +291,11 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         #protection against myself
         if self.login == 'guillaume.aubert@gmail.com':
             raise Exception("Cannot push to this account")
-        
+    
+        LOG.debug("Before to Append")
         res = self.server.append(self._all_mail_folder, a_body, a_flags, a_internal_time)
+    
+        LOG.debug("Appended data with flags %s and internal time %s" % (a_flags, a_internal_time))
         
         # check res otherwise Exception
         if '(Success)' not in res:
@@ -304,9 +307,12 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         if labels_str:  
             #has labels so update email  
+            LOG.debug("Before to store")
             ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
             #response = self.server._store(result_uid, '+X-GM-LABELS', labels_str)
             #print(response)
+            
+            LOG.debug("Stored Labels %s in gm_id %s" % (labels_str, result_uid))
         
             # check if it is ok otherwise exception
             if ret_code != 'OK':
@@ -872,6 +878,8 @@ class GMVaulter(object):
             
             email_meta, email_data = gstorer.unbury_email(gm_id)
             
+            LOG.debug("Unburied email with id %s" % (gm_id))
+            
             #labels for this email => real_labels U extra_labels
             labels = set(email_meta[gstorer.LABELS_K])
             labels = labels.union(extra_labels)
@@ -882,6 +890,8 @@ class GMVaulter(object):
             #create the non existing labels
             self.src.create_gmail_labels(labels_to_create)
             
+            LOG.debug("Created labels %s for email with id %s" % (labels_to_create, gm_id))
+            
             #update seen labels
             seen_labels.update(set(labels_to_create))
             
@@ -891,7 +901,13 @@ class GMVaulter(object):
                                     email_meta[gstorer.FLAGS_K] , \
                                     email_meta[gstorer.INT_DATE_K], \
                                     labels)
+                
+                LOG.debug("Pushed email with id %s" % (gm_id))
+                
             except imaplib.IMAP4.error, err:
+                
+                LOG.error("Catched IMAP Error %s" % (str(err)))
+                
                 # problem with this email, put it in quarantine
                 if str(err) == "APPEND command error: BAD ['Invalid Arguments: Unable to parse message']":
                     LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, yy_dir, str(err)))
@@ -900,7 +916,8 @@ class GMVaulter(object):
                     self.error_report['emails_in_quarantine'].append(gm_id)
                     
             except Exception, err:
-                print("Catch the following exception %s" % (str(err)))
+                LOG.error("Catch the following exception %s" % (str(err)))
+                LOG.exception(err)
                 raise err
             
             # TODO need something to avoid pushing twice the same email 
