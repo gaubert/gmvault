@@ -96,7 +96,7 @@ class CredentialHelper(object):
            Look for the defined in env GMVAULT_DIR so by default to ~/.gmvault
            Look for file GMVAULT_DIR/email.oauth
         """
-        gmv_dir = cls.get_home_dir_path()
+        gmv_dir = gmvault_utils.get_home_dir_path()
         
         #look for email.passwed in GMV_DIR
         user_oauth_file_path = "%s/%s.oauth" % (gmv_dir, email)

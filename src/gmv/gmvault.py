@@ -392,8 +392,7 @@ class GmailStorer(object):
            get all existing gmail_ids from the database within the passed month 
            and all posterior months
         """
-        #gmail_ids = collections_utils.OrderedDict() #orderedDict
-        gmail_ids = []
+        gmail_ids = collections_utils.OrderedDict() #orderedDict
         
         if pivot_dir == None:
             the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
@@ -410,9 +409,8 @@ class GmailStorer(object):
         #get all ids
         for filepath in the_iter:
             directory, fname = os.path.split(filepath)
-            #gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
-            gmail_ids.append( (long(os.path.splitext(fname)[0]) , os.path.basename(directory)) )
-    
+            gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+            
         return gmail_ids
         
     def bury_email(self, email_info, local_dir = None, compress = False):
