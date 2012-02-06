@@ -133,7 +133,7 @@ class GMVaultLauncher(object):
         rest_parser.add_argument('email', \
                                  action='store', default='empty_$_email', help='email account to restore.')
         
-        # sync typ
+        # restore typ
         rest_parser.add_argument('-t','--type', \
                                  action='store', dest='type', \
                                  default='full', help='type of restoration: full|quick. (default: full)')
@@ -142,6 +142,11 @@ class GMVaultLauncher(object):
         rest_parser.add_argument('-l','--label', \
                                  action='store', dest='label', \
                                  default=None, help='Apply a label to restored emails')
+        
+        # activate the restart mode
+        rest_parser.add_argument("--restart", \
+                                 action='store_true', dest='restart', \
+                                 default=False, help= 'Restart from the last saved gmail id.')
         
         rest_parser.add_argument("-d", "--db-dir", \
                                  action='store', help="Database root directory. (default: ./gmvault-db)",\
@@ -288,6 +293,8 @@ class GMVaultLauncher(object):
             
             # add restore label if there is any
             parsed_args['label'] = options.label
+            
+            parsed_args['restart'] = options.restart
 
     
         elif parsed_args.get('command', '') == 'config':
@@ -312,7 +319,7 @@ class GMVaultLauncher(object):
             
             #call restore
             labels = [args['label']] if args['label'] else []
-            restorer.restore(extra_labels = labels)
+            restorer.restore(extra_labels = labels, restart = args['restart'])
             
         elif args.get('type', '') == 'quick':
             
@@ -326,7 +333,7 @@ class GMVaultLauncher(object):
             
             #call restore
             labels = [args['label']] if args['label'] else []
-            restorer.restore(pivot_dir = starting_dir, extra_labels = labels)
+            restorer.restore(pivot_dir = starting_dir, extra_labels = labels, restart = args['restart'])
             
             
     def _sync(self, args, credential):

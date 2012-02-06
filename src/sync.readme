@@ -206,6 +206,11 @@ Fix SSL disconnection bug => reconnect
 order restore
 implement a restart restore
 
+Manage when an empty gmvault-db is selected for a restore (Send error and quit)
+Handle no last_id.restore file
+Copy new Recipe from ActivateState because the current I have doesn't work.
+
+
 
 
 

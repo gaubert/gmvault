@@ -17,7 +17,8 @@ import shutil
 import blowfish
 import log_utils
 
-import collections_utils
+#import collections_utils
+import collections as collections_utils
 import gmvault_utils
 import mod_imap as mimap
 
@@ -887,12 +888,14 @@ class GMVaulter(object):
         
         last_id_index = -1
         try:
-            last_id_index = db_gmail_ids_info.keys().index(last_id)
+            keys = db_gmail_ids_info.keys()
+            last_id_index = keys.index(last_id)
+            LOG.critical("Restart from gmail_id %s\n" % (last_id))
         except ValueError, _:
             #element not in keys return current set of keys
             LOG.error("Cannot restore from last restore gmail id. It is not in the disk database")
         
-        new_gmail_ids_info = {}
+        new_gmail_ids_info = collections_utils.OrderedDict()
         if last_id_index != -1:
             for key in db_gmail_ids_info.keys()[last_id_index:]:
                 new_gmail_ids_info[key] =  db_gmail_ids_info[key]
