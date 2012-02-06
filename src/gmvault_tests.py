@@ -545,7 +545,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         LOG.critical("On Critical")
         
-    def test_encrypt_blowfish(self):
+    def ztest_encrypt_blowfish(self):
         """
            Test encryption with blowfish
         """
@@ -569,7 +569,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         self.assertEquals(decrypted, content)
         
-    def test_encrypt_restore_on_gmail(self):
+    def ztest_encrypt_restore_on_gmail(self):
         """
            Doesn't work to be fixed
            clean db disk
@@ -651,7 +651,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             print("Matched")
             print("subject=[%s],messageid=[%s]" % (matched.group('subject'), matched.group('msgid')))
             
-    def test_fix_bug(self):
+    def ztest_fix_bug(self):
         """
            bug with uid 142221L
         """
@@ -660,6 +660,17 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, credential, 'verySecRetKeY')
         
         syncer._create_update_sync([142221L], compress = True)
+        
+    def test_dirwalk_test(self):
+        """
+           Test dirwalk with an existing dir setup
+        """
+        db_dir = '/tmp/db-dir'
+        gstorer = gmvault.GmailStorer(db_dir)
+        
+        ids = gstorer.get_all_existing_gmail_ids()
+        
+        print(ids)
         
 
 def tests():
