@@ -294,8 +294,7 @@ def dirwalk(a_dir, a_wildcards= '*', sort_func = sorted):
         
     #iterate over sub_dirs
     for sub_dir in sub_dirs:
-        fullpath = os.path.join(a_dir, sub_dir)
-        for p_elem in dirwalk(fullpath, a_wildcards):
+        for p_elem in dirwalk(sub_dir, a_wildcards):
             yield p_elem 
             
 if __name__ == '__main__':
