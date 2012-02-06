@@ -201,7 +201,10 @@ Now interesting features:
 - Packaging for windows also is interesting
 - An import eml in gmail is also interesting
 
-
+TBD
+Fix SSL disconnection bug => reconnect
+order restore
+implement a restart restore
 
 
 

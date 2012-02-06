@@ -16,7 +16,9 @@ import shutil
 
 import blowfish
 import log_utils
-import gmvault_utils as gmvault_utils
+
+import collections_utils
+import gmvault_utils
 import mod_imap as mimap
 
 
@@ -389,7 +391,8 @@ class GmailStorer(object):
            get all existing gmail_ids from the database within the passed month 
            and all posterior months
         """
-        gmail_ids = {}
+        gmail_ids = collections_utils.OrderedDict() #orderedDict
+        gmail_ids = []
         
         if pivot_dir == None:
             the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
@@ -406,7 +409,8 @@ class GmailStorer(object):
         #get all ids
         for filepath in the_iter:
             directory, fname = os.path.split(filepath)
-            gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+            #gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+            gmail_ids.append( (long(os.path.splitext(fname)[0]) , os.path.basename(directory)) )
     
         return gmail_ids
         

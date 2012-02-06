@@ -665,12 +665,15 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            Test dirwalk with an existing dir setup
         """
-        db_dir = '/tmp/db-dir'
+        db_dir = '/home/aubert/Dev/projects/gmvault/src/gmvault-db'
         gstorer = gmvault.GmailStorer(db_dir)
         
         ids = gstorer.get_all_existing_gmail_ids()
         
-        print(ids)
+        for (gmid, dir) in ids:
+            print("gmid = %s, dir = %s\n" % (gmid, dir))
+        #for key in ids:
+        #    print('key = %s, val = %s\n' % (key, ids[key]))
         
 
 def tests():

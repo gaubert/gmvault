@@ -284,7 +284,8 @@ def dirwalk(a_dir, a_wildcards= '*'):
     """
 
     #iterate over files in the current dir
-    for the_file in fnmatch.filter(sorted(os.listdir(a_dir)), a_wildcards):
+    list_dirs = sorted(os.listdir(a_dir))
+    for the_file in fnmatch.filter(list_dirs, a_wildcards):
         fullpath = os.path.join(a_dir, the_file)
         if not os.path.isdir(fullpath):
             yield fullpath
