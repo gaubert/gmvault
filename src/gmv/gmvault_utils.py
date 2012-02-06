@@ -272,7 +272,7 @@ def delete_all_under(path,delete_top_dir=False):
         os.rmdir(path)
     
         
-def dirwalk(a_dir, a_wildcards= '*'):
+def dirwalk(a_dir, a_wildcards= '*', sort_func = sorted):
     """
      Walk a directory tree, using a generator.
      This implementation returns only the files in all the subdirectories.
@@ -283,14 +283,15 @@ def dirwalk(a_dir, a_wildcards= '*'):
          a_wildcards: Filtering wildcards a la unix
     """
 
-    #iterate over files in the current dir
-    list_dirs = sorted(os.listdir(a_dir))
-    for the_file in fnmatch.filter(list_dirs, a_wildcards):
-        fullpath = os.path.join(a_dir, the_file)
-        if not os.path.isdir(fullpath):
-            yield fullpath
     
-    sub_dirs = os.walk(a_dir).next()[1]
+    sub_dirs = []
+    for the_file in sort_func(os.listdir(a_dir)):
+        fullpath = os.path.join(a_dir, the_file)
+        if os.path.isdir(fullpath):
+            sub_dirs.append(fullpath) #it is a sub_dir
+        elif fnmatch.fnmatch(fullpath, a_wildcards):
+            yield fullpath
+        
     #iterate over sub_dirs
     for sub_dir in sub_dirs:
         fullpath = os.path.join(a_dir, sub_dir)
