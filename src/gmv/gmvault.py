@@ -392,8 +392,8 @@ class GmailStorer(object):
            get all existing gmail_ids from the database within the passed month 
            and all posterior months
         """
-        gmail_ids = collections_utils.OrderedDict() #orderedDict
-        #gmail_ids = []
+        #gmail_ids = collections_utils.OrderedDict() #orderedDict
+        gmail_ids = []
         
         if pivot_dir == None:
             the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
@@ -410,8 +410,8 @@ class GmailStorer(object):
         #get all ids
         for filepath in the_iter:
             directory, fname = os.path.split(filepath)
-            gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
-            #gmail_ids.append( (long(os.path.splitext(fname)[0]) , os.path.basename(directory)) )
+            #gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+            gmail_ids.append( (long(os.path.splitext(fname)[0]) , os.path.basename(directory)) )
     
         return gmail_ids
         
@@ -600,7 +600,9 @@ class GMVaulter(object):
     """
        Main object operating over gmail
     """ 
-    NB_GRP_OF_ITEMS = 100
+    NB_GRP_OF_ITEMS  = 100
+    RESTORE_PROGRESS = 'last_id.restore'
+    SYNC_PROGESS     = 'last_id.sync'
     
     def __init__(self, db_root_dir, host, port, login, credential, read_only_access = True, encrypt_key = None): #pylint:disable-msg=R0913
         """
@@ -858,8 +860,50 @@ class GMVaulter(object):
         """
         #sync remotely 
         
-    def restore(self, pivot_dir = None, extra_labels = []):
+    
+    def save_restore_lastid(self, gm_id):
+        """
+           Save the passed gmid in last_id.restore
+           For the moment reopen the file every time
+        """
+        filepath = '%s/%s' % (gmvault_utils.get_home_dir_path(), self.RESTORE_PROGRESS)
+        fd = open(filepath, 'w')
         
+        json.dump({
+                    'last_id' : gm_id  
+                  }, fd)
+        
+        fd.close()
+        
+    def get_gmails_ids_left_to_restore(self, db_gmail_ids_info):
+        """
+           Get the ids that still needs to be restored
+           Return a dict key = gm_id, val = directory
+        """
+        
+        filepath = '%s/%s' % (gmvault_utils.get_home_dir_path(), self.RESTORE_PROGRESS)
+        
+        json_obj = json.load(open(filepath, 'r'))
+        
+        last_id = json_obj['last_id']
+        
+        last_id_index = -1
+        try:
+            last_id_index = db_gmail_ids_info.keys().index(last_id)
+        except ValueError, _:
+            #element not in keys return current set of keys
+            LOG.error("Cannot restore from last restore gmail id. It is not in the disk database")
+        
+        new_gmail_ids_info = {}
+        if last_id_index != -1:
+            for key in db_gmail_ids_info.keys()[last_id_index:]:
+                new_gmail_ids_info[key] =  db_gmail_ids_info[key]
+        else:
+            new_gmail_ids_info = db_gmail_ids_info    
+            
+        return new_gmail_ids_info 
+           
+    def restore(self, pivot_dir = None, extra_labels = [], restart = False):
         """
            Test method to restore emails in gmail 
         """
@@ -870,12 +914,19 @@ class GMVaulter(object):
         
         LOG.critical("Read email info from gmvault-db in %s." % (self.db_root_dir))
         
+        #for the restore (save last_restored_id in .gmvault/last_restored_id
+        
         #get gmail_ids from db
         db_gmail_ids_info = gstorer.get_all_existing_gmail_ids(pivot_dir)
+        
+        if restart:
+            db_gmail_ids_info = self.get_gmails_ids_left_to_restore(db_gmail_ids_info)
         
         LOG.critical("Got all existing ids from disk. Will have to restore %s emails." % (len(db_gmail_ids_info)) )
         
         seen_labels = set() #set of seen labels to not call create_gmail_labels all the time
+        
+        nb_elem_restored = 0
         
         for gm_id, yy_dir in db_gmail_ids_info.iteritems():
             
@@ -909,6 +960,12 @@ class GMVaulter(object):
                 
                 LOG.debug("Pushed email with id %s" % (gm_id))
                 
+                nb_elem_restored += 1
+                
+                # save id every 20 restored emails
+                if (nb_elem_restored % 20) == 0:
+                    self.save_restore_lastid(gm_id)
+        
             except imaplib.IMAP4.error, err:
                 
                 LOG.error("Catched IMAP Error %s" % (str(err)))
@@ -921,7 +978,6 @@ class GMVaulter(object):
                     self.error_report['emails_in_quarantine'].append(gm_id)
                 elif str(err).startwith("socket error: [Errno 1] _ssl.c"): #ssl error expected when long connection (openssl bug gmail imap ?)
                     LOG.critical("IMAP connection is in a funny state reconnect and retry")
-                   
                     try:
                         self.src.connect() #reconnect
                         
@@ -931,6 +987,12 @@ class GMVaulter(object):
                                             labels)
                         
                         LOG.debug("Pushed email with id %s" % (gm_id))
+                        
+                        nb_elem_restored += 1
+                        
+                        # save id every 20 restored emails
+                        if (nb_elem_restored % 20) == 0:
+                            self.save_restore_lastid(gm_id)
                         
                     except Exception, recon_err:
                         LOG.error("Could not reconnect and push current email: " % str(recon_err))

@@ -19,33 +19,12 @@ LOG = log_utils.LoggerFactory.get_logger('cmdline_utils')
 
 class CredentialHelper(object):
     
-    GMVAULT_DIR    = "GMVAULT_DIR"
-
-    @classmethod 
-    @gmvault_utils.memoized
-    def get_home_dir_path(cls):
-        """
-           Get the Home dir
-        """
-        gmvault_dir = os.getenv(cls.GMVAULT_DIR, None)
-    
-        # check by default in user[HOME]
-        if not gmvault_dir:
-            LOG.info("no ENV variable $GMVAULT_DIR defined. Set by default $GMVAULT_DIR to $HOME/.gmvault")
-            gmvault_dir = "%s/.gmvault" % (os.getenv("HOME", "."))
-        
-        #create dir if not there
-        gmvault_utils.makedirs(gmvault_dir)
-    
-        return gmvault_dir
-    
-    
     @classmethod
     def get_secret(cls):
         """
            Get a secret from secret file or generate it
         """
-        secret_file_path = '%s/token.sec' % (cls.get_home_dir_path())
+        secret_file_path = '%s/token.sec' % (gmvault_utils.get_home_dir_path())
         if os.path.exists(secret_file_path):
             secret = open(secret_file_path).read()
         else:
@@ -189,7 +168,7 @@ class CredentialHelper(object):
             # get token secret
             # if they are in a file then no need to call get_oauth_tok_sec
             # will have to add 2 legged or 3 legged
-            LOG.critical("Oauth will be used to authenticate user.\n")
+            LOG.critical("Oauth will be used for authentication.\n")
             
             token, secret = cls.read_oauth_tok_sec(args['email'])
            

@@ -15,7 +15,11 @@ import StringIO
 import sys
 import traceback
 import string
-import random  
+import random 
+
+import log_utils 
+
+LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
 class memoized(object):
     """Decorator that caches a function's return value each time it is called.
@@ -42,7 +46,6 @@ class memoized(object):
     def __get__(self, obj, objtype):
         """Support instance methods."""
         return functools.partial(self.__call__, obj)
-    
 
 def make_password(minlength=8,maxlength=16):  
     """
@@ -296,6 +299,23 @@ def dirwalk(a_dir, a_wildcards= '*', sort_func = sorted):
     for sub_dir in sub_dirs:
         for p_elem in dirwalk(sub_dir, a_wildcards):
             yield p_elem 
+            
+@memoized
+def get_home_dir_path():
+    """
+       Get the Home dir
+    """
+    gmvault_dir = os.getenv("GMVAULT_DIR", None)
+    
+    # check by default in user[HOME]
+    if not gmvault_dir:
+        LOG.info("no ENV variable $GMVAULT_DIR defined. Set by default $GMVAULT_DIR to $HOME/.gmvault")
+        gmvault_dir = "%s/.gmvault" % (os.getenv("HOME", "."))
+    
+    #create dir if not there
+    makedirs(gmvault_dir)
+    
+    return gmvault_dir
             
 if __name__ == '__main__':
     
