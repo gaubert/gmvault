@@ -108,6 +108,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         self.readonly_folder  = readonly_folder
         self._all_mail_folder = None
         self.server           = None
+        self.go_to_all_folder = True
     
     def connect(self, go_to_all_folder = True):
         """
@@ -918,7 +919,27 @@ class GMVaulter(object):
                     gstorer.quarantine_email(gm_id)
                     
                     self.error_report['emails_in_quarantine'].append(gm_id)
-                    
+                elif str(err).startwith("socket error: [Errno 1] _ssl.c"): #ssl error expected when long connection (openssl bug gmail imap ?)
+                    LOG.critical("IMAP connection is in a funny state reconnect and retry")
+                   
+                    try:
+                        self.src.connect() #reconnect
+                        
+                        self.src.push_email(email_data, \
+                                            email_meta[gstorer.FLAGS_K] , \
+                                            email_meta[gstorer.INT_DATE_K], \
+                                            labels)
+                        
+                        LOG.debug("Pushed email with id %s" % (gm_id))
+                        
+                    except Exception, recon_err:
+                        LOG.error("Could not reconnect and push current email: " % str(recon_err))
+                        #give up: quit in error
+                        raise recon_err     
+                else:
+                    #cannot deal with the error
+                    #flag id an not restored in report
+                    pass       
             except Exception, err:
                 LOG.error("Catch the following exception %s" % (str(err)))
                 LOG.exception(err)
