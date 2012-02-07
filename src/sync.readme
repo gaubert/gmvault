@@ -25,8 +25,9 @@ Also available in IMAPClient: http://imapclient.freshfoo.com/browser/imapclient/
 It is not possible because of encoding issues. Problem with iso-81.. (latin encoding for
 german letters).  => Now email body has it own file. 
 
-To Do 22-12-2012:
------------------
+
+CLOSED ISSUES:
+--------------
 CLOSED 1) sync_delete can be redone as all the gm_id are retrieved from the filesystem at once 
 (test if it scales) => No need as scan all dirs is very fast (on linux at least)
 CLOSED 2) instead of iterating on the remote gmail ids, iterate (with generator) by group of 30 elements on the
@@ -37,16 +38,26 @@ CLOSED 7.1) Check the Internal Date on a restore: it doesn't seem to be set prop
 CLOSED 7.3) add password save in .gmvault/.passwd => encrypted if possible at least obfuscated => Done
 CLOSED 8.0) need to go in error and --oauth-token and --password are passed together and email is mandatory => DONE
 CLOSED 9) manage a .gmvault dir in your home => done
-4) potentially add a reconnection mode (try to reconect 3 times before to quit) => Done for Fetch 
-5) add a way to restart from an imap id. Could be used when you have a very large mailbox and 
+CLOSED 8.2) encrypt email data with possibly a pure python method (if not too slow) => Fixed and work on both Mac and Linux
+CLOSED 5) add a way to restart from an gmail id. Could be used when you have a very large mailbox => Done descopped because there is a restart mode now
 want to restart from the moment when it failed. => not sure it will be useful at the moment
+CLOSED 8) add oauth and a way to save the token. => integration done. Now need testing
+CLOSED 8.1) add a way to add a restore label => Done
+
+ISSUES/FEATURES:
+-----------------
+
+4) potentially add a reconnection mode (try to reconect 3 times before to quit) => Done for fetch, find_all_mail_folder, 
+                                                                                        get_all_folders, get_capabilities,
+                                                                                        check_gmailness, search
+                                                                                   Check that it applies for all the methods as we
+                                                                                   catch only imaplib errors.
 5.1) add support for Chat emails => restore them in a default label. Give the possibility to name it.
 5.2) All_Mail IMAP dir needs to be enabled in gmail => handle this error
-6) add logging now otherwise it might be too late => PARTLY DONE
+6) add logging now otherwise it might be too late => PARTLY DONE but not WORKING
 7.2) Implement the restore => being tested
-8) add oauth and a way to save the token. => integration done. Now need testing
-8.1) add a way to add a restore label
-CLOSED 8.2) encrypt email data with possibly a pure python method (if not too slow) => Fixed and work on both Mac and Linux
+7.3) Add two legged or 3 legged oauth for Admins
+
 8.3) currently decision to decrypt is only taken with the fact that there is a cipher but we should also check that file is .crypt
 8.3.1) Fix SSL disconnection bug => Implemented a reconnect To Be Tested
 8.3.2) Order restore => Done with an orderedDict (Check speed when reading all ids on disk)
@@ -58,7 +69,6 @@ CLOSED 8.2) encrypt email data with possibly a pure python method (if not too sl
 11) release v0.5 
 12) add cloud saves
 13) add Mac Gui, Linux or chrome GUI
-
 Adding Makefile and setup.py
 1) make souce tarball
 2) make distribution for linux in a directory
