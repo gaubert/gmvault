@@ -250,7 +250,7 @@ def __rmgeneric(path, __func__):
     try:
         __func__(path)
         #print 'Removed ', path
-    except OSError, (errno, strerror): #IGNORE:W0612
+    except OSError, (_, strerror): #IGNORE:W0612
         print """Error removing %(path)s, %(error)s """%{'path' : path, 'error': strerror }
             
 def delete_all_under(path,delete_top_dir=False):
@@ -273,32 +273,23 @@ def delete_all_under(path,delete_top_dir=False):
     
     if delete_top_dir:
         os.rmdir(path)
+  
+def dirwalk(a_dir, a_wildcards= '*'):
     
-        
-def dirwalk(a_dir, a_wildcards= '*', sort_func = sorted):
-    """
-     Walk a directory tree, using a generator.
-     This implementation returns only the files in all the subdirectories.
-     Beware, this is a generator.
-     
-     Args:
-         a_dir: A root directory from where to list
-         a_wildcards: Filtering wildcards a la unix
-    """
+    for root, _, files in os.walk(a_dir):
+        for the_file in files:
+            if fnmatch.fnmatch(the_file, a_wildcards):
+                yield os.path.join(root, the_file)  
 
+def list_dirwalk(a_dir, a_wildcards= '*'):
     
-    sub_dirs = []
-    for the_file in sort_func(os.listdir(a_dir)):
-        fullpath = os.path.join(a_dir, the_file)
-        if os.path.isdir(fullpath):
-            sub_dirs.append(fullpath) #it is a sub_dir
-        elif fnmatch.fnmatch(fullpath, a_wildcards):
-            yield fullpath
-        
-    #iterate over sub_dirs
-    for sub_dir in sub_dirs:
-        for p_elem in dirwalk(sub_dir, a_wildcards):
-            yield p_elem 
+    result = []
+    for root, _, files in os.walk(a_dir):
+        for the_file in files:
+            if fnmatch.fnmatch(the_file, a_wildcards):
+                result.append(os.path.join(root, the_file))
+    
+    return result
             
 @memoized
 def get_home_dir_path():
@@ -318,17 +309,5 @@ def get_home_dir_path():
     return gmvault_dir
             
 if __name__ == '__main__':
-    
-    str = "Message-Id: <RNTM.AvUE~wq7DP8SE6v9GtQe~yL~Jvsq~zP~hqcRKzr~.0.1323147480.0BHEC8IbGQ!!@rnmdca01.int.rightnowtech.com>\nSubject: Magic Online Personal Summary -- December 5, 2011\n"  
-    #HFIELDS_PATTERN = "Message-ID:\s+<(?P<msgid>.*)>\s+Subject:\s+(?P<subject>.*)\s*"
-    HFIELDS_PATTERN = "[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>\s+Subject:\s+(?P<subject>.*)\s*"
-    HFIELDS_RE      = re.compile(HFIELDS_PATTERN)
-    
-    m = HFIELDS_RE.match(str)
-    
-    if m:
-        print(m.groups())
-  
    
-    #print(get_all_directories_posterior_to('2011-Apr', ['2011-Mar', '2010-Feb', '2012-Mar', '2011-Apr', '2011-May']))
-  
+    print(get_all_directories_posterior_to('2011-Apr', ['2011-Mar', '2010-Feb', '2012-Mar', '2011-Apr', '2011-May']))

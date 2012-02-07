@@ -352,9 +352,19 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            Test restore with labels
         """
-        sys.argv = ['gmvault.py', 'restore', '--restart', '--db-dir', '/home/aubert/Dev/projects/gmvault/src/gmv/gmvault-db', 'gsync.mtester@gmail.com']
+        
+        sys.argv = ['gmvault.py', 'restore', '--restart', '--db-dir', '/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db', 'gsync.mtester@gmail.com']
         
         gmv_cmd.bootstrap_run()
+        
+    def ztest_os_walk(self):
+        """
+           test os walk
+        """
+        import os
+        from os.path import join, getsize
+        for root, dirs, files in os.walk('/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db/db'):
+            print("root: %s, sub-dirs : %s, files = %s" % (root, dirs, files))
     
     def ztest_sync_with_labels(self):
         """

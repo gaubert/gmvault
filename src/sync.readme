@@ -220,6 +220,14 @@ Manage when an empty gmvault-db is selected for a restore (Send error and quit)
 Handle no last_id.restore file => Done
 Copy new Recipe from ActivateState because the current I have doesn't work. => replaced to be tested
 
+Test on reading file system:
+----------------------------
+Performed some tests and reading 35000 emails takes 6 secs.
+If majority of users has more than 80000 emails needs to build an index.
+
+Do a test with 100000 emails (200000 emails) and see how long it takes on linux and win, mac os x
+
+
 
 
 

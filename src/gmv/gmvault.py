@@ -903,7 +903,7 @@ class GMVaulter(object):
         
         new_gmail_ids_info = collections_utils.OrderedDict()
         if last_id_index != -1:
-            for key in db_gmail_ids_info.keys()[last_id_index:]:
+            for key in db_gmail_ids_info.keys()[last_id_index+1:]:
                 new_gmail_ids_info[key] =  db_gmail_ids_info[key]
         else:
             new_gmail_ids_info = db_gmail_ids_info    
@@ -937,7 +937,7 @@ class GMVaulter(object):
         
         nb_elem_restored = 0
         
-        for gm_id, yy_dir in db_gmail_ids_info.iteritems():
+        for gm_id in db_gmail_ids_info:
             
             LOG.critical("Restore email with id %s" % (gm_id))
             
@@ -981,7 +981,7 @@ class GMVaulter(object):
                 
                 # problem with this email, put it in quarantine
                 if str(err) == "APPEND command error: BAD ['Invalid Arguments: Unable to parse message']":
-                    LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, yy_dir, str(err)))
+                    LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(err)))
                     gstorer.quarantine_email(gm_id)
                     
                     self.error_report['emails_in_quarantine'].append(gm_id)
