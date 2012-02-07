@@ -10,13 +10,14 @@ DISTS=$(BASEDIR)/dists
 GMVDIST=$(BASEDIR)/dist
 GMVBUILD=$(BASEDIR)/build
 GMVBUILDDIST=$(GMVDIST)/build/egg-dist
-GMVWINBUILDDIST=$(GMVDIST)/exe
+GMVWINBUILDDIST=$(GMVDIST)/inst
 
 BUILD=$(BASEDIR)/build
 BUILDDIST=$(BUILD)/egg-dist
 ETC=$(BASEDIR)/etc
 
 PYTHONBIN=/homespace/gaubert/python2.7/bin/python
+PYTHONWINBIN=python
 PYTHONVERSION=2.7
 
 GMVVERSION=0.5
@@ -67,10 +68,11 @@ gmv-linux-dist: clean init
 	echo "distribution stored in $(GMVDISTNAME)"
 
 gmv-win-dist: clean init 
-    mkdir -p $(GMVWINBUILDDIST)
+	mkdir -p $(GMVWINBUILDDIST)
 	cp -R $(BASEDIR)/src/gmv $(GMVDIST)
-	cp $(BASEDIR)/src/setup.py $(GMVDIST)
-	cd $(GMVDIST); $(PYTHONBIN) setup_win.py py2exe -d $(GMVWINBUILDDIST)
+	cp $(BASEDIR)/src/setup_win.py $(GMVDIST)/gmv
+	cd $(GMVDIST)/gmv; $(PYTHONWINBIN) setup_win.py py2exe -d ../../$(GMVWINBUILDDIST)
+	echo "distribution available in $(GMVWINBUILDDIST)"
 
 clean: clean-build
 	cd $(GMVDIST); rm -Rf build; rm -Rf gmvault.egg-info; rm -f *.py; rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
