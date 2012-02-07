@@ -17,7 +17,8 @@ import shutil
 import blowfish
 import log_utils
 
-import collections as collections_utils
+#import collections as collections_utils
+import collections_utils
 import gmvault_utils
 import mod_imap as mimap
 
@@ -924,6 +925,8 @@ class GMVaulter(object):
         
         #get gmail_ids from db
         db_gmail_ids_info = gstorer.get_all_existing_gmail_ids(pivot_dir)
+        
+        LOG.critical("Total number of elements to restore %s" % (len(db_gmail_ids_info.keys())))
         
         if restart:
             db_gmail_ids_info = self.get_gmails_ids_left_to_restore(db_gmail_ids_info)
