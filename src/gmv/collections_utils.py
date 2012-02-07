@@ -4,89 +4,64 @@ Created on Nov 8, 2010
 @author: guillaume.aubert@gmail.com
 
 '''
-## {{{ http://code.activestate.com/recipes/576693/ (r6)
-from UserDict import DictMixin
+## {{{ http://code.activestate.com/recipes/576669/ (r18)
+from collections import MutableMapping
 
-class OrderedDict(dict, DictMixin):
+class OrderedDict(dict, MutableMapping):
+
+    # Methods with direct access to underlying attributes
 
     def __init__(self, *args, **kwds):
         if len(args) > 1:
-            raise TypeError('expected at most 1 arguments, got %d' % len(args))
-        try:
-            self.__end
-        except AttributeError:
-            self.clear()
+            raise TypeError('expected at 1 argument, got %d', len(args))
+        if not hasattr(self, '_keys'):
+            self._keys = []
         self.update(*args, **kwds)
 
     def clear(self):
-        self.__end = end = []
-        end += [None, end, end]         # sentinel node for doubly linked list
-        self.__map = {}                 # key --> [key, prev, next]
+        del self._keys[:]
         dict.clear(self)
 
     def __setitem__(self, key, value):
         if key not in self:
-            end = self.__end
-            curr = end[1]
-            curr[2] = end[1] = self.__map[key] = [key, curr, end]
+            self._keys.append(key)
         dict.__setitem__(self, key, value)
 
     def __delitem__(self, key):
         dict.__delitem__(self, key)
-        key, prev, next = self.__map.pop(key)
-        prev[2] = next
-        next[1] = prev
+        self._keys.remove(key)
 
     def __iter__(self):
-        end = self.__end
-        curr = end[2]
-        while curr is not end:
-            yield curr[0]
-            curr = curr[2]
+        return iter(self._keys)
 
     def __reversed__(self):
-        end = self.__end
-        curr = end[1]
-        while curr is not end:
-            yield curr[0]
-            curr = curr[1]
+        return reversed(self._keys)
 
-    def popitem(self, last=True):
+    def popitem(self):
         if not self:
-            raise KeyError('dictionary is empty')
-        if last:
-            key = reversed(self).next()
-        else:
-            key = iter(self).next()
-        value = self.pop(key)
+            raise KeyError
+        key = self._keys.pop()
+        value = dict.pop(self, key)
         return key, value
 
     def __reduce__(self):
         items = [[k, self[k]] for k in self]
-        tmp = self.__map, self.__end
-        del self.__map, self.__end
         inst_dict = vars(self).copy()
-        self.__map, self.__end = tmp
-        if inst_dict:
-            return (self.__class__, (items,), inst_dict)
-        return self.__class__, (items,)
+        inst_dict.pop('_keys', None)
+        return (self.__class__, (items,), inst_dict)
 
-    def keys(self):
-        return list(self)
+    # Methods with indirect access via the above methods
 
-    setdefault = DictMixin.setdefault
-    update = DictMixin.update
-    pop = DictMixin.pop
-    values = DictMixin.values
-    items = DictMixin.items
-    iterkeys = DictMixin.iterkeys
-    itervalues = DictMixin.itervalues
-    iteritems = DictMixin.iteritems
+    setdefault = MutableMapping.setdefault
+    update = MutableMapping.update
+    pop = MutableMapping.pop
+    keys = MutableMapping.keys
+    values = MutableMapping.values
+    items = MutableMapping.items
 
     def __repr__(self):
-        if not self:
-            return '%s()' % (self.__class__.__name__,)
-        return '%s(%r)' % (self.__class__.__name__, self.items())
+        pairs = ', '.join(map('%r: %r'.__mod__, self.items()))
+        return '%s({%s})' % (self.__class__.__name__, pairs)
 
     def copy(self):
         return self.__class__(self)
@@ -97,12 +72,5 @@ class OrderedDict(dict, DictMixin):
         for key in iterable:
             d[key] = value
         return d
+## end of http://code.activestate.com/recipes/576669/ }}}
 
-    def __eq__(self, other):
-        if isinstance(other, OrderedDict):
-            return len(self)==len(other) and self.items() == other.items()
-        return dict.__eq__(self, other)
-
-    def __ne__(self, other):
-        return not self == other
-## end of http://code.activestate.com/recipes/576693/ }}}

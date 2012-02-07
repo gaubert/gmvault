@@ -17,7 +17,6 @@ import shutil
 import blowfish
 import log_utils
 
-#import collections_utils
 import collections as collections_utils
 import gmvault_utils
 import mod_imap as mimap
@@ -378,7 +377,8 @@ class GmailStorer(object):
         else:
             self._cipher = None
     
-    def parse_header_fields(self, header_fields):
+    @classmethod
+    def parse_header_fields(cls, header_fields):
         """
            extract subject and message ids from the given header fields 
         """
@@ -403,7 +403,7 @@ class GmailStorer(object):
             dirs = gmvault_utils.get_all_directories_posterior_to(pivot_dir, gmvault_utils.get_all_dirs_under(self._db_dir))
             
             #create all iterators and chain them to keep the same interface
-            iter_dirs = [gmvault_utils.dirwalk('%s/%s' % (self._db_dir, dir), "*.meta") for dir in dirs]
+            iter_dirs = [gmvault_utils.dirwalk('%s/%s' % (self._db_dir, the_dir), "*.meta") for the_dir in dirs]
             
             the_iter = itertools.chain.from_iterable(iter_dirs)
         
@@ -630,7 +630,8 @@ class GMVaulter(object):
                               'cannot_be_fetched'  : [],
                               'emails_in_quarantine' : []}
         
-    def get_imap_request_btw_2_dates(self, begin_date, end_date):
+    @classmethod
+    def get_imap_request_btw_2_dates(cls, begin_date, end_date):
         """
            Return the imap request for those 2 dates
         """
@@ -646,7 +647,7 @@ class GMVaulter(object):
         gstorer = GmailStorer(storage_dir, a_encrypt_key = self.encrypt_key)
         
         #search before the next month
-        imap_req = 'Before %s' % (gmvault_utils.datetime2imapdate(end_date))
+        imap_req = self.get_imap_request_btw_2_dates(begin_date, end_date)
         
         ids = self.src.search(imap_req)
                               
@@ -881,6 +882,10 @@ class GMVaulter(object):
         """
         
         filepath = '%s/%s' % (gmvault_utils.get_home_dir_path(), self.RESTORE_PROGRESS)
+        
+        if not os.path.exists(filepath):
+            LOG.critical("last_id restore file %s doesn't exist.\nRestore the full list of backed up emails" %(filepath))
+            return db_gmail_ids_info
         
         json_obj = json.load(open(filepath, 'r'))
         

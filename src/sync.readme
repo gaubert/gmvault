@@ -48,6 +48,9 @@ want to restart from the moment when it failed. => not sure it will be useful at
 8.1) add a way to add a restore label
 8.2) encrypt email data with possibly a pure python method (if not too slow) => Fixed and work on both Mac and Linux
 8.3) currently decision to decrypt is only taken with the fact that there is a cipher but we should also check that file is .crypt
+8.3.1) Fix SSL disconnection bug => Implemented a reconnect To Be Tested
+8.3.2) Order restore => Done with an orderedDict (Check speed when reading all ids on disk)
+8.3.3) Implement a restart for the restore (to not start from scratch when program bugs out) => Done and tested seems to work
 8.4) work on win support
 8.5) test two legged oauth (need an admin password) 
 10) add progress bar and better logging outputs with verbose and non verbose mode
@@ -202,13 +205,9 @@ Now interesting features:
 - An import eml in gmail is also interesting
 
 TBD
-Fix SSL disconnection bug => reconnect
-order restore
-implement a restart restore
-
 Manage when an empty gmvault-db is selected for a restore (Send error and quit)
-Handle no last_id.restore file
-Copy new Recipe from ActivateState because the current I have doesn't work.
+Handle no last_id.restore file => Done
+Copy new Recipe from ActivateState because the current I have doesn't work. => replaced to be tested
 
 
 
