@@ -39,7 +39,7 @@ class CredentialHelper(object):
     def store_passwd(cls, email, passwd):
         """
         """
-        passwd_file = '%s/%s.passwd' % (cls.get_home_dir_path(), email)
+        passwd_file = '%s/%s.passwd' % (gmvault_utils.get_home_dir_path(), email)
     
         fdesc = open(passwd_file, "w+")
         
@@ -54,7 +54,7 @@ class CredentialHelper(object):
     def store_oauth_credentials(cls, email, token, secret):
         """
         """
-        oauth_file = '%s/%s.oauth' % (cls.get_home_dir_path(), email)
+        oauth_file = '%s/%s.oauth' % (gmvault_utils.get_home_dir_path(), email)
     
         fdesc = open(oauth_file, "w+")
         
@@ -71,7 +71,7 @@ class CredentialHelper(object):
            Look for the defined in env GMVAULT_DIR so by default to ~/.gmvault
            Look for file GMVAULT_DIR/email.passwd
         """
-        gmv_dir = cls.get_home_dir_path()
+        gmv_dir = gmvault_utils.get_home_dir_path()
         
         #look for email.passwed in GMV_DIR
         user_passwd_file_path = "%s/%s.passwd" % (gmv_dir, email)
@@ -174,7 +174,7 @@ class CredentialHelper(object):
            
             if not token: 
                 token, secret = oauth_utils.get_oauth_tok_sec(args['email'], use_webbrowser = True)
-                #print('token = %s, secret = %s' % (token,secret) )
+                print('token = %s, secret = %s' % (token,secret) )
                 #store newly created token
                 cls.store_oauth_credentials(args['email'], token, secret)
                
