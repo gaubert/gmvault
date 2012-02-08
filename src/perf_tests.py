@@ -51,17 +51,20 @@ class TestPerf(unittest.TestCase): #pylint:disable-msg=R0904
     def test_read_lots_of_files(self):
         """
            Test to mesure how long it takes to list over 100 000 files
-           On server: 250 000 meta files in 50 dirs => 12 sec to list them 
+           On server: 250 000 meta files in 50 dirs (50,5000) => 9.74  sec to list them 
+                      100 000 meta files in 20 dirs (20,5000) => 3.068 sec to list them
+                      60  000 meta files in 60 dirs (60,1000) => 1.826 sec to list them
            On linux macbook pro linux virtual machine => 9.91 sec to list them
+           
         """
         root_dir = '/tmp/dirs'
         #create dirs and files
-        #t1 = datetime.datetime.now()
-        #self._create_dirs('/tmp/dirs', 50, 5000)
-        #t2 = datetime.datetime.now()
+        t1 = datetime.datetime.now()
+        self._create_dirs('/tmp/dirs', 60, 1000)
+        t2 = datetime.datetime.now()
         
-        #print("\nTime to create dirs : %s\n" % (t2-t1))
-        #print("\nFiles and dirs created.\n")
+        print("\nTime to create dirs : %s\n" % (t2-t1))
+        print("\nFiles and dirs created.\n")
         
         the_iter = gmvault_utils.dirwalk(root_dir, a_wildcards= '*.meta')
         t1 = datetime.datetime.now()
