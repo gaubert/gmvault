@@ -58,16 +58,20 @@ class TestPerf(unittest.TestCase): #pylint:disable-msg=R0904
                       250 000 meta files in 50 dirs (50,5000) => 9.91 sec to list them
                       100 000 meta files in 20 dirs (20,5000) => 6.59 sec to list them
                       60  000 meta files in 60 dirs (60,1000) => 2.26 sec to list them
+           On Win7 laptop machine:
+                      250 000 meta files in 50 dirs (50,5000) => 56.50 sec (3min 27 sec if dir created and listed afterward) to list them
+                      100 000 meta files in 20 dirs (20,5000) => 20.1 sec to list them
+                      60  000 meta files in 60 dirs (60,1000) => 9.96 sec to list them
            
         """
         root_dir = '/tmp/dirs'
         #create dirs and files
-        t1 = datetime.datetime.now()
-        self._create_dirs('/tmp/dirs', 60, 1000)
-        t2 = datetime.datetime.now()
+        #t1 = datetime.datetime.now()
+        #self._create_dirs('/tmp/dirs', 50, 5000)
+        #t2 = datetime.datetime.now()
         
-        print("\nTime to create dirs : %s\n" % (t2-t1))
-        print("\nFiles and dirs created.\n")
+        #print("\nTime to create dirs : %s\n" % (t2-t1))
+        #print("\nFiles and dirs created.\n")
         
         the_iter = gmvault_utils.dirwalk(root_dir, a_wildcards= '*.meta')
         t1 = datetime.datetime.now()
