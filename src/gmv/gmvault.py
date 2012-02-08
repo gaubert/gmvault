@@ -394,7 +394,7 @@ class GmailStorer(object):
            get all existing gmail_ids from the database within the passed month 
            and all posterior months
         """
-        gmail_ids = collections_utils.OrderedDict() #orderedDict
+        gmail_ids = collections_utils.OrderedDict() #orderedDict compatible for version 2.5
         
         if pivot_dir == None:
             the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
