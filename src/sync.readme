@@ -64,6 +64,7 @@ ISSUES/FEATURES:
 8.3.3) Implement a restart for the restore (to not start from scratch when program bugs out) => Done and tested seems to work
 8.3.4) Handle properly error when oauth token file is invalid (delete it or check that file is not empty)
 8.4) work on win support
+8.4.1) Clearly indicate that in the full sync mode the --imap-req is ignored if there is one
 8.5) test two legged oauth (need an admin password) 
 10) add progress bar and better logging outputs with verbose and non verbose mode
 11) release v0.5 
