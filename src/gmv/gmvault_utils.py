@@ -305,15 +305,6 @@ def dirwalk(a_dir, a_wildcards= '*'):
             if fnmatch.fnmatch(the_file, a_wildcards):
                 yield os.path.join(root, the_file)  
 
-def make_list_dirwalk(a_dir, a_wildcards= '*'):
-    
-    result = []
-    for root, _, files in os.walk(a_dir):
-        for the_file in files:
-            if fnmatch.fnmatch(the_file, a_wildcards):
-                result.append(os.path.join(root, the_file))
-    
-    return result
             
 @memoized
 def get_home_dir_path():
