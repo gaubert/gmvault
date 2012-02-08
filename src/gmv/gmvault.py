@@ -978,6 +978,7 @@ class GMVaulter(object):
             except imaplib.IMAP4.error, err:
                 
                 LOG.error("Catched IMAP Error %s" % (str(err)))
+                LOG.exception(err)
                 
                 # problem with this email, put it in quarantine
                 if str(err) == "APPEND command error: BAD ['Invalid Arguments: Unable to parse message']":
@@ -985,7 +986,9 @@ class GMVaulter(object):
                     gstorer.quarantine_email(gm_id)
                     
                     self.error_report['emails_in_quarantine'].append(gm_id)
-                elif str(err).startwith("socket error: [Errno 1] _ssl.c"): #ssl error expected when long connection (openssl bug gmail imap ?)
+                else:
+                    # any other case, try to reconnect and reappend (check if you can reconnect on an already connected imap conn
+                    #elif str(err).startswith("socket error: [Errno 1] _ssl.c"): #ssl error expected when long connection (openssl bug gmail imap ?)
                     LOG.critical("IMAP connection is in a funny state reconnect and retry")
                     try:
                         self.src.connect() #reconnect
@@ -1006,11 +1009,7 @@ class GMVaulter(object):
                     except Exception, recon_err:
                         LOG.error("Could not reconnect and push current email: " % str(recon_err))
                         #give up: quit in error
-                        raise recon_err     
-                else:
-                    #cannot deal with the error
-                    #flag id an not restored in report
-                    pass       
+                        raise recon_err        
             except Exception, err:
                 LOG.error("Catch the following exception %s" % (str(err)))
                 LOG.exception(err)
