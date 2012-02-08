@@ -54,7 +54,10 @@ class TestPerf(unittest.TestCase): #pylint:disable-msg=R0904
            On server: 250 000 meta files in 50 dirs (50,5000) => 9.74  sec to list them 
                       100 000 meta files in 20 dirs (20,5000) => 3.068 sec to list them
                       60  000 meta files in 60 dirs (60,1000) => 1.826 sec to list them
-           On linux macbook pro linux virtual machine => 9.91 sec to list them
+           On linux macbook pro linux virtual machine:
+                      250 000 meta files in 50 dirs (50,5000) => 9.91 sec to list them
+                      100 000 meta files in 20 dirs (20,5000) => 6.59 sec to list them
+                      60  000 meta files in 60 dirs (60,1000) => 2.26 sec to list them
            
         """
         root_dir = '/tmp/dirs'
