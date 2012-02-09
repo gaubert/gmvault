@@ -628,7 +628,10 @@ class GmailStorer(object):
         
         meta_fd = self._get_metadata_file_from_id(a_id_dir, a_id)
         
+        t1= datetime.datetime.now()
         metadata = json.load(meta_fd)
+        t2= datetime.datetime.now()
+        print("JSON Load metadata %s" % (t2-t1))
         
         metadata[self.INT_DATE_K] =  gmvault_utils.e2datetime(metadata[self.INT_DATE_K])
         
