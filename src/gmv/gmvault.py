@@ -798,14 +798,23 @@ class GMVaulter(object):
                 LOG.critical("\nProcess imap id %s" % ( the_id ))
                 
                 #get everything once for all
+                t1 = datetime.datetime.now()
                 new_data = self.src.fetch(the_id, GIMAPFetcher.GET_ALL_BUT_DATA )
+                t2= datetime.datetime.now()
+                print("Fetch Metadata = %s" % (t2-t1))
                 
                 if new_data.get(the_id, None):
+                    t1= datetime.datetime.now()
                     the_dir      = gmvault_utils.get_ym_from_datetime(new_data[the_id][GIMAPFetcher.IMAP_INTERNALDATE])
+                    t2= datetime.datetime.now()
+                    print("get ym month dir = %s" % (t2-t1))
                     
                     #pass the dir and the ID
+                    t1= datetime.datetime.now()
                     curr_metadata = GMVaulter.check_email_on_disk( gstorer , \
                                                                    new_data[the_id][GIMAPFetcher.GMAIL_ID])
+                    t2= datetime.datetime.now()
+                    print("check email on disk = %s" % (t2-t1))
                     
                     #if on disk check that the data is not different
                     if curr_metadata:
