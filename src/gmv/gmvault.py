@@ -575,7 +575,10 @@ class GmailStorer(object):
         """
            metadata file
         """
+        t1= datetime.datetime.now()
         meta_p = self.METADATA_FNAME % (a_dir, a_id)
+        t2= datetime.datetime.now()
+        print("Open metadata file %s" % (t2-t1))
         
         return open(meta_p)
     
