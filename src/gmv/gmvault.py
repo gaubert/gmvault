@@ -110,7 +110,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     
     GET_ALL_INFO      = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_BODY_PEEK, IMAP_FLAGS, IMAP_HEADER_FIELDS]
 
-    GET_ALL_BUT_DATA  = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_FLAGS, IMAP_BODY_PEEK, IMAP_HEADER_FIELDS]
+    GET_ALL_BUT_DATA  = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_FLAGS, IMAP_HEADER_FIELDS]
     
     GET_DATA_ONLY     = [GMAIL_ID, IMAP_BODY_PEEK]
  
@@ -436,6 +436,47 @@ class GmailStorer(object):
             gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
             
         return gmail_ids
+    
+    def bury_metadata(self, email_info, local_dir = None, compress = False):
+        """
+            Store metadata info in .meta file
+            Arguments:
+             email_info: metadata info
+             local_dir : intermdiary dir (month dir)
+             compress  : If compress is True, use gzip compression
+        """
+        if local_dir:
+            the_dir = '%s/%s' % (self._db_dir, local_dir)
+            gmvault_utils.makedirs(the_dir)
+        else:
+            the_dir = self._db_dir
+         
+        meta_path = self.METADATA_FNAME % (the_dir, email_info[GIMAPFetcher.GMAIL_ID])
+       
+        meta_desc = open(meta_path, 'w')
+        
+        # parse header fields to extract subject and msgid
+        subject, msgid = self.parse_header_fields(email_info[GIMAPFetcher.IMAP_HEADER_FIELDS])
+        
+        #create json structure for metadata
+        meta_obj = { 
+                     self.ID_K         : email_info[GIMAPFetcher.GMAIL_ID],
+                     self.LABELS_K     : email_info[GIMAPFetcher.GMAIL_LABELS],
+                     self.FLAGS_K      : email_info[GIMAPFetcher.IMAP_FLAGS],
+                     self.THREAD_IDS_K : email_info[GIMAPFetcher.GMAIL_THREAD_ID],
+                     self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[GIMAPFetcher.IMAP_INTERNALDATE]),
+                     self.FLAGS_K      : email_info[GIMAPFetcher.IMAP_FLAGS],
+                     self.SUBJECT_K    : subject,
+                     self.MSGID_K      : msgid
+                   }
+        
+        json.dump(meta_obj, meta_desc, ensure_ascii = False)
+        
+        meta_desc.flush()
+        meta_desc.close()
+         
+        return email_info[GIMAPFetcher.GMAIL_ID]
+    
         
     def bury_email(self, email_info, local_dir = None, compress = False):
         """
@@ -757,6 +798,81 @@ class GMVaulter(object):
                 LOG.critical("\nProcess imap id %s" % ( the_id ))
                 
                 #get everything once for all
+                new_data = self.src.fetch(the_id, GIMAPFetcher.GET_ALL_BUT_DATA )
+                
+                if new_data.get(the_id, None):
+                    the_dir      = gmvault_utils.get_ym_from_datetime(new_data[the_id][GIMAPFetcher.IMAP_INTERNALDATE])
+                    
+                    #pass the dir and the ID
+                    curr_metadata = GMVaulter.check_email_on_disk( gstorer , \
+                                                                   new_data[the_id][GIMAPFetcher.GMAIL_ID])
+                    
+                    #if on disk check that the data is not different
+                    if curr_metadata:
+                        
+                        LOG.critical("metadata for %s already exists. Check if different." % (new_data[the_id][GIMAPFetcher.GMAIL_ID]))
+                        
+                        if self._metadata_needs_update(curr_metadata, new_data[the_id]):
+                            #restore everything at the moment
+                            gid  = gstorer.bury_metadata(new_data[the_id], compress = compress)
+                            
+                            LOG.critical("update email with imap id %s and gmail id %s." % (the_id, gid))
+                            
+                            #update local index id gid => index per directory to be thought out
+                    else:
+                        
+                        #get everything once for all
+                        email_data = self.src.fetch(the_id, GIMAPFetcher.GET_DATA_ONLY )
+                        
+                        new_data[the_id][GIMAPFetcher.EMAIL_BODY] = email_data[the_id][GIMAPFetcher.EMAIL_BODY]
+                        
+                        # store data on disk within year month dir 
+                        gid  = gstorer.bury_email(new_data[the_id], local_dir = the_dir, compress = compress)
+                        
+                        #update local index id gid => index per directory to be thought out
+                        LOG.critical("Create and store email  with imap id %s, gmail id %s." % (the_id, gid))   
+                    
+                else:
+                    # case when gmail IMAP server returns OK without any data whatsoever
+                    # eg. imap uid 142221L ignore it
+                    self.error_report['emtpy'].append((the_id, None))
+            
+            except imaplib.IMAP4.error, error:
+                # check if this is a cannot be fetched error 
+                # I do not like to do string guessing within an exception but I do not have any choice here
+                
+                LOG.exception("Error [%s]" % error.message, error )
+                
+                if error.message == "fetch failed: 'Some messages could not be FETCHed (Failure)'":
+                    try:
+                        #try to get the gmail_id
+                        curr = self.src.fetch(the_id, GIMAPFetcher.GET_GMAIL_ID) 
+                    except Exception, _: #pylint:disable-msg=W0703
+                        curr = None
+                    
+                    if curr:
+                        gmail_id = curr[the_id][GIMAPFetcher.GMAIL_ID]
+                    else:
+                        gmail_id = None
+                    
+                    #add ignored id
+                    self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
+                else:
+                    raise error #rethrow error
+    
+    def _old_create_update_sync(self, imap_ids, compress):
+        """
+           First part of the double pass strategy: 
+           create and update emails in db
+        """
+        gstorer =  GmailStorer(self.db_root_dir, self.encrypt_key)
+        
+        for the_id in imap_ids:
+            
+            try:
+                LOG.critical("\nProcess imap id %s" % ( the_id ))
+                
+                #get everything once for all
                 new_data = self.src.fetch(the_id, GIMAPFetcher.GET_ALL_INFO )
                 
                 if new_data.get(the_id, None):
@@ -889,7 +1005,7 @@ class GMVaulter(object):
            Save the passed gmid in last_id.restore
            For the moment reopen the file every time
         """
-        filepath = '%s/%s' % (gmvault_utils.get_home_dir_path(), self.RESTORE_PROGRESS)
+        filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, self.RESTORE_PROGRESS)
         fd = open(filepath, 'w')
         
         json.dump({
@@ -904,7 +1020,7 @@ class GMVaulter(object):
            Return a dict key = gm_id, val = directory
         """
         
-        filepath = '%s/%s' % (gmvault_utils.get_home_dir_path(), self.RESTORE_PROGRESS)
+        filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, self.RESTORE_PROGRESS)
         
         if not os.path.exists(filepath):
             LOG.critical("last_id restore file %s doesn't exist.\nRestore the full list of backed up emails" %(filepath))

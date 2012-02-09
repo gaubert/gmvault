@@ -366,9 +366,9 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         for root, dirs, files in os.walk('/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db/db'):
             print("root: %s, sub-dirs : %s, files = %s" % (root, dirs, files))
     
-    def ztest_sync_with_labels(self):
+    def test_quick_sync_with_labels(self):
         """
-           Test restore with labels
+           Test quick sync
         """
         sys.argv = ['gmvault.py', 'sync', '-t', 'quick', self.login]
         

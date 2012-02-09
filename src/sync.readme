@@ -57,7 +57,7 @@ ISSUES/FEATURES:
 6) add logging now otherwise it might be too late => PARTLY DONE but not WORKING
 7.2) Implement the restore => being tested
 7.3) Add two legged or 3 legged oauth for Admins
-
+7.6) Optimize fetch (get All but Data and if data already exist update metadata info else get data)
 8.3) currently decision to decrypt is only taken with the fact that there is a cipher but we should also check that file is .crypt
 8.3.1) Fix SSL disconnection bug => Implemented a reconnect To Be Tested
 8.3.2) Order restore => Done with an orderedDict (Check speed when reading all ids on disk)
@@ -235,6 +235,9 @@ To Do:
 Review how and when errors are catched (Authentication, When uploading or downloading the data, filesystem prbs ...)
 Review messages to the users and how to activate the debug
 Add a mode to restart the fetch like the restore
+
+BUG: Subject and MessageId are not parsed properly:
+'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]': 'Subject: Vlad\r\nMessage-Id: <954A7199-40EA-447F-A02E-5E08A5E62275@gmail.com>\r\n\r\n'
 
 
 
