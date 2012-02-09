@@ -70,6 +70,7 @@ ISSUES/FEATURES:
 11) release v0.5 
 12) add cloud saves
 13) add Mac Gui, Linux or chrome GUI
+14) Add cache to cache the content of the filesystem in order to query it too much because on Windows it is crap and very very slow
 Adding Makefile and setup.py
 1) make souce tarball
 2) make distribution for linux in a directory
@@ -232,14 +233,17 @@ Done perfs are ok up to 250 000 emails.
 On Windows it can be up to 30 sec to list 250 000 emails over 50 dirs (Terrible filesystem).
 
 To Do:
-Review how and when errors are catched (Authentication, When uploading or downloading the data, filesystem prbs ...)
+DONE: Review how and when errors are catched (Authentication, When uploading or downloading the data, filesystem prbs ...) => seems ok build a test suite to validate it
+
 Review messages to the users and how to activate the debug
 Add a mode to restart the fetch like the restore
 
 BUG: Subject and MessageId are not parsed properly:
 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]': 'Subject: Vlad\r\nMessage-Id: <954A7199-40EA-447F-A02E-5E08A5E62275@gmail.com>\r\n\r\n'
 
-Optimize _get_directory_from_id because Win files sytem is a piece of sh.....t and very very slow
+Optimize _get_directory_from_id because Win files sytem is a piece of sh.....t and very very slow => DONE (added a cache)
+
+
 
 
 
