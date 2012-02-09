@@ -394,6 +394,8 @@ class GmailStorer(object):
         gmvault_utils.makedirs(self._db_dir)
         gmvault_utils.makedirs(self._quarantine_dir)
         
+        self.fsystem_info_cache = {}
+        
         if a_encrypt_key:
             #create blowfish cipher
             self._cipher = blowfish.Blowfish(a_encrypt_key)
@@ -547,9 +549,17 @@ class GmailStorer(object):
            Return None if not found
         """
         filename = '%s.meta' % (a_id)
-        for dirs, _, files in os.walk(os.path.abspath(self._db_dir)):
+        
+        # first look in cache
+        for the_dir in self.fsystem_info_cache:
+            if filename in self.fsystem_info_cache[the_dir]:
+                return the_dir
+        
+        #walk the filesystem
+        for dir, _, files in os.walk(os.path.abspath(self._db_dir)):
+            self.fsystem_info_cache[dir] = files
             for filename in fnmatch.filter(files, filename):
-                return dirs
+                return dir
         
         return None
     
