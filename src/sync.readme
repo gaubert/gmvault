@@ -226,7 +226,18 @@ Test on reading file system:
 Performed some tests and reading 35000 emails takes 6 secs.
 If majority of users has more than 80000 emails needs to build an index.
 
-Do a test with 100000 emails (200000 emails) and see how long it takes on linux and win, mac os x
+Do a test with 100000 emails (200000 emails) and see how long it takes on linux and win, mac os x => 
+
+Done perfs are ok up to 250 000 emails. 
+On Windows it can be up to 30 sec to list 250 000 emails over 50 dirs (Terrible filesystem).
+
+To Do:
+Review how and when errors are catched (Authentication, When uploading or downloading the data, filesystem prbs ...)
+Review messages to the users and how to activate the debug
+Add a mode to restart the fetch like the restore
+
+
+
 
 
 
