@@ -661,7 +661,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         syncer._create_update_sync([142221L], compress = True)
         
-    def test_dirwalk_test(self):
+    def ztest_dirwalk_test(self):
         """
            Test dirwalk with an existing dir setup
         """
@@ -674,6 +674,31 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             print("gmid = %s, dir = %s\n" % (gmid, dir))
         #for key in ids:
         #    print('key = %s, val = %s\n' % (key, ids[key]))
+        
+    def test_decorator(self):
+        """
+           Test the decorator
+        """
+        
+        class A(object):
+            
+            def __init__(self, secret):
+                self.secret = secret
+                
+            def connect(self):
+                """
+                  reconnect
+                """
+                print("connect")
+            
+            @gmvault.retry()
+            def get_secret(self, param):
+                print(self.secret)
+                
+        a = A("ZHE ZECRET")
+        
+        a.get_secret("The PARAM")
+
         
 
 def tests():

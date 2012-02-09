@@ -9,6 +9,8 @@ import re
 import datetime
 import os
 import itertools
+import time
+import socket
 import imaplib
 import functools
 import fnmatch
@@ -28,30 +30,50 @@ LOG = log_utils.LoggerFactory.get_logger('gmvault')
 #retry decorator with nb of tries
 def retry(a_nb_tries = 3):
     """
-      Decorator for retrying command when it failed
+      Decorator for retrying command when it failed with a imap or socket error.
+      Should be used exclusively on imap exchanges.
     """
     def inner_retry(fn):
         def wrapper(*args, **kwargs):
             nb_tries = 0
             while True:
                 try:
-                    
                     return fn(*args, **kwargs)
                     
                 except imaplib.IMAP4.error, err:
                     
                     LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Cannot reach the gmail server. Wait 3 seconds and retrying")
+                    LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
                     
-                    # add 3 sec of wait
+                    # add 1 sec of wait
+                    time.sleep(1)
                     
-                    # go in retry mode if less than 3 tries
-                    if nb_tries < a_nb_tries and err.message.startswith('fetch failed:') :
+                    # go in retry mode if less than a_nb_tries
+                    if nb_tries < a_nb_tries:
                         nb_tries += 1
+                        # go in retry mode: reconnect
+                        args[0].connect()
                     else:
                         #cascade error
                         raise err
+                except socket.error, sock_err:
+                    LOG.debug("error message = %s. traceback:%s" % (sock_err, gmvault_utils.get_exception_traceback()))
+                    
+                    LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
+                    
+                    # add 1 sec of wait
+                    time.sleep(1)
+                    
+                    # go in retry mode if less than a_nb_tries
+                    if nb_tries < a_nb_tries:
+                        nb_tries += 1
+                        # go in retry mode: reconnect
+                        args[0].connect()
+                    else:
+                        #cascade error
+                        raise err
+
             
         return functools.wraps(fn)(wrapper)
     return inner_retry
