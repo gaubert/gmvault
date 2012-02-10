@@ -543,12 +543,19 @@ class GmailStorer(object):
         
         return email_info[GIMAPFetcher.GMAIL_ID]
     
-    def _get_directory_from_id(self, a_id):
+    def _get_directory_from_id(self, a_id, a_local_dir = None):
         """
+           If a_local_dir (yy_mm dir) is passed, check that metadata file exists and return dir
            Return the directory path if id located.
            Return None if not found
         """
         filename = '%s.meta' % (a_id)
+        
+        #local_dir can be passed to avoid scanning the filesystem (because of WIN7 fs weaknesses)
+        if a_local_dir:
+            the_dir = '%s/%s' % (self._db_dir, a_local_dir)
+            if os.path.exists(self.METADATA_FNAME % (the_dir, a_id)):
+                return the_dir
         
         # first look in cache
         for the_dir in self.fsystem_info_cache:
@@ -556,10 +563,10 @@ class GmailStorer(object):
                 return the_dir
         
         #walk the filesystem
-        for dir, _, files in os.walk(os.path.abspath(self._db_dir)):
-            self.fsystem_info_cache[dir] = files
+        for the_dir, _, files in os.walk(os.path.abspath(self._db_dir)):
+            self.fsystem_info_cache[the_dir] = files
             for filename in fnmatch.filter(files, filename):
-                return dir
+                return the_dir
         
         return None
     
@@ -755,14 +762,16 @@ class GMVaulter(object):
         return dummy_date + datetime.timedelta(days=31)
         
     @classmethod
-    def check_email_on_disk(cls, a_gstorer, a_id):
+    def check_email_on_disk(cls, a_gstorer, a_id, a_dir = None):
         """
            Factory method to create the object if it exists
         """
         try:
-            the_dir = a_gstorer._get_directory_from_id(a_id)
-            if the_dir:
+            a_dir = a_gstorer._get_directory_from_id(a_id)
+           
+            if a_dir:
                 return a_gstorer.unbury_metadata(a_id, the_dir) 
+            
         except ValueError, json_error:
             LOG.exception("Cannot read file %s. Try to fetch the data again" % ('%s.meta' % (a_id)), json_error )
         
@@ -828,7 +837,7 @@ class GMVaulter(object):
                     #pass the dir and the ID
                     t1= datetime.datetime.now()
                     curr_metadata = GMVaulter.check_email_on_disk( gstorer , \
-                                                                   new_data[the_id][GIMAPFetcher.GMAIL_ID])
+                                                                   new_data[the_id][GIMAPFetcher.GMAIL_ID], the_dir)
                     t2= datetime.datetime.now()
                     print("check email on disk = %s" % (t2-t1))
                     
@@ -1170,7 +1179,7 @@ class GMVaulter(object):
                             self.save_restore_lastid(gm_id)
                         
                     except Exception, recon_err:
-                        LOG.error("Could not reconnect and push current email: " % str(recon_err))
+                        LOG.error("Could not reconnect and push current email: %s" % str(recon_err))
                         #give up: quit in error
                         raise recon_err        
             except Exception, err:
