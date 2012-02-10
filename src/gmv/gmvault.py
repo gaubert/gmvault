@@ -558,6 +558,8 @@ class GmailStorer(object):
             if os.path.exists(self.METADATA_FNAME % (the_dir, a_id)):
 	        print("Found")
                 return the_dir
+            else:
+	        return None
         
         # first look in cache
         for the_dir in self.fsystem_info_cache:
