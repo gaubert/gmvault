@@ -554,6 +554,7 @@ class GmailStorer(object):
         #local_dir can be passed to avoid scanning the filesystem (because of WIN7 fs weaknesses)
         if a_local_dir:
             the_dir = '%s/%s' % (self._db_dir, a_local_dir)
+	    print("File to find %s\n" % (self.METADATA_FNAME % (the_dir, a_id)))
             if os.path.exists(self.METADATA_FNAME % (the_dir, a_id)):
                 return the_dir
         
@@ -767,7 +768,7 @@ class GMVaulter(object):
            Factory method to create the object if it exists
         """
         try:
-            a_dir = a_gstorer._get_directory_from_id(a_id)
+            a_dir = a_gstorer._get_directory_from_id(a_id, a_dir)
            
             if a_dir:
                 return a_gstorer.unbury_metadata(a_id, a_dir) 
@@ -853,10 +854,14 @@ class GMVaulter(object):
                             LOG.critical("update email with imap id %s and gmail id %s." % (the_id, gid))
                             
                             #update local index id gid => index per directory to be thought out
-                    else:
+                    else:  
                         
                         #get everything once for all
+                        t1= datetime.datetime.now()
                         email_data = self.src.fetch(the_id, GIMAPFetcher.GET_DATA_ONLY )
+
+                        t2= datetime.datetime.now()
+                        print("Fetch ddata = %s" % (t2-t1))
                         
                         new_data[the_id][GIMAPFetcher.EMAIL_BODY] = email_data[the_id][GIMAPFetcher.EMAIL_BODY]
                         
