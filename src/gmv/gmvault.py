@@ -770,7 +770,7 @@ class GMVaulter(object):
             a_dir = a_gstorer._get_directory_from_id(a_id)
            
             if a_dir:
-                return a_gstorer.unbury_metadata(a_id, the_dir) 
+                return a_gstorer.unbury_metadata(a_id, a_dir) 
             
         except ValueError, json_error:
             LOG.exception("Cannot read file %s. Try to fetch the data again" % ('%s.meta' % (a_id)), json_error )
