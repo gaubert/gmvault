@@ -556,6 +556,7 @@ class GmailStorer(object):
             the_dir = '%s/%s' % (self._db_dir, a_local_dir)
 	    print("File to find %s\n" % (self.METADATA_FNAME % (the_dir, a_id)))
             if os.path.exists(self.METADATA_FNAME % (the_dir, a_id)):
+	        print("Found")
                 return the_dir
         
         # first look in cache
@@ -566,7 +567,7 @@ class GmailStorer(object):
         #walk the filesystem
         for the_dir, _, files in os.walk(os.path.abspath(self._db_dir)):
             self.fsystem_info_cache[the_dir] = files
-            for filename in fnmatch.filter(files, filename):
+            for fileame in fnmatch.filter(files, filename):
                 return the_dir
         
         return None
