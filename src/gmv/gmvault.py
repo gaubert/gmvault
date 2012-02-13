@@ -27,6 +27,16 @@ import mod_imap as mimap
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault')
 
+class PushEmailError(Exception):
+    """
+       PushEmail Error
+    """
+    def __init__(self,aErrno, aMsg):
+        """
+           Constructor
+        """
+        super(PushEmailError,self).__init__(aMsg)
+
 #retry decorator with nb of tries
 def retry(a_nb_tries = 3):
     """
@@ -73,6 +83,66 @@ def retry(a_nb_tries = 3):
                     else:
                         #cascade error
                         raise err
+
+            
+        return functools.wraps(fn)(wrapper)
+    return inner_retry
+
+#retry decorator with nb of tries
+def push_email_retry(a_nb_tries = 3):
+    """
+      Decorator for retrying command when it failed with a imap or socket error.
+      Should be used exclusively on imap exchanges.
+    """
+    def retry(the_self, nb_tries, error, sleep_time = 1):
+        """
+           Retry procedure
+        """
+
+        # add 1 sec of wait
+        time.sleep(sleep_time)
+        
+        # go in retry mode if less than a_nb_tries
+        if nb_tries < a_nb_tries:
+            nb_tries += 1
+            # go in retry mode: reconnect
+            the_self.connect()
+        else:
+            #cascade error
+            raise error
+        
+    def inner_retry(fn):
+        """
+           inner_retry
+        """
+        def wrapper(*args, **kwargs):
+            nb_tries = 0
+            while True:
+                try:
+                    return fn(*args, **kwargs)
+                
+                except PushEmailError, p_err:
+                    
+                    LOG.debug("error message = %s. traceback:%s" % (p_err, gmvault_utils.get_exception_traceback()))
+                    
+                    LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
+                    
+                    retry(args[0], nb_tries, p_err, sleep_time = 1)
+                    
+                except imaplib.IMAP4.error, err:
+                    
+                    LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
+                    
+                    LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
+                    
+                    retry(args[0], nb_tries, err, sleep_time = 1)
+                
+                except socket.error, sock_err:
+                    LOG.debug("error message = %s. traceback:%s" % (sock_err, gmvault_utils.get_exception_traceback()))
+                    
+                    LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
+                    
+                    retry(args[0], nb_tries, sock_err, sleep_time = 1)
 
             
         return functools.wraps(fn)(wrapper)
@@ -309,7 +379,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 if self.server.folder_exists(directory): #call server exists each time
                     self.server.delete_folder(directory)
                     
-            
+         
+    @push_email_retry(4)   
     def push_email(self, a_body, a_flags, a_internal_time, a_labels):
         """
            Push a complete email body 
@@ -325,9 +396,13 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         # check res otherwise Exception
         if '(Success)' not in res:
-            raise Exception("GIMAPFetcher cannot restore email in %s account." %(self.login))
+            raise PushEmailError("GIMAPFetcher cannot restore email in %s account." %(self.login))
         
-        result_uid = int(GIMAPFetcher.APPENDUID_RE.search(res).group(1))
+        match = GIMAPFetcher.APPENDUID_RE.match(res)
+        if match:
+            result_uid = int(GIMAPFetcher.APPENDUID_RE.search(res).group(1))
+        else:
+            raise PushEmailError("Not email id returned by IMAP APPEND command")
         
         labels_str = self._build_labels_str(a_labels)
         
@@ -335,14 +410,13 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             #has labels so update email  
             LOG.debug("Before to store")
             ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
-            #response = self.server._store(result_uid, '+X-GM-LABELS', labels_str)
-            #print(response)
+            
             
             LOG.debug("Stored Labels %s in gm_id %s" % (labels_str, result_uid))
         
             # check if it is ok otherwise exception
             if ret_code != 'OK':
-                raise Exception("Cannot add Labels %s to email with uid %d. Error:%s" % (labels_str, result_uid, data))
+                raise PushEmailError("Cannot add Labels %s to email with uid %d. Error:%s" % (labels_str, result_uid, data))
         
         return result_uid
     
