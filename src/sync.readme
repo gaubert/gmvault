@@ -241,8 +241,8 @@ Add a mode to restart the fetch like the restore
 BUG: Subject and MessageId are not parsed properly:
 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]': 'Subject: Vlad\r\nMessage-Id: <954A7199-40EA-447F-A02E-5E08A5E62275@gmail.com>\r\n\r\n'
 
-Optimize _get_directory_from_id because Win files sytem is a piece of sh.....t and very very slow => DONE (added a cache)
-
+DONE: Optimize _get_directory_from_id because Win files sytem is a piece of sh.....t and very very slow => DONE (added a cache)
+Avoid to do a search whenever we can
 
 
 

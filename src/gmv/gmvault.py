@@ -135,6 +135,7 @@ def push_email_retry(a_nb_tries = 3):
                     
                     LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
                     
+                    # problem with this email, put it in quarantine
                     retry(args[0], nb_tries, err, sleep_time = 1)
                 
                 except socket.error, sock_err:
@@ -144,7 +145,6 @@ def push_email_retry(a_nb_tries = 3):
                     
                     retry(args[0], nb_tries, sock_err, sleep_time = 1)
 
-            
         return functools.wraps(fn)(wrapper)
     return inner_retry
 
@@ -1238,32 +1238,9 @@ class GMVaulter(object):
                 if str(err) == "APPEND command error: BAD ['Invalid Arguments: Unable to parse message']":
                     LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(err)))
                     gstorer.quarantine_email(gm_id)
-                    
-                    self.error_report['emails_in_quarantine'].append(gm_id)
+                    self.error_report['emails_in_quarantine'].append(gm_id) 
                 else:
-                    # any other case, try to reconnect and reappend (check if you can reconnect on an already connected imap conn
-                    #elif str(err).startswith("socket error: [Errno 1] _ssl.c"): #ssl error expected when long connection (openssl bug gmail imap ?)
-                    LOG.critical("IMAP connection is in a funny state reconnect and retry")
-                    try:
-                        self.src.connect() #reconnect
-                        
-                        self.src.push_email(email_data, \
-                                            email_meta[gstorer.FLAGS_K] , \
-                                            email_meta[gstorer.INT_DATE_K], \
-                                            labels)
-                        
-                        LOG.debug("Pushed email with id %s" % (gm_id))
-                        
-                        nb_elem_restored += 1
-                        
-                        # save id every 20 restored emails
-                        if (nb_elem_restored % 20) == 0:
-                            self.save_restore_lastid(gm_id)
-                        
-                    except Exception, recon_err:
-                        LOG.error("Could not reconnect and push current email: %s" % str(recon_err))
-                        #give up: quit in error
-                        raise recon_err        
+                    raise err                         
             except Exception, err:
                 LOG.error("Catch the following exception %s" % (str(err)))
                 LOG.exception(err)

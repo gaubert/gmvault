@@ -348,7 +348,36 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         self.assertEquals(credential, {'type': 'passwd', 'option': 'read', 'value': 'a_new_password'})
     
-    def test_restore_with_labels(self):
+    
+    def test_double_login(self):
+        """
+           double login
+        """
+        # now read the password
+        sys.argv = ['gmvault.py', 'sync', '--db-dir', '/tmp/new-db-1', self.login]
+        
+        gmvault_launcher = gmv_cmd.GMVaultLauncher()
+        
+        args = gmvault_launcher.parse_args()
+        
+        import gmv.cmdline_utils
+        credential = gmv.cmdline_utils.CredentialHelper.get_credential(args)
+        
+        syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
+                                       args['email'], credential)
+        
+        print("First connection \n")
+        syncer.src.connect()
+        
+        import time
+        time.sleep(60*10)
+        
+        print("Connection 10 min later")
+        syncer.src.connect()
+        
+        
+    
+    def ztest_restore_with_labels(self):
         """
            Test restore with labels
         """
@@ -366,7 +395,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         for root, dirs, files in os.walk('/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db/db'):
             print("root: %s, sub-dirs : %s, files = %s" % (root, dirs, files))
     
-    def test_quick_sync_with_labels(self):
+    def ztest_quick_sync_with_labels(self):
         """
            Test quick sync
         """
