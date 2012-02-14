@@ -13,7 +13,8 @@ import imaplib
 import gmvault_utils
 import gmvault
 
-from cmdline_utils  import CmdLineParser, CredentialHelper
+from cmdline_utils  import CmdLineParser
+from credential_utils import CredentialHelper
 
 GLOBAL_HELP_EPILOGUE="""Examples:
 
