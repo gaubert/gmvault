@@ -6,13 +6,10 @@ Created on Feb 14, 2012
 Experimentation and validation of internal mechanisms
 '''
 
-
-import sys
 import unittest
 import base64
 
 
-import gmv.gmvault as gmvault
 import gmv.gmvault_utils as gmvault_utils
 import gmv.imap_utils as imap_utils
 
@@ -63,7 +60,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         
         
-    def ztest_logger(self):
+    def test_logger(self):
         """
            Test the logging mechanism
         """
@@ -89,7 +86,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         
         LOG.critical("On Critical")
         
-    def ztest_encrypt_blowfish(self):
+    def test_encrypt_blowfish(self):
         """
            Test encryption with blowfish
         """
@@ -112,18 +109,8 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         decrypted = cipher.decryptCTR(crypted)
         
         self.assertEquals(decrypted, content)
-         
-    def ztest_copyfile(self):   
-        """
-           Copyfile
-        """
-        db_dir = '/tmp/gmail_bk'
         
-        gstorer = gmvault.GmailStorer(db_dir)
-        
-        gstorer.quarantine_email(1254269417797093924L)
-        
-    def ztest_regexpr(self):
+    def test_regexpr(self):
         """
            regexpr for 
         """
@@ -136,44 +123,6 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         if matched:
             print("Matched")
             print("subject=[%s],messageid=[%s]" % (matched.group('subject'), matched.group('msgid')))
-                
-    def ztest_dirwalk_test(self):
-        """
-           Test dirwalk with an existing dir setup
-        """
-        db_dir = '/home/aubert/Dev/projects/gmvault/src/gmvault-db'
-        gstorer = gmvault.GmailStorer(db_dir)
-        
-        ids = gstorer.get_all_existing_gmail_ids()
-        
-        for (gmid, dir) in ids:
-            print("gmid = %s, dir = %s\n" % (gmid, dir))
-        #for key in ids:
-        #    print('key = %s, val = %s\n' % (key, ids[key]))
-        
-    def ztest_decorator(self):
-        """
-           Test the decorator
-        """
-        
-        class A(object):
-            
-            def __init__(self, secret):
-                self.secret = secret
-                
-            def connect(self):
-                """
-                  reconnect
-                """
-                print("connect")
-            
-            @imap_utils.retry()
-            def get_secret(self, param):
-                print(self.secret)
-                
-        a = A("ZHE ZECRET")
-        
-        a.get_secret("The PARAM")
         
     def test_retry_mode(self):
         """
