@@ -179,8 +179,6 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         """
            Test that the decorators are functionning properly
         """
-        import gmv.imap_utils as imap_utils
-        
         class MonkeyIMAPFetcher(imap_utils.GIMAPFetcher):
             
             def __init__(self, host, port, login, credential, readonly_folder = True):
@@ -194,9 +192,9 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
                 """
                    connect
                 """
-                print("In Connect")
+                self.connect_nb += 1
             
-            @imap_utils.push_email_retry(4)   
+            @imap_utils.retry(4,1)   
             def push_email(self, a_body, a_flags, a_internal_time, a_labels):
                 """
                    Throw exceptions
@@ -205,8 +203,12 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
             
         
         imap_fetch = MonkeyIMAPFetcher(host = None, port = None, login = None, credential = None)
+        try:
+            imap_fetch.push_email(None, None, None, None)
+        except Exception, err:
+            self.assertEquals('GIMAPFetcher cannot restore email in myaccount@gmail.com account.', str(err))
         
-        imap_fetch.push_email(None, None, None, None)
+        self.assertEquals(imap_fetch.connect_nb, 4)
         
 
         

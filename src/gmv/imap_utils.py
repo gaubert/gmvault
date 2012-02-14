@@ -33,7 +33,7 @@ class PushEmailError(Exception):
         super(PushEmailError,self).__init__(aMsg)
 
 #retry decorator with nb of tries
-def retry(a_nb_tries = 3):
+def old_retry(a_nb_tries = 3):
     """
       Decorator for retrying command when it failed with a imap or socket error.
       Should be used exclusively on imap exchanges.
@@ -83,8 +83,8 @@ def retry(a_nb_tries = 3):
         return functools.wraps(fn)(wrapper)
     return inner_retry
 
-#retry decorator with nb of tries
-def push_email_retry(a_nb_tries = 3):
+#retry decorator with nb of tries and sleep_time
+def retry(a_nb_tries = 3, a_sleep_time = 1):
     """
       Decorator for retrying command when it failed with a imap or socket error.
       Should be used exclusively on imap exchanges.
@@ -119,9 +119,9 @@ def push_email_retry(a_nb_tries = 3):
                     
                     LOG.debug("error message = %s. traceback:%s" % (p_err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
+                    LOG.critical("Cannot reach the gmail server (see logs). Wait %s seconds and retrying" % (a_sleep_time))
                     
-                    retry(args[0], nb_tries, p_err, sleep_time = 1)
+                    retry(args[0], nb_tries, p_err, sleep_time = a_sleep_time)
                     
                 except imaplib.IMAP4.error, err:
                     
@@ -130,14 +130,14 @@ def push_email_retry(a_nb_tries = 3):
                     LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
                     
                     # problem with this email, put it in quarantine
-                    retry(args[0], nb_tries, err, sleep_time = 1)
+                    retry(args[0], nb_tries, err, sleep_time = a_sleep_time)
                 
                 except socket.error, sock_err:
                     LOG.debug("error message = %s. traceback:%s" % (sock_err, gmvault_utils.get_exception_traceback()))
                     
                     LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
                     
-                    retry(args[0], nb_tries, sock_err, sleep_time = 1)
+                    retry(args[0], nb_tries, sock_err, sleep_time = a_sleep_time)
 
         return functools.wraps(fn)(wrapper)
     return inner_retry
@@ -382,7 +382,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                     self.server.delete_folder(directory)
                     
          
-    @push_email_retry(4)   
+    @retry(4)   
     def push_email(self, a_body, a_flags, a_internal_time, a_labels):
         """
            Push a complete email body 
