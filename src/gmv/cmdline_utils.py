@@ -179,13 +179,28 @@ class CredentialHelper(object):
                 cls.store_oauth_credentials(args['email'], token, secret)
                
             LOG.debug("token=[%s], secret=[%s]" % (token, secret))
-            xoauth_req = oauth_utils.generate_xoauth_req(token, secret, args['email'])
+            
+            xoauth_req =oauth_utils.generate_xoauth_req(token, secret, args['email'])
             
             LOG.critical("Successfully read oauth credentials.\n")
 
             credential = { 'type' : 'xoauth', 'value' : xoauth_req, 'option':None }
                         
-        return credential  
+        return credential
+
+    @classmethod
+    def get_xoauth_req_from_email(cls, email):
+        """
+           This will be used to reconnect after a timeout
+        """
+        token, secret = cls.read_oauth_tok_sec(email)
+        if not token: 
+            raise Exception("Error cannot read token, secret from")
+        
+        xoauth_req =oauth_utils.generate_xoauth_req(token, secret, email)
+        
+        return xoauth_req
+        
 
 
 """ 

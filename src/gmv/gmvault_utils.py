@@ -46,6 +46,24 @@ class memoized(object):
     def __get__(self, obj, objtype):
         """Support instance methods."""
         return functools.partial(self.__call__, obj)
+    
+class curry:
+    """ Class used to implement the currification (functional programming technic) :
+        Create a function from another one by instanciating some of its parameters.
+        For example double = curry(operator.mul,2), res = double(4) = 8
+    """
+    def __init__(self, fun, *args, **kwargs):
+        self.fun = fun
+        self.pending = args[:]
+        self.kwargs = kwargs.copy()
+        
+    def __call__(self, *args, **kwargs):
+        if kwargs and self.kwargs:
+            kw = self.kwargs.copy()
+            kw.update(kwargs)
+        else:
+            kw = kwargs or self.kwargs
+        return self.fun(*(self.pending + args), **kw) #IGNORE:W0142
 
 def make_password(minlength=8,maxlength=16):  
     """

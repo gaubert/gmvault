@@ -18,8 +18,8 @@ import shutil
 
 import blowfish
 import log_utils
+import cmdline_utils
 
-#import collections as collections_utils
 import collections_utils
 import gmvault_utils
 import mod_imap as mimap
@@ -195,6 +195,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         self.host             = host
         self.port             = port
         self.login            = login
+        self.connected        = False
         self.credential       = credential
         self.ssl              = True
         self.use_uid          = True
@@ -213,11 +214,18 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         if self.credential['type'] == 'passwd':
             self.server.login(self.login, self.credential['value'])
         elif self.credential['type'] == 'xoauth':
-            #connect with xoauth
-            self.server.xoauth_login(self.credential['value'])
+            #connect with xoauth 
+            if self.connected:
+                #already connected once so renew xoauth req because it can expire
+                self.credential['value'] = cmdline_utils.CredentialHelper.get_xoauth_req_from_email(self.login)
+                
+            self.server.xoauth_login(self.credential['value']) 
         else:
             raise Exception("Unknown authentication method %s. Please use xoauth or passwd authentication " % (self.credential['type']))
             
+        #set connected to True to hanlde reconnection in case of failure
+        self.connected = True
+        
         # check gmailness
         self.check_gmailness()
         
@@ -628,12 +636,11 @@ class GmailStorer(object):
         #local_dir can be passed to avoid scanning the filesystem (because of WIN7 fs weaknesses)
         if a_local_dir:
             the_dir = '%s/%s' % (self._db_dir, a_local_dir)
-	    print("File to find %s\n" % (self.METADATA_FNAME % (the_dir, a_id)))
+            print("File to find %s\n" % (self.METADATA_FNAME % (the_dir, a_id)))
             if os.path.exists(self.METADATA_FNAME % (the_dir, a_id)):
-	        print("Found")
                 return the_dir
             else:
-	        return None
+                return None
         
         # first look in cache
         for the_dir in self.fsystem_info_cache:
@@ -643,7 +650,7 @@ class GmailStorer(object):
         #walk the filesystem
         for the_dir, _, files in os.walk(os.path.abspath(self._db_dir)):
             self.fsystem_info_cache[the_dir] = files
-            for fileame in fnmatch.filter(files, filename):
+            for filename in fnmatch.filter(files, filename):
                 return the_dir
         
         return None
