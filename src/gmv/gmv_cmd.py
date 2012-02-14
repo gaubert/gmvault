@@ -123,6 +123,11 @@ class GMVaultLauncher(object):
                               action='store', help="Gmail imap server port. (default: 993)",\
                               dest="port", default=993)
         
+        sync_parser.add_argument("--debug", \
+                              action='store_true', help="Activate debugging info",\
+                              dest="debug", default=False)
+        
+        
         sync_parser.set_defaults(verb='sync')
     
         sync_parser.epilogue = SYNC_HELP_EPILOGUE
@@ -171,6 +176,10 @@ class GMVaultLauncher(object):
                               action='store', help="Gmail imap server port. (default: 993)",\
                               dest="port", default=993)
         
+        rest_parser.add_argument("--debug", \
+                              action='store_true', help="Activate debugging info",\
+                              dest="debug", default=False)
+        
         rest_parser.set_defaults(verb='restore')
     
         rest_parser.epilogue = REST_HELP_EPILOGUE
@@ -194,6 +203,8 @@ class GMVaultLauncher(object):
         """
         #add email
         parsed_args['email']            = options.email
+        
+        parsed_args['debug']            = options.debug
         
         #user entered both authentication methods
         if options.passwd == 'empty' and options.oauth_token == 'empty':
@@ -252,7 +263,7 @@ class GMVaultLauncher(object):
           
         options = parser.parse_args()
         
-        print("Namespace = %s\n" % (options))
+        LOG.debug("Namespace = %s\n" % (options))
         
         parsed_args = { }
         
@@ -310,7 +321,7 @@ class GMVaultLauncher(object):
         """
            Execute All restore operations
         """
-        LOG.critical("Connect to Gmail server.\n")
+        LOG.critical("Connect to Gmail server.")
         # Create a gmvault releaving read_only_access
         restorer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
                                        args['email'], credential, read_only_access = False)
@@ -342,7 +353,7 @@ class GMVaultLauncher(object):
            Execute All synchronisation operations
         """
         
-        LOG.critical("Connect to Gmail server.\n")
+        LOG.critical("Connect to Gmail server.")
         # handle credential in all levels
         syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
                                        args['email'], credential)
@@ -365,8 +376,6 @@ class GMVaultLauncher(object):
             end   = today + datetime.timedelta(1)
             
             syncer.sync( { 'type': 'imap', 'req': syncer.get_imap_request_btw_2_dates(begin, end) }, compress_on_disk = True, db_cleaning = args['db-cleaning'])
-            
-            
             
         elif args.get('type', '') == 'custom':
             
@@ -431,8 +440,13 @@ def init_logging():
        init logging infrastructure
     """       
     #setup application logs: one handler for stdout and one for a log file
-    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, file_path="./gmvault.log") 
+    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=False, file_path="./gmvault.log") 
     
+def activate_debug_mode():
+    """
+       Activate debugging logging
+    """
+    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'DEBUG', file_path="./gmvault.log")
     
 def bootstrap_run():
     """ temporary bootstrap """
@@ -444,6 +458,11 @@ def bootstrap_run():
     gmvlt = GMVaultLauncher()
     
     args = gmvlt.parse_args()
+    
+    #activate debug if enabled
+    if args['debug']:
+        LOG.critical("Activate debugging information.")
+        activate_debug_mode()
     
     gmvlt.run(args)
    

@@ -61,9 +61,9 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
     auth_url = gdata_serv.GenerateOAuthAuthorizationURL(request_token=request_token, extra_params=url_params)
     
     #message to indicate that a browser will be opened
-    raw_input('gmvault will now open a web browser page in order for you to grant gmvault access to your Gmail.'\
-              ' Please make sure you\'re logged in to the correct Gmail account before granting access. '\
-              'Press enter to open the browser. Once you\'ve granted access you can switch back to gmvault.')
+    raw_input('gmvault will now open a web browser page in order for you to grant gmvault access to your Gmail.\n'\
+              'Please make sure you\'re logged into the correct Gmail account (%s) before granting access.\n'\
+              'Press ENTER to open the browser. Once you\'ve granted access you can switch back to gmvault.' % (email))
     
     # run web browser otherwise print message with url
     if use_webbrowser:
@@ -72,7 +72,7 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
         except Exception, err: 
             LOG.exception(err)
         
-        raw_input("You should now see the web page on your browser now. "\
+        raw_input("You should now see the web page on your browser now.\n"\
                   "If you don\'t, you can manually open:\n\n%s\n\nOnce you've granted gmvault access, press the Enter key.\n" % (auth_url))
         
     else:
@@ -268,7 +268,6 @@ class CredentialHelper(object):
            
             if not token: 
                 token, secret = get_oauth_tok_sec(args['email'], use_webbrowser = True)
-                print('token = %s, secret = %s' % (token,secret) )
                 #store newly created token
                 cls.store_oauth_credentials(args['email'], token, secret)
                

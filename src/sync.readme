@@ -47,7 +47,7 @@ CLOSED 8.1) add a way to add a restore label => Done
 ISSUES/FEATURES:
 -----------------
 
-4) potentially add a reconnection mode (try to reconect 3 times before to quit) => Done for fetch, find_all_mail_folder, 
+4) potentially add a reconnection mode (try to reconnect 3 times before to quit) => Done for fetch, find_all_mail_folder, 
                                                                                         get_all_folders, get_capabilities,
                                                                                         check_gmailness, search
                                                                                    Check that it applies for all the methods as we
@@ -56,7 +56,6 @@ ISSUES/FEATURES:
 5.2) All_Mail IMAP dir needs to be enabled in gmail => handle this error
 6) add logging now otherwise it might be too late => PARTLY DONE but not WORKING
 7.2) Implement the restore => being tested
-7.3) Add two legged or 3 legged oauth for Admins
 7.6) Optimize fetch (get All but Data and if data already exist update metadata info else get data)
 8.3) currently decision to decrypt is only taken with the fact that there is a cipher but we should also check that file is .crypt
 8.3.1) Fix SSL disconnection bug => Implemented a reconnect To Be Tested
@@ -244,6 +243,15 @@ BUG: Subject and MessageId are not parsed properly:
 
 DONE: Optimize _get_directory_from_id because Win files sytem is a piece of sh.....t and very very slow => DONE (added a cache)
 Avoid to do a search whenever we can
+
+# processed 1% 5% 10% 15% 20%
+val*0.01
+val*0.05
+val*0.10
+val*0.15
+val*0.20
+
+need to enhance the LOG object to have the possibility to report not only directly
 
 
 

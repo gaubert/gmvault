@@ -223,7 +223,6 @@ class GmailStorer(object):
         #local_dir can be passed to avoid scanning the filesystem (because of WIN7 fs weaknesses)
         if a_local_dir:
             the_dir = '%s/%s' % (self._db_dir, a_local_dir)
-            print("File to find %s\n" % (self.METADATA_FNAME % (the_dir, a_id)))
             if os.path.exists(self.METADATA_FNAME % (the_dir, a_id)):
                 return the_dir
             else:
@@ -392,6 +391,12 @@ class GMVaulter(object):
         imap_req = 'Since %s Before %s' % (gmvault_utils.datetime2imapdate(begin_date), gmvault_utils.datetime2imapdate(end_date))
         
         return imap_req
+    
+    def get_error_report(self):
+        """
+           Return the error report
+        """
+        return self._error_report
         
     def _sync_between(self, begin_date, end_date, storage_dir, compress = True):
         """
@@ -484,6 +489,10 @@ class GMVaulter(object):
         """
         gstorer =  GmailStorer(self.db_root_dir, self.encrypt_key)
         
+        LOG.critical("%d emails to be fetched." % (len(imap_ids)))
+        
+        nb_emails_processed = 0
+        
         for the_id in imap_ids:
             
             try:
@@ -502,13 +511,13 @@ class GMVaulter(object):
                     #if on disk check that the data is not different
                     if curr_metadata:
                         
-                        LOG.critical("metadata for %s already exists. Check if different." % (new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]))
+                        LOG.debug("metadata for %s already exists. Check if different." % (new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]))
                         
                         if self._metadata_needs_update(curr_metadata, new_data[the_id]):
                             #restore everything at the moment
                             gid  = gstorer.bury_metadata(new_data[the_id], compress = compress)
                             
-                            LOG.critical("update email with imap id %s and gmail id %s." % (the_id, gid))
+                            LOG.debug("update email with imap id %s and gmail id %s." % (the_id, gid))
                             
                             #update local index id gid => index per directory to be thought out
                     else:  
@@ -522,12 +531,14 @@ class GMVaulter(object):
                         gid  = gstorer.bury_email(new_data[the_id], local_dir = the_dir, compress = compress)
                         
                         #update local index id gid => index per directory to be thought out
-                        LOG.critical("Create and store email  with imap id %s, gmail id %s." % (the_id, gid))   
+                        LOG.debug("Create and store email  with imap id %s, gmail id %s." % (the_id, gid))   
                     
                 else:
                     # case when gmail IMAP server returns OK without any data whatsoever
                     # eg. imap uid 142221L ignore it
                     self.error_report['empty'].append((the_id, None))
+                
+                nb_emails_processed += 1
             
             except imaplib.IMAP4.error, error:
                 # check if this is a cannot be fetched error 
@@ -614,6 +625,8 @@ class GMVaulter(object):
         
         #delete supress emails from DB since last sync
         self._delete_sync(imap_ids, db_cleaning)
+        
+        return self.error_report
     
     def remote_sync(self):
         """
@@ -753,16 +766,8 @@ class GMVaulter(object):
                 LOG.exception(err)
                 raise err
             
-            # TODO need something to avoid pushing twice the same email 
-            #perform a gmail search with wathever is possible or a imap search
             
-            
-        
-        #read disk db (maybe will need requests to restrict by date)     
-        # get list of existing ids
-        # for each id unbury email info (contains everything)
-        # maintain a list of folders and create them if they do not exist (set of labels))
-        # push email (maybe will push multiple emails)            
+            return self.error_report
             
             
         
