@@ -381,7 +381,8 @@ class GMVaulter(object):
         #to report gmail imap problems
         self.error_report = { 'empty' : [] ,
                               'cannot_be_fetched'  : [],
-                              'emails_in_quarantine' : []}
+                              'emails_in_quarantine' : [],
+                              'reconnections' : 0}
         
     @classmethod
     def get_imap_request_btw_2_dates(cls, begin_date, end_date):
@@ -526,7 +527,7 @@ class GMVaulter(object):
                 else:
                     # case when gmail IMAP server returns OK without any data whatsoever
                     # eg. imap uid 142221L ignore it
-                    self.error_report['emtpy'].append((the_id, None))
+                    self.error_report['empty'].append((the_id, None))
             
             except imaplib.IMAP4.error, error:
                 # check if this is a cannot be fetched error 
@@ -739,7 +740,8 @@ class GMVaulter(object):
                 LOG.error("Catched IMAP Error %s" % (str(err)))
                 LOG.exception(err)
                 
-                # problem with this email, put it in quarantine
+                #When the email cannot be read from Database because it was empty when returned by gmail imap
+                #quarantine it.
                 if str(err) == "APPEND command error: BAD ['Invalid Arguments: Unable to parse message']":
                     LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(err)))
                     gstorer.quarantine_email(gm_id)

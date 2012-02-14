@@ -88,6 +88,7 @@ def retry(a_nb_tries = 3, a_sleep_time = 1):
     """
       Decorator for retrying command when it failed with a imap or socket error.
       Should be used exclusively on imap exchanges.
+      Strategy, always retry on any imaplib or socket error. Wait few seocnds before to retry
     """
     def retry(the_self, nb_tries, error, sleep_time = 1):
         """
@@ -382,7 +383,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                     self.server.delete_folder(directory)
                     
          
-    @retry(4)   
+    @retry(4, a_sleep_time= 2)   
     def push_email(self, a_body, a_flags, a_internal_time, a_labels):
         """
            Push a complete email body 

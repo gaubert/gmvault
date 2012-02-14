@@ -3,7 +3,6 @@ Created on Nov 8, 2011
 
 @author: guillaume.aubert@eumetcast.int
 '''
-import sys
 import unittest
 import base64
 import shutil
@@ -13,7 +12,7 @@ import ssl
 import gmv.mod_imap as mod_imap
 import gmv.gmvault as gmvault
 import gmv.gmvault_utils as gmvault_utils
-import gmv.gmv_cmd as gmv_cmd
+import gmv.imap_utils as imap_utils
 
 
 def obfuscate_string(a_str):
@@ -67,7 +66,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
            Test connect error (connect to a wrong port). Too long to check
         """
 
-        gimap = gmvault.GIMAPFetcher('imap.gmafil.com', 80, "badlogin", "badpassword")
+        gimap = imap_utils.GIMAPFetcher('imap.gmafil.com', 80, "badlogin", "badpassword")
         
         try:
             gimap.connect()
@@ -82,7 +81,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            Test simple retrieval
         """
-        gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gimap.connect()
         
@@ -96,7 +95,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            Test simple retrieval
         """
-        gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gimap.connect()
         
@@ -106,7 +105,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            Test simple retrieval
         """
-        gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gimap.connect()
         
@@ -151,7 +150,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            validate the label creation at the imap fetcher level
         """
-        gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
+        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
         
         gimap.connect()
         
@@ -179,7 +178,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            search all emails before 01.01.2005
         """
-        gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gimap.connect()
        
@@ -193,7 +192,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
            Get all uid before Sep 2004
            Retrieve all GMAIL IDs 
         """
-        gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gimap.connect()
        
@@ -210,7 +209,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
            Get all params for a uid
            Retrieve all parts for one email
         """
-        gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gimap.connect()
        
@@ -234,7 +233,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         storage_dir = '/tmp/gmail_bk'
         gmvault_utils.delete_all_under(storage_dir)
         
-        gimap   = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gimap   = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         gstorer = gmvault.GmailStorer(storage_dir)
         
         gimap.connect()
@@ -268,7 +267,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         storage_dir = '/tmp/gmail_bk'
         gmvault_utils.delete_all_under(storage_dir)
         
-        gimap   = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gimap   = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gstorer = gmvault.GmailStorer(storage_dir)
         
@@ -304,7 +303,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
         storage_dir = '/tmp/gmail_bk'
         gmvault_utils.delete_all_under(storage_dir)
-        gimap   = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gimap   = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         gstorer = gmvault.GmailStorer(storage_dir)
         
         gimap.connect()
@@ -342,7 +341,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
         storage_dir = '/tmp/gmail_bk'
         gmvault_utils.delete_all_under(storage_dir)
-        gimap   = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gimap   = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gstorer = gmvault.GmailStorer(storage_dir)
         
@@ -379,8 +378,8 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            get one email from one account and restore it
         """
-        gsource      = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
-        gdestination = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd, readonly_folder = False)
+        gsource      = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gdestination = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd, readonly_folder = False)
         
         gsource.connect()
         gdestination.connect()
@@ -419,8 +418,8 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            Restore 10 emails
         """
-        gsource      = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
-        gdestination = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd, \
+        gsource      = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gdestination = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd, \
                                              readonly_folder = False)
         
         gsource.connect()
@@ -542,7 +541,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             
         print("Done \n")
         
-    def ztest_search_broken_gm_id_and_quarantine(self):
+    def test_fix_bug_search_broken_gm_id_and_quarantine(self):
         """
            Search with a gm_id and quarantine it
         """
@@ -551,12 +550,14 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         #clean db dir
         delete_db_dir(db_dir)
         
+        credential    = { 'type' : 'passwd', 'value': self.passwd}
+        gs_credential = { 'type' : 'passwd', 'value': self.gmvault_passwd}
         gstorer = gmvault.GmailStorer(db_dir)
-        gimap = gmvault.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, credential)
         
         gimap.connect()
        
-        criteria = ['X-GM-MSGID 1254269417797093924'] #broken one
+        criteria = { 'type': 'imap', 'req' :['X-GM-MSGID 1254269417797093924']} #broken one
         #criteria = ['X-GM-MSGID 1254267782370534098']
         #criteria = ['ALL']
         ids = gimap.search(criteria)
@@ -566,9 +567,9 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
           
             gm_id = gstorer.bury_email(res[the_id], compress = True)
             
-            syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, self.passwd)
+            syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.gmvault_login, gs_credential)
         
-            syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
+            syncer.restore()
         
         
         #check that the file has been quarantine
@@ -576,20 +577,10 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         self.assertTrue(os.path.exists('%s/1254269417797093924.eml.gz' % (quarantine_dir)))
         self.assertTrue(os.path.exists('%s/1254269417797093924.meta' % (quarantine_dir)))
-        
-    def ztest_copyfile(self):   
-        """
-           Copyfile
-        """
-        db_dir = '/tmp/gmail_bk'
-        
-        gstorer = gmvault.GmailStorer(db_dir)
-        
-        gstorer.quarantine_email(1254269417797093924L)
                 
     def ztest_fix_bug(self):
         """
-           bug with uid 142221L
+           bug with uid 142221L => empty email returned by gmail
         """
         db_dir = '/tmp/gmail_bk'
         credential = { 'type' : 'passwd', 'value': self.passwd}
