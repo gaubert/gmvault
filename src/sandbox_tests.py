@@ -115,11 +115,11 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
            regexpr for 
         """
         import re
-        str = "Subject: Marta Gutierrez commented on her Wall post.\nMessage-ID: <c5b5deee29e373ca42cec75e4ef8384e@www.facebook.com>"
+        the_str = "Subject: Marta Gutierrez commented on her Wall post.\nMessage-ID: <c5b5deee29e373ca42cec75e4ef8384e@www.facebook.com>"
         regexpr = "Subject:\s+(?P<subject>.*)\s+Message-ID:\s+<(?P<msgid>.*)>"
         reg = re.compile(regexpr)
         
-        matched = reg.match(str)
+        matched = reg.match(the_str)
         if matched:
             print("Matched")
             print("subject=[%s],messageid=[%s]" % (matched.group('subject'), matched.group('msgid')))
