@@ -236,7 +236,8 @@ To Do:
 DONE: Review how and when errors are catched (Authentication, When uploading or downloading the data, filesystem prbs ...) => seems ok build a test suite to validate it
 
 Review messages to the users and how to activate the debug
-Add a mode to restart the fetch like the restore
+
+Problem when restarting after an error: Make a test to reconnect and try
 
 BUG: Subject and MessageId are not parsed properly:
 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]': 'Subject: Vlad\r\nMessage-Id: <954A7199-40EA-447F-A02E-5E08A5E62275@gmail.com>\r\n\r\n'

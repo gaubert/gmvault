@@ -24,7 +24,7 @@ LOG = log_utils.LoggerFactory.get_logger('gmvault')
             
 class GmailStorer(object):
     '''
-       Store emails
+       Store emails on disk
     ''' 
     DATA_FNAME     = "%s/%s.eml"
     METADATA_FNAME = "%s/%s.meta"
@@ -109,13 +109,12 @@ class GmailStorer(object):
             
         return gmail_ids
     
-    def bury_metadata(self, email_info, local_dir = None, compress = False):
+    def bury_metadata(self, email_info, local_dir = None):
         """
             Store metadata info in .meta file
             Arguments:
              email_info: metadata info
              local_dir : intermdiary dir (month dir)
-             compress  : If compress is True, use gzip compression
         """
         if local_dir:
             the_dir = '%s/%s' % (self._db_dir, local_dir)
@@ -213,7 +212,7 @@ class GmailStorer(object):
         
         return email_info[imap_utils.GIMAPFetcher.GMAIL_ID]
     
-    def _get_directory_from_id(self, a_id, a_local_dir = None):
+    def get_directory_from_id(self, a_id, a_local_dir = None):
         """
            If a_local_dir (yy_mm dir) is passed, check that metadata file exists and return dir
            Return the directory path if id located.
@@ -265,11 +264,8 @@ class GmailStorer(object):
         """
            metadata file
         """
-        t1= datetime.datetime.now()
         meta_p = self.METADATA_FNAME % (a_dir, a_id)
-        t2= datetime.datetime.now()
-        print("Open metadata file %s" % (t2-t1))
-        
+       
         return open(meta_p)
     
     def quarantine_email(self, a_id):
@@ -277,7 +273,7 @@ class GmailStorer(object):
            Quarantine the 
         """
         #get the dir where the email is stored
-        the_dir = self._get_directory_from_id(a_id)
+        the_dir = self.get_directory_from_id(a_id)
         
         data = self.DATA_FNAME % (the_dir, a_id)
         
@@ -299,7 +295,7 @@ class GmailStorer(object):
            Restore email info from info stored on disk
            Return a tuple (meta, data)
         """
-        the_dir = self._get_directory_from_id(a_id)
+        the_dir = self.get_directory_from_id(a_id)
         
         data_fd = self._get_data_file_from_id(the_dir, a_id)
         
@@ -317,14 +313,11 @@ class GmailStorer(object):
            Get metadata info from DB
         """
         if not a_id_dir:
-            a_id_dir = self._get_directory_from_id(a_id)
+            a_id_dir = self.get_directory_from_id(a_id)
         
         meta_fd = self._get_metadata_file_from_id(a_id_dir, a_id)
-        
-        t1= datetime.datetime.now()
+    
         metadata = json.load(meta_fd)
-        t2= datetime.datetime.now()
-        print("JSON Load metadata %s" % (t2-t1))
         
         metadata[self.INT_DATE_K] =  gmvault_utils.e2datetime(metadata[self.INT_DATE_K])
         
@@ -440,7 +433,7 @@ class GMVaulter(object):
            Factory method to create the object if it exists
         """
         try:
-            a_dir = a_gstorer._get_directory_from_id(a_id, a_dir)
+            a_dir = a_gstorer.get_directory_from_id(a_id, a_dir)
            
             if a_dir:
                 return a_gstorer.unbury_metadata(a_id, a_dir) 
@@ -496,23 +489,14 @@ class GMVaulter(object):
                 LOG.critical("\nProcess imap id %s" % ( the_id ))
                 
                 #get everything once for all
-                t1 = datetime.datetime.now()
                 new_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA )
-                t2= datetime.datetime.now()
-                print("Fetch Metadata = %s" % (t2-t1))
                 
                 if new_data.get(the_id, None):
-                    t1= datetime.datetime.now()
                     the_dir      = gmvault_utils.get_ym_from_datetime(new_data[the_id][imap_utils.GIMAPFetcher.IMAP_INTERNALDATE])
-                    t2= datetime.datetime.now()
-                    print("get ym month dir = %s" % (t2-t1))
                     
                     #pass the dir and the ID
-                    t1= datetime.datetime.now()
                     curr_metadata = GMVaulter.check_email_on_disk( gstorer , \
                                                                    new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID], the_dir)
-                    t2= datetime.datetime.now()
-                    print("check email on disk = %s" % (t2-t1))
                     
                     #if on disk check that the data is not different
                     if curr_metadata:
@@ -529,11 +513,7 @@ class GMVaulter(object):
                     else:  
                         
                         #get everything once for all
-                        t1= datetime.datetime.now()
                         email_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_DATA_ONLY )
-
-                        t2= datetime.datetime.now()
-                        print("Fetch ddata = %s" % (t2-t1))
                         
                         new_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY] = email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
                         

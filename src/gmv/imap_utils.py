@@ -26,7 +26,7 @@ class PushEmailError(Exception):
     """
        PushEmail Error
     """
-    def __init__(self,aErrno, aMsg):
+    def __init__(self, aMsg):
         """
            Constructor
         """
@@ -93,13 +93,12 @@ def push_email_retry(a_nb_tries = 3):
         """
            Retry procedure
         """
-
-        # add 1 sec of wait
-        time.sleep(sleep_time)
-        
         # go in retry mode if less than a_nb_tries
-        if nb_tries < a_nb_tries:
-            nb_tries += 1
+        if nb_tries[0] < a_nb_tries:
+            # add 1 sec of wait
+            time.sleep(sleep_time)
+            
+            nb_tries[0] += 1
             # go in retry mode: reconnect
             the_self.connect()
         else:
@@ -111,7 +110,7 @@ def push_email_retry(a_nb_tries = 3):
            inner_retry
         """
         def wrapper(*args, **kwargs):
-            nb_tries = 0
+            nb_tries = [0]
             while True:
                 try:
                     return fn(*args, **kwargs)

@@ -518,57 +518,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.assertFalse(os.path.exists('%s/2384403887202624608.meta' % (storage_dir)))
         self.assertTrue(os.path.exists('%s/1384313269332005293.meta' % (storage_dir)))
         self.assertTrue(os.path.exists('%s/1384313269332005293.eml.gz' % (storage_dir)))
-        
-    def ztest_logger(self):
-        """
-           Test the logging mechanism
-        """
-        
-        import gmv.log_utils as log_utils
-        log_utils.LoggerFactory.setup_cli_app_handler('./gmv.log') 
-        
-        LOG = log_utils.LoggerFactory.get_logger('gmv') #pylint:disable-msg=C0103
-        
-        LOG.info("On Info")
-        
-        LOG.warning("On Warning")
-        
-        LOG.error("On Error")
-        
-        LOG.notice("On Notice")
-        
-        try:
-            raise Exception("Exception. This is my exception")
-            self.fail("Should never arrive here") #pylint:disable-msg=W0101
-        except Exception, err: #pylint:disable-msg=W0101, W0703
-            LOG.exception("error,", err)
-        
-        LOG.critical("On Critical")
-        
-    def ztest_encrypt_blowfish(self):
-        """
-           Test encryption with blowfish
-        """
-        file_path = '../etc/tests/test_few_days_syncer/2384403887202624608.eml.gz'
-        
-        import gzip
-        import gmv.blowfish
-        
-        #create blowfish cipher
-        cipher = gmv.blowfish.Blowfish('VerySeCretKey')
-         
-        gz_fd = gzip.open(file_path)
-        
-        content = gz_fd.read()
-        
-        cipher.initCTR()
-        crypted = cipher.encryptCTR(content)
-        
-        cipher.initCTR()
-        decrypted = cipher.decryptCTR(crypted)
-        
-        self.assertEquals(decrypted, content)
-        
+            
     def ztest_encrypt_restore_on_gmail(self):
         """
            Doesn't work to be fixed
@@ -636,21 +586,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gstorer = gmvault.GmailStorer(db_dir)
         
         gstorer.quarantine_email(1254269417797093924L)
-        
-    def ztest_regexpr(self):
-        """
-           regexpr for 
-        """
-        import re
-        str = "Subject: Marta Gutierrez commented on her Wall post.\nMessage-ID: <c5b5deee29e373ca42cec75e4ef8384e@www.facebook.com>"
-        regexpr = "Subject:\s+(?P<subject>.*)\s+Message-ID:\s+<(?P<msgid>.*)>"
-        reg = re.compile(regexpr)
-        
-        matched = reg.match(str)
-        if matched:
-            print("Matched")
-            print("subject=[%s],messageid=[%s]" % (matched.group('subject'), matched.group('msgid')))
-            
+                
     def ztest_fix_bug(self):
         """
            bug with uid 142221L
@@ -661,44 +597,6 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         syncer._create_update_sync([142221L], compress = True)
         
-    def ztest_dirwalk_test(self):
-        """
-           Test dirwalk with an existing dir setup
-        """
-        db_dir = '/home/aubert/Dev/projects/gmvault/src/gmvault-db'
-        gstorer = gmvault.GmailStorer(db_dir)
-        
-        ids = gstorer.get_all_existing_gmail_ids()
-        
-        for (gmid, dir) in ids:
-            print("gmid = %s, dir = %s\n" % (gmid, dir))
-        #for key in ids:
-        #    print('key = %s, val = %s\n' % (key, ids[key]))
-        
-    def test_decorator(self):
-        """
-           Test the decorator
-        """
-        
-        class A(object):
-            
-            def __init__(self, secret):
-                self.secret = secret
-                
-            def connect(self):
-                """
-                  reconnect
-                """
-                print("connect")
-            
-            @gmvault.retry()
-            def get_secret(self, param):
-                print(self.secret)
-                
-        a = A("ZHE ZECRET")
-        
-        a.get_secret("The PARAM")
-
         
 
 def tests():
