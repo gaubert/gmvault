@@ -7,6 +7,7 @@ import os
 
 import re
 import datetime
+import time
 import calendar
 import fnmatch
 import functools
@@ -14,7 +15,6 @@ import functools
 import StringIO
 import sys
 import traceback
-import string
 import random 
 
 import log_utils 
@@ -65,12 +65,17 @@ class curry:
             kw = kwargs or self.kwargs
         return self.fun(*(self.pending + args), **kw) #IGNORE:W0142
 
-def make_password(minlength=8,maxlength=16):  
+
+
+LETTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+DIGITS = '0123456789'
+
+def make_password(minlength=8, maxlength=16):  
     """
        generate randomw password
     """
-    length = random.randint(minlength,maxlength)
-    letters = string.ascii_letters+string.digits # alphanumeric, upper and lowercase  
+    length = random.randint(minlength, maxlength)
+    letters = LETTERS + DIGITS 
     return ''.join([random.choice(letters) for _ in range(length)])  
 
 
@@ -94,8 +99,30 @@ def get_exception_traceback():
     traceback.print_exception(exception_type, exception_value, exception_traceback, file = the_file)
     return the_file.getvalue()
 
-ZERO = datetime.timedelta(0) 
+class Timer(object):
+    """
+       Timer Class to mesure time
+    """
+    def __init__(self):
+        
+        self._start = None
+        
+    def start(self):
+        """
+           start the timer
+        """
+        self._start = time.time()
+    
+    def elapsed(self):
+        """
+           return elapsed time in sec
+        """
+        now = time.time()
+        
+        return round(now - self._start)
 
+
+ZERO = datetime.timedelta(0) 
 # A UTC class.    
 class UTC(datetime.tzinfo):    
     """UTC Timezone"""    
@@ -269,24 +296,24 @@ def __rmgeneric(path, __func__):
         __func__(path)
         #print 'Removed ', path
     except OSError, (_, strerror): #IGNORE:W0612
-        print """Error removing %(path)s, %(error)s """%{'path' : path, 'error': strerror }
+        print """Error removing %(path)s, %(error)s """ % {'path' : path, 'error': strerror }
             
-def delete_all_under(path,delete_top_dir=False):
+def delete_all_under(path, delete_top_dir = False):
     """ delete all files and directories under path """
 
     if not os.path.isdir(path):
         return
     
-    files=os.listdir(path)
+    files = os.listdir(path)
 
     for x in files:
-        fullpath=os.path.join(path, x)
+        fullpath = os.path.join(path, x)
         if os.path.isfile(fullpath):
-            f=os.remove
+            f = os.remove
             __rmgeneric(fullpath, f)
         elif os.path.isdir(fullpath):
             delete_all_under(fullpath)
-            f=os.rmdir
+            f = os.rmdir
             __rmgeneric(fullpath, f)
     
     if delete_top_dir:
@@ -317,7 +344,9 @@ def ordered_dirwalk(a_dir, a_wildcards= '*', sort_func = sorted):
             yield p_elem 
   
 def dirwalk(a_dir, a_wildcards= '*'):
-    
+    """
+       return all files and dirs in a directory
+    """
     for root, _, files in os.walk(a_dir):
         for the_file in files:
             if fnmatch.fnmatch(the_file, a_wildcards):
@@ -343,4 +372,11 @@ def get_home_dir_path():
             
 if __name__ == '__main__':
    
-    print(get_all_directories_posterior_to('2011-Apr', ['2011-Mar', '2010-Feb', '2012-Mar', '2011-Apr', '2011-May']))
+    timer = Timer()
+    
+    timer.start()
+    
+    import time
+    time.sleep(3)
+    
+    print(timer.elapsed())
