@@ -14,6 +14,7 @@ import imaplib
 import gmv.gmvault as gmvault
 import gmv.gmvault_utils as gmvault_utils
 import gmv.gmv_cmd as gmv_cmd
+import gmv.credential_utils as credential_utils
 
 
 def obfuscate_string(a_str):
@@ -349,7 +350,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.assertEquals(credential, {'type': 'passwd', 'option': 'read', 'value': 'a_new_password'})
     
     
-    def test_double_login(self):
+    def ztest_double_login(self):
         """
            double login
         """
@@ -360,8 +361,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         args = gmvault_launcher.parse_args()
         
-        import gmv.cmdline_utils
-        credential = gmv.cmdline_utils.CredentialHelper.get_credential(args)
+        credential = credential_utils.CredentialHelper.get_credential(args)
         
         syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
                                        args['email'], credential)
@@ -375,7 +375,14 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         print("Connection 10 min later")
         syncer.src.connect()
         
+    def test_debug_restore(self):
+        """
+           double login
+        """
+        # now read the password
+        sys.argv = ['gmvault.py', 'restore', '--db-dir', '/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db', 'gsync.mtester@gmail.com']
         
+        gmv_cmd.bootstrap_run()
     
     def ztest_restore_with_labels(self):
         """
@@ -386,14 +393,6 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         gmv_cmd.bootstrap_run()
         
-    def ztest_os_walk(self):
-        """
-           test os walk
-        """
-        import os
-        from os.path import join, getsize
-        for root, dirs, files in os.walk('/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db/db'):
-            print("root: %s, sub-dirs : %s, files = %s" % (root, dirs, files))
     
     def ztest_quick_sync_with_labels(self):
         """
@@ -403,18 +402,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         gmv_cmd.bootstrap_run()
     
-    def ztest_logging(self):
-        """
-           Test logging
-        """
-        #gmv_cmd.init_logging()
-        import gmv.log_utils as log_utils
-        log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, file_path="/tmp/gmvault.log") 
-        LOG = log_utils.LoggerFactory.get_logger('gmv')
-        LOG.critical("This is critical")
-        LOG.info("This is info")
-        LOG.error("This is error")
-        LOG.debug("This is debug")
+
         
         
 

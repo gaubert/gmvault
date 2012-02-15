@@ -776,7 +776,7 @@ class GMVaulter(object):
                 raise err
             
             
-            return self.error_report
+        return self.error_report
             
             
         

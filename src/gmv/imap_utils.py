@@ -403,7 +403,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         match = GIMAPFetcher.APPENDUID_RE.match(res)
         if match:
-            result_uid = int(GIMAPFetcher.APPENDUID_RE.search(res).group(1))
+            result_uid = int(match.group(1))
         else:
             raise PushEmailError("Not email id returned by IMAP APPEND command")
         

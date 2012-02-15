@@ -158,6 +158,28 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
             self.assertEquals('GIMAPFetcher cannot restore email in myaccount@gmail.com account.', str(err))
         
         self.assertEquals(imap_fetch.connect_nb, 4)
+    
+    def ztest_os_walk(self):
+        """
+           test os walk
+        """
+        import os
+        from os.path import join, getsize
+        for root, dirs, files in os.walk('/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db/db'):
+            print("root: %s, sub-dirs : %s, files = %s" % (root, dirs, files))
+    
+    def ztest_logging(self):
+        """
+           Test logging
+        """
+        #gmv_cmd.init_logging()
+        import gmv.log_utils as log_utils
+        log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, file_path="/tmp/gmvault.log") 
+        LOG = log_utils.LoggerFactory.get_logger('gmv')
+        LOG.critical("This is critical")
+        LOG.info("This is info")
+        LOG.error("This is error")
+        LOG.debug("This is debug")
         
 
         
