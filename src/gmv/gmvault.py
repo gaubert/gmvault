@@ -401,7 +401,7 @@ class GMVaulter(object):
               "Number of emails that were returned empty by gmail: %d\n" \
               % (self.error_report['reconnections'], \
                  len(self.error_report['emails_in_quarantine']), \
-                 len(self.error_report['cannot_be_fetched'], \
+                 len(self.error_report['cannot_be_fetched']), \
                  len(self.error_report['empty'])
                 )
         

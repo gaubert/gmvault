@@ -111,6 +111,10 @@ class GMVaultLauncher(object):
                                  help="Gmail search request to restrict sync as defined in https://support.google.com/mail/bin/answer.py?hl=en&answer=7190",\
                                  dest="gmail_request", default=None)
         
+        sync_parser.add_argument("-e", "--encrypt", \
+                                 help="encrypt stored email messages in the database.",\
+                                 action='store_true',dest="encrypt", default=False)
+        
         sync_parser.add_argument("-z", "--db-cleaning", \
                           help="To activate or deactive the disk db cleaning. Automatically deactivated if a imap req is passed in args.",\
                           dest="db_cleaning", default=None)
@@ -297,6 +301,10 @@ class GMVaultLauncher(object):
             elif parsed_args['request'] and not options.db_cleaning:
                 #else if we have a request and not forced put it to false
                 parsed_args['db-cleaning'] = False
+                
+            #add encryption option
+            parsed_args['encrypt'] = options.encrypt
+                
                 
         elif parsed_args.get('command', '') == 'restore':
             
