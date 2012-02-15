@@ -396,7 +396,16 @@ class GMVaulter(object):
         """
            Return the error report
         """
-        return self._error_report
+        str = "Number of reconnections: %d.\nNumber of emails quarantined: %d.\n" \
+              "Number of emails that could not be fetched: %d.\n" \
+              "Number of emails that were returned empty by gmail: %d\n" \
+              % (self.error_report['reconnections'], \
+                 len(self.error_report['emails_in_quarantine']), \
+                 len(self.error_report['cannot_be_fetched'], \
+                 len(self.error_report['empty'])
+                )
+        
+        return str
         
     def _sync_between(self, begin_date, end_date, storage_dir, compress = True):
         """
