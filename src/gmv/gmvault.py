@@ -515,7 +515,8 @@ class GMVaulter(object):
                     
                     #pass the dir and the ID
                     curr_metadata = GMVaulter.check_email_on_disk( gstorer , \
-                                                                   new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID], the_dir)
+                                                                   new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID], \
+                                                                   the_dir)
                     
                     #if on disk check that the data is not different
                     if curr_metadata:

@@ -55,7 +55,10 @@ class NotSeenAction(argparse.Action):
        to differenciate between a seen and non seen command
     """
     def __call__(self, parser, namespace, values, option_string=None):
-        setattr(namespace, self.dest, 'empty')
+        if values:
+            setattr(namespace, self.dest, 'empty')
+        else:
+            setattr(namespace, self.dest, values)
 
 class GMVaultLauncher(object):
     
@@ -96,12 +99,23 @@ class GMVaultLauncher(object):
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
         sync_parser.add_argument("-o", "--oauth", \
-                          help="use oauth for authentication. (default method)",\
+                          help="use oauth for authentication. (default recommended method)",\
                           action='store_const', dest="oauth_token", const='empty', default='not_seen')
         
+        #sync_parser.add_argument("-p", "--passwd", metavar = "PASS", \
+        #                  help="use password authentication. (not recommended)",
+        #                  action= NotSeenAction , dest="passwd", default='not_seen')
+        sync_parser.add_argument("--renew-passwd", \
+                          help="renew the stored password via an interactive authentication session. (not recommended)",
+                          action= 'store_const' , dest="passwd", const='renew')
+        
+        sync_parser.add_argument("--store-passwd", \
+                          help="use interactive password authentication, encrypt and store the password. (not recommended)",
+                          action= 'store_const' , dest="passwd", const='store')
+        
         sync_parser.add_argument("-p", "--passwd", \
-                          help="use password authentication. (not recommended)",
-                          action='store_const', dest="passwd", const='empty', default='not_seen')
+                          help="use interactive password authentication. (not recommended)",
+                          action= 'store_const' , dest="passwd", const='empty', default='not_seen')
         
         sync_parser.add_argument("-r", "--imap-req", metavar = "REQ", \
                                  help="Imap request to restrict sync.",\
@@ -169,7 +183,7 @@ class GMVaultLauncher(object):
                           action='store_const', dest="oauth_token", const='empty', default='not_seen')
         
         rest_parser.add_argument("-p", "--passwd", \
-                          help="use password authentication. (not recommended)",
+                          help="use interactive password authentication. (not recommended)",
                           action='store_const', dest="passwd", const='empty', default='not_seen')
         
         rest_parser.add_argument("--server", metavar = "HOSTNAME", \

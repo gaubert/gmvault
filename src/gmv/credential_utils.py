@@ -174,7 +174,7 @@ class CredentialHelper(object):
         if os.path.exists(user_passwd_file_path):
             passwd_file  = open(user_passwd_file_path)
             
-            password = passwd_file.read()
+            password     = passwd_file.read()
             cipher       = blowfish.Blowfish(cls.get_secret())
             cipher.initCTR()
             password     = cipher.decryptCTR(password)
@@ -232,18 +232,13 @@ class CredentialHelper(object):
         if not args.get('email', None):
             raise Exception("No email passed, Need to pass an email")
         
-        if args['passwd'] == 'empty': 
+        if args['passwd'] in ['empty', 'store', 'renew']: 
             # --passwd is here so look if there is a passwd in conf file 
             # or go in interactive mode
-
-            # --passwd try to read password in conf file otherwise go to interactive mode and save it
-            passwd = None
-            # no interactive and no forced save password so try to read it
-            if not args['save_passwd']:
-                #try to read the password
-                passwd = cls.read_password(args['email'])
+            passwd = cls.read_password(args['email'])
             
-            if not passwd: # go to interactive mode
+            #password to be renewed so need an interactive phase to get the new pass
+            if not passwd or args['passwd'] in ['renew', 'store']: # go to interactive mode
                 if not test_mode.get('activate', False):
                     passwd = getpass.getpass('Please enter gmail password for %s and press enter:' % (args['email']))
                 else:
@@ -251,8 +246,8 @@ class CredentialHelper(object):
                     
                 credential = { 'type' : 'passwd', 'value' : passwd}
                 
-                #store it in dir if asked for --save_passwd
-                if args['save_passwd']:
+                #store it in dir if asked for --store-passwd or --renew-passwd
+                if args['passwd'] in ['renew', 'store']:
                     cls.store_passwd(args['email'], passwd)
                     credential['option'] = 'saved'
             else:

@@ -375,7 +375,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         print("Connection 10 min later")
         syncer.src.connect()
         
-    def test_debug_restore(self):
+    def ztest_debug_restore(self):
         """
            double login
         """
@@ -394,11 +394,11 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gmv_cmd.bootstrap_run()
         
     
-    def ztest_quick_sync_with_labels(self):
+    def test_quick_sync_with_labels(self):
         """
            Test quick sync
         """
-        sys.argv = ['gmvault.py', 'sync', '-t', 'quick', self.login]
+        sys.argv = ['gmvault.py', 'sync', '--renew-passwd', self.login]
         
         gmv_cmd.bootstrap_run()
     
