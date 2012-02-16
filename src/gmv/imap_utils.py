@@ -26,62 +26,11 @@ class PushEmailError(Exception):
     """
        PushEmail Error
     """
-    def __init__(self, aMsg):
+    def __init__(self, a_msg):
         """
            Constructor
         """
-        super(PushEmailError,self).__init__(aMsg)
-
-#retry decorator with nb of tries
-def old_retry(a_nb_tries = 3):
-    """
-      Decorator for retrying command when it failed with a imap or socket error.
-      Should be used exclusively on imap exchanges.
-    """
-    def inner_retry(fn):
-        def wrapper(*args, **kwargs):
-            nb_tries = 0
-            while True:
-                try:
-                    return fn(*args, **kwargs)
-                    
-                except imaplib.IMAP4.error, err:
-                    
-                    LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
-                    
-                    LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
-                    
-                    # add 1 sec of wait
-                    time.sleep(1)
-                    
-                    # go in retry mode if less than a_nb_tries
-                    if nb_tries < a_nb_tries:
-                        nb_tries += 1
-                        # go in retry mode: reconnect
-                        args[0].connect()
-                    else:
-                        #cascade error
-                        raise err
-                except socket.error, sock_err:
-                    LOG.debug("error message = %s. traceback:%s" % (sock_err, gmvault_utils.get_exception_traceback()))
-                    
-                    LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
-                    
-                    # add 1 sec of wait
-                    time.sleep(1)
-                    
-                    # go in retry mode if less than a_nb_tries
-                    if nb_tries < a_nb_tries:
-                        nb_tries += 1
-                        # go in retry mode: reconnect
-                        args[0].connect()
-                    else:
-                        #cascade error
-                        raise err
-
-            
-        return functools.wraps(fn)(wrapper)
-    return inner_retry
+        super(PushEmailError, self).__init__(a_msg)
 
 #retry decorator with nb of tries and sleep_time
 def retry(a_nb_tries = 3, a_sleep_time = 1):
@@ -90,12 +39,15 @@ def retry(a_nb_tries = 3, a_sleep_time = 1):
       Should be used exclusively on imap exchanges.
       Strategy, always retry on any imaplib or socket error. Wait few seocnds before to retry
     """
-    def retry(the_self, nb_tries, error, sleep_time = 1):
+    def reconnect(the_self, nb_tries, error, sleep_time = 1):
         """
            Retry procedure
         """
         # go in retry mode if less than a_nb_tries
         if nb_tries[0] < a_nb_tries:
+            
+            the_self.disconnect()
+            
             # add 1 sec of wait
             time.sleep(sleep_time)
             
@@ -106,15 +58,12 @@ def retry(a_nb_tries = 3, a_sleep_time = 1):
             #cascade error
             raise error
         
-    def inner_retry(fn):
-        """
-           inner_retry
-        """
-        def wrapper(*args, **kwargs):
+    def inner_retry(the_func): #pylint:disable-msg=C0111
+        def wrapper(*args, **kwargs): #pylint:disable-msg=C0111
             nb_tries = [0]
             while True:
                 try:
-                    return fn(*args, **kwargs)
+                    return the_func(*args, **kwargs)
                 
                 except PushEmailError, p_err:
                     
@@ -122,7 +71,7 @@ def retry(a_nb_tries = 3, a_sleep_time = 1):
                     
                     LOG.critical("Cannot reach the gmail server (see logs). Wait %s seconds and retrying" % (a_sleep_time))
                     
-                    retry(args[0], nb_tries, p_err, sleep_time = a_sleep_time)
+                    reconnect(args[0], nb_tries, p_err, sleep_time = a_sleep_time)
                     
                 except imaplib.IMAP4.error, err:
                     
@@ -138,9 +87,9 @@ def retry(a_nb_tries = 3, a_sleep_time = 1):
                     
                     LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
                     
-                    retry(args[0], nb_tries, sock_err, sleep_time = a_sleep_time)
+                    reconnect(args[0], nb_tries, sock_err, sleep_time = a_sleep_time)
 
-        return functools.wraps(fn)(wrapper)
+        return functools.wraps(the_func)(wrapper)
     return inner_retry
 
 class GIMAPFetcher(object): #pylint:disable-msg=R0902
@@ -190,7 +139,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         self.host             = host
         self.port             = port
         self.login            = login
-        self.connected        = False
+        self.once_connected   = False
         self.credential       = credential
         self.ssl              = True
         self.use_uid          = True
@@ -210,7 +159,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             self.server.login(self.login, self.credential['value'])
         elif self.credential['type'] == 'xoauth':
             #connect with xoauth 
-            if self.connected:
+            if self.once_connected:
                 #already connected once so renew xoauth req because it can expire
                 self.credential['value'] = credential_utils.CredentialHelper.get_xoauth_req_from_email(self.login)
                 
@@ -219,7 +168,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             raise Exception("Unknown authentication method %s. Please use xoauth or passwd authentication " % (self.credential['type']))
             
         #set connected to True to hanlde reconnection in case of failure
-        self.connected = True
+        self.once_connected = True
         
         # check gmailness
         self.check_gmailness()
@@ -232,6 +181,14 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         # set to GMAIL_ALL dir by default and in readonly
         if go_to_all_folder:
             self.server.select_folder(self._all_mail_folder, readonly = self.readonly_folder)
+            
+    def disconnect(self):
+        """
+           disconnect to avoid too many simultaneous connection problem
+        """
+        if self.server:
+            self.server.logout()
+            self.server = None
     
     def enable_compression(self):
         """
