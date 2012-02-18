@@ -397,8 +397,9 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
     def test_quick_sync_with_labels(self):
         """
            Test quick sync
+           --renew-passwd
         """
-        sys.argv = ['gmvault.py', 'sync', '--renew-passwd', self.login]
+        sys.argv = ['gmvault.py', 'sync', self.login]
         
         gmv_cmd.bootstrap_run()
     
