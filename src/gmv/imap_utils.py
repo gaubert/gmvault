@@ -26,11 +26,15 @@ class PushEmailError(Exception):
     """
        PushEmail Error
     """
-    def __init__(self, a_msg):
+    def __init__(self, a_msg, quarantined = False):
         """
            Constructor
         """
         super(PushEmailError, self).__init__(a_msg)
+        self._in_quarantine = quarantined
+    
+    def quarantined(self):
+        return self._in_quarantine
 
 #retry decorator with nb of tries and sleep_time
 def retry(a_nb_tries = 3, a_sleep_time = 1):
@@ -362,7 +366,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         if match:
             result_uid = int(match.group(1))
         else:
-            raise PushEmailError("Not email id returned by IMAP APPEND command")
+            raise PushEmailError("No email id returned by IMAP APPEND command. Quarantine this email.", quarantined = True)
         
         labels_str = self._build_labels_str(a_labels)
         

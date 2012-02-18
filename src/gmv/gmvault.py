@@ -396,7 +396,7 @@ class GMVaulter(object):
         """
            Return the error report
         """
-        str = "Number of reconnections: %d.\nNumber of emails quarantined: %d.\n" \
+        the_str = "Number of reconnections: %d.\nNumber of emails quarantined: %d.\n" \
               "Number of emails that could not be fetched: %d.\n" \
               "Number of emails that were returned empty by gmail: %d\n" \
               % (self.error_report['reconnections'], \
@@ -405,7 +405,7 @@ class GMVaulter(object):
                  len(self.error_report['empty'])
                 )
         
-        return str
+        return the_str
         
     def _sync_between(self, begin_date, end_date, storage_dir, compress = True):
         """
@@ -770,7 +770,17 @@ class GMVaulter(object):
                     gstorer.quarantine_email(gm_id)
                     self.error_report['emails_in_quarantine'].append(gm_id) 
                 else:
-                    raise err                         
+                    raise err
+            except imap_utils.PushEmailError, p_err:
+                LOG.error("Catch the following exception %s" % (str(p_err)))
+                LOG.exception(p_err)
+                
+                if p_err.quarantined:
+                    LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(err)))
+                    gstorer.quarantine_email(gm_id)
+                    self.error_report['emails_in_quarantine'].append(gm_id) 
+                else:
+                    raise p_err          
             except Exception, err:
                 LOG.error("Catch the following exception %s" % (str(err)))
                 LOG.exception(err)
