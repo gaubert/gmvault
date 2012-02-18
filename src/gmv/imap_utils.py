@@ -84,7 +84,7 @@ def retry(a_nb_tries = 3, a_sleep_time = 1):
                     LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
                     
                     # problem with this email, put it in quarantine
-                    retry(args[0], nb_tries, err, sleep_time = a_sleep_time)
+                    reconnect(args[0], nb_tries, err, sleep_time = a_sleep_time)
                 
                 except socket.error, sock_err:
                     LOG.debug("error message = %s. traceback:%s" % (sock_err, gmvault_utils.get_exception_traceback()))
