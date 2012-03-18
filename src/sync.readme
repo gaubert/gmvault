@@ -254,7 +254,7 @@ val*0.20
 need to enhance the LOG object to have the possibility to report not only directly
 
 Password management:
-Provide a --passwd --store-passwd to encrypt and store the password and --renew-passwd to renew the stored password 
+THIS DONE => Provide a --passwd --store-passwd to encrypt and store the password and --renew-passwd to renew the stored password 
 Add a test in the test suite validating the password mode (check the reconnect with the password) 
 =>done
 

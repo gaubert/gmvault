@@ -533,13 +533,13 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         credential    = { 'type' : 'passwd', 'value': self.passwd}
         search_req    = { 'type' : 'imap', 'req': "Since 1-Nov-2011 Before 3-Nov-2011"}
         
-        key    = 'verySecRetKeY'
-        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, credential, read_only_access = True, encrypt_key = key)
+        use_encryption = True
+        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, credential, read_only_access = True, use_encryption = use_encryption)
         
         syncer.sync(imap_req = search_req)
         
         # check that the email can be read
-        gstorer = gmvault.GmailStorer('/tmp/gmail_bk', key)
+        gstorer = gmvault.GmailStorer('/tmp/gmail_bk', use_encryption)
         
         metadata = gmvault.GMVaulter.check_email_on_disk(gstorer, 1384313269332005293)
         

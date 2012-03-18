@@ -19,6 +19,7 @@ import log_utils
 import collections_utils
 import gmvault_utils
 import imap_utils
+import credential_utils
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault')
             
@@ -47,19 +48,22 @@ class GmailStorer(object):
     
     DB_AREA         = 'db'
     QUARANTINE_AREA = 'quarantine'
+    INFO_AREA       = '.info'  # contains metadata concerning the database
+    ENCRYPTION_KEY_FILENAME    = '.storage_key.sec'
         
     
-    def __init__(self, a_storage_dir, a_encrypt_key = None):
+    def __init__(self, a_storage_dir, encrypt_data = False):
         """
            Store on disks
            args:
               a_storage_dir: Storage directory
-              a_encrypt_key: Encryption key. If there then encrypt
+              a_use_encryption: Encryption key. If there then encrypt
         """
         self._top_dir = a_storage_dir
         
         self._db_dir          = '%s/%s' % (a_storage_dir, GmailStorer.DB_AREA)
         self._quarantine_dir  = '%s/%s' % (a_storage_dir, GmailStorer.QUARANTINE_AREA)
+        self._info_dir        = '%s/%s' % (a_storage_dir, GmailStorer.INFO_AREA)
         
         #make dirs
         if not os.path.exists(self._db_dir):
@@ -67,14 +71,24 @@ class GmailStorer(object):
         
         gmvault_utils.makedirs(self._db_dir)
         gmvault_utils.makedirs(self._quarantine_dir)
+        gmvault_utils.makedirs(self._info_dir)
         
         self.fsystem_info_cache = {}
         
-        if a_encrypt_key:
+        if encrypt_data:
+            #get encryption key from disk
+            self._encryption_key = self.get_encryption_key(self._info_dir)
             #create blowfish cipher
-            self._cipher = blowfish.Blowfish(a_encrypt_key)
+            self._cipher = blowfish.Blowfish(self._encryption_key)
         else:
             self._cipher = None
+            
+    @classmethod
+    def get_encryption_key(cls, a_info_dir):
+        """
+           Return or generate the encryption key if it doesn't exist
+        """
+        return credential_utils.CredentialHelper.get_secret_key('%s/%s' % (a_info_dir, cls.ENCRYPTION_KEY_FILENAME))
     
     @classmethod
     def parse_header_fields(cls, header_fields):
@@ -369,7 +383,7 @@ class GMVaulter(object):
     RESTORE_PROGRESS = 'last_id.restore'
     SYNC_PROGESS     = 'last_id.sync'
     
-    def __init__(self, db_root_dir, host, port, login, credential, read_only_access = True, encrypt_key = None): #pylint:disable-msg=R0913
+    def __init__(self, db_root_dir, host, port, login, credential, read_only_access = True, use_encryption = False): #pylint:disable-msg=R0913
         """
            constructor
         """   
@@ -389,7 +403,7 @@ class GMVaulter(object):
         # enable compression if possible
         self.src.enable_compression() 
         
-        self.encrypt_key = encrypt_key
+        self.use_encryption = use_encryption
         
         #to report gmail imap problems
         self.error_report = { 'empty' : [] ,
@@ -426,7 +440,7 @@ class GMVaulter(object):
            sync between 2 dates
         """
         #create storer
-        gstorer = GmailStorer(storage_dir, a_encrypt_key = self.encrypt_key)
+        gstorer = GmailStorer(storage_dir, self.use_encryption)
         
         #search before the next month
         imap_req = self.get_imap_request_btw_2_dates(begin_date, end_date)
@@ -510,7 +524,7 @@ class GMVaulter(object):
            First part of the double pass strategy: 
            create and update emails in db
         """
-        gstorer =  GmailStorer(self.db_root_dir, self.encrypt_key)
+        gstorer =  GmailStorer(self.db_root_dir, self.use_encryption)
         
         LOG.critical("%d emails to be fetched." % (len(imap_ids)))
         
@@ -714,7 +728,7 @@ class GMVaulter(object):
         LOG.critical("Restore email database in gmail account %s." % (self.login) ) 
         
         #crack email database
-        gstorer = GmailStorer(self.db_root_dir, self.encrypt_key)
+        gstorer = GmailStorer(self.db_root_dir, self.use_encryption)
         
         LOG.critical("Read email info from gmvault-db in %s." % (self.db_root_dir))
         

@@ -113,10 +113,14 @@ def generate_xoauth_req(a_token, a_secret, email, two_legged=False):
 
 class CredentialHelper(object):
     
+    SECRET_FILEPATH = '%s/token.sec' % (gmvault_utils.get_home_dir_path())
+    
+    
     @classmethod
     def get_secret(cls):
         """
            Get a secret from secret file or generate it
+           TO BE REMOVED
         """
         secret_file_path = '%s/token.sec' % (gmvault_utils.get_home_dir_path())
         if os.path.exists(secret_file_path):
@@ -130,6 +134,21 @@ class CredentialHelper(object):
         return secret
     
     @classmethod
+    def get_secret_key(cls, a_filepath):
+        """
+           Get secret key if it is in the file otherwise generate it and save it
+        """
+        if os.path.exists(a_filepath):
+            secret = open(a_filepath).read()
+        else:
+            secret = gmvault_utils.make_password()
+            fdesc = open(a_filepath, 'w+')
+            fdesc.write(secret)
+            fdesc.close()
+        
+        return secret
+    
+    @classmethod
     def store_passwd(cls, email, passwd):
         """
         """
@@ -137,7 +156,7 @@ class CredentialHelper(object):
     
         fdesc = open(passwd_file, "w+")
         
-        cipher       = blowfish.Blowfish(cls.get_secret())
+        cipher       = blowfish.Blowfish(cls.get_secret_key(cls.SECRET_FILEPATH))
         cipher.initCTR()
     
         fdesc.write(cipher.encryptCTR(passwd))
@@ -175,7 +194,7 @@ class CredentialHelper(object):
             passwd_file  = open(user_passwd_file_path)
             
             password     = passwd_file.read()
-            cipher       = blowfish.Blowfish(cls.get_secret())
+            cipher       = blowfish.Blowfish(cls.cls.get_secret_key(cls.SECRET_FILEPATH))
             cipher.initCTR()
             password     = cipher.decryptCTR(password)
 

@@ -378,7 +378,7 @@ class GMVaultLauncher(object):
         LOG.critical("Connect to Gmail server.")
         # handle credential in all levels
         syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
-                                       args['email'], credential)
+                                       args['email'], credential, read_only_access = True, use_encryption = args['encrypt'])
         
         #full sync is the first one
         if args.get('type', '') == 'full':
