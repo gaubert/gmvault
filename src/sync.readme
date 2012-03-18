@@ -33,35 +33,41 @@ CLOSED 1) sync_delete can be redone as all the gm_id are retrieved from the file
 CLOSED 2) instead of iterating on the remote gmail ids, iterate (with generator) by group of 30 elements on the
 disk saved ids. This should scale for ever whatever the number of you have. => Not done but not necessary
 CLOSED 3) Test disconnection and see what is going on (error generated) => to be validated with tests if possible
+CLOSED 4) potentially add a reconnection mode (try to reconnect 3 times before to quit) => Done for fetch, find_all_mail_folder, 
+                                                                                        get_all_folders, get_capabilities,
+                                                                                        check_gmailness, search
+                                                                                        Check that it applies for all the methods as we
+                                                                                        catch only imaplib errors.
 CLOSED 7) test why labels cannot be hierarchically recreated => DONE
 CLOSED 7.1) Check the Internal Date on a restore: it doesn't seem to be set properly => DONE
 CLOSED 7.3) add password save in .gmvault/.passwd => encrypted if possible at least obfuscated => Done
-CLOSED 8.0) need to go in error and --oauth-token and --password are passed together and email is mandatory => DONE
+CLOSED 7.6) Optimize fetch (get All but Data and if data already exist update metadata info else get data) => DONE
+CLOSED 8) add oauth and a way to save the token. => integration done. Now need testing
+CLOSED 8.0.1) need to go in error and --oauth-token and --password are passed together and email is mandatory => DONE
+CLOSED 8.1) add a way to add a restore label => Done
+CLOSED 8.3) currently decision to decrypt is only taken with the fact that there is a cipher but we should also check that file is .crypt => DONE and encryption added as an option in gmv
+CLOSED 8.3.2) Order restore => Done with an orderedDict (Check speed when reading all ids on disk)
+CLOSED 8.3.3) Implement a restart for the restore (to not start from scratch when program bugs out) => Done and tested seems to work
 CLOSED 9) manage a .gmvault dir in your home => done
 CLOSED 8.2) encrypt email data with possibly a pure python method (if not too slow) => Fixed and work on both Mac and Linux
 CLOSED 5) add a way to restart from an gmail id. Could be used when you have a very large mailbox => Done descopped because there is a restart mode now
 want to restart from the moment when it failed. => not sure it will be useful at the moment
-CLOSED 8) add oauth and a way to save the token. => integration done. Now need testing
-CLOSED 8.1) add a way to add a restore label => Done
+CLOSED 14) Add cache to cache the content of the filesystem in order to query it too much because on Windows it is crap and very very slow => DONE optimized way the files are scanned and add caching
+
 
 ISSUES/FEATURES:
 -----------------
 
-4) potentially add a reconnection mode (try to reconnect 3 times before to quit) => Done for fetch, find_all_mail_folder, 
-                                                                                        get_all_folders, get_capabilities,
-                                                                                        check_gmailness, search
-                                                                                   Check that it applies for all the methods as we
-                                                                                   catch only imaplib errors.
+FEATURE:
 5.1) add support for Chat emails => restore them in a default label. Give the possibility to name it.
+ISSUES:
 5.2) All_Mail IMAP dir needs to be enabled in gmail => handle this error
-6) add logging now otherwise it might be too late => PARTLY DONE but not WORKING
-7.2) Implement the restore => being tested
-7.6) Optimize fetch (get All but Data and if data already exist update metadata info else get data)
-8.3) currently decision to decrypt is only taken with the fact that there is a cipher but we should also check that file is .crypt
+6) add logging now otherwise it might be too late => PARTLY DONE (--debug to enable debugging)
+7.2) Implement the restore => being tested still few bugs (it hangs and need to be restarted)
+7.4) Improve messages on screen (think on what to print).
 8.3.1) Fix SSL disconnection bug => Implemented a reconnect To Be Tested
-8.3.2) Order restore => Done with an orderedDict (Check speed when reading all ids on disk)
-8.3.3) Implement a restart for the restore (to not start from scratch when program bugs out) => Done and tested seems to work
 8.3.4) Handle properly error when oauth token file is invalid (delete it or check that file is not empty)
+8.3.5) Implement restart for the sync (full sync restart from where we are instead of scan all emails from beginning)
 8.4) work on win support
 8.4.1) Clearly indicate that in the full sync mode the --imap-req is ignored if there is one
 8.5) test two legged oauth (need an admin password) 
@@ -69,7 +75,6 @@ ISSUES/FEATURES:
 11) release v0.5 
 12) add cloud saves
 13) add Mac Gui, Linux or chrome GUI
-14) Add cache to cache the content of the filesystem in order to query it too much because on Windows it is crap and very very slow
 Adding Makefile and setup.py
 1) make souce tarball
 2) make distribution for linux in a directory
@@ -234,8 +239,6 @@ On Windows it can be up to 30 sec to list 250 000 emails over 50 dirs (Terrible 
 To Do:
 DONE: Review how and when errors are catched (Authentication, When uploading or downloading the data, filesystem prbs ...) => seems ok build a test suite to validate it
 
-Review messages to the users and how to activate the debug
-
 Problem when restarting after an error: Make a test to reconnect and try
 
 BUG: Subject and MessageId are not parsed properly:
@@ -258,8 +261,9 @@ THIS DONE => Provide a --passwd --store-passwd to encrypt and store the password
 Add a test in the test suite validating the password mode (check the reconnect with the password) 
 =>done
 
-How to integrate encyption:
-1) a key is needed => TBD
+encyption key integration (done):
+The encryption key is in the .info directory of the gmvault dir. It is generated automatically if it doesn't exist.
+If it is lost, it will not be possible to decrypt the message.
 
 
 

@@ -539,14 +539,20 @@ class GMVaulter(object):
         """
         gstorer =  GmailStorer(self.db_root_dir, self.use_encryption)
         
-        LOG.critical("%d emails to be fetched." % (len(imap_ids)))
+        total_nb_emails_to_process = len(imap_ids) # total number of emails to get
+        
+        LOG.critical("%d emails to be fetched." % (total_nb_emails_to_process))
         
         nb_emails_processed = 0
+        yy_mm_info = None  # year month logging information
+        timer = gmvault_utils.Timer() # needed for enhancing the user information
+        timer.start()
         
         for the_id in imap_ids:
             
             try:
-                LOG.critical("\nProcess imap id %s" % ( the_id ))
+                
+                LOG.debug("\nProcess imap id %s" % ( the_id ))
                 
                 #get everything once for all
                 new_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA )
@@ -554,6 +560,8 @@ class GMVaulter(object):
                 if new_data.get(the_id, None):
                     the_dir      = gmvault_utils.get_ym_from_datetime(new_data[the_id][imap_utils.GIMAPFetcher.IMAP_INTERNALDATE])
                     
+                    LOG.critical("Process email num %d (imap_id:%s) from %s." % (nb_emails_processed, the_id, the_dir))
+                
                     #pass the dir and the ID
                     curr_metadata = GMVaulter.check_email_on_disk( gstorer , \
                                                                    new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID], \
@@ -582,7 +590,7 @@ class GMVaulter(object):
                         gid  = gstorer.bury_email(new_data[the_id], local_dir = the_dir, compress = compress)
                         
                         #update local index id gid => index per directory to be thought out
-                        LOG.debug("Create and store email  with imap id %s, gmail id %s." % (the_id, gid))   
+                        LOG.debug("Create and store email with imap id %s, gmail id %s." % (the_id, gid))   
                     
                 else:
                     # case when gmail IMAP server returns OK without any data whatsoever
@@ -590,6 +598,12 @@ class GMVaulter(object):
                     self.error_report['empty'].append((the_id, None))
                 
                 nb_emails_processed += 1
+                
+                #indicate every 10 messages the number of messages left to process
+                left_emails = (total_nb_emails_to_process - nb_emails_processed)
+                
+                if (nb_emails_processed % 50) == 0 and (left_emails > 0):
+                    LOG.critical("\n== Processed %d emails in %s. %d left to be stored.==\n" % (nb_emails_processed, timer.elapsed_human_time(), left_emails))
             
             except imaplib.IMAP4.error, error:
                 # check if this is a cannot be fetched error 
@@ -684,6 +698,7 @@ class GMVaulter(object):
            Sync with a remote source (IMAP mirror or cloud storage area)
         """
         #sync remotely 
+        pass
         
     
     def save_restore_lastid(self, gm_id):
