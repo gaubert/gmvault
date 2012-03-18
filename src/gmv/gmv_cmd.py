@@ -473,6 +473,9 @@ def activate_debug_mode():
 def bootstrap_run():
     """ temporary bootstrap """
     
+    #force argv[0] to gmvault
+    sys.argv[0] = "gmvault"
+    
     init_logging()
     
     LOG.critical("")
@@ -493,7 +496,6 @@ if __name__ == '__main__':
     
     #import sys
     #sys.argv = ['gmvault.py', 'sync', 'guillaume.aubert@gmail.com']
-    
     bootstrap_run()
     
     sys.exit(0)

@@ -395,7 +395,7 @@ def get_home_dir_path():
     
     # check by default in user[HOME]
     if not gmvault_dir:
-        LOG.info("no ENV variable $GMVAULT_DIR defined. Set by default $GMVAULT_DIR to $HOME/.gmvault")
+        LOG.debug("no ENV variable $GMVAULT_DIR defined. Set by default $GMVAULT_DIR to $HOME/.gmvault")
         gmvault_dir = "%s/.gmvault" % (os.getenv("HOME", "."))
     
     #create dir if not there
