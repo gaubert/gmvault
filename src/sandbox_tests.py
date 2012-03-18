@@ -60,7 +60,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         
         
-    def test_logger(self):
+    def ztest_logger(self):
         """
            Test the logging mechanism
         """
@@ -86,7 +86,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         
         LOG.critical("On Critical")
         
-    def test_encrypt_blowfish(self):
+    def ztest_encrypt_blowfish(self):
         """
            Test encryption with blowfish
         """
@@ -110,7 +110,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         
         self.assertEquals(decrypted, content)
         
-    def test_regexpr(self):
+    def ztest_regexpr(self):
         """
            regexpr for 
         """
@@ -123,8 +123,25 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         if matched:
             print("Matched")
             print("subject=[%s],messageid=[%s]" % (matched.group('subject'), matched.group('msgid')))
+            
+    def test_is_encrypted_regexpr(self):
+        """
+           Encrypted re
+        """
+        import re
+        the_str ="1384313269332005293.eml.crypt.gz"
+        regexpr ="[\w+,\.]+crypt[\w,\.]*"
         
-    def test_retry_mode(self):
+        reg= re.compile(regexpr)
+        matched = reg.match(the_str)
+        if matched:
+            print("\nMatched")
+        else:
+            print("\nUnmatched")
+    
+        
+        
+    def ztest_retry_mode(self):
         """
            Test that the decorators are functionning properly
         """
@@ -164,7 +181,6 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
            test os walk
         """
         import os
-        from os.path import join, getsize
         for root, dirs, files in os.walk('/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db/db'):
             print("root: %s, sub-dirs : %s, files = %s" % (root, dirs, files))
     

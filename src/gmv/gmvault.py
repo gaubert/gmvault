@@ -41,6 +41,10 @@ class GmailStorer(object):
     HFIELDS_PATTERN = "[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>\s+[S,s][U,u][b,B][J,j][E,e][C,c][T,t]:\s+(?P<subject>.*)\s*"
     HFIELDS_RE      = re.compile(HFIELDS_PATTERN)
     
+    ENCRYPTED_PATTERN = "[\w+,\.]+crypt[\w,\.]*"
+    ENCRYPTED_RE      = re.compile(ENCRYPTED_PATTERN)
+    
+    
     DB_AREA         = 'db'
     QUARANTINE_AREA = 'quarantine'
         
@@ -269,7 +273,7 @@ class GmailStorer(object):
     
     def quarantine_email(self, a_id):
         """
-           Quarantine the 
+           Quarantine the email
         """
         #get the dir where the email is stored
         the_dir = self.get_directory_from_id(a_id)
@@ -288,7 +292,17 @@ class GmailStorer(object):
         
         shutil.move(data, self._quarantine_dir)
         shutil.move(meta, self._quarantine_dir)
-    
+        
+    def email_encrypted(self, a_email_fn):
+        """
+           True is filename contains .crypt otherwise False
+        """
+        basename = os.path.basename(a_email_fn)
+        if self.ENCRYPTED_RE.match(basename):
+            return True
+        else:
+            return False
+        
     def unbury_email(self, a_id):
         """
            Restore email info from info stored on disk
@@ -298,7 +312,7 @@ class GmailStorer(object):
         
         data_fd = self._get_data_file_from_id(the_dir, a_id)
         
-        if self._cipher:
+        if self.email_encrypted(data_fd.name):
             # need to be done for every encryption
             self._cipher.initCTR()
             data = self._cipher.decryptCTR(data_fd.read())

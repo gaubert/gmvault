@@ -518,7 +518,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.assertTrue(os.path.exists('%s/1384313269332005293.meta' % (storage_dir)))
         self.assertTrue(os.path.exists('%s/1384313269332005293.eml.gz' % (storage_dir)))
             
-    def ztest_encrypt_restore_on_gmail(self):
+    def test_encrypt_restore_on_gmail(self):
         """
            Doesn't work to be fixed
            clean db disk
@@ -527,21 +527,33 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
         
         db_dir = '/tmp/gmail_bk'
-        
         #clean db dir
         delete_db_dir(db_dir)
         
-        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, self.passwd, 'verySecRetKeY')
+        credential    = { 'type' : 'passwd', 'value': self.passwd}
+        search_req    = { 'type' : 'imap', 'req': "Since 1-Nov-2011 Before 3-Nov-2011"}
         
-        #syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
+        key    = 'verySecRetKeY'
+        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, credential, read_only_access = True, encrypt_key = key)
         
-        syncer.sync(imap_req = "Since 1-Nov-2011 Before 3-Nov-2011")
+        syncer.sync(imap_req = search_req)
         
-        syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
+        # check that the email can be read
+        gstorer = gmvault.GmailStorer('/tmp/gmail_bk', key)
+        
+        metadata = gmvault.GMVaulter.check_email_on_disk(gstorer, 1384313269332005293)
+        
+        self.assertEquals(metadata['gm_id'], 1384313269332005293)
+        
+        email_meta, email_data = gstorer.unbury_email(1384313269332005293)
+        
+        self.assertTrue(email_data.startswith("Delivered-To: guillaume.aubert@gmail.com"))
+        
+        #print("Email Data = \n%s\n" % (email_data))
             
         print("Done \n")
         
-    def test_fix_bug_search_broken_gm_id_and_quarantine(self):
+    def ztest_fix_bug_search_broken_gm_id_and_quarantine(self):
         """
            Search with a gm_id and quarantine it
         """

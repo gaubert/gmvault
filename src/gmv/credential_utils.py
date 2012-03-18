@@ -267,7 +267,7 @@ class CredentialHelper(object):
                 #store newly created token
                 cls.store_oauth_credentials(args['email'], token, secret)
                
-            LOG.debug("token=[%s], secret=[%s]" % (token, secret))
+            #LOG.debug("token=[%s], secret=[%s]" % (token, secret))
             
             xoauth_req = generate_xoauth_req(token, secret, args['email'])
             
