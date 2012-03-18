@@ -63,6 +63,8 @@ FEATURE:
 ISSUES:
 5.2) All_Mail IMAP dir needs to be enabled in gmail => handle this error
 6) add logging now otherwise it might be too late => PARTLY DONE (--debug to enable debugging)
+6.1) Add logging message in sync => DONE
+6.2) Add logging message in restore => DONE
 7.2) Implement the restore => being tested still few bugs (it hangs and need to be restarted)
 7.4) Improve messages on screen (think on what to print).
 8.3.1) Fix SSL disconnection bug => Implemented a reconnect To Be Tested
@@ -75,6 +77,7 @@ ISSUES:
 11) release v0.5 
 12) add cloud saves
 13) add Mac Gui, Linux or chrome GUI
+14) Raitonalise the test suites. In the end we should have a validation suite a gmv_cmd suite that validates the commandline interface. (rest is optional)
 Adding Makefile and setup.py
 1) make souce tarball
 2) make distribution for linux in a directory
