@@ -394,13 +394,53 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gmv_cmd.bootstrap_run()
         
     
-    def test_quick_sync_with_labels(self):
+    def ztest_quick_sync_with_labels(self):
         """
            Test quick sync
            --renew-passwd
         """
         sys.argv = ['gmvault.py', 'sync', self.login]
         
+        gmv_cmd.bootstrap_run()
+        
+    def ztest_simple_get_and_restore(self):
+        """
+           get few emails and restore them
+        """
+        db_dir = '/tmp/gmail_bk'
+        #clean db dir
+        delete_db_dir(db_dir)
+        
+        print("Synchronize\n")
+        
+        sys.argv = ['gmvault.py', 'sync', '-t', 'custom', '-r', 'Since 1-Nov-2011 Before 3-Nov-2011', '--db-dir', db_dir, 'guillaume.aubert@gmail.com']
+
+        gmv_cmd.bootstrap_run()
+        
+        print("Restore\n")
+        
+        sys.argv = ['gmvault.py', 'restore', '--db-dir', db_dir, 'gsync.mtester@gmail.com']
+
+        gmv_cmd.bootstrap_run()
+        
+    def test_simple_get_encrypt_and_restore(self):
+        """
+           get few emails and restore them
+        """
+        db_dir = '/tmp/gmail_bk'
+        #clean db dir
+        delete_db_dir(db_dir)
+        
+        print("Synchronize\n")
+        
+        sys.argv = ['gmvault.py', 'sync', '-t', 'custom', '--encrypt','-r', 'Since 1-Nov-2011 Before 3-Nov-2011', '--db-dir', db_dir, 'guillaume.aubert@gmail.com']
+
+        gmv_cmd.bootstrap_run()
+        
+        print("Restore\n")
+        
+        sys.argv = ['gmvault.py', 'restore', '--db-dir', db_dir, 'gsync.mtester@gmail.com']
+
         gmv_cmd.bootstrap_run()
     
 

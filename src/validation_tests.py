@@ -69,14 +69,18 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         #clean db dir
         delete_db_dir(db_dir)
+        credential    = { 'type' : 'passwd', 'value': self.passwd}
+        gs_credential = { 'type' : 'passwd', 'value': self.gmvault_passwd}
+        search_req    = { 'type' : 'imap', 'req': "Since 1-Nov-2011 Before 3-Nov-2011"}
         
-        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, self.passwd)
+        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, credential, read_only_access = False, use_encryption = True)
         
         #syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
         # Nov-2007 BigDataset
-        syncer.sync(imap_req = "Since 1-Dec-2007 Before 31-Dec-2011")
+        syncer.sync(imap_req = search_req)
         
-        syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
+        restorer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.gmvault_login, gs_credential, read_only_access = False)
+        restorer.restore()
             
         print("Done \n")
         

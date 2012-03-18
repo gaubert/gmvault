@@ -273,7 +273,7 @@ class CredentialHelper(object):
                 credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read' }
                                
         #elif args['passwd'] == 'not_seen' and args['oauth']:
-        elif args['passwd'] == None and args['oauth']:
+        elif args['passwd'] in ['not_seen', None] and args['oauth']:
             # get token secret
             # if they are in a file then no need to call get_oauth_tok_sec
             # will have to add 2 legged or 3 legged

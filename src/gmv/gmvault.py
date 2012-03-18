@@ -75,14 +75,24 @@ class GmailStorer(object):
         
         self.fsystem_info_cache = {}
         
-        if encrypt_data:
-            #get encryption key from disk
-            self._encryption_key = self.get_encryption_key(self._info_dir)
-            #create blowfish cipher
-            self._cipher = blowfish.Blowfish(self._encryption_key)
-        else:
-            self._cipher = None
+        self._encrypt_data   = encrypt_data
+        self._encryption_key = None
+        self._cipher         = None
             
+    def get_encryption_cipher(self):
+        """
+           Return the cipher to encrypt an decrypt.
+           If the secret key doesn't exist, it will be generated.
+        """
+        if not self._cipher:
+            if not self._encryption_key:
+                self._encryption_key = credential_utils.CredentialHelper.get_secret_key('%s/%s' % (self._info_dir, self.ENCRYPTION_KEY_FILENAME))
+            
+            #create blowfish cipher if data needs to be encrypted
+            self._cipher = blowfish.Blowfish(self._encryption_key)
+        
+        return self._cipher
+        
     @classmethod
     def get_encryption_key(cls, a_info_dir):
         """
@@ -186,8 +196,8 @@ class GmailStorer(object):
         meta_path = self.METADATA_FNAME % (the_dir, email_info[imap_utils.GIMAPFetcher.GMAIL_ID])
         data_path = self.DATA_FNAME % (the_dir, email_info[imap_utils.GIMAPFetcher.GMAIL_ID])
         
-        # manage filename for the cipher
-        if self._cipher:
+        # if the data has to be encrypted
+        if self._encrypt_data:
             data_path = '%s.crypt' % (data_path)
         
         if compress:
@@ -198,10 +208,11 @@ class GmailStorer(object):
             
         meta_desc = open(meta_path, 'w')
         
-        if self._cipher:
+        if self._encrypt_data:
             # need to be done for every encryption
-            self._cipher.initCTR()
-            data_desc.write(self._cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]))
+            cipher = self.get_encryption_cipher()
+            cipher.initCTR()
+            data_desc.write(cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]))
         else:
             data_desc.write(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
             
@@ -327,9 +338,11 @@ class GmailStorer(object):
         data_fd = self._get_data_file_from_id(the_dir, a_id)
         
         if self.email_encrypted(data_fd.name):
+            LOG.debug("Restore encrypted email %s" % (a_id))
             # need to be done for every encryption
-            self._cipher.initCTR()
-            data = self._cipher.decryptCTR(data_fd.read())
+            cipher = self.get_encryption_cipher()
+            cipher.initCTR()
+            data = cipher.decryptCTR(data_fd.read())
         else:
             data = data_fd.read()
         
