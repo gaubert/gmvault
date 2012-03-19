@@ -17,7 +17,8 @@ BUILDDIST=$(BUILD)/egg-dist
 ETC=$(BASEDIR)/etc
 
 PYTHONBIN=/homespace/gaubert/python2.7/bin/python
-PYTHONWINBIN=python
+#PYTHONWINBIN=python
+PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my machine at work
 PYTHONVERSION=2.7
 
 GMVVERSION=0.5
