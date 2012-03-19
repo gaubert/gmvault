@@ -268,7 +268,7 @@ encyption key integration (done):
 The encryption key is in the .info directory of the gmvault dir. It is generated automatically if it doesn't exist.
 If it is lost, it will not be possible to decrypt the message.
 
-
+ADD Manifest for DLLs msvc*:
 
 
 

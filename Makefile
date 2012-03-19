@@ -17,11 +17,14 @@ BUILD=$(BASEDIR)/build
 BUILDDIST=$(BUILD)/egg-dist
 ETC=$(BASEDIR)/etc
 
-PYTHONBIN=/homespace/gaubert/python2.7/bin/python
+PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
 #PYTHONWINBIN=python
-PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my machine at work
+#PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my machine at work
+PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
 PYTHONVERSION=2.7
-MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe
+
+#MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
+MAKENSIS=/c/Program\ Files/NSIS/makensis.exe #windows laptop
 
 GMVVERSION=0.5
 GMVDISTNAME=gmvault-$(GMVVERSION)
@@ -79,6 +82,9 @@ gmv-win-dist: init
 
 gmv-make-win-installer: gmv-win-dist
 	cp $(BASEDIR)/etc/nsis-install/gmvault_setup.nsi $(GMVWINBUILDDIST)
+	cp $(BASEDIR)/etc/nsis-install/images/*.bmp $(GMVWINBUILDDIST)
+	cp $(BASEDIR)/etc/nsis-install/images/*.ico $(GMVWINBUILDDIST)
+	cp $(BASEDIR)/etc/nsis-install/License.rtf $(GMVWINBUILDDIST)
 	echo "=== call gmvault_setup.nsi in $(GMVWINBUILDDIST) ==="
 	ls -la > /tmp/res.txt
 	cd $(GMVWINBUILDDIST); $(MAKENSIS) ./gmvault_setup.nsi

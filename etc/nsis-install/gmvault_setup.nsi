@@ -29,12 +29,12 @@ DirText "Please Choose a directory where to install gmvault"
 ; MUI Settings / Header
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_RIGHT
-!define MUI_HEADERIMAGE_BITMAP ".\Orange-Full-MoNKi\Header\orange-r-nsis.bmp"
-!define MUI_HEADERIMAGE_UNBITMAP ".\Orange-Full-MoNKi\Header\orange-r-nsis.bmp"
+!define MUI_HEADERIMAGE_BITMAP "orange-r-nsis.bmp"
+!define MUI_HEADERIMAGE_UNBITMAP "orange-r-nsis.bmp"
 
 ; MUI Settings / Wizard
 !define MUI_WELCOMEFINISHPAGE_BITMAP "gmvault.bmp"
-!define MUI_UNWELCOMEFINISHPAGE_BITMAP ".\Orange-Full-MoNKi\Wizard\orange-uninstall-nsis.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "orange-uninstall-nsis.bmp"
 
 
 !define MUI_WELCOMEPAGE_TITLE "GMVAULT Setup"
