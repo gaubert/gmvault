@@ -1,4 +1,5 @@
-#=============================================================================
+#
+#============================================================================
 # File: Simple Makefile for gmvault project
 # author: guillaume.aubert@gmail.com
 #=============================================================================
@@ -20,6 +21,7 @@ PYTHONBIN=/homespace/gaubert/python2.7/bin/python
 #PYTHONWINBIN=python
 PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my machine at work
 PYTHONVERSION=2.7
+MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe
 
 GMVVERSION=0.5
 GMVDISTNAME=gmvault-$(GMVVERSION)
@@ -68,12 +70,20 @@ gmv-linux-dist: clean init
 	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME).tar.gz ./$(GMVDISTNAME)
 	echo "distribution stored in $(GMVDISTNAME)"
 
-gmv-win-dist: clean init 
+gmv-win-dist: init 
 	mkdir -p $(GMVWINBUILDDIST)
 	cp -R $(BASEDIR)/src/gmv $(GMVDIST)
 	cp $(BASEDIR)/src/setup_win.py $(GMVDIST)/gmv
 	cd $(GMVDIST)/gmv; $(PYTHONWINBIN) setup_win.py py2exe -d ../../$(GMVWINBUILDDIST)
 	echo "distribution available in $(GMVWINBUILDDIST)"
+
+gmv-make-win-installer: gmv-win-dist
+	cp $(BASEDIR)/etc/nsis-install/gmvault_setup.nsi $(GMVWINBUILDDIST)
+	echo "=== call gmvault_setup.nsi in $(GMVWINBUILDDIST) ==="
+	ls -la > /tmp/res.txt
+	cd $(GMVWINBUILDDIST); $(MAKENSIS) ./gmvault_setup.nsi
+	echo "gmvault_setup.exe available in $(GMVWINBUILDDIST)"
+
 
 clean: clean-build
 	cd $(GMVDIST); rm -Rf build; rm -Rf gmvault.egg-info; rm -f *.py; rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
