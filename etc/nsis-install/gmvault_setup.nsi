@@ -6,6 +6,7 @@
 ; there.
 
 ;--------------------------------
+!include "MUI.nsh"
 
 ; The name of the installer
 Name "gmvault_setup"
@@ -21,9 +22,36 @@ InstallDir d:\Programs\gmvault
 DirText "Please Choose a directory where to install gmvault"
 
 ;--------------------------------
+; MUI Settings / Icons
+!define MUI_ICON "new_gmvault.ico"
+;!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall-nsis.ico"
+
+; MUI Settings / Header
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_RIGHT
+!define MUI_HEADERIMAGE_BITMAP ".\Orange-Full-MoNKi\Header\orange-r-nsis.bmp"
+!define MUI_HEADERIMAGE_UNBITMAP ".\Orange-Full-MoNKi\Header\orange-r-nsis.bmp"
+
+; MUI Settings / Wizard
+!define MUI_WELCOMEFINISHPAGE_BITMAP "gmvault.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP ".\Orange-Full-MoNKi\Wizard\orange-uninstall-nsis.bmp"
+
+
+!define MUI_WELCOMEPAGE_TITLE "GMVAULT Setup"
+
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "License.rtf"
+!insertmacro MUI_PAGE_DIRECTORY 
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+
+!insertmacro MUI_LANGUAGE "English"
+
+LangString msg ${LANG_ENGLISH} "English msg"
 
 ; The stuff to install
-Section "" ;No components page, name is not important
+Section "gmvault" ;No components page, name is not important
+
 
 ; Set output path to the installation directory.
 SetOutPath $INSTDIR
