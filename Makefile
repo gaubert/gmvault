@@ -78,6 +78,7 @@ gmv-win-dist: init
 	cp -R $(BASEDIR)/src/gmv $(GMVDIST)
 	cp $(BASEDIR)/src/setup_win.py $(GMVDIST)/gmv
 	cd $(GMVDIST)/gmv; $(PYTHONWINBIN) setup_win.py py2exe -d ../../$(GMVWINBUILDDIST)
+	cp $(BASEDIR)/etc/scripts/gmvault.bat $(GMVWINBUILDDIST)
 	echo "distribution available in $(GMVWINBUILDDIST)"
 
 gmv-make-win-installer: gmv-win-dist

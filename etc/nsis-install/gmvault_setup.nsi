@@ -58,6 +58,7 @@ SetOutPath $INSTDIR
 
 ; Put file there
 File gmv_cmd.exe
+File gmvault.bat
 File library.zip
 File python27.dll
 File w9xpopen.exe

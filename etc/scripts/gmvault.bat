@@ -1,9 +1,10 @@
-@ECHO OFF
+::@ECHO OFF
 
 ::SET HOME to HOMEPATH because with py2exe it doesn't work
-SET HOME=%HOMEPATH%:
+SET HOME=%HOMEDRIVE%%HOMEPATH%
 
-EXE_DIR=H:\Dev\projects\gmvault\dist\inst
+::EXE_DIR=H:\Dev\projects\gmvault\dist\inst
+SET EXE_DIR=C:\Program Files\gmvault
 ::SET PATH=H:\Dev\projects\gmvault\dist\inst;%PATH%
 pushd %EXE_DIR%
 gmv_cmd.exe
