@@ -544,7 +544,6 @@ class GMVaulter(object):
         LOG.critical("%d emails to be fetched." % (total_nb_emails_to_process))
         
         nb_emails_processed = 0
-        yy_mm_info = None  # year month logging information
         timer = gmvault_utils.Timer() # needed for enhancing the user information
         timer.start()
         
@@ -599,11 +598,13 @@ class GMVaulter(object):
                 
                 nb_emails_processed += 1
                 
-                #indicate every 10 messages the number of messages left to process
+                #indicate every 50 messages the number of messages left to process
                 left_emails = (total_nb_emails_to_process - nb_emails_processed)
                 
                 if (nb_emails_processed % 50) == 0 and (left_emails > 0):
-                    LOG.critical("\n== Processed %d emails in %s. %d left to be stored.==\n" % (nb_emails_processed, timer.elapsed_human_time(), left_emails))
+                    elapsed = timer.elapsed() #elapsed time in seconds
+                    LOG.critical("\n== Processed %d emails in %s. %d left to be stored (time estimate %s).==\n" % \
+                                 (nb_emails_processed,  timer.seconds_to_human_time(elapsed), left_emails, timer.estimate_time_left(nb_emails_restored, elapsed, left_emails)))
             
             except imaplib.IMAP4.error, error:
                 # check if this is a cannot be fetched error 
@@ -724,7 +725,7 @@ class GMVaulter(object):
         filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, self.RESTORE_PROGRESS)
         
         if not os.path.exists(filepath):
-            LOG.critical("last_id restore file %s doesn't exist.\nRestore the full list of backed up emails" %(filepath))
+            LOG.critical("last_id restore file %s doesn't exist.\nRestore the full list of backed up emails." %(filepath))
             return db_gmail_ids_info
         
         json_obj = json.load(open(filepath, 'r'))
@@ -735,10 +736,10 @@ class GMVaulter(object):
         try:
             keys = db_gmail_ids_info.keys()
             last_id_index = keys.index(last_id)
-            LOG.critical("Restart from gmail_id %s\n" % (last_id))
+            LOG.critical("Restart from gmail id %s." % (last_id))
         except ValueError, _:
             #element not in keys return current set of keys
-            LOG.error("Cannot restore from last restore gmail id. It is not in the disk database")
+            LOG.error("Cannot restore from last restore gmail id. It is not in the disk database.")
         
         new_gmail_ids_info = collections_utils.OrderedDict()
         if last_id_index != -1:
@@ -753,12 +754,12 @@ class GMVaulter(object):
         """
            Test method to restore emails in gmail 
         """
-        LOG.critical("Restore email database in gmail account %s." % (self.login) ) 
+        LOG.critical("Restore emails in gmail account %s." % (self.login) ) 
         
         #crack email database
         gstorer = GmailStorer(self.db_root_dir, self.use_encryption)
         
-        LOG.critical("Read email info from gmvault-db in %s." % (self.db_root_dir))
+        LOG.critical("Read email info from %s gmvault-db." % (self.db_root_dir))
         
         #for the restore (save last_restored_id in .gmvault/last_restored_id
         
@@ -770,19 +771,21 @@ class GMVaulter(object):
         if restart:
             db_gmail_ids_info = self.get_gmails_ids_left_to_restore(db_gmail_ids_info)
         
-        LOG.critical("Got all existing ids from disk. Will have to restore %s emails." % (len(db_gmail_ids_info)) )
+        total_nb_emails_to_restore = len(db_gmail_ids_info)
+        LOG.critical("Got all emails id left to restore. Still %s emails to do.\n" % (total_nb_emails_to_restore) )
         
         seen_labels = set() #set of seen labels to not call create_gmail_labels all the time
-        
-        nb_elem_restored = 0
+        nb_emails_restored= 0 #to count nb of emails restored
+        timer = gmvault_utils.Timer() # needed for enhancing the user information
+        timer.start()
         
         for gm_id in db_gmail_ids_info:
             
-            LOG.critical("Restore email with id %s" % (gm_id))
+            LOG.critical("Restore email with id %s." % (gm_id))
             
             email_meta, email_data = gstorer.unbury_email(gm_id)
             
-            LOG.debug("Unburied email with id %s" % (gm_id))
+            LOG.debug("Unburied email with id %s." % (gm_id))
             
             #labels for this email => real_labels U extra_labels
             labels = set(email_meta[gstorer.LABELS_K])
@@ -794,7 +797,7 @@ class GMVaulter(object):
             #create the non existing labels
             self.src.create_gmail_labels(labels_to_create)
             
-            LOG.debug("Created labels %s for email with id %s" % (labels_to_create, gm_id))
+            LOG.debug("Created labels %s for email with id %s." % (labels_to_create, gm_id))
             
             #update seen labels
             seen_labels.update(set(labels_to_create))
@@ -806,12 +809,20 @@ class GMVaulter(object):
                                     email_meta[gstorer.INT_DATE_K], \
                                     labels)
                 
-                LOG.debug("Pushed email with id %s" % (gm_id))
+                LOG.debug("Pushed email with id %s." % (gm_id))
                 
-                nb_elem_restored += 1
+                nb_emails_restored += 1
+                
+                #indicate every 10 messages the number of messages left to process
+                left_emails = (total_nb_emails_to_restore - nb_emails_restored)
+                
+                if (nb_emails_restored % 50) == 0 and (left_emails > 0): 
+                    elapsed = timer.elapsed() #elapsed time in seconds
+                    LOG.critical("\n== Processed %d emails in %s. %d left to be restored (time estimate %s).==\n" % \
+                                 (nb_emails_restored, timer.seconds_to_human_time(elapsed), left_emails, timer.estimate_time_left(nb_emails_restored, elapsed, left_emails)))
                 
                 # save id every 20 restored emails
-                if (nb_elem_restored % 20) == 0:
+                if (nb_emails_restored % 20) == 0:
                     self.save_restore_lastid(gm_id)
         
             except imaplib.IMAP4.error, err:

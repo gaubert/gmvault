@@ -101,7 +101,8 @@ def get_exception_traceback():
 
 class Timer(object):
     """
-       Timer Class to mesure time
+       Timer Class to mesure time.
+       Possess also few time utilities
     """
     def __init__(self):
         
@@ -127,6 +128,23 @@ class Timer(object):
         """
         seconds = self.elapsed()
         
+        return self.seconds_to_human_time(seconds, suffixes, add_s, separator)
+
+    @classmethod
+    def estimate_time_left(cls, nb_elem_done, in_sec, still_to_be_done, in_human_time = True):
+        """
+           Stupid estimate. Use current time to estimate how long it will take
+        """
+        if in_human_time:
+            return cls.seconds_to_human_time(int(round(float(still_to_be_done * in_sec)/nb_elem_done)))
+        else:
+            return int(round(float(still_to_be_done * in_sec)/nb_elem_done))
+    
+    @classmethod
+    def seconds_to_human_time(cls, seconds, suffixes=['y','w','d','h','m','s'], add_s=False, separator=' '):
+        """
+           convert seconds to human time
+        """
         # the formatted time string to be returned
         time = []
         
@@ -152,8 +170,6 @@ class Timer(object):
                 break
         
         return separator.join(time)
-
-
 
 ZERO = datetime.timedelta(0) 
 # A UTC class.    
