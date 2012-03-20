@@ -83,6 +83,7 @@ Adding Makefile and setup.py
 2) make distribution for linux in a directory
 3) always have the possiblity to deploy in python/lib with setup.py
 4) make egg and make windows version
+15) Add Incremental retry. I hve constated that the retry should pause longer before to restart (add more with a threshold and increase pause time).
  
 
 ====== gmail corruption problems ======
@@ -269,11 +270,11 @@ The encryption key is in the .info directory of the gmvault dir. It is generated
 If it is lost, it will not be possible to decrypt the message.
 
 TBD 19.03.2012
-- ADD Manifest for DLLs msvc* and insure that they are accessible from the exe (it is missing. Not sure I need them but to be checked). 
+PARTLY DONE - ADD Manifest for DLLs msvc* and insure that they are accessible from the exe (it is missing. Not sure I need them but to be checked). => need to be added in the DLL PATH
 - Think on how it will be used in windows -> bat to do what
 - Start documentation
-- Add script in installer that will set exe in path
-- Change path in bat script (should be possible with nsis)
+- Add script in installer that will set exe in path 
+DONE - Change path in bat script (should be possible with nsis)
 - bullet proof restore
 
 

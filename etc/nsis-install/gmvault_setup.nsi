@@ -7,6 +7,7 @@
 
 ;--------------------------------
 !include "MUI.nsh"
+!include "TextFunc.nsh" ; for replacing INSTDIR in gmvault
 
 ; The name of the installer
 Name "gmvault_setup"
@@ -49,12 +50,20 @@ DirText "Please Choose a directory where to install gmvault"
 
 LangString msg ${LANG_ENGLISH} "English msg"
 
+; Define variable for remplacing INSTDIR in gmvault.bat
+!insertmacro LineFind
+
+!define STRTOFIND "SET EXE_DIR=@PATHTOREPLACE@"
+
+!define STRTOREPL "SET EXE_DIR=$INSTDIR"
+
 ; The stuff to install
 Section "gmvault" ;No components page, name is not important
 
-
 ; Set output path to the installation directory.
 SetOutPath $INSTDIR
+
+;MessageBox MB_OK "$INSTDIR"
 
 ; Put file there
 File gmv_cmd.exe
@@ -64,6 +73,13 @@ File python27.dll
 File w9xpopen.exe
 File *.pyd
 File /r Microsoft.VC90.CRT
+
+; Add installation Dir in gmvault.bat
+${LineFind} "$INSTDIR\gmvault.bat" "$INSTDIR\gmvault.bat" "1:-1" "LineFindCallback"
+
+IfErrors 0 +2
+
+MessageBox MB_OK "Error"
 
 ; =================================================
 ; Uninstaller
@@ -87,3 +103,24 @@ RMDir $INSTDIR
 
 
 SectionEnd ; end the section
+
+; =================================================
+; Custom Functions
+; =================================================
+Function LineFindCallback
+
+    StrLen $0 "${STRTOFIND}"
+
+    StrCpy $1 "$R9" $0
+
+    StrCmp $1 "${STRTOFIND}" 0 End
+
+;    StrCpy $R9 "${STRTOREPL}$\r$\n"
+    StrCpy $R9 "${STRTOREPL}$\n"
+
+    End:
+
+    Push $0
+
+FunctionEnd
+
