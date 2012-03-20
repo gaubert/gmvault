@@ -124,7 +124,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
             print("Matched")
             print("subject=[%s],messageid=[%s]" % (matched.group('subject'), matched.group('msgid')))
             
-    def test_is_encrypted_regexpr(self):
+    def ztest_is_encrypted_regexpr(self):
         """
            Encrypted re
         """
@@ -141,7 +141,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
     
         
         
-    def ztest_retry_mode(self):
+    def test_retry_mode(self):
         """
            Test that the decorators are functionning properly
         """
@@ -160,7 +160,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
                 """
                 self.connect_nb += 1
             
-            @imap_utils.retry(4,1)   
+            @imap_utils.retry(3,1,2)   
             def push_email(self, a_body, a_flags, a_internal_time, a_labels):
                 """
                    Throw exceptions
@@ -174,7 +174,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         except Exception, err:
             self.assertEquals('GIMAPFetcher cannot restore email in myaccount@gmail.com account.', str(err))
         
-        self.assertEquals(imap_fetch.connect_nb, 4)
+        self.assertEquals(imap_fetch.connect_nb, 3)
     
     def ztest_os_walk(self):
         """

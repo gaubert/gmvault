@@ -6,6 +6,7 @@ Created on Feb 14, 2012
 Module containing the IMAPFetcher object which is the Wrapper around the modified IMAPClient object
 
 '''
+import math
 import time
 import socket
 import re
@@ -36,46 +37,59 @@ class PushEmailError(Exception):
     def quarantined(self):
         return self._in_quarantine
 
-#retry decorator with nb of tries and sleep_time
-def retry(a_nb_tries = 3, a_sleep_time = 1):
+#retry decorator with nb of tries and sleep_time and backoff
+def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
     """
       Decorator for retrying command when it failed with a imap or socket error.
       Should be used exclusively on imap exchanges.
-      Strategy, always retry on any imaplib or socket error. Wait few seocnds before to retry
+      Strategy, always retry on any imaplib or socket error. Wait few seconds before to retry
+      backoff sets the factor by which the a_sleep_time should lengthen after each failure. backoff must be greater than 1,
+      or else it isn't really a backoff
     """
-    def reconnect(the_self, nb_tries, error, sleep_time = 1):
+    if a_backoff < 1:
+        raise ValueError("a_backoff must be greater or equal to 1")
+
+    a_nb_tries = math.floor(a_nb_tries)
+    if a_nb_tries < 0:
+        raise ValueError("a_nb_tries must be 0 or greater")
+
+    if a_sleep_time <= 0:
+        raise ValueError("a_sleep_time must be greater than 0")
+    
+    def reconnect(the_self, rec_nb_tries, rec_error, rec_sleep_time = [1]):
         """
-           Retry procedure
+           Reconnect procedure. Sleep and try to reconnect
         """
         # go in retry mode if less than a_nb_tries
-        if nb_tries[0] < a_nb_tries:
+        if rec_nb_tries[0] < a_nb_tries:
             
             the_self.disconnect()
             
-            # add 1 sec of wait
-            time.sleep(sleep_time)
+            # add X sec of wait
+            time.sleep(rec_sleep_time[0])
+            rec_sleep_time[0] *= a_backoff #increase sleep time for next time
             
-            nb_tries[0] += 1
+            rec_nb_tries[0] += 1
             # go in retry mode: reconnect
             the_self.connect()
         else:
             #cascade error
-            raise error
-        
+            raise rec_error
+    
     def inner_retry(the_func): #pylint:disable-msg=C0111
         def wrapper(*args, **kwargs): #pylint:disable-msg=C0111
-            nb_tries = [0]
+            nb_tries = [0] # make it mutble in reconnect
+            m_sleep_time = [a_sleep_time]  #make it mutable in reconnect
             while True:
                 try:
                     return the_func(*args, **kwargs)
-                
                 except PushEmailError, p_err:
                     
                     LOG.debug("error message = %s. traceback:%s" % (p_err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Cannot reach the gmail server (see logs). Wait %s seconds and retrying" % (a_sleep_time))
+                    LOG.critical("Cannot reach the gmail server (see logs). Wait %s seconds and retrying." % (m_sleep_time[0]))
                     
-                    reconnect(args[0], nb_tries, p_err, sleep_time = a_sleep_time)
+                    reconnect(args[0], nb_tries, p_err, m_sleep_time)
                     
                 except imaplib.IMAP4.error, err:
                     
@@ -84,16 +98,17 @@ def retry(a_nb_tries = 3, a_sleep_time = 1):
                     LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
                     
                     # problem with this email, put it in quarantine
-                    reconnect(args[0], nb_tries, err, sleep_time = a_sleep_time)
+                    reconnect(args[0], nb_tries, err, m_sleep_time)
                 
                 except socket.error, sock_err:
                     LOG.debug("error message = %s. traceback:%s" % (sock_err, gmvault_utils.get_exception_traceback()))
                     
                     LOG.critical("Cannot reach the gmail server (see logs). Wait 1 seconds and retrying")
                     
-                    reconnect(args[0], nb_tries, sock_err, sleep_time = a_sleep_time)
+                    reconnect(args[0], nb_tries, sock_err, m_sleep_time)
 
         return functools.wraps(the_func)(wrapper)
+        #return wrapper
     return inner_retry
 
 class GIMAPFetcher(object): #pylint:disable-msg=R0902
@@ -344,7 +359,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                     self.server.delete_folder(directory)
                     
          
-    @retry(4, a_sleep_time= 2)   
+    @retry(4,2)   
     def push_email(self, a_body, a_flags, a_internal_time, a_labels):
         """
            Push a complete email body 
