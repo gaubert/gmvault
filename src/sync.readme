@@ -53,7 +53,8 @@ CLOSED 8.2) encrypt email data with possibly a pure python method (if not too sl
 CLOSED 5) add a way to restart from an gmail id. Could be used when you have a very large mailbox => Done descopped because there is a restart mode now
 want to restart from the moment when it failed. => not sure it will be useful at the moment
 CLOSED 14) Add cache to cache the content of the filesystem in order to query it too much because on Windows it is crap and very very slow => DONE optimized way the files are scanned and add caching
-
+CLOSED 15) Add Incremental retry. I have constated that the retry should pause longer before to restart (add more with a threshold and increase pause time). => DONE and retested the decorator that had a bug
+ 
 
 ISSUES/FEATURES:
 -----------------
@@ -83,8 +84,6 @@ Adding Makefile and setup.py
 2) make distribution for linux in a directory
 3) always have the possiblity to deploy in python/lib with setup.py
 4) make egg and make windows version
-15) Add Incremental retry. I hve constated that the retry should pause longer before to restart (add more with a threshold and increase pause time).
- 
 
 ====== gmail corruption problems ======
 There are 2 problems:
@@ -275,6 +274,7 @@ PARTLY DONE - ADD Manifest for DLLs msvc* and insure that they are accessible fr
 - Start documentation
 - Add script in installer that will set exe in path 
 DONE - Change path in bat script (should be possible with nsis)
+- remove the first line DEBUG info in get home_path
 - bullet proof restore
 
 
