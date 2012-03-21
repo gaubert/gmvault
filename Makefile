@@ -19,8 +19,8 @@ ETC=$(BASEDIR)/etc
 
 #PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
 #PYTHONWINBIN=python
-PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my machine at work
-#PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
+#PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my machine at work
+PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
 PYTHONVERSION=2.7
 
 #MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
@@ -79,6 +79,7 @@ gmv-win-dist: init
 	cp $(BASEDIR)/src/setup_win.py $(GMVDIST)/gmv
 	cd $(GMVDIST)/gmv; $(PYTHONWINBIN) setup_win.py py2exe -d ../../$(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault.bat $(GMVWINBUILDDIST)
+	cp $(BASEDIR)/etc/scripts/gmvault-shell.bat $(GMVWINBUILDDIST)
 	echo "distribution available in $(GMVWINBUILDDIST)"
 
 gmv-make-win-installer: gmv-win-dist

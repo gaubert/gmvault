@@ -16,8 +16,8 @@ Name "gmvault_setup"
 OutFile "gmvault_setup.exe"
 
 ; The default installation directory
-;InstallDir $PROGRAMFILES\gmvault
-InstallDir d:\Programs\gmvault
+InstallDir $PROGRAMFILES\gmvault
+;InstallDir d:\Programs\gmvault
 
 ; The text to prompt the user to enter a directory
 DirText "Please Choose a directory where to install gmvault"
@@ -36,6 +36,17 @@ DirText "Please Choose a directory where to install gmvault"
 ; MUI Settings / Wizard
 !define MUI_WELCOMEFINISHPAGE_BITMAP "gmvault.bmp"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "orange-uninstall-nsis.bmp"
+
+; add create shortcut checkbox in end page
+Function finishpageaction
+CreateShortcut "$desktop\gmvault-shell.lnk" "$INSTDIR\gmvault-shell.bat" "" "$INSTDIR\new_gmvault.ico"
+FunctionEnd
+
+; MUI Setting for finish page
+!define MUI_FINISHPAGE_SHOWREADME ""
+!define MUI_FINISHPAGE_SHOWREADME_CHECKED
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "Create Desktop Shortcut"
+!define MUI_FINISHPAGE_SHOWREADME_FUNCTION finishpageaction
 
 
 !define MUI_WELCOMEPAGE_TITLE "GMVAULT Setup"
@@ -68,6 +79,8 @@ SetOutPath $INSTDIR
 ; Put file there
 File gmv_cmd.exe
 File gmvault.bat
+File new_gmvault.ico
+File gmvault-shell.bat
 File library.zip
 File python27.dll
 File w9xpopen.exe
