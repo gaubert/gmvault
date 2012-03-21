@@ -401,7 +401,7 @@ def dirwalk(a_dir, a_wildcards= '*'):
             if fnmatch.fnmatch(the_file, a_wildcards):
                 yield os.path.join(root, the_file)  
 
-            
+
 @memoized
 def get_home_dir_path():
     """
