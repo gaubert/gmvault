@@ -1,5 +1,6 @@
 @rem Do not use "echo off" to not affect any child calls.
 @setlocal
+@TITLE TOTO
 
 @rem Get the absolute path to the current directory, which is assumed to be the
 @rem Gmvault installation root.
@@ -10,4 +11,4 @@
 @if not exist "%HOME%" @set HOME=%USERPROFILE%
 
 @cd %HOME%
-@start %COMSPEC%
+@start "GMVAULT-SHELL" message.bat  
