@@ -54,7 +54,8 @@ CLOSED 5) add a way to restart from an gmail id. Could be used when you have a v
 want to restart from the moment when it failed. => not sure it will be useful at the moment
 CLOSED 14) Add cache to cache the content of the filesystem in order to query it too much because on Windows it is crap and very very slow => DONE optimized way the files are scanned and add caching
 CLOSED 15) Add Incremental retry. I have constated that the retry should pause longer before to restart (add more with a threshold and increase pause time). => DONE and retested the decorator that had a bug
- 
+CLOSED 16) Remove the first line DEBUG info in get home_path => Done it was statically called in CredentialHelper
+CLOSED 17) Change path in bat script (should be possible with nsis) => Done used NSIS macros
 
 ISSUES/FEATURES:
 -----------------
@@ -78,7 +79,7 @@ ISSUES:
 11) release v0.5 
 12) add cloud saves
 13) add Mac Gui, Linux or chrome GUI
-14) Raitonalise the test suites. In the end we should have a validation suite a gmv_cmd suite that validates the commandline interface. (rest is optional)
+14) Rationalise the test suites. In the end we should have a validation suite a gmv_cmd suite that validates the commandline interface. (rest is optional)
 Adding Makefile and setup.py
 1) make souce tarball
 2) make distribution for linux in a directory
@@ -273,8 +274,6 @@ PARTLY DONE - ADD Manifest for DLLs msvc* and insure that they are accessible fr
 - Think on how it will be used in windows -> bat to do what
 - Start documentation
 - Add script in installer that will set exe in path 
-DONE - Change path in bat script (should be possible with nsis)
-- remove the first line DEBUG info in get home_path
 - bullet proof restore
 
 
