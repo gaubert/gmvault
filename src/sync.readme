@@ -56,6 +56,7 @@ CLOSED 14) Add cache to cache the content of the filesystem in order to query it
 CLOSED 15) Add Incremental retry. I have constated that the retry should pause longer before to restart (add more with a threshold and increase pause time). => DONE and retested the decorator that had a bug
 CLOSED 16) Remove the first line DEBUG info in get home_path => Done it was statically called in CredentialHelper
 CLOSED 17) Change path in bat script (should be possible with nsis) => Done used NSIS macros
+CLOSED 18) - Add script in installer that will set exe in path => better to open a console that set the path (like git does for example http://forums.winamp.com/archive/index.php/t-335716.html) => DONE installer create a shortcut on desktop and a shell is launched with a trick to print a banner (not happy with that as I need a third script but I will overcome it)
 
 ISSUES/FEATURES:
 -----------------
@@ -81,6 +82,10 @@ ISSUES:
 13) add Mac Gui, Linux or chrome GUI
 14) Rationalise the test suites. In the end we should have a validation suite a gmv_cmd suite that validates the commandline interface. (rest is optional)
 Adding Makefile and setup.py
+19) Pass arguments to the batch script as at the moment no arguments are passed
+20) Try to remove the message.bat file (there might be a way to have a cmd file or create it on the fly without having a physical file. It is messy)
+21) Put data and metadata files in a separate dir
+22) Add to legged auth for admins
 1) make souce tarball
 2) make distribution for linux in a directory
 3) always have the possiblity to deploy in python/lib with setup.py
@@ -273,7 +278,8 @@ TBD 19.03.2012
 PARTLY DONE - ADD Manifest for DLLs msvc* and insure that they are accessible from the exe (it is missing. Not sure I need them but to be checked). => need to be added in the DLL PATH
 - Think on how it will be used in windows -> bat to do what
 - Start documentation
-- Add script in installer that will set exe in path => better to open a console that set the path (like git does for example http://forums.winamp.com/archive/index.php/t-335716.html)
+- Pass args to gmvault.bat 
+- Test on windows to see perf
 - bullet proof restore
 
 
