@@ -273,7 +273,7 @@ TBD 19.03.2012
 PARTLY DONE - ADD Manifest for DLLs msvc* and insure that they are accessible from the exe (it is missing. Not sure I need them but to be checked). => need to be added in the DLL PATH
 - Think on how it will be used in windows -> bat to do what
 - Start documentation
-- Add script in installer that will set exe in path 
+- Add script in installer that will set exe in path => better to open a console that set the path (like git does for example http://forums.winamp.com/archive/index.php/t-335716.html)
 - bullet proof restore
 
 
