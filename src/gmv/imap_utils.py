@@ -70,6 +70,9 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
             rec_sleep_time[0] *= a_backoff #increase sleep time for next time
             
             rec_nb_tries[0] += 1
+            
+            #increase total nb of reconns
+            the_self.total_nb_reconns += 1
            
             # go in retry mode: reconnect.
             # retry reconnect as long as we have tries left
@@ -164,17 +167,18 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         '''
             Constructor
         '''
-        self.host             = host
-        self.port             = port
-        self.login            = login
-        self.once_connected   = False
-        self.credential       = credential
-        self.ssl              = True
-        self.use_uid          = True
-        self.readonly_folder  = readonly_folder
-        self._all_mail_folder = None
-        self.server           = None
-        self.go_to_all_folder = True
+        self.host                   = host
+        self.port                   = port
+        self.login                  = login
+        self.once_connected         = False
+        self.credential             = credential
+        self.ssl                    = True
+        self.use_uid                = True
+        self.readonly_folder        = readonly_folder
+        self._all_mail_folder       = None
+        self.server                 = None
+        self.go_to_all_folder       = True
+        self.total_nb_reconns       = 0
     
     def connect(self, go_to_all_folder = True):
         """

@@ -368,6 +368,12 @@ class GMVaultLauncher(object):
             #call restore
             labels = [args['label']] if args['label'] else []
             restorer.restore(pivot_dir = starting_dir, extra_labels = labels, restart = args['restart'])
+        
+        else:
+            raise ValueError("Unknown synchronisation mode %s. Please use full (default), quick.")
+        
+        #print error report
+        LOG.critical(restorer.get_error_report()) 
             
             
     def _sync(self, args, credential):
@@ -397,7 +403,9 @@ class GMVaultLauncher(object):
             # today + 1 day
             end   = today + datetime.timedelta(1)
             
-            syncer.sync( { 'type': 'imap', 'req': syncer.get_imap_request_btw_2_dates(begin, end) }, compress_on_disk = True, db_cleaning = args['db-cleaning'])
+            syncer.sync( { 'type': 'imap', 'req': syncer.get_imap_request_btw_2_dates(begin, end) }, \
+                           compress_on_disk = True, \
+                           db_cleaning = args['db-cleaning'])
             
         elif args.get('type', '') == 'custom':
             
@@ -405,6 +413,12 @@ class GMVaultLauncher(object):
             LOG.critical("Perform custom synchronisation with request: %s" % (args['request']['req']))
             
             syncer.sync(args['request'], compress_on_disk = True, db_cleaning = args['db-cleaning'])
+        else:
+            raise ValueError("Unknown synchronisation mode %s. Please use full (default), quick or custom.")
+        
+        
+        #print error report
+        LOG.critical(syncer.get_error_report())
             
     
     
