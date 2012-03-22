@@ -86,7 +86,7 @@ class GmailStorer(object):
            Store the email owner in .info dir. This is used to avoid synchronizing multiple email accounts in gmvault-db.
            Always wipe out completly the file
         """
-        fd = open('%s/%s' % (self._info_dir, cls.EMAIL_OWNER), "w+")
+        fd = open('%s/%s' % (self._info_dir, self.EMAIL_OWNER), "w+")
         fd.write(email_owner)
         fd.close() 
         
@@ -95,9 +95,9 @@ class GmailStorer(object):
         """
            Get the email owner for the gmvault-db. Because except in particular cases, the db will be only linked to one meail.
         """
-        fname = '%s/%s' % (self._info_dir, cls.EMAIL_OWNER)
+        fname = '%s/%s' % (self._info_dir, self.EMAIL_OWNER)
         if os.path.exists(fname):    
-           return fd.open(fname).read()
+            return open(fname).read()
         
         return None
            
@@ -652,7 +652,7 @@ class GMVaulter(object):
                 if (nb_emails_processed % 50) == 0 and (left_emails > 0):
                     elapsed = timer.elapsed() #elapsed time in seconds
                     LOG.critical("\n== Processed %d emails in %s. %d left to be stored (time estimate %s).==\n" % \
-                                 (nb_emails_processed,  timer.seconds_to_human_time(elapsed), left_emails, timer.estimate_time_left(nb_emails_restored, elapsed, left_emails)))
+                                 (nb_emails_processed,  timer.seconds_to_human_time(elapsed), left_emails, timer.estimate_time_left(nb_emails_processed, elapsed, left_emails)))
             
             except imaplib.IMAP4.error, error:
                 # check if this is a cannot be fetched error 
