@@ -61,17 +61,26 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
            Reconnect procedure. Sleep and try to reconnect
         """
         # go in retry mode if less than a_nb_tries
-        if rec_nb_tries[0] < a_nb_tries:
+        while rec_nb_tries[0] < a_nb_tries:
             
-            the_self.disconnect()
+            the_self.disconnect()            
             
             # add X sec of wait
             time.sleep(rec_sleep_time[0])
             rec_sleep_time[0] *= a_backoff #increase sleep time for next time
             
             rec_nb_tries[0] += 1
-            # go in retry mode: reconnect
-            the_self.connect()
+           
+            # go in retry mode: reconnect.
+            # retry reconnect as long as we have tries left
+            try:
+                the_self.connect()
+                
+                return 
+            
+            except Exception, ignored:
+                # catch all errors and try as long as we have tries left
+                LOG.exception(ignored)
         else:
             #cascade error
             raise rec_error
@@ -206,7 +215,11 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            disconnect to avoid too many simultaneous connection problem
         """
         if self.server:
-            self.server.logout()
+            try:
+                self.server.logout()
+            except Exception, ignored: #ignored exception but still og it in log file if activated
+                LOG.exception(ignored)
+                
             self.server = None
     
     def enable_compression(self):
