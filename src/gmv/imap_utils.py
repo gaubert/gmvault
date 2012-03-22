@@ -87,7 +87,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
     
     def inner_retry(the_func): #pylint:disable-msg=C0111
         def wrapper(*args, **kwargs): #pylint:disable-msg=C0111
-            nb_tries = [0] # make it mutble in reconnect
+            nb_tries = [0] # make it mutable in reconnect
             m_sleep_time = [a_sleep_time]  #make it mutable in reconnect
             while True:
                 try:
@@ -228,7 +228,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
         self.server.enable_compression()
     
-    @retry(3)
+    @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def find_all_mail_folder(self):
         """
            depending on your account the all mail folder can be named 
@@ -251,14 +251,14 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             raise Exception("Cannot find global dir %s or %s. Are you sure it is a GMail account" % \
                             (GIMAPFetcher.GMAIL_ALL, GIMAPFetcher.GOOGLE_MAIL_ALL))
     
-    @retry(3)
+    @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def get_all_folders(self): 
         """
            Return all folders mainly for debuging purposes
         """
         return self.server.list_folders()
         
-    @retry(3)
+    @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def get_capabilities(self):
         """
            return the server capabilities
@@ -268,7 +268,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         return self.server.capabilities()
     
-    @retry(3)
+    @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def check_gmailness(self):
         """
            Check that the server is a gmail server
@@ -278,14 +278,14 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         return True
     
-    @retry(3) #retry 3 times
+    @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def search(self, a_criteria):
         """
            Return all found ids corresponding to the search
         """
         return self.server.search(a_criteria)
     
-    @retry(4) # add a retry 4 times
+    @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec
     def fetch(self, a_ids, a_attributes):
         """
            Return all attributes associated to each message
@@ -372,7 +372,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                     self.server.delete_folder(directory)
                     
          
-    @retry(4,2)   
+    @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec
     def push_email(self, a_body, a_flags, a_internal_time, a_labels):
         """
            Push a complete email body 
