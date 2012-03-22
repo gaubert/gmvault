@@ -556,6 +556,24 @@ class GMVaulter(object):
         
         return False
     
+    
+    def _check_email_db_ownership(self, gstorer, ownership_control):
+        """
+           Check email database ownership.
+        """
+        #check that the gmvault-db is not associated with another user
+        db_owner = gstorer.get_db_owner()
+        if ownership_control:
+            if (db_owner != self.login): #db owner should not be different unless bypass activated
+                raise Exception("The email database %s is already associated with %s. Use option X if you want to link it with %s" \
+                                % (self.db_root_dir, db_owner, self.login))
+        else:
+            if db_owner:
+                LOG.critical("The email database %s is hosting email from %s. It will now also store emails from %s" \
+                             % (self.db_root_dir, db_owner, self.login))
+            else:
+                LOG.critical("The email database %s can host emails from multiple email accounts." % (self.db_root_dir))
+    
     def _create_update_sync(self, imap_ids, compress, ownership_control = True ):
         """
            First part of the double pass strategy: 
@@ -563,11 +581,8 @@ class GMVaulter(object):
         """
         gstorer =  GmailStorer(self.db_root_dir, self.use_encryption)
         
-        #check that the gmvault-db is not associated with another user
-        db_owner = gstorer.get_db_owner()
-        if ownership_control and (db_owner != self.login): #db owner should not be different unless bypass activated
-            raise Exception("The email database %s is already associated with %s. Use option X if you want to link it with %s" \
-                            % (self.db_root_dir, db_owner, self.login))
+        #check ownership 
+        self._check_email_db_ownership(gstorer, ownership_control)
             
         #save db_owner for next time
         gstorer.store_db_owner(self.login)

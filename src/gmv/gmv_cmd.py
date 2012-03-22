@@ -133,6 +133,10 @@ class GMVaultLauncher(object):
                           help="To activate or deactive the disk db cleaning. Automatically deactivated if a imap req is passed in args.",\
                           dest="db_cleaning", default=None)
         
+        sync_parser.add_argument("-m", "--multiple-db-owner", \
+                                 help="Allow the email database to be synchronized with emails from multiple accounts.",\
+                                 action='store_true',dest="allow_mult_owners", default=False)
+        
         sync_parser.add_argument("--server", metavar = "HOSTNAME", \
                               action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
                               dest="host", default="imap.gmail.com")
@@ -318,6 +322,9 @@ class GMVaultLauncher(object):
                 
             #add encryption option
             parsed_args['encrypt'] = options.encrypt
+            
+            #add ownership checking
+            parsed_args['ownership_control'] = not options.allow_mult_owners
                 
                 
         elif parsed_args.get('command', '') == 'restore':
@@ -382,15 +389,19 @@ class GMVaultLauncher(object):
         """
         
         LOG.critical("Connect to Gmail server.")
+        
         # handle credential in all levels
         syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
                                        args['email'], credential, read_only_access = True, use_encryption = args['encrypt'])
+        
+        
         
         #full sync is the first one
         if args.get('type', '') == 'full':
         
             #choose full sync. Ignore the request
-            syncer.sync({ 'type': 'imap', 'req': 'ALL' } , compress_on_disk = True, db_cleaning = args['db-cleaning'])
+            syncer.sync({ 'type': 'imap', 'req': 'ALL' } , compress_on_disk = True, \
+                        db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'])
             
         elif args.get('type', '') == 'quick':
             
@@ -405,14 +416,16 @@ class GMVaultLauncher(object):
             
             syncer.sync( { 'type': 'imap', 'req': syncer.get_imap_request_btw_2_dates(begin, end) }, \
                            compress_on_disk = True, \
-                           db_cleaning = args['db-cleaning'])
+                           db_cleaning = args['db-cleaning'], \
+                           ownership_checking = args['ownership_control'])
             
         elif args.get('type', '') == 'custom':
             
             # pass an imap request. Assume that the user know what to do here
             LOG.critical("Perform custom synchronisation with request: %s" % (args['request']['req']))
             
-            syncer.sync(args['request'], compress_on_disk = True, db_cleaning = args['db-cleaning'])
+            syncer.sync(args['request'], compress_on_disk = True, db_cleaning = args['db-cleaning'], \
+                        ownership_checking = args['ownership_control'])
         else:
             raise ValueError("Unknown synchronisation mode %s. Please use full (default), quick or custom.")
         
