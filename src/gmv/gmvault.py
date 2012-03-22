@@ -46,10 +46,11 @@ class GmailStorer(object):
     ENCRYPTED_RE      = re.compile(ENCRYPTED_PATTERN)
     
     
-    DB_AREA         = 'db'
-    QUARANTINE_AREA = 'quarantine'
-    INFO_AREA       = '.info'  # contains metadata concerning the database
+    DB_AREA                    = 'db'
+    QUARANTINE_AREA            = 'quarantine'
+    INFO_AREA                  = '.info'  # contains metadata concerning the database
     ENCRYPTION_KEY_FILENAME    = '.storage_key.sec'
+    EMAIL_OWNER                = '.email_account.info'
         
     
     def __init__(self, a_storage_dir, encrypt_data = False):
@@ -78,6 +79,29 @@ class GmailStorer(object):
         self._encrypt_data   = encrypt_data
         self._encryption_key = None
         self._cipher         = None
+        
+    
+    def store_db_owner(self, email_owner):
+        """
+           Store the email owner in .info dir. This is used to avoid synchronizing multiple email accounts in gmvault-db.
+           Always wipe out completly the file
+        """
+        fd = open('%s/%s' % (self._info_dir, cls.EMAIL_OWNER), "w+")
+        fd.write(email_owner)
+        fd.close() 
+        
+    
+    def get_db_owner(self):
+        """
+           Get the email owner for the gmvault-db. Because except in particular cases, the db will be only linked to one meail.
+        """
+        fname = '%s/%s' % (self._info_dir, cls.EMAIL_OWNER)
+        if os.path.exists(fname):    
+           return fd.open(fname).read()
+        
+        return None
+           
+    
             
     def get_encryption_cipher(self):
         """
@@ -532,12 +556,21 @@ class GMVaulter(object):
         
         return False
     
-    def _create_update_sync(self, imap_ids, compress):
+    def _create_update_sync(self, imap_ids, compress, ownership_control = True ):
         """
            First part of the double pass strategy: 
            create and update emails in db
         """
         gstorer =  GmailStorer(self.db_root_dir, self.use_encryption)
+        
+        #check that the gmvault-db is not associated with another user
+        db_owner = gstorer.get_db_owner()
+        if ownership_control and (db_owner != self.login): #db owner should not be different unless bypass activated
+            raise Exception("The email database %s is already associated with %s. Use option X if you want to link it with %s" \
+                            % (self.db_root_dir, db_owner, self.login))
+            
+        #save db_owner for next time
+        gstorer.store_db_owner(self.login)
         
         total_nb_emails_to_process = len(imap_ids) # total number of emails to get
         
@@ -679,7 +712,7 @@ class GMVaulter(object):
         else:
             LOG.debug("db_cleaning is off so ignore cleaning of %s emails from the db" % (len(db_gmail_ids)))
         
-    def sync(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False):
+    def sync(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False, ownership_checking = True):
         """
            sync mode 
         """
@@ -687,7 +720,7 @@ class GMVaulter(object):
         imap_ids = self.src.search(imap_req)
         
         # create new emails in db and update existing emails
-        self._create_update_sync(imap_ids, compress_on_disk)
+        self._create_update_sync(imap_ids, compress_on_disk, ownership_checking)
         
         #delete supress emails from DB since last sync
         self._delete_sync(imap_ids, db_cleaning)
