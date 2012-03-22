@@ -621,7 +621,7 @@ class GMVaulter(object):
                         
                         if self._metadata_needs_update(curr_metadata, new_data[the_id]):
                             #restore everything at the moment
-                            gid  = gstorer.bury_metadata(new_data[the_id], compress = compress)
+                            gid  = gstorer.bury_metadata(new_data[the_id], local_dir = the_dir)
                             
                             LOG.debug("update email with imap id %s and gmail id %s." % (the_id, gid))
                             
@@ -735,7 +735,7 @@ class GMVaulter(object):
         imap_ids = self.src.search(imap_req)
         
         # create new emails in db and update existing emails
-        self._create_update_sync(imap_ids, compress_on_disk, ownership_checking)
+        self._create_update_sync(imap_ids, compress = compress_on_disk, ownership_control = ownership_checking)
         
         #delete supress emails from DB since last sync
         self._delete_sync(imap_ids, db_cleaning)
