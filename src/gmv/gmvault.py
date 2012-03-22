@@ -564,7 +564,7 @@ class GMVaulter(object):
         #check that the gmvault-db is not associated with another user
         db_owner = gstorer.get_db_owner()
         if ownership_control:
-            if (db_owner != self.login): #db owner should not be different unless bypass activated
+            if db_owner and (db_owner != self.login): #db owner should not be different unless bypass activated
                 raise Exception("The email database %s is already associated with %s. Use option X if you want to link it with %s" \
                                 % (self.db_root_dir, db_owner, self.login))
         else:
