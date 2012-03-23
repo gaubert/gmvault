@@ -7,5 +7,5 @@ SET HOME=%HOMEDRIVE%%HOMEPATH%
 SET EXE_DIR=@PATHTOREPLACE@
 ::SET PATH=H:\Dev\projects\gmvault\dist\inst;%PATH%
 pushd %EXE_DIR%
-gmv_cmd.exe
+gmv_cmd.exe %*
 popd
