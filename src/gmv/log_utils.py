@@ -4,6 +4,7 @@ Created on Nov 9, 2011
 @author: guillaume.aubert@gmail.com
 '''
 import sys
+import os
 
 import logbook
 
@@ -26,10 +27,14 @@ point to the old one.
     def stream(self):
         return sys.stdout
 
+#default log file
+DEFAULT_LOG = "%s/gmvault.log" % (os.getenv("HOME", "."))
+
 class LoggerFactory(object):
     '''
        My Logger Factory
     '''
+    
     
     @classmethod
     def get_logger(cls, name):
@@ -85,7 +90,7 @@ class LoggerFactory(object):
         handler.push_application() 
         
     @classmethod
-    def setup_cli_app_handler(cls, activate_log_file=False, console_level= 'CRITICAL', file_path='./gmvault.log', log_file_level = 'DEBUG'):
+    def setup_cli_app_handler(cls, activate_log_file=False, console_level= 'CRITICAL', file_path=DEFAULT_LOG, log_file_level = 'DEBUG'):
         """
            Setup a handler for communicating with the user and still log everything in a logfile
         """
