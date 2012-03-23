@@ -79,6 +79,7 @@ SetOutPath $INSTDIR
 ; Put file there
 File gmv_cmd.exe
 File gmvault.bat
+File gmv-msg.bat
 File new_gmvault.ico
 File gmvault-shell.bat
 File library.zip

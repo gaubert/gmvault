@@ -13,4 +13,4 @@
 @if not exist "%HOME%" @set HOME=%USERPROFILE%
 
 @cd %HOME%
-@start "GMVAULT-SHELL" message.bat  
+@start "GMVAULT-SHELL" gmv-msg.bat  
