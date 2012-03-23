@@ -94,7 +94,7 @@ class GMVaultLauncher(object):
         
         sync_parser.add_argument("-d", "--db-dir", \
                                  action='store', help="Database root directory. (default: ./gmvault-db)",\
-                                 dest="db_dir", default="./gmvault-db")
+                                 dest="db_dir", default="%s/gmvault-db" % (os.getenv("HOME", ".")) )
                
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
