@@ -18,13 +18,13 @@ BUILDDIST=$(BUILD)/egg-dist
 ETC=$(BASEDIR)/etc
 
 #PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
-#PYTHONWINBIN=python
-PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my windows machine at work
+PYTHONWINBIN=python
+#PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my windows machine at work
 #PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
 PYTHONVERSION=2.7
 
-MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
-#MAKENSIS=/c/Program\ Files/NSIS/makensis.exe #windows laptop
+#MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
+MAKENSIS=/c/Program\ Files/NSIS/makensis.exe #windows laptop
 
 GMVVERSION=0.5
 GMVDISTNAME=gmvault-$(GMVVERSION)

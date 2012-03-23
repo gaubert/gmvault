@@ -1,6 +1,8 @@
 @rem Do not use "echo off" to not affect any child calls.
 @setlocal
 @TITLE GMVAULT-SHELL
+@REM change prompt
+@prompt gmvault-shell$G
 
 @rem Get the absolute path to the current directory, which is assumed to be the
 @rem Gmvault installation root.
