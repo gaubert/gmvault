@@ -498,7 +498,7 @@ def activate_debug_mode():
     """
        Activate debugging logging
     """
-    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'DEBUG', file_path="./gmvault.log")
+    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'DEBUG', file_path="%s/gmvault.log" % os.getenv("HOME","."))
     
 def bootstrap_run():
     """ temporary bootstrap """
