@@ -18,10 +18,9 @@ point to the current `stdout`, whereas a stream handler would still
 point to the old one.
 """
 
-    def __init__(self, level=logbook.base.NOTSET, format_string=None, filter=None,
-                 bubble=False):
+    def __init__(self, level=logbook.base.NOTSET, format_string=None, a_filter = None, bubble=False): 
         logbook.StreamHandler.__init__(self, logbook.base._missing, level, format_string,
-                               None, filter, bubble)
+                               None, a_filter, bubble)
 
     @property
     def stream(self):
@@ -34,7 +33,6 @@ class LoggerFactory(object):
     '''
        My Logger Factory
     '''
-    
     
     @classmethod
     def get_logger(cls, name):

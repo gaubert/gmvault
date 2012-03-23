@@ -254,7 +254,7 @@ class GMVaultLauncher(object):
         #add db_dir
         parsed_args['db-dir']           = options.db_dir
 
-	LOG.critical("Use gmvault-db %s." % (parsed_args['db-dir'])) 
+        LOG.critical("Use gmvault-db %s." % (parsed_args['db-dir'])) 
         
         # add host
         parsed_args['host']             = options.host
