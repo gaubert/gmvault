@@ -281,6 +281,7 @@ PARTLY DONE - ADD Manifest for DLLs msvc* and insure that they are accessible fr
 - Pass args to gmvault.bat 
 - Test on windows to see perf
 - bullet proof restore
+- Default db path is incorrect now. it was ./ but it doesn't work on windows. point to $HOME/gmvault-db by default
 
 
 Create Documentation:
