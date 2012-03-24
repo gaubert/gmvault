@@ -284,6 +284,8 @@ PARTLY DONE - ADD Manifest for DLLs msvc* and insure that they are accessible fr
 - Default db path is incorrect now. it was ./ but it doesn't work on windows. point to $HOME/gmvault-db by default
 - change default dir from gmvault.log (in HOME for the moment with time stamp)
 - print where in which db the data is going to be stored
+- Hit a case where it is not possible to restore emails (gmail throttling, bandwidth restriction ?). We would need to not quarantine the emails as otherwise they will all be quarantine.
+- Need an option to deactivate the quarantine
 
 
 Create Documentation:
