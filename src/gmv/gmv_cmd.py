@@ -66,6 +66,8 @@ class GMVaultLauncher(object):
     SYNC_TYPES    = ['full', 'quick', 'custom']
     RESTORE_TYPES = ['full', 'quick']
     
+    DEFAULT_GMVAULT_DB = "%s/gmvault-db" % (os.getenv("HOME", "."))
+    
     def __init__(self):
         """ constructor """
         super(GMVaultLauncher, self).__init__()
@@ -95,7 +97,7 @@ class GMVaultLauncher(object):
         
         sync_parser.add_argument("-d", "--db-dir", \
                                  action='store', help="Database root directory. (default: ./gmvault-db)",\
-                                 dest="db_dir", default="%s/gmvault-db" % (os.getenv("HOME", ".")) )
+                                 dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
                
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
@@ -179,7 +181,7 @@ class GMVaultLauncher(object):
         
         rest_parser.add_argument("-d", "--db-dir", \
                                  action='store', help="Database root directory. (default: ./gmvault-db)",\
-                                 dest="db_dir", default="./gmvault-db")
+                                 dest="db_dir", default= DEFAULT_GMVAULT_DB)
                
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
