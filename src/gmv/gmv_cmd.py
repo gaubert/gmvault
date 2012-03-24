@@ -181,7 +181,7 @@ class GMVaultLauncher(object):
         
         rest_parser.add_argument("-d", "--db-dir", \
                                  action='store', help="Database root directory. (default: ./gmvault-db)",\
-                                 dest="db_dir", default= DEFAULT_GMVAULT_DB)
+                                 dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
                
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
