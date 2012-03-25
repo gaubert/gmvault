@@ -398,6 +398,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         if match:
             result_uid = int(match.group(1))
         else:
+            # do not quarantine it because it seems to be done by Google Mail to forbid data uploading.
             raise PushEmailError("No email id returned by IMAP APPEND command. Quarantine this email.", quarantined = True)
         
         labels_str = self._build_labels_str(a_labels)
