@@ -302,6 +302,11 @@ pages:
   --- Custom Backup
   --- Restoring the account
 
+Fix error when id not return this is due to gmail stopping to accept emails. Would need to not quarantine emails, mark the email as not uploaded (to have the possibility to retry)
+and after 5 emails refused stop and tell the user to wait.
+
+=> Handle differently errors (imap.aborterror is recovarable, imap.error is not). Should restart in retry if abort is recoverable otherwise not).
+
 
 
 
