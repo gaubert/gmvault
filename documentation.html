@@ -2,16 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Bootstrap, from Twitter</title>
+    <title>gmvault: gmail backup</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
+    <meta name="description" content="backup and restore your gmail account">
     <meta name="author" content="">
 
     <!-- Le styles -->
     <link href="./assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="assets/css/docs.css" rel="stylesheet">
+    <link href="assets/js/google-code-prettify/prettify.css" rel="stylesheet">
     <style>
       body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        /*padding-top: 60px;*/ /* was adding Gmvault and pushing it 60px to make the container go all the way to the bottom of the topbar */
       }
     </style>
     <link href="./assets/css/bootstrap-responsive.css" rel="stylesheet">
@@ -28,7 +31,7 @@
     <link rel="apple-touch-icon-precomposed" href="./assets/ico/apple-touch-icon-57-precomposed.png">
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target=".subnav" data-offset="50">
 
     <!-- Navbar
     ================================================== -->
@@ -71,32 +74,78 @@
         <div class="span2">
           <div class="well sidebar-nav">
             <ul class="nav nav-list">
-              <li class="nav-header">Sidebar</li>
-              <li class="active"><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li class="nav-header">Sidebar</li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li class="nav-header">Sidebar</li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
+              <li class="nav-header"><a href="#win_quick">Windows Quick Start</a></li>
+              <li class="unactive"><a href="#win_install">Windows Installation</a></li>
+              <li class="unactive"><a href="#win_tutorial">Windows Tutorial</a></li>
+              <li class="divider"></li>
+              <li class="nav-header"><a href="#mac_quick">Mac OS X Quick Start</a></li>
+              <li class="unactive"><a href="#mac_install">Mac OS X Installation</a></li>
+              <li class="divider"></li>
+              <li class="nav-header"><a href="#mac_quick">Linux Quick Start</a></li>
+              <li class="unactive"><a href="#lin_install">Linux Installation</a></li>
             </ul>
           </div><!--/.well -->
         </div><!--/span-->
 
       <div class="span10">
-         <h1>Bootstrap starter template</h1>
-         <p>Use this document as a way to quick start any new project.<br> All you get is this message and a barebones HTML document.</p>
-      </div>
+         <h1>Quick Start</h1>
+         <p>Gmvault can be installed on Windows, Linux and Mac Os X. <br> Follow the guide to install on the platform of your choice.</p>
+
+         <h2><a name="win_quick"></a>Windows Quick Start</h2>
+         <h3><a name="win_install"></a>Windows Installation </h3>
+			 <p>Go to the <a href="./download.html">Download Page</a> to download the package for the platform of your choice. On Windows, Gmvault can be installed using an installer called gmvault_setup.exe.
+			 <br>Download it and double click on it to launch the installation.</p>
+			 
+			 <ul class="thumbnails">
+				<li class="span5">
+				  <div class="thumbnail">
+				  <img src="./assets/img/gmvault_main_page.png" alt="">
+				  <h5>Launch the gmvault_setup.exe windows installer.</h5>
+				  </div>
+				</li>
+				<li class="span5">
+				  <div class="thumbnail">
+				  <img src="./assets/img/gmvault_licence.png" alt="">
+				  <h5>Accept the software licensing prior to install it on your PC.</h5>
+				  </div>
+				</li>
+			 </ul> 
+
+			 <p><br></p>
+
+			 <ul class="thumbnails">
+				<li class="span5">
+				  <div class="thumbnail">
+				  <img src="./assets/img/gmvault_dir.png" alt="">
+				  <h5>Choose where to install Gmvault.</h5>
+				  </div>
+				</li>
+				<li class="span5">
+				  <div class="thumbnail">
+				  <img src="./assets/img/gmvault_shortcuts.png" alt="">
+				  <h5>Agree on the creation of a Desktop shortcut for Gmvault (recommended).</h5>
+				  </div>
+				</li>
+			 </ul> 
+
+			 <p>The gmvault installer should have installed the gmvault exe and a gmvault-shell from where you can easily use gmvault.
+				<br> Gmvault-shell can be launched via the desktop shortcut.</p>
+
+		  
+         <h3><a name="win_tutorial"></a>Windows Tutorial</h3>
+			 <p>launch gmvault-shell to directly operate gmvault (screenshot of shell). launch gmvault sync mygmail.account@gmail.com default gmvault-db in USERS/username/gmvault-db
+				<br> Gmvault-shell can be launched via the desktop shortcut.</p>
+
+         <h2><a name="win_quick"></a>Mac OS X Quick Start</h2>
+         <h3><a name="mac_install"></a>Mac OS X Installation </h3>
+
+         <h2><a name="lin_quick"></a>Linux Quick Start</h2>
+         <h3><a name="lin_install"></a>Linux Installation </h3>
+
+      </div> <!-- span10 -->
 
     </div> <!-- row -->
+
     </div> <!-- /container -->
 
     <!-- Le javascript
