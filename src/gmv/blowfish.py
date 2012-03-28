@@ -1,9 +1,3 @@
-'''
-Created on Jan 12, 2012
-
-@author: guillaume.aubert@gmail.com
-'''
-
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
  
