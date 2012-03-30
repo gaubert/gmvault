@@ -48,18 +48,21 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
         self.decompressor = zlib.decompressobj(-15)
         self.compressor   = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
         
-    
+    MAX_READ = 16384
     def read(self, size):
         """Read 'size' bytes from remote."""
         # sslobj.read() sometimes returns < size bytes
-        chunks = []
-        read = 0
-        while read < size:
-            data = self._intern_read(min(size-read, 16384))
-            read += len(data)
-            chunks.append(data)
+        if size <= self.MAX_READ:
+            return self._intern_read(size)
+        else:
+            chunks = ""
+            read = 0
+            while read < size:
+                data = self._intern_read(min(size-read, self.MAX_READ))
+                read += len(data)
+                chunks += data
         
-        return ''.join(chunks)
+        return chunks
   
     def _intern_read(self, size):
         """
@@ -72,7 +75,8 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
         if self.decompressor.unconsumed_tail:
             data = self.decompressor.unconsumed_tail
         else:
-            data = self.sslobj.read(8192)
+            #data = self.sslobj.read(8192)
+            data = self.sslobj.read(size)
 
         return self.decompressor.decompress(data, size)
     
