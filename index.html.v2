@@ -83,20 +83,29 @@
 </header>
 -->
 
- <div class="hero-unit">
-	<div class="row">
-	   <div class="span7">
-         <p><h1>Gmvault: Gmail Backup     </h1></p>
-	     <p><h2>Never lose that part of your life</h2></p>
-	   </div>
-       <div class="span2"><img src="./gmvault-icon-200-no-layer-edges.png" style="max-width:120%;"/></div>
-	</div>
+ <header class="jumbotron masthead">
+	<div class="row-fluid">
+	   <div class="span12">
+	     <div class="row-fluid">
+			   <div class="span6">
+				 <p><h1>Gmvault</h1></p>
+				 <p><h1>Gmail Backup</h1></p>
+			   </div>
+			   <div class="span6"><img src="./assets/img/gmvault-icon-512-edges.png"/></div>
+			   <!--<div class="span6"><img src="./assets/img/gmvault-icon-512-no-layer-edges.png"/></div>-->
+			   <!--<div class="span8"><img src="./assets/img/gmvault-icon-200-no-layer-edges.png" style="max-width:120%;"/></div>-->
+		 </div>
+	         <div class="marketing">
+	            <h2 class="center">Never lose that part of your life</h2>
+	         </div>
+	   </div>	
+      </div>
 	</p>
 	<p class="download-info">
 	  <a href="./documentation.html" class="btn btn-primary btn-large">Learn More</a>
 	  <a href="https://github.com/gaubert/gmvault/" class="btn btn-large">Download Gmvault <small>(v0.5)</small></a>
 	</p>
-</div>
+</header>
 
 <!-- <hr class="soften"> -->
 
