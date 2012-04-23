@@ -6,8 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="backup and restore your gmail account">
     <meta name="author" content="zoobert">
- 
-    <meta name="google-site-verification" content="RhcGdmbE2htGeMNBJZaEvhy0m1ecFeNytgP0TFyS8PY" />
 
     <!-- Le styles -->
     <link href="assets/css/bootstrap.css" rel="stylesheet">
@@ -21,14 +19,13 @@
     <![endif]-->
 
     <!-- Le fav and touch icons -->
-    <link rel="shortcut icon" href="assets/ico/favicon.ico">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="shortcut icon" href="assets/ico/gmv-favicon.ico">
+    <!--<link rel="apple-touch-icon-precomposed" sizes="114x114" href="assets/ico/apple-touch-icon-114-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/ico/apple-touch-icon-72-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" href="assets/ico/apple-touch-icon-57-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="assets/ico/apple-touch-icon-57-precomposed.png">-->
   </head>
 
   <body data-spy="scroll" data-target=".subnav" data-offset="50"> 
-
 
   <!-- Navbar
     ================================================== -->
@@ -44,13 +41,13 @@
           <div class="nav-collapse">
             <ul class="nav">
               <li class="active">
-               <a href="./index.html">Overview</a>
+               <a href="#overview">Overview</a>
               </li>
               <li class="">
                 <a href="./documentation.html">Documentation</a>
               </li>
               <li class="">
-                <a href="./about.html">About</a>
+                <a href="#overview">About</a>
               </li>
               <li class="">
                 <a href="./contacts.html">Contacts</a>
@@ -65,26 +62,39 @@
       </div>
     </div>
 
-    <div class="container">
+<div class="container">
 
 <!-- Masthead
 ================================================== -->
-<header class="jumbotron masthead">
-  <div class="inner">
-    <h1>Gmvault: Gmail backup</h1>
-    <p>Never Lose that part of your life.</p>
-    <p class="download-info">
-      <a href="./documentation.html" class="btn btn-primary btn-large">Learn More</a>
-      <a href="https://github.com/gaubert/gmvault/" class="btn btn-large">Download Gmvault <small>(v0.5)</small></a>
-    </p>
-  </div>
+
+ <section id="overview">
+ <header class="jumbotron masthead">
+	<!--<div class="row-fluid">-->
+	   <div class="span12">
+	     <div class="row-fluid">
+			   <div class="span8">
+				 <p><h1>Gmvault</h1></p>
+				 <h1 class="center">Gmail Backup</h1>
+			   </div>
+			   <div class="span4"><img src="./assets/img/gmvault-icon-512-edges.png"/></div>
+		 </div>
+	         <!--<div class="marketing">
+	            <h1 class="center">Never lose that part of your life</h1>
+	         </div>-->
+	   </div>	
+    <!--</div>-->
+	</p>
+	<p class="download-info">
+	  <a href="./documentation.html" class="btn btn-primary btn-large">Learn More</a>
+	  <a href="https://github.com/gaubert/gmvault/" class="btn btn-large">Download Gmvault <small>(v0.5)</small></a>
+	</p>
 </header>
 
 <!-- <hr class="soften"> -->
 
 <div class="marketing">
   <h1>Backup and restore your gmail account at will.</h1>
-  <p class="marketing-byline">Don't let that part of your life disappear.</p>
+  <p class="marketing-byline">Liberate your emails and never lose that part of your life.</p>
   <div class="row">
     <div class="span4">
       <img class="bs-icon" src="assets/img/glyphicons/glyphicons_082_roundabout.png">
@@ -99,14 +109,14 @@
     <div class="span4">
       <img class="bs-icon" src="assets/img/glyphicons/glyphicons_141_database_plus.png">
       <h2>Restore emails in any Gmail acc.</h2>
-      <p>With the restore command Gmvault can recreate your gmail mailboxes in any Gmail account. All attributes such as Gmail labels, Read, Unread, date and time are preserved and recreated. With restore, you will recover your Gmail account exactly as it was. </p>
+      <p>With the restore command Gmvault can recreate your gmail mailboxes in any Gmail account. All attributes such as Gmail labels are preserved and recreated. With restore, you will recover your Gmail account exactly as it was.</p>
     </div>
   </div><!--/row-->
   <div class="row">
     <div class="span4">
       <img class="bs-icon" src="assets/img/glyphicons/glyphicons_308_bomb.png">
       <h2>Handle all Gmail IMAP hiccups.</h2>
-      <p>Even if being the world best ever email service, Gmail and especially the IMAP service is not without bugs and peculiarities. Gmvault handles all these issues to provide the smoothest experience to the user. The most common issues are dealt with and Gmvault let the user always with a working uncorrupted email database.</p>
+      <p>Even being the world best ever email service, Gmail and especially its IMAP service is not without bugs. Gmvault handles all these issues to provide the smoothest experience to the user. Gmvault deals with the most common issues and always let the user with an uncorrupted email database.</p>
     </div>
     <div class="span4">
       <img class="bs-icon" src="assets/img/glyphicons/glyphicons_128_message_lock.png">
@@ -114,9 +124,9 @@
       <p>All the emails saved in your email repository can be protected with encryption. With this feature, you can put your backup emails on a cloud storage while protecting your information.</p>
     </div>
     <div class="span4">
-      <img class="bs-icon" src="assets/img/glyphicons/glyphicons_059_cargo.png">
-      <h2>Filesystem as a database.</h2>
-      <p>No databases (SQL or NoSQL) are used to organise the emails storage. This makes all emails easily accessible and moveable. In addition manually deleting emails or emails' directories does not prevent Gmvault from working.</p>
+      <img class="bs-icon" src="assets/img/glyphicons/glyphicons_042_group.png">
+      <h2>For geek and non-geek users.</h2>
+      <p>Gmvault has been designed with users in mind and is stuffed with the most common defaults to work directly out of the box. In addition, a detailed tutorial and installation guide allow all types of users to make the most of Gmvault in seconds.</p>
     </div>
   </div><!--/row-->
   <div class="row">
@@ -126,9 +136,9 @@
       <p>Shell/batch client available on Linux, Mac OSX and Windows. A tailored installation has been created for Windows to allow a smooth installation for non-geek users.</p>
     </div>
     <div class="span4">
-      <img class="bs-icon" src="assets/img/glyphicons/glyphicons_042_group.png">
-      <h2>For geek and non-geek users.</h2>
-      <p>A detailed installation guide allow all types of users to make use of Gmvault. A quick install and a tutorial authorize non-geek users to easily make the most of Gmvault. Gmvault also has been designed with users in mind and is stuffed with the most common defaults to work out fo the box.</p>
+      <img class="bs-icon" src="assets/img/glyphicons/glyphicons_059_cargo.png">
+      <h2>Filesystem as a database.</h2>
+      <p>No databases (SQL or NoSQL) are used to organise the emails storage. This makes all emails easily accessible and moveable. In addition manually deleting emails or emails' directories does not prevent Gmvault from working.</p>
     </div>
     <div class="span4">
       <img class="bs-icon" src="assets/img/glyphicons/glyphicons_280_settings.png">
@@ -172,21 +182,6 @@
 
     <!-- analytics with stathat -->
     <img src="http://api.stathat.com/c?ukey=NjM3IHOkfz0i1DliotgKSxKEqGc~&key=uEWjLRysHJgQFmszTFzGKCBLRkFk&count=1" style="display:none;" width="1" height="1"/>
-
-    <!-- analytics with google analytics -->
-	<script type="text/javascript">
-
-	  var _gaq = _gaq || [];
-	  _gaq.push(['_setAccount', 'UA-31019122-1']);
-	  _gaq.push(['_trackPageview']);
-
-	  (function() {
-		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-	  })();
-
-	</script>
 
 
   </body>
