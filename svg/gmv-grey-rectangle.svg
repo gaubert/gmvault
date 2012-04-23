@@ -1,0 +1,692 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="60"
+   height="60"
+   id="svg3728"
+   sodipodi:version="0.32"
+   inkscape:version="0.47 r22583"
+   version="1.0"
+   sodipodi:docname="gmv-grey-rectangle.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="/homespace/gaubert/gmvault-icon-512-no-background.png"
+   inkscape:export-xdpi="364.98764"
+   inkscape:export-ydpi="364.98764"
+   style="display:inline">
+  <defs
+     id="defs3730">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient3567">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop3569" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop3571" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient3455">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop3457" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop3459" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient3265">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop3267" />
+      <stop
+         style="stop-color:#e1e1e1;stop-opacity:1;"
+         offset="1"
+         id="stop3269" />
+    </linearGradient>
+    <filter
+       id="filter3680"
+       inkscape:label="myfilter"
+       color-interpolation-filters="sRGB">
+      <feGaussianBlur
+         stdDeviation="1"
+         id="feGaussianBlur3682"
+         in="BackgroundImage"
+         result="result0" />
+      <feOffset
+         dx="2"
+         dy="0"
+         id="feOffset3686"
+         result="result1" />
+      <feMerge
+         id="feMerge3690">
+        <feMergeNode
+           inkscape:collect="always"
+           id="feMergeNode3692"
+           in="result1" />
+        <feMergeNode
+           inkscape:collect="always"
+           id="feMergeNode3694"
+           in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <linearGradient
+       id="linearGradient3187">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop3189" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop3191" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4273">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0.33725491;"
+         offset="0"
+         id="stop4275" />
+      <stop
+         id="stop4281"
+         offset="0.62"
+         style="stop-color:#ffffff;stop-opacity:0.29411766;" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0.23529412;"
+         offset="0.63"
+         id="stop4283" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop4277" />
+    </linearGradient>
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective3736" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4273"
+       id="radialGradient3213"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(-2.7253678,7.1317343e-8,-4.1555423e-8,-1.5880263,164.05204,-129.2366)"
+       cx="26.011429"
+       cy="-63.676418"
+       fx="26.011429"
+       fy="-63.676418"
+       r="28.5" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3187"
+       id="linearGradient3215"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(64.661333,-28.116767)"
+       x1="57.5"
+       y1="-0.5"
+       x2="57.5"
+       y2="14.484134" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3265"
+       id="linearGradient3420"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.15419,0,0,0.1320154,19.119135,7.1558674)"
+       x1="75"
+       y1="42"
+       x2="75"
+       y2="27" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3265"
+       id="linearGradient3422"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.15419,0,0,0.1320154,19.119135,7.1558674)"
+       x1="25"
+       y1="72"
+       x2="10"
+       y2="72" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3265"
+       id="linearGradient3424"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.15419,0,0,0.1320154,19.119135,7.1558674)"
+       x1="125"
+       y1="72"
+       x2="140"
+       y2="72" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3265"
+       id="linearGradient3426"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.15419,0,0,0.1320154,19.119135,7.155867)"
+       x1="75"
+       y1="112"
+       x2="75"
+       y2="127" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3265"
+       id="linearGradient3441"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.1475921,0,0,0.123768,-23.443772,-26.933075)"
+       x1="75"
+       y1="42"
+       x2="75"
+       y2="27" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3265"
+       id="linearGradient3443"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.1475921,0,0,0.123768,-23.443772,-26.933075)"
+       x1="25"
+       y1="72"
+       x2="10"
+       y2="72" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3265"
+       id="linearGradient3445"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.1475921,0,0,0.123768,-23.443772,-26.933075)"
+       x1="125"
+       y1="72"
+       x2="140"
+       y2="72" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3265"
+       id="linearGradient3447"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.1475921,0,0,0.123768,-23.443772,-26.933075)"
+       x1="75"
+       y1="112"
+       x2="75"
+       y2="127" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3455"
+       id="linearGradient3461"
+       x1="20.636736"
+       y1="38.211452"
+       x2="29.609329"
+       y2="38.211452"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3567"
+       id="linearGradient3573"
+       x1="25.939453"
+       y1="43.421043"
+       x2="34.972656"
+       y2="43.421043"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4273"
+       id="radialGradient3588"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(-2.7253678,7.1317343e-8,-4.1555423e-8,-1.5880263,101.605,-99.08412)"
+       cx="26.011429"
+       cy="-63.676418"
+       fx="26.011429"
+       fy="-63.676418"
+       r="28.5" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3187"
+       id="linearGradient3590"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(2.2142872,2.035715)"
+       x1="57.5"
+       y1="-0.5"
+       x2="57.5"
+       y2="14.484134" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3187"
+       id="linearGradient3601"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(2.2678596,1.5357152)"
+       x1="57.5"
+       y1="-0.5"
+       x2="57.5"
+       y2="14.484134" />
+    <inkscape:perspective
+       id="perspective2917"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3187-3"
+       id="linearGradient3601-4"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(2.2678596,1.5357152)"
+       x1="57.5"
+       y1="-0.5"
+       x2="57.5"
+       y2="14.484134" />
+    <linearGradient
+       id="linearGradient3187-3">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop3189-7" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop3191-7" />
+    </linearGradient>
+    <linearGradient
+       y2="14.484134"
+       x2="57.5"
+       y1="-0.5"
+       x1="57.5"
+       gradientTransform="translate(1.820446,1.91243)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient2926"
+       xlink:href="#linearGradient3187-3"
+       inkscape:collect="always" />
+    <inkscape:perspective
+       id="perspective2975"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3018"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3567-9"
+       id="linearGradient3584"
+       gradientUnits="userSpaceOnUse"
+       x1="25.939453"
+       y1="43.421043"
+       x2="34.972656"
+       y2="43.421043" />
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient3567-9">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop3569-9" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop3571-0" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#000000"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="7.9195959"
+     inkscape:cx="27.839811"
+     inkscape:cy="15.379382"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer7"
+     showgrid="false"
+     inkscape:window-width="1280"
+     inkscape:window-height="725"
+     inkscape:window-x="0"
+     inkscape:window-y="24"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata3733">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer9"
+     inkscape:label="black-layer"
+     style="display:none">
+    <rect
+       style="fill:#000000;fill-opacity:1;stroke:#d70000;stroke-width:0;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       id="rect3592"
+       width="88.009544"
+       height="65.154839"
+       x="-13.290486"
+       y="-1.6845628"
+       rx="21.027533"
+       ry="38.331539"
+       inkscape:export-filename="/homespace/gaubert/gmvault-icon-200-with-background.png"
+       inkscape:export-xdpi="204.43608"
+       inkscape:export-ydpi="204.43608" />
+  </g>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     style="display:none">
+    <rect
+       style="fill:#dce0f0;fill-opacity:1;stroke:#d70000;stroke-width:0;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect3209"
+       width="88.009544"
+       height="65.154839"
+       x="-13.258251"
+       y="-2.7557266"
+       rx="21.027533"
+       ry="38.331539"
+       inkscape:export-filename="/homespace/gaubert/gmvault-icon-200-edges.png"
+       inkscape:export-xdpi="204.52327"
+       inkscape:export-ydpi="204.52327" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="red-rectangle"
+     style="display:inline">
+    <rect
+       style="fill:#d70000;fill-opacity:1;stroke:#d70000;stroke-width:0;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       id="rect3738"
+       width="57"
+       height="57"
+       x="2.000638"
+       y="1.7208049"
+       rx="8.1153603"
+       ry="8.0971661"
+       inkscape:export-filename="/home/aubert/gmvault-icon-15.png"
+       inkscape:export-xdpi="23.684212"
+       inkscape:export-ydpi="23.684212" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer8"
+     inkscape:label="gloss"
+     style="display:none">
+    <rect
+       style="fill:url(#radialGradient3588);fill-opacity:1;stroke:url(#linearGradient3590);stroke-width:1;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       id="rect4271"
+       width="57"
+       height="57"
+       x="2.2142849"
+       y="2.0357141"
+       rx="8.1153603"
+       ry="8.0971661"
+       inkscape:export-filename="/homespace/gaubert/gmv-58.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer10"
+     inkscape:label="edges"
+     style="display:inline">
+    <rect
+       style="fill:none;stroke:url(#linearGradient2926);stroke-width:1;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       id="rect3597"
+       width="57"
+       height="57"
+       x="1.8204432"
+       y="1.9124277"
+       rx="8.1153603"
+       ry="8.0971661"
+       inkscape:export-filename="/homespace/gaubert/gmvault-icon-512-no-layer-edges.png"
+       inkscape:export-xdpi="794.48279"
+       inkscape:export-ydpi="794.48279" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="gmv-little"
+     style="display:none">
+    <text
+       xml:space="preserve"
+       style="font-size:4px;font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;display:inline;font-family:Subpear;-inkscape-font-specification:Subpear Bold Italic"
+       x="-55.03841"
+       y="27.066778"
+       id="text3428"
+       sodipodi:linespacing="125%"
+       transform="scale(0.8166307,1.2245437)"><tspan
+         sodipodi:role="line"
+         id="tspan3430"
+         x="-55.03841"
+         y="27.066778">GMVault</tspan></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3463"
+       style="font-size:4px;font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:100%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Subpear;-inkscape-font-specification:Subpear Bold Italic"><flowRegion
+         id="flowRegion3465"><rect
+           id="rect3467"
+           width="3.7880721"
+           height="4.5456862"
+           x="20.834396"
+           y="39.544411" /></flowRegion><flowPara
+         id="flowPara3469" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3471"
+       style="font-size:4px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:100%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       transform="translate(0.1262687,6.6922601)"><flowRegion
+         id="flowRegion3473"
+         style="fill:url(#linearGradient3573);fill-opacity:1"><rect
+           id="rect3475"
+           width="16.793787"
+           height="4.9244938"
+           x="21.970818"
+           y="41.690987"
+           style="font-size:4px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:100%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;font-family:Sans;-inkscape-font-specification:Sans" /></flowRegion><flowPara
+         id="flowPara3477"
+         style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero">GMV</flowPara></flowRoot>  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer7"
+     inkscape:label="gmvault-little"
+     style="display:none">
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3576"
+       style="font-size:4px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:100%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;display:inline;font-family:Sans;-inkscape-font-specification:Sans"
+       transform="matrix(1.0696074,0,0,1.6118274,-1.7847796,-20.67486)"
+       inkscape:export-filename="/homespace/gaubert/gmvault-icon-512-no-layer-edges.png"
+       inkscape:export-xdpi="794.48279"
+       inkscape:export-ydpi="794.48279"><flowRegion
+         id="flowRegion3578"
+         style="fill:url(#linearGradient3584);fill-opacity:1"><rect
+           id="rect3580"
+           width="16.793787"
+           height="4.9244938"
+           x="21.970818"
+           y="41.690987"
+           style="font-size:4px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:100%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;font-family:Sans;-inkscape-font-specification:Sans" /></flowRegion><flowPara
+         id="flowPara3582"
+         style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero">GMVault</flowPara></flowRoot>  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="vault"
+     style="display:inline">
+    <g
+       id="g3216"
+       inkscape:export-filename="/home/aubert/gmvault-icon-15.png"
+       inkscape:export-xdpi="23.684212"
+       inkscape:export-ydpi="23.684212">
+      <rect
+         rx="4"
+         y="4.5025249"
+         x="7.3236065"
+         height="52"
+         width="46"
+         id="rect2437"
+         style="fill:none;stroke:#f4f4f4;stroke-width:1.70000005;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <rect
+         rx="4.7788024"
+         y="7.3716903"
+         x="10.602036"
+         height="45.78389"
+         width="39.405083"
+         id="rect3210"
+         style="fill:none;stroke:#f4f4f4;stroke-width:0.47600001;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    </g>
+    <g
+       id="g3220"
+       style="stroke:#f4f4f4;stroke-opacity:1"
+       transform="translate(4,0)"
+       inkscape:export-filename="/home/aubert/gmvault-icon-15.png"
+       inkscape:export-xdpi="23.684212"
+       inkscape:export-ydpi="23.684212">
+      <path
+         d="m 43.184021,31.147518 a 1.1364216,1.1995561 0 1 1 -2.272843,0 1.1364216,1.1995561 0 1 1 2.272843,0 z"
+         sodipodi:ry="1.1995561"
+         sodipodi:rx="1.1364216"
+         sodipodi:cy="31.147518"
+         sodipodi:cx="42.0476"
+         id="path3212"
+         style="fill:none;stroke:#f4f4f4;stroke-width:0.47600001;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         sodipodi:type="arc" />
+      <rect
+         rx="4"
+         y="31.084383"
+         x="38.385796"
+         height="0.12626907"
+         width="3.661803"
+         id="rect3214"
+         style="fill:none;stroke:#f4f4f4;stroke-width:0.47600001;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    </g>
+    <path
+       sodipodi:nodetypes="ccccccccc"
+       id="path3410"
+       d="m 20.661037,9.4001284 20.044691,0 c 0.753035,0 1.541901,0.453789 1.541901,1.3201536 l 0,13.201544 c 0,0.866363 -0.788866,1.320153 -1.541901,1.320153 l -20.044691,0 c -0.753036,0 -1.541901,-0.410698 -1.541901,-1.320153 l 0,-13.201544 c 0,-0.8663646 0.788865,-1.3201536 1.541901,-1.3201536 z"
+       style="fill:none;stroke:#ffffff;stroke-width:0.38846552;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       inkscape:export-filename="/home/aubert/gmvault-icon-15.png"
+       inkscape:export-xdpi="23.684212"
+       inkscape:export-ydpi="23.684212" />
+    <path
+       style="fill:url(#linearGradient3420);fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.38846552;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 20.661037,10.720282 0,1.31923 10.022346,7.156891 10.022345,-7.150835 0,-1.325286 -20.044691,0 z"
+       id="path3412"
+       sodipodi:nodetypes="cccccc"
+       inkscape:export-filename="/home/aubert/gmvault-icon-15.png"
+       inkscape:export-xdpi="23.684212"
+       inkscape:export-ydpi="23.684212" />
+    <path
+       style="fill:url(#linearGradient3422);fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.38846552;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 20.661037,13.356985 6.938547,4.954183 -6.938547,4.950579 0,-9.904762 z"
+       id="path3414"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-filename="/home/aubert/gmvault-icon-15.png"
+       inkscape:export-xdpi="23.684212"
+       inkscape:export-ydpi="23.684212" />
+    <path
+       style="fill:url(#linearGradient3424);fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.38846552;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 40.705728,13.361522 -6.938547,4.950579 6.938547,4.949646 0,-9.900225 z"
+       id="path3416"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-filename="/home/aubert/gmvault-icon-15.png"
+       inkscape:export-xdpi="23.684212"
+       inkscape:export-ydpi="23.684212" />
+    <path
+       style="fill:url(#linearGradient3426);fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.38846552;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 28.52725,18.969443 -6.941074,4.952383 18.194414,0 -6.937895,-4.950115 -2.159312,1.540646 -2.156133,-1.542914 z"
+       id="path3418"
+       sodipodi:nodetypes="cccccc"
+       inkscape:export-filename="/home/aubert/gmvault-icon-15.png"
+       inkscape:export-xdpi="23.684212"
+       inkscape:export-ydpi="23.684212" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer6"
+     inkscape:label="gmail-icon-spare"
+     style="display:none">
+    <path
+       sodipodi:nodetypes="ccccccccc"
+       id="rect5004"
+       d="m -21.967851,-24.82902 19.1869639,0 c 0.720812,0 1.475921,0.425439 1.475921,1.23768 l 0,12.376803 c 0,0.812239 -0.755109,1.237679 -1.475921,1.237679 l -19.1869639,0 c -0.720812,0 -1.47592,-0.38504 -1.47592,-1.237679 l 0,-12.376803 c 0,-0.812241 0.755108,-1.23768 1.47592,-1.23768 z"
+       style="fill:none;stroke:#ae0505;stroke-width:0.06757803;stroke-miterlimit:4;stroke-opacity:1;display:inline" />
+    <path
+       style="fill:url(#linearGradient3441);fill-opacity:1;fill-rule:evenodd;stroke:#ae0505;stroke-width:0.06757805;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m -21.967851,-23.59134 0,1.236813 9.593482,6.709779 9.5934819,-6.704101 0,-1.242491 -19.1869639,0 z"
+       id="path5541"
+       sodipodi:nodetypes="cccccc" />
+    <path
+       style="fill:url(#linearGradient3443);fill-opacity:1;fill-rule:evenodd;stroke:#ae0505;stroke-width:0.06757805;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m -21.967851,-21.11936 6.641642,4.644681 -6.641642,4.641301 0,-9.285982 z"
+       id="path5543"
+       sodipodi:nodetypes="cccc" />
+    <path
+       style="fill:url(#linearGradient3445);fill-opacity:1;fill-rule:evenodd;stroke:#ae0505;stroke-width:0.06757805;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m -2.7808871,-21.115106 -6.641641,4.641301 6.641641,4.640427 0,-9.281728 z"
+       id="path5545"
+       sodipodi:nodetypes="cccc" />
+    <path
+       style="fill:url(#linearGradient3447);fill-opacity:1;fill-rule:evenodd;stroke:#ae0505;stroke-width:0.06757805;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m -14.438238,-15.857529 -6.644061,4.642992 17.4158609,0 -6.6410169,-4.640865 -2.066914,1.444397 -2.063869,-1.446524 z"
+       id="path5547"
+       sodipodi:nodetypes="cccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="GMV-big"
+     style="display:none">
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Subpear;-inkscape-font-specification:Subpear"
+       x="14.773481"
+       y="14.921942"
+       id="text3298"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3300"
+         x="14.773481"
+         y="14.921942" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14.98886871px;font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Subpear;-inkscape-font-specification:Subpear Bold Italic"
+       x="36.147926"
+       y="32.688198"
+       id="text3302"
+       sodipodi:linespacing="125%"
+       transform="scale(0.8166307,1.2245437)"><tspan
+         sodipodi:role="line"
+         id="tspan3306"
+         x="36.14793"
+         y="32.688198">GMVault</tspan></text>
+  </g>
+</svg>
