@@ -24,7 +24,7 @@ DirText "Please Choose a directory where to install gmvault"
 
 ;--------------------------------
 ; MUI Settings / Icons
-!define MUI_ICON "new_gmvault.ico"
+!define MUI_ICON "gmv-icon.ico"
 ;!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall-nsis.ico"
 
 ; MUI Settings / Header
@@ -39,7 +39,7 @@ DirText "Please Choose a directory where to install gmvault"
 
 ; add create shortcut checkbox in end page
 Function finishpageaction
-CreateShortcut "$desktop\gmvault-shell.lnk" "$INSTDIR\gmvault-shell.bat" "" "$INSTDIR\new_gmvault.ico"
+CreateShortcut "$desktop\gmvault-shell.lnk" "$INSTDIR\gmvault-shell.bat" "" "$INSTDIR\gmv-icon.ico"
 FunctionEnd
 
 ; MUI Setting for finish page
@@ -80,7 +80,7 @@ SetOutPath $INSTDIR
 File gmv_cmd.exe
 File gmvault.bat
 File gmv-msg.bat
-File new_gmvault.ico
+File gmv-icon.ico
 File gmvault-shell.bat
 File library.zip
 File python27.dll
