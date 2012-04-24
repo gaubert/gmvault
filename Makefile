@@ -26,15 +26,15 @@ PYTHONVERSION=2.7
 MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
 #MAKENSIS=/c/Program\ Files/NSIS/makensis.exe #windows laptop
 
-GMVVERSION=0.5
+#VERSION is in gmv_cmd.py as GMVAULT_VERSION
+GMVVERSION=$(shell python $(BASEDIR)/etc/utils/find_version.py $(BASEDIR)/src/gmv/gmv_cmd.py)
 GMVDISTNAME=gmvault-v$(GMVVERSION)
-MYVERSION=$(shell python $(BASEDIR)/etc/utils/find_version.py $(BASEDIR)/src/gmv/gmv_cmd.py)
 
 
 all: gmv-linux-dist
 
 version:
-	echo $(MYVERSION)
+	@echo $(GMVVERSION)
 
 init:
 	mkdir -p $(GMVDIST)
@@ -96,7 +96,8 @@ gmv-make-win-installer: gmv-win-dist
 	echo "=== call gmvault_setup.nsi in $(GMVWINBUILDDIST) ==="
 	ls -la > /tmp/res.txt
 	cd $(GMVWINBUILDDIST); $(MAKENSIS) ./gmvault_setup.nsi
-	echo "gmvault_setup.exe available in $(GMVWINBUILDDIST)"
+	mv $(GMVWINBUILDDIST)/gmvault_setup.exe $(GMVWINBUILDDIST)/gmvault_setup_v$(GMVVERSION).exe
+	echo "gmvault_setup_v$(GMVVERSION).exe available in $(GMVWINBUILDDIST)"
 
 
 clean: clean-build
