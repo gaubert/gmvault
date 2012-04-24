@@ -30,6 +30,8 @@ import gmvault
 from cmdline_utils  import CmdLineParser
 from credential_utils import CredentialHelper
 
+GMVAULT_VERSION="1.0-beta"
+
 GLOBAL_HELP_EPILOGUE="""Examples:
 
 a) Get help for each of the individual commands
@@ -94,8 +96,10 @@ class GMVaultLauncher(object):
         parser = CmdLineParser()
         
         parser.epilogue = GLOBAL_HELP_EPILOGUE
-    
-        subparsers = parser.add_subparsers(help='commands (mandatory).')
+
+        parser.add_argument("-v", '--version', action='version', version='Gmvault v%s' % (GMVAULT_VERSION))
+        
+        subparsers = parser.add_subparsers(title='subcommands', help='valid subcommands.')
          
         # A sync command
         sync_parser = subparsers.add_parser('sync', \
@@ -225,12 +229,10 @@ class GMVaultLauncher(object):
         
         
         # A config command
-        config_parser = subparsers.add_parser('config', help='add/delete/modify properties in configuration.')
-        config_parser.add_argument('dirname', action='store', help='New directory to create')
-        config_parser.add_argument('--read-only', default=False, action='store_true',
-                                   help='Set permissions to prevent writing to the directory',
-                                   )
-        config_parser.set_defaults(verb='config') 
+        #config_parser = subparsers.add_parser('config', help='add/delete/modify properties in configuration.')
+        #config_parser.add_argument('dirname', action='store', help='New directory to create')
+        #config_parser.add_argument('--read-only', default=False, action='store_true', help='Set permissions to prevent writing to the directory',)
+        #config_parser.set_defaults(verb='config') 
         
         return parser
       
@@ -306,7 +308,7 @@ class GMVaultLauncher(object):
         LOG.debug("Namespace = %s\n" % (options))
         
         parsed_args = { }
-        
+                
         parsed_args['command'] = options.verb
         
         if parsed_args.get('command', '') == 'sync':

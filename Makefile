@@ -27,9 +27,14 @@ MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
 #MAKENSIS=/c/Program\ Files/NSIS/makensis.exe #windows laptop
 
 GMVVERSION=0.5
-GMVDISTNAME=gmvault-$(GMVVERSION)
+GMVDISTNAME=gmvault-v$(GMVVERSION)
+MYVERSION=$(shell python $(BASEDIR)/etc/utils/find_version.py $(BASEDIR)/src/gmv/gmv_cmd.py)
+
 
 all: gmv-linux-dist
+
+version:
+	echo $(MYVERSION)
 
 init:
 	mkdir -p $(GMVDIST)
@@ -71,7 +76,7 @@ gmv-linux-dist: clean init
 	mkdir -p $(GMVDIST)/$(GMVDISTNAME)/bin
 	cp -R $(BASEDIR)/etc/scripts/gmvault $(GMVDIST)/$(GMVDISTNAME)/bin
 	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME).tar.gz ./$(GMVDISTNAME)
-	echo "distribution stored in $(GMVDISTNAME)"
+	echo "distribution stored in $(GMVDIST)/$(GMVDISTNAME)"
 
 gmv-win-dist: init 
 	mkdir -p $(GMVWINBUILDDIST)
