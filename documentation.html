@@ -135,23 +135,52 @@
                             <img src="./assets/img/gmvault-shell-window.png" alt="">
                          </div>
 
-                         <p>Go to Quick Start to understand all the Gmvault capabilities.</p>
+                         <p>Go to <a href="#quickstart">Quick Start</a> to understand all the Gmvault capabilities.</p>
 
 		  
          <div class="page-header">
-            <h2>Windows Tutorial</h2>
-		 </div>
-		 <p>launch gmvault-shell to directly operate gmvault (screenshot of shell). launch gmvault sync mygmail.account@gmail.com default gmvault-db in USERS/username/gmvault-db <br> Gmvault-shell can be launched via the desktop shortcut.</p>
-         <div class="page-header">
-            <h2>Linux Install</h2>
-			<p>Download and untar the linux binary tarball from the download page.</p>
+            <h2>Linux and Mac OSX Install</h2>
+			<p>Download and untar the binary tarball for Mac OSX or Linux from the download page.</br>Untar the binary tarball distribution and go to the GMVAULT_HOME/bin dir to launch Gmvault.</p>
+            <p><pre>$ wget https://github.com/downloads/gaubert/gmvault/gmvault-v1.0-beta.tar.gz
+$ tar zxvf gmvault-v1.0-beta.tar.gz
+$ cd gmvault-v1.0-beta/bin</pre></p>
 		 </div>
       </div> <!-- span10 -->
 
     </div> <!-- row -->
-    <div id="quickstart" class="page-header">
-	    <h1>Quick Start</h1>
-	</div>
+    <div class="page-header">
+	    <h1 id="quickstart">Quick Start</h1>
+        <p></br>Gmvault is a user friendly command-line tool that setup most of the necessary defaults to quickly sync (backup) your gmail account or restore it to a gmail account.
+        </br>You will need to setup the credential for the different gmail accounts you want to use prior to syncing or restoring them with Gmvault.
+        </p>
+        <h3>Authentication</h3>
+        <p></br>
+           To authenticate yourself and authorize Gmvault accessing your Gmail account, Gmvault allows users to use a XOAuth token or your gmail login password.</br>
+           The <strong>XOAuth</strong> authentication is the recommended way to access your account. This method is activated by default. </br>
+           After the first authentication for a given account, the XOAuth token is stored in $HOME/.gmvault or %HOME% (c:\users\MYUSER) and will be used for consequent authentications.</br>
+           The following example uses an XOAuth token for accessing a gmail account. If the token has not been created for the used Gmail account, Gmvault will automatically try to create one with your help.</br>
+           Following the instruction given by Gmvault.
+        </p>
+    <p><pre>!$ ./gmvault sync guillaume.aubert@gmail.com
+
+Use gmvault-db /home/myuser/gmvault-db.
+Oauth will be used for authentication.
+
+gmvault will now open a web browser page in order for you to grant gmvault access to your Gmail.
+Please make sure you're logged into the correct Gmail account (myuser@gmail.com) before granting access.
+Press ENTER to open the browser. Once you've granted access you can switch back to gmvault.
+</pre></p>
+    <p>Gmvault will launch a browser to allow you granting access on the gmail account you want to use.</br>
+       <strong>Be sure to verify that you are logged on the right account</strong>
+   </p>
+   <p><pre>You should now see the web page on your browser now.
+If you don't, you can manually open:
+
+https://www.google.com/accounts/OAuthAuthorizeToken?oauth_token=4%abdedsk-leskdkrs-QM4ZnL6tLDy
+
+Once you've granted gmvault access, press the Enter key.</pre></p>
+	</div> <!-- page-header -->
+    
       <div id="faq" class="page-header">
 		  <h1>Frequently Asked Questions</h1>
 	  </div>
