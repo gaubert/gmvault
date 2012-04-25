@@ -272,7 +272,7 @@ class CredentialHelper(object):
             #password to be renewed so need an interactive phase to get the new pass
             if not passwd or args['passwd'] in ['renew', 'store']: # go to interactive mode
                 if not test_mode.get('activate', False):
-                    passwd = getpass.getpass('Please enter gmail password for %s and press enter:' % (args['email']))
+                    passwd = getpass.getpass('Please enter gmail password for %s and press ENTER:' % (args['email']))
                 else:
                     passwd = test_mode.get('value', 'no_password_given')
                     
