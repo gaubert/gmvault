@@ -473,9 +473,9 @@ class GMVaulter(object):
         """
            Return the error report
         """
-        the_str = "Number of reconnections: %d.\nNumber of emails quarantined: %d.\n" \
+        the_str = "\n================================================================\nNumber of reconnections: %d.\nNumber of emails quarantined: %d.\n" \
               "Number of emails that could not be fetched: %d.\n" \
-              "Number of emails that were returned empty by gmail: %d\n" \
+              "Number of emails that were returned empty by gmail: %d\n================================================================" \
               % (self.error_report['reconnections'], \
                  len(self.error_report['emails_in_quarantine']), \
                  len(self.error_report['cannot_be_fetched']), \
