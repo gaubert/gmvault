@@ -148,6 +148,7 @@ $ cd gmvault-v1.0-beta/bin</pre></p>
       </div> <!-- span10 -->
 
     </div> <!-- row -->
+    <div class="span10">
     <div class="page-header">
 	    <h1 id="quickstart">Quick Start</h1>
         <p></br>Gmvault is a user friendly command-line tool that setup most of the necessary defaults to quickly sync (backup) your gmail account or restore it to a gmail account.
@@ -170,20 +171,43 @@ gmvault will now open a web browser page in order for you to grant gmvault acces
 Please make sure you're logged into the correct Gmail account (myuser@gmail.com) before granting access.
 Press ENTER to open the browser. Once you've granted access you can switch back to gmvault.
 </pre></p>
-    <p>Gmvault will launch a browser to allow you granting access on the gmail account you want to use.</br>
-       <strong>Be sure to verify that you are logged on the right account</strong>
+    <p>Press ENTER and Gmvault will launch a browser to allow you granting access on the gmail account you want to use.</br>
+       <strong>Be sure to verify that you are logged on the right account.</strong>
    </p>
+   <!-- add grant access page and second page -->
+   <div class="thumbnail">
+	   <h5>Grant access to Gmvault.</h5>
+	   <img src="./assets/img/gmvault-shell-window.png" alt="">
+   </div>
+   
+   <div class="thumbnail">
+	   <h5>You should see this once you have granted access to Gmvault.</h5>
+	   <img src="./assets/img/gmvault-shell-window.png" alt="">
+   </div>
+   <p>Once you have granted access to Gmvault, press one more time ENTER to let Gmvault finish its work.</p> 
    <p><pre>You should now see the web page on your browser now.
 If you don't, you can manually open:
 
 https://www.google.com/accounts/OAuthAuthorizeToken?oauth_token=4%abdedsk-leskdkrs-QM4ZnL6tLDy
 
 Once you've granted gmvault access, press the Enter key.</pre></p>
+    <h4>Authentication with gmail password</h4>
+	<p></br>If you do not want to use the Gmail XOAuth token (not recommended), you can always use Gmvault with your password.
+	   </br>In that case, you will have to interactively enter your password at the beginning of the Gmvault session.
+	</p> 
+	<p><pre>$./gmvault sync -p myuser@gmail.com
+
+Use gmvault-db /home/user/gmvault-db.
+Please enter gmail password for myuser@gmail.com and press ENTER:</pre></p>
+
 	</div> <!-- page-header -->
+	</div> <!-- span10 -->
     
+    <div class="span10">
       <div id="faq" class="page-header">
 		  <h1>Frequently Asked Questions</h1>
 	  </div>
+	</div>
 
     </div> <!-- /container -->
 
