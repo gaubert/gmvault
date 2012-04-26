@@ -17,7 +17,8 @@ BUILD=$(BASEDIR)/build
 BUILDDIST=$(BUILD)/egg-dist
 ETC=$(BASEDIR)/etc
 
-PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
+#PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
+PYTHONBIN=python #MacOSX machine
 #PYTHONWINBIN=python
 PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my windows machine at work
 #PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
@@ -50,7 +51,7 @@ gmv-egg-dist: init
 	cd $(GMVDIST); $(PYTHONBIN) setup.py bdist_egg -b /tmp/build -p $(GMVDISTNAME) -d ../../$(GMVBUILDDIST) 
 	echo "distribution stored in $(GMVBUILDDIST)"
 
-gmv-src-dist: clean init 
+gmv-src-dist: clean init
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
 	cp -R $(BASEDIR)/src $(GMVDIST)
 	cp $(BASEDIR)/setup.py $(GMVDIST)
@@ -58,7 +59,7 @@ gmv-src-dist: clean init
 	cp -R $(BASEDIR)/README.md $(GMVDIST)/README.txt
 	# copy scripts in dist
 	cp -R $(BASEDIR)/etc $(GMVDIST)
-	#cd $(GMVDIST); $(PYTHONBIN) setup.py sdist -d ../$(GMVBUILD) 
+	cd $(GMVDIST); $(PYTHONBIN) setup.py sdist -d ../$(GMVBUILD) 
 	@echo "Distribution stored in $(GMVBUILD)"
 	@echo "To register on pypi cd ./build; tar zxvf gmvault-1.0-beta.tar.gz; cd gmvault-1.0-beta ; python setup.py register sdist upload"
 	@echo "If you do not change the version number, you will have to delete the release from the pypi website http://pypi.python.org and register it again"

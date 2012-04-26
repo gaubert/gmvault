@@ -23,12 +23,13 @@ from setuptools import setup, find_packages
 
 def find_version(path):
 
-    fd = open(path)
+    fd = open(path,"r")
 
     for line in fd:
         index = line.find("GMVAULT_VERSION=\"")
         if index > -1:
             print(line[index+17:-2])
+            fd.close()
             return line[index+17:-2]
 
     raise Exception("Cannot find GMVAULT_VERSION in %s\n" % (path))

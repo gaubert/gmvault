@@ -19,7 +19,7 @@ if __name__ == '__main__':
      print("Error: Need the path to gmv_cmd.py")
      exit(-1)
 
-  print("path = %s\n" % (sys.argv[1]))
+  #print("path = %s\n" % (sys.argv[1]))
   
   find_version(sys.argv[1])
 
