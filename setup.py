@@ -18,7 +18,28 @@
 
 import os
 from setuptools import setup, find_packages
-version = '1.0-beta'
+
+#function to find the version in gmv_cmd
+
+def find_version(path):
+
+    fd = open(path)
+
+    for line in fd:
+        index = line.find("GMVAULT_VERSION=\"")
+        if index > -1:
+            print(line[index+17:-2])
+            return line[index+17:-2]
+
+    raise Exception("Cannot find GMVAULT_VERSION in %s\n" % (path))
+
+
+path=os.path.join(os.path.dirname(__file__),'./src/gmv/gmv_cmd.py')
+print("PATH = %s\n" % (path))
+
+version = find_version(os.path.join(os.path.dirname(__file__),'./src/gmv/gmv_cmd.py'))
+
+print("Gmvault version = %s\n" % (version))
 README = os.path.join(os.path.dirname(__file__), './README.md')
 if os.path.exists(README):
 	long_description = open(README).read() + 'nn'
@@ -27,16 +48,18 @@ else:
 
 setup(name='gmvault',
       version=version,
-      description=("gmvault - Backup and restore your Gmail emails"),
+      description=("Tool to backup and restore your Gmail emails at will. http://www.gmvault.org for more info"),
       long_description=long_description,
       classifiers=[
         "Programming Language :: Python",
-        ("Topic :: Util :: Libraries :: Python Modules"),
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Topic :: Communications :: Email",
+        "Topic :: Communications :: Email :: Post-Office :: IMAP",
         ],
       keywords='gmail, email, backup, gmail backup, imap',
       author='Guillaume Aubert',
       author_email='guillaume.aubert@gmail.com',
-      url='www.gmvault.org',
+      url='http://www.gmvault.org',
       license='GPLv3',
       packages=['gmv'],
       package_dir = {'gmv':'./src/gmv'},

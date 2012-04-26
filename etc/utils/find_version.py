@@ -1,14 +1,25 @@
 import sys
 
-if len(sys.argv) < 2:
-  print("Error: Need the path to gmv_cmd.py")
-  exit(-1)
+def find_version(path):
 
-path = sys.argv[1]
+    fd = open(path)
 
-fd = open(path)
+    for line in fd:
+        index = line.find("GMVAULT_VERSION=\"")
+        if index > -1:
+            print(line[index+17:-2])
+            return line[index+17:-2]
 
-for line in fd:
-	index = line.find("GMVAULT_VERSION=\"")
-	if index > -1:
-		print(line[index+17:-2])
+    raise Exception("Cannot find GMVAULT_VERSION in %s\n" % (path))
+
+
+if __name__ == '__main__':
+
+  if len(sys.argv) < 2:
+     print("Error: Need the path to gmv_cmd.py")
+     exit(-1)
+
+  print("path = %s\n" % (sys.argv[1]))
+  
+  find_version(sys.argv[1])
+

@@ -58,8 +58,10 @@ gmv-src-dist: clean init
 	cp -R $(BASEDIR)/README.md $(GMVDIST)/README.txt
 	# copy scripts in dist
 	cp -R $(BASEDIR)/etc $(GMVDIST)
-	cd $(GMVDIST); $(PYTHONBIN) setup.py sdist -d ../$(GMVBUILD) 
-	echo "distribution stored in $(GMVBUILD)"
+	#cd $(GMVDIST); $(PYTHONBIN) setup.py sdist -d ../$(GMVBUILD) 
+	@echo "Distribution stored in $(GMVBUILD)"
+	@echo "To register on pypi cd ./build; tar zxvf gmvault-1.0-beta.tar.gz; cd gmvault-1.0-beta ; python setup.py register sdist upload"
+	@echo "If you do not change the version number, you will have to delete the release from the pypi website http://pypi.python.org and register it again"
 
 gmv-linux-dist: clean init 
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
@@ -105,7 +107,7 @@ gmv-make-win-installer: gmv-win-dist
 
 
 clean: clean-build
-	cd $(GMVDIST); rm -Rf build; rm -Rf gmvault.egg-info; rm -Rf src; rm -f README* ; rm -f *.py; rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
+	cd $(GMVDIST); rm -Rf build; rm -Rf gmvault.egg-info; rm -Rf src; rm -f README* ;rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
 
 clean-build:
 	cd $(GMVBUILD); rm -Rf egg-dist; 
