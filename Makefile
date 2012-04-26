@@ -17,7 +17,7 @@ BUILD=$(BASEDIR)/build
 BUILDDIST=$(BUILD)/egg-dist
 ETC=$(BASEDIR)/etc
 
-#PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
+PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
 #PYTHONWINBIN=python
 PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my windows machine at work
 #PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
@@ -42,18 +42,22 @@ init:
 
 gmv-egg-dist: init 
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
-	cp -R $(BASEDIR)/src/gmv $(GMVDIST)
-	cp $(BASEDIR)/src/setup.py $(GMVDIST)
+	cp -R $(BASEDIR)/src $(GMVDIST)
+	cp -R $(BASEDIR)/setup.py $(GMVDIST)
+	cp -R $(BASEDIR)/README.md $(GMVDIST)
+	cp -R $(BASEDIR)/README.md $(GMVDIST)/README.txt
+	cp $(BASEDIR)/setup.py $(GMVDIST)
 	cd $(GMVDIST); $(PYTHONBIN) setup.py bdist_egg -b /tmp/build -p $(GMVDISTNAME) -d ../../$(GMVBUILDDIST) 
 	echo "distribution stored in $(GMVBUILDDIST)"
 
 gmv-src-dist: clean init 
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
-	cp -R $(BASEDIR)/src/gmv $(GMVDIST)
-	cp $(BASEDIR)/src/setup.py $(GMVDIST)
+	cp -R $(BASEDIR)/src $(GMVDIST)
+	cp $(BASEDIR)/setup.py $(GMVDIST)
+	cp -R $(BASEDIR)/README.md $(GMVDIST)
+	cp -R $(BASEDIR)/README.md $(GMVDIST)/README.txt
 	# copy scripts in dist
-	#cp -R $(BASEDIR)/etc/scripts $(GMVDIST)
-	#cp -R $(BASEDIR)/etc/conf $(GMVDIST)
+	cp -R $(BASEDIR)/etc $(GMVDIST)
 	cd $(GMVDIST); $(PYTHONBIN) setup.py sdist -d ../$(GMVBUILD) 
 	echo "distribution stored in $(GMVBUILD)"
 
@@ -101,7 +105,7 @@ gmv-make-win-installer: gmv-win-dist
 
 
 clean: clean-build
-	cd $(GMVDIST); rm -Rf build; rm -Rf gmvault.egg-info; rm -f *.py; rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
+	cd $(GMVDIST); rm -Rf build; rm -Rf gmvault.egg-info; rm -Rf src; rm -f README* ; rm -f *.py; rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
 
 clean-build:
 	cd $(GMVBUILD); rm -Rf egg-dist; 

@@ -19,10 +19,21 @@ B=`basename "$GMVAULT_HOME"`
 GMVAULT_HOME="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
 
 #################################
-## GMVAULT necessary information
+## setup PYTHON_BIN
 #################################
-PYTHON_BIN=$GMVAULT_HOME/lib/python-lib/bin/python
-export PYTHONPATH=$GMVAULT_HOME/lib:$PYTHONPATH
+#look as if it was the packaged binary distribution
+if [ -f "$GMVAULT_HOME/lib/python-lib/bin/python" ]; then
+   PYTHON_BIN=$GMVAULT_HOME/lib/python-lib/bin/python
+   export PYTHONPATH=$GMVAULT_HOME/lib:$PYTHONPATH
+
+elif [ -f "$GMVAULT_HOME/bin/python" ]; then
+   #installed from src distribution (python bin is in the same dir as gmvault script)
+   PYTHON_BIN=$GMVAULT_HOME/bin/python
+else
+   echo "Cannot find the python executable to set env var PYTHON_BIN."
+   echo "Please check where your python binary is."
+   exit 1
+fi
 
 ###################################
 ## create bootstrap and launch program
@@ -34,17 +45,16 @@ export PYTHONPATH=$GMVAULT_HOME/lib:$PYTHONPATH
 # keep args in variables
 ARGS="$@"
 
-cat > /tmp/rnpicker.bootstrap.$$ << EOF
+cat > /tmp/gmvault.bootstrap.$$ << EOF
 import gmv.gmv_cmd as runner
 runner.bootstrap_run()
 EOF
 
-#./generate_arr $ARGS
-$PYTHON_BIN /tmp/rnpicker.bootstrap.$$ $ARGS
+#call gmvault bootstrap
+$PYTHON_BIN /tmp/gmvault.bootstrap.$$ $ARGS
 res="$?"
 
-rm -f /tmp/rnpicker.bootstrap.$$
+rm -f /tmp/gmvault.bootstrap.$$
 
 exit $res
-
 

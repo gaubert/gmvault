@@ -18,10 +18,13 @@
 
 import os
 from setuptools import setup, find_packages
-version = '0.5'
-README = os.path.join(os.path.dirname(__file__), '../README')
-print(README)
-long_description = open(README).read() + 'nn'
+version = '1.0-beta'
+README = os.path.join(os.path.dirname(__file__), './README.md')
+if os.path.exists(README):
+	long_description = open(README).read() + 'nn'
+else:
+   long_description = "Gmvault"
+
 setup(name='gmvault',
       version=version,
       description=("gmvault - Backup and restore your Gmail emails"),
@@ -30,14 +33,13 @@ setup(name='gmvault',
         "Programming Language :: Python",
         ("Topic :: Util :: Libraries :: Python Modules"),
         ],
-      keywords='configuration, resources',
+      keywords='gmail, email, backup, gmail backup, imap',
       author='Guillaume Aubert',
       author_email='guillaume.aubert@gmail.com',
       url='www.gmvault.org',
-      license='Apache 2.0',
+      license='GPLv3',
       packages=['gmv'],
-      #package_data=dict(gmvault=['']),
-      #package_data={'org.ctbto.conf': ['tests/test.config','tests/foo.config','tests/rn.par','tests/rn1.par']},
-      #data_files=[('/tmp/py-tests',['/home/aubert/dev/src-reps/java-balivernes/RNpicker/dists/conf-dist/tests/foo.config','/home/aubert/dev/src-reps/java-balivernes/RNpicker/dists/conf-dist/tests/test.config'])],
-      install_requires=['Logbook>=0.3', 'IMAPClient']
+      package_dir = {'gmv':'./src/gmv'},
+      scripts=['./etc/scripts/gmvault'],
+      install_requires=['Logbook==0.3', 'IMAPClient==0.8.1','gdata==2.0.17']
       )
