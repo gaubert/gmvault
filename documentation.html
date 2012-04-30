@@ -219,20 +219,46 @@ $
 
     </div> <!-- row -->
     <div class="span10">
+
     <div class="page-header">
-	    <a name="quickstart"></a><h1>Quick Start</h1>
+       <a name="quickstart"></a><h1>Quick Start</h1>
         <p></br>Gmvault is a user friendly command-line tool that setup most of the necessary defaults to quickly sync (backup) your gmail account or restore it to a gmail account.
-        </br>You will need to setup the credential for the different gmail accounts you want to use prior to syncing or restoring them with Gmvault.
+        </br>It should be self-explanatory. Use gmvault -h to see the different options and how the tool works.</br>
+        <pre>$./gmvault -h
+
+usage: gmvault [-h] [-v] {restore,sync} ...
+
+optional arguments:
+  -h, --help      show this help message and exit
+  -v, --version   show program's version number and exit
+
+subcommands:
+  {restore,sync}  valid subcommands.
+    sync          synchronize with a given gmail account.
+    restore       restore gmvault-db to a given email account.
+
+Examples:
+
+a) Get help for each of the individual commands
+
+#> gmvault sync -h
+#> gmvault restore --help
+
+
+</pre>
+        </br>Gmvault is a command-oriented tool and every Gmvault call needs to contain a subcommand (sync or restore).
+        </br>You will first need to setup the credential (token or password) for the different gmail accounts you want to use prior to syncing or restoring them with Gmvault.
+        </br>This will allow Gmvault to automatically connect to the accounts you want to work with.
         </p>
         <h3>Authentication</h3>
         <p></br>
-           To authenticate yourself and authorize Gmvault accessing your Gmail account, Gmvault allows users to use a XOAuth token or your gmail login password.</br>
+           To authenticate yourself and authorize Gmvault accessing your Gmail account, Gmvault allows users to use a Gmail XOAuth token or your Gmail login password.</br>
            The <strong>XOAuth</strong> authentication is the recommended way to access your account. This method is activated by default. </br>
            After the first authentication for a given account, the XOAuth token is stored in $HOME/.gmvault or %HOME% (c:\users\MYUSER) and will be used for consequent authentications.</br>
            The following example uses an XOAuth token for accessing a gmail account. If the token has not been created for the used Gmail account, Gmvault will automatically try to create one with your help.</br>
-           Following the instruction given by Gmvault.
+           Just follow the instructions given by Gmvault.
         </p>
-    <p><pre>!$ ./gmvault sync guillaume.aubert@gmail.com
+    <p><pre>!$ ./gmvault sync myuser@gmail.com
 
 Use gmvault-db /home/myuser/gmvault-db.
 Oauth will be used for authentication.
@@ -246,46 +272,89 @@ Press ENTER to open the browser. Once you've granted access you can switch back 
    </p>
    <!-- add grant access page and second page -->
    <div class="thumbnail">
-	   <h5>Grant access to Gmvault.</h5>
-	   <img src="./assets/img/gmvault-shell-window.png" alt="">
+		<h5>Grant access to Gmvault.</h5>
+		<img src="./assets/img/xoauth-auth-grant-access.png" alt="">
    </div>
    
    <div class="thumbnail">
-	   <h5>You should see this once you have granted access to Gmvault.</h5>
-	   <img src="./assets/img/gmvault-shell-window.png" alt="">
+		<h5>You should see this once you have granted access to Gmvault.</h5>
+		<img src="./assets/img/xoauth-auth-access-granted.png" alt="">
    </div>
-   <p>Once you have granted access to Gmvault, press one more time ENTER to let Gmvault finish its work.</p> 
+   <p>Once you have granted access to Gmvault, press one more time ENTER to let Gmvault finish its work.</p>
    <p><pre>You should now see the web page on your browser now.
 If you don't, you can manually open:
 
 https://www.google.com/accounts/OAuthAuthorizeToken?oauth_token=4%abdedsk-leskdkrs-QM4ZnL6tLDy
 
-Once you've granted gmvault access, press the Enter key.</pre></p>
+Once you've granted gmvault access, press the Enter key.</pre></br>
+Below is a screenshot of a complete authentication session on Windows.</p>
+ <div class="thumbnail">
+		<h5>Grant access to Gmvault.</h5>
+		<img src="./assets/img/full-access-granted-screenshot.png" alt="">
+   </div>
+<p>After that authentication session Gmvault will automatically use the XOAuth token stored under $HOME/.gmvault or %HOME% (c:\users\MYUSER) for all session with the MYUSER user.</br></p>
     <h4>Authentication with gmail password</h4>
-	<p></br>If you do not want to use the Gmail XOAuth token (not recommended), you can always use Gmvault with your password.
-	   </br>In that case, you will have to interactively enter your password at the beginning of the Gmvault session.
-	</p> 
-	<p><pre>$./gmvault sync -p myuser@gmail.com
+		<p></br>If you do not want to use the Gmail XOAuth token (not recommended), you can always use Gmvault with your password.
+		</br>In that case, you will have to interactively enter your password at the beginning of the Gmvault session.
+		</p>
+		<p><pre>$./gmvault sync myuser@gmail.com -p 
 
-Use gmvault-db /home/user/gmvault-db.
-Please enter gmail password for myuser@gmail.com and press ENTER:</pre></p>
+Use gmvault-db /home/myuser/gmvault-db.
+Gmail password will be used for authentication.
+
+Please enter gmail password for myuser@gmail.com and press ENTER:
+Connect to Gmail server.
+53432 emails to be fetched.
+Process email num 0 (imap_id:1) from 2005-10.
+Process email num 1 (imap_id:2) from 2005-10.
+Process email num 2 (imap_id:3) from 2005-10.
+Process email num 3 (imap_id:5) from 2005-10.
+...</pre></p>
+      <p>You can also if necessary store your password in  $HOME/.gmvault or %HOME% (c:\users\MYUSER) with <strong>--store-passwd</strong> command.
+      </br>The password will be encrypted before to be stored. Note that functionnality is provided for flexibility purposes but is not recommended.
+      </br>Prefer the XOAuth authentication if you need to automate Gmvault synchronisation and restoration operations.
+      </p>
+      <p><pre>$./gmvault sync myuser@gmail.com -p --store-passwd
+
+Use gmvault-db /home/myuser/gmvault-db.
+Gmail password will be used for authentication.
+
+Please enter gmail password for myuser@gmail.com and press ENTER:
+Store password for myuser@gmail.com in $HOME/.gmvault.
+Connect to Gmail server.
+53432 emails to be fetched.
+Process email num 0 (imap_id:1) from 2005-10.
+Process email num 1 (imap_id:2) from 2005-10.
+Process email num 2 (imap_id:3) from 2005-10.
+Process email num 3 (imap_id:5) from 2005-10.
+...</pre>
+   <p>Finally, it is also possible to renew your stored password with <strong>--renew-passwd</strong>.</p>
+   <p><pre>$./gmvault sync myuser@gmail.com -p --renew-passwd
+
+Use gmvault-db /home/myuser/gmvault-db.
+Gmail password will be used for authentication.
+
+Please enter gmail password for myuser@gmail.com and press ENTER:
+Store password for myuser@gmail.com in $HOME/.gmvault.
+Connect to Gmail server.
+53432 emails to be fetched.
+Process email num 0 (imap_id:1) from 2005-10.
+Process email num 1 (imap_id:2) from 2005-10.
+Process email num 2 (imap_id:3) from 2005-10.
+Process email num 3 (imap_id:5) from 2005-10.
+...</pre></p>
+<p></br><h3>Making a backup of your Gmail account</h3>
+</p>
+<p>The sync command of Gmvault allow users to backup the Gmail account of their choice.</p>
+<p></br><h3>Restoring your Gmail account</h3>
+</p>
 
 	</div> <!-- page-header -->
-<<<<<<< Updated upstream
-	</div> <!-- span10 -->
-    
-=======
-    </div> <!-- span10 -->
->>>>>>> Stashed changes
     <div class="span10">
       <div id="faq" class="page-header">
 		  <h1>Frequently Asked Questions</h1>
 	  </div>
-<<<<<<< Updated upstream
-	</div>
-=======
     </div> <!-- span10 -->
->>>>>>> Stashed changes
 
     </div> <!-- /container -->
 
