@@ -207,11 +207,11 @@ class CredentialHelper(object):
             passwd_file  = open(user_passwd_file_path)
             
             password     = passwd_file.read()
-            cipher       = blowfish.Blowfish(cls.cls.get_secret_key(cls.SECRET_FILEPATH % (gmvault_utils.get_home_dir_path())))
+            cipher       = blowfish.Blowfish(cls.get_secret_key(cls.SECRET_FILEPATH % (gmvault_utils.get_home_dir_path())))
             cipher.initCTR()
             password     = cipher.decryptCTR(password)
 
-            LOG.debug("password=[%s]" % (password))
+            #LOG.debug("password=[%s]" % (password))
         
         return password
     
@@ -267,6 +267,9 @@ class CredentialHelper(object):
         if args['passwd'] in ['empty', 'store', 'renew']: 
             # --passwd is here so look if there is a passwd in conf file 
             # or go in interactive mode
+            
+            LOG.critical("Gmail password will be used for authentication.\n")
+            
             passwd = cls.read_password(args['email'])
             
             #password to be renewed so need an interactive phase to get the new pass
@@ -280,9 +283,11 @@ class CredentialHelper(object):
                 
                 #store it in dir if asked for --store-passwd or --renew-passwd
                 if args['passwd'] in ['renew', 'store']:
+                    LOG.critical("Store password for %s in $HOME/.gmvault." % (args['email']))
                     cls.store_passwd(args['email'], passwd)
                     credential['option'] = 'saved'
             else:
+                LOG.critical("Use password stored in $HOME/.gmvault dir (Storing your password here is not recommended).")
                 credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read' }
                                
         #elif args['passwd'] == 'not_seen' and args['oauth']:
