@@ -307,6 +307,25 @@ and after 5 emails refused stop and tell the user to wait.
 
 => Handle differently errors (imap.aborterror is recovarable, imap.error is not). Should restart in retry if abort is recoverable otherwise not).
 
+TODO:
+Documentation: 
+- Quick Start 
+	-- Authentication (XOAuth and Password)
+	-- Full Backup
+	-- Regular Backup
+	-- Restoring your account
+	-- Advanced features
+		--- Custom Backup
+        --- Encryption
+        --- ?
+- FAQS
+
+- How to report a problem
+- About
+
+Write Blog page for promotion
+
+
 
 
 

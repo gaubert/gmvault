@@ -30,7 +30,7 @@ import gmvault
 from cmdline_utils  import CmdLineParser
 from credential_utils import CredentialHelper
 
-GMVAULT_VERSION="1.1-beta"
+GMVAULT_VERSION="1.0-beta"
 
 GLOBAL_HELP_EPILOGUE="""Examples:
 
@@ -103,7 +103,7 @@ class GMVaultLauncher(object):
          
         # A sync command
         sync_parser = subparsers.add_parser('sync', \
-                                            help='synchronize with given gmail account.')
+                                            help='synchronize with a given gmail account.')
         #email argument can be optional so it should be an option
         sync_parser.add_argument('email', \
                                  action='store', default='empty_$_email', help='email to sync with.')
