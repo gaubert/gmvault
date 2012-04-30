@@ -345,7 +345,81 @@ Process email num 3 (imap_id:5) from 2005-10.
 ...</pre></p>
 <p></br><h3>Making a backup of your Gmail account</h3>
 </p>
-<p>The sync command of Gmvault allow users to backup the Gmail account of their choice.</p>
+<p>The sync command of Gmvault allow users to backup the Gmail account of their choice.
+</br>use <strong>gmvault sync -h</strong> to get explanations regarding all options. Examples are also provided after the options details.
+</br><pre>$./gmvault sync -h
+
+usage: gmvault sync [-h] [-t TYPE] [-d DB_DIR] [-o] [--renew-passwd]
+                    [--store-passwd] [-p] [-r REQ] [-g REQ] [-e]
+                    [-z DB_CLEANING] [-m] [--server HOSTNAME] [--port PORT]
+                    [--debug]
+                    email
+
+positional arguments:
+  email                 email to sync with.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -t TYPE, --type TYPE  type of synchronisation: full|quick|custom. (default:
+                        full)
+  -d DB_DIR, --db-dir DB_DIR
+                        Database root directory. (default: ./gmvault-db)
+
+... help shortened ...
+
+  --server HOSTNAME     Gmail imap server hostname. (default: imap.gmail.com)
+  --port PORT           Gmail imap server port. (default: 993)
+  --debug               Activate debugging info
+
+Examples:
+
+a) Full synchronisation with email and oauth login in ./gmvault-db
+
+#> gmvault sync foo.bar@gmail.com
+
+b) Full synchronisation for German users that have to use googlemail instead of gmail
+
+#> gmvault sync --imap-server imap.googlemail.com 'foo.bar@gmail.com'
+
+c) Quick synchronisation (only the last 2 months are scanned)
+
+#> gmvault sync --type quick foo.bar@gmail.com
+
+g) Custom synchronisation with an IMAP request
+
+#> gmvault sync --type custom --imap-req 'Since 1-Nov-2011 Before 10-Nov-2011' 'foo.bar@gmail.com'</pre>
+</br>gmvault sync myuser@gmail.com will backup the entire content of your gmail account from the oldest to newest email.
+</br>You will also notice that Gmvault tries to estimate how long it will take to backup your entire gmail account every 50 emails.
+</br><pre>$./gmvault sync guillaume.aubert@gmail.com -p
+
+Use gmvault-db /home/aubert/gmvault-db.
+Gmail password will be used for authentication.
+
+Please enter gmail password for guillaume.aubert@gmail.com and press ENTER:
+Connect to Gmail server.
+35965 emails to be fetched.
+Process email num 0 (imap_id:1) from 2004-10.
+Process email num 1 (imap_id:2) from 2004-10.
+Process email num 2 (imap_id:3) from 2004-10.
+...
+Process email num 48 (imap_id:55) from 2004-10.
+Process email num 49 (imap_id:56) from 2004-10.
+
+== Processed 50 emails in 6s. 35915 left to be stored (time estimate 1h 11m 50s).==
+
+Process email num 50 (imap_id:58) from 2004-10.
+Process email num 51 (imap_id:59) from 2004-10.
+Process email num 52 (imap_id:60) from 2004-10.
+...
+</pre>
+Gmvault will list all the emails that are backed up on disk.
+</br>Your emails will be stored in an email database created by default in $HOME/.gmvault-db.
+</br>Use the <strong>-d</strong> or <strong>--db-dir</strong> to choose where the email database is going to be created.
+</br>When you create an email database, it is automatically bonded to the email account you would like to backup.
+</br>If you try to backup a Gmail account with an email database bounded with another email, Gmvault will exit in error.
+<pre>Print error here</pre>
+If you wish to backup multiple Gmail accounts in one email database, you can use the <strong>-m</strong> or <strong>--multiple-db-owner</strong> to let Gmvault allowing it.
+</p>
 <p></br><h3>Restoring your Gmail account</h3>
 </p>
 
