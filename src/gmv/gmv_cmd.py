@@ -113,7 +113,7 @@ class GMVaultLauncher(object):
                                  default='full', help='type of synchronisation: full|quick|custom. (default: full)')
         
         sync_parser.add_argument("-d", "--db-dir", \
-                                 action='store', help="Database root directory. (default: ./gmvault-db)",\
+                                 action='store', help="Database root directory. (default: $HOME/gmvault-db)",\
                                  dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
                
         # for both when seen add const empty otherwise not_seen
