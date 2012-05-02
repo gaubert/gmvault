@@ -417,7 +417,37 @@ Gmvault will list all the emails that are backed up on disk.
 </br>Use the <strong>-d</strong> or <strong>--db-dir</strong> to choose where the email database is going to be created.
 </br>When you create an email database, it is automatically bonded to the email account you would like to backup.
 </br>If you try to backup a Gmail account with an email database bounded with another email, Gmvault will exit in error.
-<pre>Print error here</pre>
+<pre>$./gmvault sync gsync.mtester@gmail.com
+
+Use gmvault-db /home/aubert/gmvault-db.
+Oauth will be used for authentication.
+
+Use oauth credentials from /home/aubert/.gmvault/gsync.mtester@gmail.com.oauth.
+Successfully read oauth credentials.
+
+Connect to Gmail server.
+Error The email database /home/aubert/gmvault-db is already associated with guillaume.aubert@gmail.com. Use option X if you want to link it with gsync.mtester@gmail.com. For more information see log file
+
+usage: gmvault [-h] [-v] {restore,sync} ...
+
+optional arguments:
+  -h, --help      show this help message and exit
+  -v, --version   show program's version number and exit
+
+subcommands:
+  {restore,sync}  valid subcommands.
+    sync          synchronize with a given gmail account.
+    restore       restore gmvault-db to a given email account.
+
+Examples:
+
+a) Get help for each of the individual commands
+
+#> gmvault sync -h
+#> gmvault restore --help
+
+$
+</pre>
 If you wish to backup multiple Gmail accounts in one email database, you can use the <strong>-m</strong> or <strong>--multiple-db-owner</strong> to let Gmvault allowing it.
 </p>
 <p></br><h3>Restoring your Gmail account</h3>
