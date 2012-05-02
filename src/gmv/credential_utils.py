@@ -235,7 +235,12 @@ class CredentialHelper(object):
             oauth_file  = open(user_oauth_file_path)
             
             try:
-                token, secret = oauth_file.read().split('::')
+                oauth_result = oauth_file.read()
+                if oauth_result:
+                    oauth_result = oauth_result.split('::')
+                    if len(oauth_result) == 2:
+                        token  = oauth_result[0]
+                        secret = oauth_result[1]
             except Exception, err:
                 LOG.error("Error when reading oauth info from %s" % (user_oauth_file_path))
                 
@@ -301,6 +306,8 @@ class CredentialHelper(object):
            
             if not token: 
                 token, secret = get_oauth_tok_sec(args['email'], use_webbrowser = True)
+                if not token:
+                    raise Exception("Cannot get XOAuth token from Gmail. See Gmail error message")
                 #store newly created token
                 cls.store_oauth_credentials(args['email'], token, secret)
                
