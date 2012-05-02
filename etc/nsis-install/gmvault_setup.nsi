@@ -74,6 +74,16 @@ Section "gmvault" ;No components page, name is not important
 ; Set output path to the installation directory.
 SetOutPath $INSTDIR
 
+; create uninstaller
+writeUninstaller "$INSTDIR/uninstall.exe"
+
+; create shortscuts in menu
+createDirectory "$SMPROGRAMS\Gmvault"
+createShortCut  "$SMPROGRAMS\Gmvault\gmvault-shell.lnk" "$INSTDIR\gmvault-shell.bat" "" "$INSTDIR\gmv-icon.ico"
+createShortCut  "$SMPROGRAMS\Gmvault\gmvault.lnk" "$INSTDIR\gmvault.bat" "" "$INSTDIR\gmv-icon.ico"
+createShortCut  "$SMPROGRAMS\Gmvault\uninstall.lnk" "$INSTDIR\uninstall.exe" "" ""
+
+
 ;MessageBox MB_OK "$INSTDIR"
 
 ; Put file there
@@ -105,15 +115,24 @@ SectionEnd ; end the section
 ; The uninstall section
 Section "Uninstall"
 
-Delete $INSTDIR\Uninstall.exe
-Delete $INSTDIR\MyProg.exe
+Delete $INSTDIR\uninstall.exe
 Delete $INSTDIR\gmv_cmd.exe
 Delete $INSTDIR\library.zip
+Delete $INSTDIR\*.ico
+Delete $INSTDIR\*.bat
 Delete $INSTDIR\python27.dll
 Delete $INSTDIR\w9xpopen.exe
 Delete $INSTDIR\*.pyd
-RMDir /r Microsoft.VC90.CRT
-RMDir $INSTDIR
+Delete $INSTDIR\Microsoft.VC90.CRT\*.dll
+Delete $INSTDIR\Microsoft.VC90.CRT\*.manifest
+rmDir /r $INSTDIR\Microsoft.VC90.CRT
+rmDir /r $INSTDIR
+
+# Remove Start Menu Launcher
+delete "$SMPROGRAMS\Gmvault\gmvault-shell.lnk"
+delete "$SMPROGRAMS\Gmvault\gmvault.lnk"
+delete "$SMPROGRAMS\Gmvault\uninstall.lnk"
+rmDir  "$SMPROGRAMS\Gmvault"
 
 
 SectionEnd ; end the section
