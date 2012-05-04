@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>gmvault: gmail backup</title>
+    <title>Gmvault: gmail backup</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="backup and restore your gmail account">
     <meta name="author" content="guillaume aubert">
@@ -65,6 +65,9 @@
               </li>
               <li class="">
                 <a href="#quickstart">Quick Start</a>
+              </li>
+              <li class="">
+                <a href="#indepth">In Depth</a>
               </li>
               <li class="">
                 <a href="#faq">FAQs</a>
@@ -150,8 +153,9 @@
                          <div class="span10 thumbnail">
                             <img src="./assets/img/gmvault-shell-window.png" alt="">
                          </div>
+                         <p>Go to <a href="#quickstart"></a> to quickly understand how to use Gmvault.
 
-                         <p>Go to <a href="#quickstart">Quick Start</a> to understand all the Gmvault capabilities.</p>
+                         </br>Go to <a href="#indepth"></a> to understand all the Gmvault capabilities.</p>
          <div class="page-header">
             <a name="linmac_install"></a><h2>Linux and Mac OSX Binary Install</h2>
 			<p>Download and untar the binary tarball for Mac OSX or Linux 32bits or 64bits from the download page.</br>Untar the binary tarball distribution and go to the GMVAULT_HOME/bin dir to launch Gmvault.</p>
@@ -222,6 +226,23 @@ $
 
     <div class="page-header">
        <a name="quickstart"></a><h1>Quick Start</h1>
+        <p>Once you have installed Gmvault (see <a href="#install">Install</a>), you can start using it in 2 minutes.
+        </br>Go to the bin directory of your distribution and simply type:<pre>$>cd GMVAULTHOME/bin
+$>./gmvault sync foo.bar@gmail.com</pre>
+        You will have to authenticate yourself the first time you use Gmvault for a particular account. Just follow the instruction given on screen.
+        </br>After that Gmvault will automatically authenticate itself using the credentials stored in $HOME/.gmvault (or %HOME%/.gmvault for Windows).
+        </br>Once authenticated, Gmvault will start to backup your complete gmail account by default into $HOME/gmvault-db or %HOME%/gmvault-db.
+        </br>To restore your emails into an account use the following command:
+        <pre>$>./gmvault restore MYNEWfoo.bar@gmail.com</pre>
+        By default, Gmvault will restore the emails from $HOME/gmvault-db or %HOME%/gmvault-db into the given account. Use the -d or --db-dir to point to another local email repository.
+        </br>It is recommended to have on local email repository per account but with the option -m , --multiple-db-owner you can backup multiple Gmail accounts in one repository. 
+        </br>You might have to enter into an authentication phase if it is a new account for gmvault. Gmvault will store all credentials into $HOME/.gmvault (or %HOME%/.gmvault for Windows) and you can always go this directory and delete them if you wish.
+        </br>If you wish to daily backup you email box please use the following command:
+        <pre>$>./gmvault sync -t quick foo.bar@gmail.com</pre> 
+        That command will try to update the given local repository with the last 2 months of emails. Only new emails contents will be downloaded so it should only take few minutes.
+        </br>For more information regarding the different Gmvault options, please refer to the <a href="#indepth">In Depth</a> part of the documentation.
+        </p>
+       <a name="indepth"></a><h1>In Depth</h1>
         <p></br>Gmvault is a user friendly command-line tool that setup most of the necessary defaults to quickly sync (backup) your gmail account or restore it to a gmail account.
         </br>It should be self-explanatory. Use gmvault -h to see the different options and how the tool works.</br>
         <pre>$./gmvault -h
@@ -344,6 +365,7 @@ Process email num 2 (imap_id:3) from 2005-10.
 Process email num 3 (imap_id:5) from 2005-10.
 ...</pre></p>
 <h3>Making a backup of your Gmail account</h3>
+</br>
 <p>The sync command of Gmvault allow users to backup the Gmail account of their choice.
 </br>use <strong>gmvault sync -h</strong> to get explanations regarding all options. Examples are also provided after the options details.
 </br><pre>$./gmvault sync -h
@@ -461,6 +483,7 @@ The full synchronisation scans your complete email box and store locally on disk
 </br>The custom synchronisation allows to provide a custom imap or gmail request if you only wish to backup a subset of your emails.
 </p>
 <h3>Restoring your Gmail account</h3>
+</br>
 <p>You can use the restore command to recreate your gmail account in case of problems. Like the sync command the restore command provides 2 types of restore with <strong>-t, --type</strong> full or quick.
 The full restore will try to restore completly the local email repository into the given email account while the quick restore will only restore the last 2 months of emails. Restore only upload new emails onto your given gmail account and also update the associated information such as labels but never delete an email from inbox. 
 </br><pre>a) Complete restore of your gmail account (backed up in ~/gmvault-db) into anewfoo.bar@gmail.com
