@@ -343,8 +343,7 @@ Process email num 1 (imap_id:2) from 2005-10.
 Process email num 2 (imap_id:3) from 2005-10.
 Process email num 3 (imap_id:5) from 2005-10.
 ...</pre></p>
-<p></br><h3>Making a backup of your Gmail account</h3>
-</p>
+<h3>Making a backup of your Gmail account</h3>
 <p>The sync command of Gmvault allow users to backup the Gmail account of their choice.
 </br>use <strong>gmvault sync -h</strong> to get explanations regarding all options. Examples are also provided after the options details.
 </br><pre>$./gmvault sync -h
@@ -377,17 +376,23 @@ a) Full synchronisation with email and oauth login in ./gmvault-db
 
 #> gmvault sync foo.bar@gmail.com
 
-b) Full synchronisation for German users that have to use googlemail instead of gmail
-
-#> gmvault sync --imap-server imap.googlemail.com 'foo.bar@gmail.com'
-
-c) Quick synchronisation (only the last 2 months are scanned)
+b) Quick daily synchronisation (only the last 2 months are scanned)
 
 #> gmvault sync --type quick foo.bar@gmail.com
 
-g) Custom synchronisation with an IMAP request
+c) Custom synchronisation with an IMAP request for advance users
 
-#> gmvault sync --type custom --imap-req 'Since 1-Nov-2011 Before 10-Nov-2011' 'foo.bar@gmail.com'</pre>
+#> gmvault sync --type custom --imap-req 'Since 1-Nov-2011 Before 10-Nov-2011' 'foo.bar@gmail.com'
+
+d) Custom synchronisation with an Gmail request for advance users
+
+#> gmvault sync --type custom --gmail-req 'in:inbox from:foo' 'foo.bar@gmail.com'
+
+e) Full synchronisation for German users that have to use googlemail instead of gmail
+
+#> gmvault sync --imap-server imap.googlemail.com 'foo.bar@gmail.com'
+</pre>
+
 </br>gmvault sync myuser@gmail.com will backup the entire content of your gmail account from the oldest to newest email.
 </br>You will also notice that Gmvault tries to estimate how long it will take to backup your entire gmail account every 50 emails.
 </br><pre>$./gmvault sync guillaume.aubert@gmail.com -p
@@ -449,8 +454,26 @@ a) Get help for each of the individual commands
 $
 </pre>
 If you wish to backup multiple Gmail accounts in one email database, you can use the <strong>-m</strong> or <strong>--multiple-db-owner</strong> to let Gmvault allowing it.
+</br>Gmvault provides 3 types of synchronisations with <strong>-t, --type</strong> full, quick or custom.
+The full synchronisation scans your complete email box and store locally on disk if the email doesn't exist already. Gmvault uses the full synchronisation type by default. 
+</br>The quick type is used to daily backup your email account automatically (with a cron job for example) and it updates the local email repository with the latest additions.
+</br>The quick synchronisation goes up to two month backward in time and update your local on disk email repository to reflect the addition and deletion of emails as well the labels modifications.
+</br>The custom synchronisation allows to provide a custom imap or gmail request if you only wish to backup a subset of your emails.
 </p>
-<p></br><h3>Restoring your Gmail account</h3>
+<h3>Restoring your Gmail account</h3>
+<p>You can use the restore command to recreate your gmail account in case of problems. Like the sync command the restore command provides 2 types of restore with <strong>-t, --type</strong> full or quick.
+The full restore will try to restore completly the local email repository into the given email account while the quick restore will only restore the last 2 months of emails. Restore only upload new emails onto your given gmail account and also update the associated information such as labels but never delete an email from inbox. 
+</br><pre>a) Complete restore of your gmail account (backed up in ~/gmvault-db) into anewfoo.bar@gmail.com
+
+$> ./gmvault restore -d ~/gmvault-db anewfoo.bar@gmail.com
+
+b) Quick restore (restore only the last 2 months to make regular updates) of your gmail account into anewfoo.bar@gmail.com
+
+$> ./gmvault restore --type quick -d ~/gmvault-db foo.bar@gmail.com
+</pre>
+</br>If it also possible to apply a given label to the current update you are performing:
+<pre>$>./gmvault restore --label "20120422-gmvault-restore" -d ~/gmvault-db anewfoo.bar@gmail.com</pre>
+This will apply "20120422-gmvault-restore" to all restored emails.
 </p>
 
 	</div> <!-- page-header -->
