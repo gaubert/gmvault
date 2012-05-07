@@ -172,7 +172,7 @@ class GMVaultLauncher(object):
                                  action='store_true',dest="encrypt", default=False)
         
         sync_parser.add_argument("-z", "--db-cleaning", \
-                          help="To activate or deactive the disk db cleaning. Automatically deactivated if a imap req is passed in args.",\
+                          help="Enable the removal from the gmvault db of the emails that have been deleted from the provided gmail account. ",\
                           dest="db_cleaning", default=None)
         
         sync_parser.add_argument("-m", "--multiple-db-owner", \
