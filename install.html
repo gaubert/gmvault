@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Gmvault: gmail backup</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="backup and restore your gmail account">
+    <meta name="author" content="guillaume aubert">
+
+    <!-- Le styles -->
+    <link href="./assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="assets/css/docs.css" rel="stylesheet">
+    <link href="assets/js/google-code-prettify/prettify.css" rel="stylesheet">
+    <style>
+      body {
+        /*padding-top: 60px;*/ /* was adding Gmvault and pushing it 60px to make the container go all the way to the bottom of the topbar */
+      }
+      /* to properly fix the positionning of internal reference when name id used*/
+      a[name]{position:relative;top:-40px; visibility:collapsed;}
+    </style>
+    <link href="./assets/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="./assets/ico/gmv-favicon.ico">
+    <!--<link rel="apple-touch-icon-precomposed" sizes="114x114" href="./assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="./assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="./assets/ico/apple-touch-icon-57-precomposed.png">-->
+  </head>
+
+  <body data-spy="scroll" data-target=".subnav" data-offset="50">
+
+    <!-- Navbar
+    ================================================== -->
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="./index.html">Gmvault</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="active">
+               <a href="./index.html">Overview</a>
+              </li>
+              <li class="">
+                <a href="#install">Install</a>
+              </li>
+              <li class="">
+                <a href="#win_install">Win Install</a>
+              </li>
+              <li class="">
+                <a href="#linmac_install">Lin/Mac Install</a>
+              </li>
+              <li class="">
+                <a href="#py_install">Py Install</a>
+              </li>
+              <li class="">
+                <a href="#quickstart">Quick Start</a>
+              </li>
+              <li class="">
+                <a href="./in_depth.html">In Depth</a>
+              </li>
+              <li class="">
+                <a href="./report_pb.html">Report a problem</a>
+              </li>
+              <li class="">
+                <a href="./contacts.html">Contacts</a>
+              </li>
+              <li class="divider-vertical"></li>
+              <li class="">
+                <a href="https://github.com/gaubert/gmvault/downloads">Download</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+
+    <div class="page-header">
+	  <a name="install"></a><h1>Install Gmvault</h1>
+	</div>
+  
+      <div class="span10">
+         <div class="page-header">
+            <h2>Download Gmvault latest version</h2>
+		 </div>
+          <p>Go to the <a href="https://github.com/gaubert/gmvault/downloads">Download Page</a> to download the binary package for the platform of your choice. You can then refer to your platform (Win/Linux or Mac OSX) installation instructions to perform the Gmvault installation.
+
+         <div class="page-header">
+            <h2>Compliant Python versions</h2>
+		 </div>
+          <p>Gmvault has been heavily tested with <strong>Python 2.6.x</strong> and <strong>Python 2.7.x</strong> versions. Please use one of these versions to run Gmvault.</br>
+             Note that for the Windows, Linux and MacOSX binary packages, the target machine doesn't need to have pre-installed a compliant Python distribution as these packages embed a working Python dist.</p>
+         <a name="win_install"></a><div class="page-header">
+            <h2>Windows Installation</h2>
+		 </div>
+           <p>Double click on <strong>gmvault_setup.exe</strong> to launch it. You should see the follow screens when installing:</p>
+			 <ul class="thumbnails">
+				<li class="span5">
+				  <div class="thumbnail well">
+				  <h5>1. Launch the gmvault_setup.exe windows installer.</h5>
+				  <img src="./assets/img/gmvault_main_page.png" alt="">
+				  </div>
+				</li>
+				<li class="span5">
+				  <div class="thumbnail">
+				  <h5>2. Accept the software licensing prior to install it on your PC.</h5>
+				  <img src="./assets/img/gmvault_licence.png" alt="">
+				  </div>
+				</li>
+			 </ul> 
+
+			 <ul class="thumbnails">
+				<li class="span5">
+				  <div class="thumbnail">
+				  <h5>3. Choose where to install Gmvault.</h5>
+				  <img src="./assets/img/gmvault_dir.png" alt="">
+				  </div>
+				</li>
+				<li class="span5">
+				  <div class="thumbnail">
+				  <h5>4. Agree on the creation of a Desktop shortcut for Gmvault (recommended).</h5>
+				  <img src="./assets/img/gmvault_shortcuts.png" alt="">
+				  </div>
+				</li>
+			 </ul> 
+
+			 <p>The Gmvault installer should have installed a Gmvault-shell from where you can easily launch gmvault.exe.
+				<br> Gmvault-shell can be launched via a Desktop shortcut.</p>
+                         <p>Double click on the Desktop shortcut to launch the Gmvault-shell that will set all variables in order to easily operate Gmvault.</p>
+
+                         <div class="span10 thumbnail well">
+                            <img src="./assets/img/gmvault-shell-icon.png" alt="">
+                         </div>
+
+                         <p>Type gmvault -h to start using Gmvault.</p>
+
+
+                         <div class="span10 thumbnail">
+                            <img src="./assets/img/gmvault-shell-window.png" alt="">
+                         </div>
+                         <p>Go to <a href="#quickstart"></a> to quickly understand how to use Gmvault.
+
+                         </br>Go to <a href="in_depth.html"></a> to understand all the Gmvault capabilities.</p>
+         <div class="page-header">
+            <a name="linmac_install"></a><h2>Linux and Mac OSX Binary Install</h2>
+			<p>Download and untar the binary tarball for Mac OSX or Linux 32bits or 64bits from the download page.</br>Untar the binary tarball distribution and go to the GMVAULT_HOME/bin dir to launch Gmvault.</p>
+            <p><pre>$ wget https://github.com/downloads/gaubert/gmvault/gmvault-v1.0-beta-MacOSX.tar.gz
+$ tar zxvf gmvault-v1.0-beta-MacOSX.tar.gz
+$ cd gmvault-v1.0-beta/bin</pre></p>
+		 </div>
+         <div class="page-header">
+            <a name="py_install"></a><h2>Python Installation for MacOSX and Linux</h2>
+			<p>It is also possible to install Gmvault using the standard Python package installation method from Pypi.<br/>
+               You would need to have the <a href="http://bit.ly/easy_install">setup tools</a> or <a href="http://www.pip-installer.org/en/latest/index.html">pip</a> installed in your Python distribution.
+               I would also recommend using gmvault in a <a href="http://pypi.python.org/pypi/virtualenv">virtualenv</a> isolated sandbox.<br/>
+               Below is described an installation under a virtualenv sandbox. 
+            </p>
+            <p><pre>$ virtualenv --no-site-packages gmvault-1.0-beta
+New python executable in gmvault-1.0-beta/bin/python
+Installing setuptools............done.
+$ cd gmvault-1.0-beta/bin
+$./pip install gmvault
+Downloading/unpacking gmvault
+  Downloading gmvault-1.0-beta.tar.gz (47Kb): 47Kb downloaded
+  Running setup.py egg_info for package gmvault
+
+Downloading/unpacking Logbook==0.3 (from gmvault)
+  Downloading Logbook-0.3.tar.gz (89Kb): 89Kb downloaded
+  Running setup.py egg_info for package Logbook
+
+Downloading/unpacking IMAPClient==0.8.1 (from gmvault)
+  Downloading IMAPClient-0.8.1.zip (107Kb): 107Kb downloaded
+  Running setup.py egg_info for package IMAPClient
+    Downloading http://pypi.python.org/packages/source/d/distribute/distribute-0.6.24.tar.gz
+    Extracting in /tmp/tmp2kCczm
+    Now working in /tmp/tmp2kCczm/distribute-0.6.24
+    Building a Distribute egg in /tmp/gmvault-1.0-beta/build/IMAPClient
+    warning: no files found matching 'Makefile' under directory 'docs'
+    warning: no files found matching 'indexsidebar.html' under directory 'docs'
+    /tmp/gmvault-1.0-beta/build/IMAPClient/distribute-0.6.24-py2.7.egg
+
+    no previously-included directories found matching 'doc/doctrees'
+Downloading/unpacking gdata==2.0.17 (from gmvault)
+  Downloading gdata-2.0.17.tar.gz (2.4Mb): 2.4Mb downloaded
+  Running setup.py egg_info for package gdata
+
+Installing collected packages: gdata, gmvault, IMAPClient, Logbook
+  Running setup.py install for gdata
+
+  Running setup.py install for gmvault
+    changing mode of build/scripts-2.7/gmvault from 644 to 755
+
+    changing mode of /tmp/gmvault-1.0-beta/bin/gmvault to 755
+  Running setup.py install for IMAPClient
+
+    no previously-included directories found matching 'doc/doctrees'
+  Running setup.py install for Logbook
+    building 'logbook._speedups' extension
+    gcc -pthread -fno-strict-aliasing -g -O2 -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -I/homespace/gaubert/python2.7/include/python2.7 -c logbook/_speedups.c -o build/temp.linux-i686-2.7/logbook/_speedups.o
+    gcc -pthread -shared build/temp.linux-i686-2.7/logbook/_speedups.o -o build/lib.linux-i686-2.7/logbook/_speedups.so
+
+Successfully installed gdata gmvault IMAPClient Logbook
+Cleaning up...
+$
+</pre></p>
+	 </div>
+      </div> <!-- span10 -->
+
+    </div> <!-- row -->
+    <div class="span10">
+
+    <div class="page-header">
+       <a name="quickstart"></a><h1>Quick Start</h1>
+        <p>Once you have installed Gmvault (see <a href="#install">Install</a>), you can start using it in 2 minutes.
+        </br>Go to the bin directory of your distribution and simply type:<pre>$>cd GMVAULTHOME/bin
+$>./gmvault sync foo.bar@gmail.com</pre>
+        You will have to authenticate yourself the first time you use Gmvault for a particular account. Just follow the instruction given on screen.
+        </br>After that Gmvault will automatically authenticate itself using the credentials stored in $HOME/.gmvault (or %HOME%/.gmvault for Windows).
+        </br>Once authenticated, Gmvault will start to backup your complete gmail account by default into $HOME/gmvault-db or %HOME%/gmvault-db.
+        </br>To restore your emails into an account use the following command:
+        <pre>$>./gmvault restore MYNEWfoo.bar@gmail.com</pre>
+        By default, Gmvault will restore the emails from $HOME/gmvault-db or %HOME%/gmvault-db into the given account. Use the -d or --db-dir to point to another local email repository.
+        </br>It is recommended to have on local email repository per account but with the option -m , --multiple-db-owner you can backup multiple Gmail accounts in one repository. 
+        </br>You might have to enter into an authentication phase if it is a new account for gmvault. Gmvault will store all credentials into $HOME/.gmvault (or %HOME%/.gmvault for Windows) and you can always go this directory and delete them if you wish.
+        </br>If you wish to daily backup you email box please use the following command:
+        <pre>$>./gmvault sync -t quick foo.bar@gmail.com</pre> 
+        That command will try to update the given local repository with the last 2 months of emails. Only new emails contents will be downloaded so it should only take few minutes.
+        </br>For more information regarding the different Gmvault options, please refer to the <a href="./in_depth.html">In Depth</a> part of the documentation.
+        </p>
+
+	</div> <!-- page-header -->
+
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="./assets/js/jquery.js"></script>
+    <script src="./assets/js/bootstrap-transition.js"></script>
+    <script src="./assets/js/bootstrap-alert.js"></script>
+    <script src="./assets/js/bootstrap-modal.js"></script>
+    <script src="./assets/js/bootstrap-dropdown.js"></script>
+    <script src="./assets/js/bootstrap-scrollspy.js"></script>
+    <script src="./assets/js/bootstrap-tab.js"></script>
+    <script src="./assets/js/bootstrap-tooltip.js"></script>
+    <script src="./assets/js/bootstrap-popover.js"></script>
+    <script src="./assets/js/bootstrap-button.js"></script>
+    <script src="./assets/js/bootstrap-collapse.js"></script>
+    <script src="./assets/js/bootstrap-carousel.js"></script>
+    <script src="./assets/js/bootstrap-typeahead.js"></script>
+
+	<!-- google analytics for gmvault.org -->
+	<script type="text/javascript">
+
+	  var _gaq = _gaq || [];
+	  _gaq.push(['_setAccount', 'UA-31356001-1']);
+	  _gaq.push(['_setDomainName', 'gmvault.org']);
+	  _gaq.push(['_trackPageview']);
+
+	  (function() {
+		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+
+    </script>
+
+  </body>
+</html>
+
