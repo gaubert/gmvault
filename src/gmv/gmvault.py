@@ -742,7 +742,7 @@ class GMVaulter(object):
         else:
             LOG.debug("db_cleaning is off so ignore removing deleted emails from disk.")
         
-     def get_gmails_ids_left_to_sync(self, gmail_ids):
+    def get_gmails_ids_left_to_sync(self, gmail_ids):
         """
            Get the ids that still needs to be sync
            Return a list of ids
