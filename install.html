@@ -233,7 +233,7 @@ $>./gmvault sync foo.bar@gmail.com</pre>
         </br>To restore your emails into an account use the following command:
         <pre>$>./gmvault restore MYNEWfoo.bar@gmail.com</pre>
         By default, Gmvault will restore the emails from $HOME/gmvault-db or %HOME%/gmvault-db into the given account. Use the -d or --db-dir to point to another local email repository.
-        </br>It is recommended to have on local email repository per account but with the option -m , --multiple-db-owner you can backup multiple Gmail accounts in one repository. 
+        </br>It is recommended to have one local email repository per account but with the option -m , --multiple-db-owner you can backup multiple Gmail accounts in one repository. 
         </br>You might have to enter into an authentication phase if it is a new account for gmvault. Gmvault will store all credentials into $HOME/.gmvault (or %HOME%/.gmvault for Windows) and you can always go this directory and delete them if you wish.
         </br>If you wish to daily backup you email box please use the following command:
         <pre>$>./gmvault sync -t quick foo.bar@gmail.com</pre> 
