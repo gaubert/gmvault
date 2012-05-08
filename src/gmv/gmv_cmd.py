@@ -167,6 +167,11 @@ class GMVaultLauncher(object):
                                  help="Gmail search request to restrict sync as defined in https://support.google.com/mail/bin/answer.py?hl=en&answer=7190",\
                                  dest="gmail_request", default=None)
         
+        # activate the restart mode
+        sync_parser.add_argument("--restart", \
+                                 action='store_true', dest='restart', \
+                                 default=False, help= 'Restart from the last saved gmail id.')
+        
         sync_parser.add_argument("-e", "--encrypt", \
                                  help="encrypt stored email messages in the database.",\
                                  action='store_true',dest="encrypt", default=False)
@@ -267,6 +272,8 @@ class GMVaultLauncher(object):
         parsed_args['email']            = options.email
         
         parsed_args['debug']            = options.debug
+        
+        parsed_args['restart']          = options.restart
         
         #user entered both authentication methods
         if options.passwd == 'empty' and options.oauth_token == 'empty':
@@ -443,7 +450,7 @@ class GMVaultLauncher(object):
         
             #choose full sync. Ignore the request
             syncer.sync({ 'type': 'imap', 'req': 'ALL' } , compress_on_disk = True, \
-                        db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'])
+                        db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'], restart = args['restart'])
             
         elif args.get('type', '') == 'quick':
             
@@ -467,7 +474,7 @@ class GMVaultLauncher(object):
             LOG.critical("Perform custom synchronisation with request: %s" % (args['request']['req']))
             
             syncer.sync(args['request'], compress_on_disk = True, db_cleaning = args['db-cleaning'], \
-                        ownership_checking = args['ownership_control'])
+                        ownership_checking = args['ownership_control'], restart = args['restart'])
         else:
             raise ValueError("Unknown synchronisation mode %s. Please use full (default), quick or custom.")
         

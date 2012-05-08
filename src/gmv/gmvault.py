@@ -614,12 +614,17 @@ class GMVaulter(object):
             
             try:
                 
+                gid = None
+                
                 LOG.debug("\nProcess imap id %s" % ( the_id ))
                 
                 #get everything once for all
                 new_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA )
                 
                 if new_data.get(the_id, None):
+                    
+                    gid = new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
+                    
                     the_dir      = gmvault_utils.get_ym_from_datetime(new_data[the_id][imap_utils.GIMAPFetcher.IMAP_INTERNALDATE])
                     
                     LOG.critical("Process email num %d (imap_id:%s) from %s." % (nb_emails_processed, the_id, the_dir))
@@ -632,7 +637,7 @@ class GMVaulter(object):
                     #if on disk check that the data is not different
                     if curr_metadata:
                         
-                        LOG.debug("metadata for %s already exists. Check if different." % (new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]))
+                        LOG.debug("metadata for %s already exists. Check if different." % (gid))
                         
                         if self._metadata_needs_update(curr_metadata, new_data[the_id]):
                             #restore everything at the moment
@@ -671,8 +676,8 @@ class GMVaulter(object):
                 
                 # save id every 20 restored emails
                 if (nb_emails_processed % 20) == 0:
-                    #for the moment store imap id but would be better to store gm_id
-                    self.save_lastid(self.OP_SYNC, the_id)
+                    if gid:
+                        self.save_lastid(self.OP_SYNC, gid)
             
             except imaplib.IMAP4.error, error:
                 # check if this is a cannot be fetched error 
@@ -747,7 +752,7 @@ class GMVaulter(object):
         else:
             LOG.debug("db_cleaning is off so ignore removing deleted emails from disk.")
         
-    def get_gmails_ids_left_to_sync(self, gmail_ids):
+    def get_gmails_ids_left_to_sync(self, imap_ids):
         """
            Get the ids that still needs to be sync
            Return a list of ids
@@ -757,7 +762,7 @@ class GMVaulter(object):
         
         if not os.path.exists(filepath):
             LOG.critical("last_id.sync file %s doesn't exist.\nSync the full list of backed up emails." %(filepath))
-            return gmail_ids
+            return imap_ids
         
         json_obj = json.load(open(filepath, 'r'))
         
@@ -765,15 +770,19 @@ class GMVaulter(object):
         
         last_id_index = -1
         
-        new_gmail_ids = gmail_ids
+        new_gmail_ids = imap_ids
         
         try:
-            last_id_index = gmail_ids.index(last_id)
-            LOG.critical("Restart from gmail id %s." % (last_id))
-            new_gmail_ids = gmail_ids[last_id_index:]
-        except ValueError, _:
+            #get imap_id from store gmail_id
+            dummy = self.src.search({'type':'imap', 'req':'X-GM-MSGID %s' % (last_id)})
+            
+            imap_id = dummy[0]
+            last_id_index = imap_ids.index(imap_id)
+            LOG.critical("Restart from gmail id %s (imap id %s)." % (last_id, imap_id))
+            new_gmail_ids = imap_ids[last_id_index:]   
+        except Exception, _: #ignore any exception and try to get all ids in case of problems.
             #element not in keys return current set of keys
-            LOG.error("Cannot restore from last restore gmail id. It is not in Gmail. Sync the complete list of gmail ids requested from Gmail.")
+            LOG.critical("Error: Cannot restore from last restore gmail id. It is not in Gmail. Sync the complete list of gmail ids requested from Gmail.")
         
         return new_gmail_ids
     
@@ -786,6 +795,7 @@ class GMVaulter(object):
         
         # check if there is a restart
         if restart:
+            LOG.critical("Restart mode activated. Need to find information in Gmail, be patient.")
             imap_ids = self.get_gmails_ids_left_to_sync(imap_ids)
         
         # create new emails in db and update existing emails
