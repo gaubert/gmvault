@@ -328,8 +328,8 @@ Write Blog page for promotion
 ROAD MAP to 1.5-beta
 - DONE: Fix folder bug
 - Add in documentation a paragraph stipulating that you need to make 'All Mail' visible
-- DONE to be tested Fix unlocalised problem
-- DONE to be tested. Add --restart in sync and add restart per account. => Done with imapid to be tested
+- DONE tested Fix unlocalised problem 
+- DONE tested. Add --restart in sync and add restart per account. => Done with imapid to be tested
 - Fix python script on pypi
 - Fix Windows version (add uninstall, start menu, ...)
 - Fix 2-legged oauth

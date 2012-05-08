@@ -773,7 +773,7 @@ class GMVaulter(object):
         new_gmail_ids = imap_ids
         
         try:
-            #get imap_id from store gmail_id
+            #get imap_id from stored gmail_id
             dummy = self.src.search({'type':'imap', 'req':'X-GM-MSGID %s' % (last_id)})
             
             imap_id = dummy[0]
