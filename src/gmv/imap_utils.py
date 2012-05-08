@@ -259,27 +259,29 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            Find and set the right one
         """
         
-        folders = self.server.list_folders()
+        #use xlist because of localized dir names
+        folders = self.server.xlist_folders()
         the_dir = None
-        for (_, _, the_dir) in folders:
-            if the_dir == GIMAPFetcher.GMAIL_ALL:
-                self._all_mail_folder = GIMAPFetcher.GMAIL_ALL
-                break
-            elif the_dir == GIMAPFetcher.GOOGLE_MAIL_ALL:
-                self._all_mail_folder = GIMAPFetcher.GOOGLE_MAIL_ALL
+        for (flags, _, the_dir) in folders:
+            
+            if len(flags) < 2:
+                raise Exception("No enough flags for %s" % (flags))
+            
+            if flags[1] in (GIMAPFetcher.GMAIL_ALL, GIMAPFetcher.GOOGLE_MAIL_ALL):
+                #it could be a localized Dir name
+                self._all_mail_folder = the_dir
                 break
         
-        if the_dir == None:
+        if not self._all_mail_folder:
             #Error
-            raise Exception("Cannot find global dir %s or %s. Are you sure it is a GMail account" % \
-                            (GIMAPFetcher.GMAIL_ALL, GIMAPFetcher.GOOGLE_MAIL_ALL))
+            raise Exception("Cannot find global 'All Mail' folder (maybe localized and translated into your language) ! Check whether 'Show in IMAP for 'All Mail' is enabled in Gmail (Go to Settings->Labels->All Mail)")
     
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def get_all_folders(self): 
         """
            Return all folders mainly for debuging purposes
         """
-        return self.server.list_folders()
+        return self.server.xlist_folders()
         
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def get_capabilities(self):
@@ -297,7 +299,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            Check that the server is a gmail server
         """
         if not GIMAPFetcher.GMAIL_EXTENSION in self.get_capabilities():
-            raise Exception("GIMAPFetcher is not connect to a IMAP GMAIL server. Please check host (%s) and port (%s)" % (self.host, self.port))
+            raise Exception("GIMAPFetcher is not connected to a IMAP GMAIL server. Please check host (%s) and port (%s)" % (self.host, self.port))
         
         return True
     

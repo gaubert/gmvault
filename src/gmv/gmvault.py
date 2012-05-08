@@ -430,7 +430,10 @@ class GMVaulter(object):
     """ 
     NB_GRP_OF_ITEMS  = 100
     RESTORE_PROGRESS = 'last_id.restore'
-    SYNC_PROGESS     = 'last_id.sync'
+    SYNC_PROGRESS     = 'last_id.sync'
+    
+    OP_RESTORE = "RESTORE"
+    OP_SYNC    = "SYNC"
     
     def __init__(self, db_root_dir, host, port, login, credential, read_only_access = True, use_encryption = False): #pylint:disable-msg=R0913
         """
@@ -739,12 +742,46 @@ class GMVaulter(object):
         else:
             LOG.debug("db_cleaning is off so ignore removing deleted emails from disk.")
         
-    def sync(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False, ownership_checking = True):
+    def get_gmails_ids_left_to_sync(self, gmail_ids):
+        """
+           Get the ids that still needs to be sync
+           Return a list of ids
+        """
+        
+        filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, self.SYNC_PROGRESS)
+        
+        if not os.path.exists(filepath):
+            LOG.critical("last_id.sync file %s doesn't exist.\nSync the full list of backed up emails." %(filepath))
+            return gmail_ids
+        
+        json_obj = json.load(open(filepath, 'r'))
+        
+        last_id = json_obj['last_id']
+        
+        last_id_index = -1
+        
+        new_gmail_ids = gmail_ids
+        
+        try:
+            last_id_index = gmail_ids.index(last_id)
+            LOG.critical("Restart from gmail id %s." % (last_id))
+            new_gmail_ids = gmail_ids[last_id_index:]
+        except ValueError, _:
+            #element not in keys return current set of keys
+            LOG.error("Cannot restore from last restore gmail id. It is not in Gmail. Sync the complete list of gmail ids requested from Gmail.")
+        
+        return new_gmail_ids
+    
+    def sync(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False, ownership_checking = True, restart = False):
         """
            sync mode 
         """
         # get all imap ids in All Mail
         imap_ids = self.src.search(imap_req)
+        
+        # check if there is a restart
+        if restart:
+            imap_ids = self.get_gmails_ids_left_to_sync(imap_ids)
         
         # create new emails in db and update existing emails
         self._create_update_sync(imap_ids, compress = compress_on_disk, ownership_control = ownership_checking)
@@ -762,12 +799,21 @@ class GMVaulter(object):
         pass
         
     
-    def save_restore_lastid(self, gm_id):
+    def save_restore_lastid(self, op_type, gm_id):
         """
            Save the passed gmid in last_id.restore
            For the moment reopen the file every time
         """
-        filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, self.RESTORE_PROGRESS)
+        
+        
+        if op_type == self.OP_RESTORE:
+            filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, self.RESTORE_PROGRESS)
+        elif op_type == self.OP_SYNC:
+            filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, self.SYNC_PROGRESS)
+        else:
+            raise Exception("Bad Operation in save_restore_last_id. This should not happen, send the error to the software developers.")
+        
+        
         fd = open(filepath, 'w')
         
         json.dump({
