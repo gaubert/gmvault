@@ -668,6 +668,11 @@ class GMVaulter(object):
                     elapsed = timer.elapsed() #elapsed time in seconds
                     LOG.critical("\n== Processed %d emails in %s. %d left to be stored (time estimate %s).==\n" % \
                                  (nb_emails_processed,  timer.seconds_to_human_time(elapsed), left_emails, timer.estimate_time_left(nb_emails_processed, elapsed, left_emails)))
+                
+                # save id every 20 restored emails
+                if (nb_emails_processed % 20) == 0:
+                    #for the moment store imap id but would be better to store gm_id
+                    self.save_lastid(self.OP_SYNC, the_id)
             
             except imaplib.IMAP4.error, error:
                 # check if this is a cannot be fetched error 
@@ -799,7 +804,7 @@ class GMVaulter(object):
         pass
         
     
-    def save_restore_lastid(self, op_type, gm_id):
+    def save_lastid(self, op_type, gm_id):
         """
            Save the passed gmid in last_id.restore
            For the moment reopen the file every time
@@ -929,7 +934,7 @@ class GMVaulter(object):
                 
                 # save id every 20 restored emails
                 if (nb_emails_restored % 20) == 0:
-                    self.save_restore_lastid(gm_id)
+                    self.save_lastid(self.OP_RESTORE, gm_id)
         
             except imaplib.IMAP4.error, err:
                 
