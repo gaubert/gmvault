@@ -328,10 +328,12 @@ Write Blog page for promotion
 ROAD MAP to 1.5-beta
 - DONE: Fix folder bug
 - Add in documentation a paragraph stipulating that you need to make 'All Mail' visible
-- Add --restart in sync and add restart per account.
+- DONE to be tested Fix unlocalised problem
+- DONE to be tested. Add --restart in sync and add restart per account.
 - Fix python script on pypi
 - Fix Windows version (add uninstall, start menu, ...)
 - Fix 2-legged oauth
+- imap req not working
 
  ROAD MAP to 1.5-final
 - Add chat backup

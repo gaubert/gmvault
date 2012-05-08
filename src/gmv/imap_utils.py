@@ -149,6 +149,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     GMAIL_EXTENSION   = 'X-GM-EXT-1'  # GMAIL capability
     GMAIL_ALL         = '[Gmail]/All Mail' #GMAIL All Mail mailbox
     GOOGLE_MAIL_ALL   = '[Google Mail]/All Mail' #Google Mail All Mail mailbox for Germany
+    GENERIC_GMAIL_ALL = u'\\AllMail' # unlocalised GMAIL ALL
     GMAIL_ID          = 'X-GM-MSGID' #GMAIL ID attribute
     GMAIL_THREAD_ID   = 'X-GM-THRID'
     GMAIL_LABELS      = 'X-GM-LABELS'
@@ -258,19 +259,16 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            [GMAIL]/ALL Mail or [GoogleMail]/All Mail.
            Find and set the right one
         """
-        
         #use xlist because of localized dir names
         folders = self.server.xlist_folders()
+        
         the_dir = None
         for (flags, _, the_dir) in folders:
-            
-            if len(flags) < 2:
-                raise Exception("No enough flags for %s" % (flags))
-            
-            if flags[1] in (GIMAPFetcher.GMAIL_ALL, GIMAPFetcher.GOOGLE_MAIL_ALL):
-                #it could be a localized Dir name
-                self._all_mail_folder = the_dir
-                break
+            #non localised GMAIL_ALL
+            if len(flags) >= 2 and flags[1] in (GIMAPFetcher.GENERIC_GMAIL_ALL):
+                    #it could be a localized Dir name
+                    self._all_mail_folder = the_dir
+                    break
         
         if not self._all_mail_folder:
             #Error
