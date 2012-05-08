@@ -577,7 +577,7 @@ class GMVaulter(object):
         db_owner = gstorer.get_db_owner()
         if ownership_control:
             if db_owner and (db_owner != self.login): #db owner should not be different unless bypass activated
-                raise Exception("The email database %s is already associated with %s. Use option X if you want to link it with %s" \
+                raise Exception("The email database %s is already associated with %s. Use option (-m, --multiple-db-owner) if you want to link it with %s" \
                                 % (self.db_root_dir, db_owner, self.login))
         else:
             if db_owner:
@@ -695,49 +695,49 @@ class GMVaulter(object):
            imap_ids      : all remote imap_ids to check
            delete_dry_run: True to simulate everything but the deletion
         """ 
-        gstorer = GmailStorer(self.db_root_dir)
-        
-        LOG.critical("get all existing ids from disk")
-        
-        #get gmail_ids from db
-        db_gmail_ids_info = gstorer.get_all_existing_gmail_ids()
-        
-        LOG.critical("got all existing ids from disk nb of ids to check: %s" % (len(db_gmail_ids_info)) )
-        
-        #create a set of keys
-        db_gmail_ids = set(db_gmail_ids_info.keys())
-        
-        # optimize nb of items
-        nb_items = self.NB_GRP_OF_ITEMS if len(db_gmail_ids) >= self.NB_GRP_OF_ITEMS else len(db_gmail_ids)
-        
-        #calculate the list elements to delete
-        #query nb_items items in one query to minimise number of imap queries
-        for group_imap_id in itertools.izip_longest(fillvalue=None, *[iter(imap_ids)]*nb_items):
+        if db_cleaning:
+            gstorer = GmailStorer(self.db_root_dir)
             
-            # if None in list remove it
-            if None in group_imap_id: 
-                group_imap_id = [ im_id for im_id in group_imap_id if im_id != None ]
+            LOG.critical("Check if emails need to be disk cleaned.")
             
-            data = self.src.fetch(group_imap_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID)
+            #get gmail_ids from db
+            db_gmail_ids_info = gstorer.get_all_existing_gmail_ids()
             
-            imap_gmail_ids = set()
+            LOG.critical("got all existing ids from disk nb of ids to check: %s" % (len(db_gmail_ids_info)) )
             
-            for key in data:
-                imap_gmail_ids.add(data[key][imap_utils.GIMAPFetcher.GMAIL_ID])
+            #create a set of keys
+            db_gmail_ids = set(db_gmail_ids_info.keys())
             
-            db_gmail_ids -= imap_gmail_ids
+            # optimize nb of items
+            nb_items = self.NB_GRP_OF_ITEMS if len(db_gmail_ids) >= self.NB_GRP_OF_ITEMS else len(db_gmail_ids)
             
-            #quit loop if db set is already empty
-            if len(db_gmail_ids) == 0:
-                break
-
-        if db_cleaning: #delete if db_cleaning ordered
-            LOG.critical("Will delete %s email from disk db" % (len(db_gmail_ids)) )
+            #calculate the list elements to delete
+            #query nb_items items in one query to minimise number of imap queries
+            for group_imap_id in itertools.izip_longest(fillvalue=None, *[iter(imap_ids)]*nb_items):
+                
+                # if None in list remove it
+                if None in group_imap_id: 
+                    group_imap_id = [ im_id for im_id in group_imap_id if im_id != None ]
+                
+                data = self.src.fetch(group_imap_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID)
+                
+                imap_gmail_ids = set()
+                
+                for key in data:
+                    imap_gmail_ids.add(data[key][imap_utils.GIMAPFetcher.GMAIL_ID])
+                
+                db_gmail_ids -= imap_gmail_ids
+                
+                #quit loop if db set is already empty
+                if len(db_gmail_ids) == 0:
+                    break
+    
+            LOG.critical("Will delete %s email(s) from disk db" % (len(db_gmail_ids)) )
             for gm_id in db_gmail_ids:
                 LOG.critical("gm_id %s not in imap. Delete it" % (gm_id))
                 gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
         else:
-            LOG.debug("db_cleaning is off so ignore cleaning of %s emails from the db" % (len(db_gmail_ids)))
+            LOG.debug("db_cleaning is off so ignore removing deleted emails from disk.")
         
     def sync(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False, ownership_checking = True):
         """

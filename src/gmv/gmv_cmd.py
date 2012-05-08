@@ -42,6 +42,22 @@ a) Get help for each of the individual commands
 """
 
 REST_HELP_EPILOGUE = """Examples:
+
+a) Complete restore of your gmail account (backed up in ~/gmvault-db) into anewfoo.bar@gmail.com 
+
+#> gmvault restore -d ~/gmvault-db anewfoo.bar@gmail.com
+
+b) Quick restore (restore only the last 2 months to make regular updates) of your gmail account into anewfoo.bar@gmail.com 
+
+#> gmvault restore --type quick -d ~/gmvault-db foo.bar@gmail.com
+
+c) Restart a restore after a previous error (Gmail can cut the connection if it is too long)
+
+#> gmvault restore -d ~/gmvault-db anewfoo.bar@gmail.com --restart
+
+d) Add label to all restored emails
+
+#> gmvault restore --label "20120422-gmvault-restore" -d ~/gmvault-db anewfoo.bar@gmail.com
 """
 
 SYNC_HELP_EPILOGUE = """Examples:
@@ -50,17 +66,23 @@ a) Full synchronisation with email and oauth login in ./gmvault-db
 
 #> gmvault sync foo.bar@gmail.com
 
-b) Full synchronisation for German users that have to use googlemail instead of gmail
-
-#> gmvault sync --imap-server imap.googlemail.com 'foo.bar@gmail.com'
-
-c) Quick synchronisation (only the last 2 months are scanned)
+b) Quick daily synchronisation (only the last 2 months are scanned)
 
 #> gmvault sync --type quick foo.bar@gmail.com
 
-g) Custom synchronisation with an IMAP request
+c) Custom synchronisation with an IMAP request for advance users
 
 #> gmvault sync --type custom --imap-req 'Since 1-Nov-2011 Before 10-Nov-2011' 'foo.bar@gmail.com'
+
+d) Custom synchronisation with an Gmail request for advance users
+
+#> gmvault sync --type custom --gmail-req 'in:inbox from:foo' 'foo.bar@gmail.com'
+
+e) Full synchronisation for German users that have to use googlemail instead of gmail
+
+#> gmvault sync --imap-server imap.googlemail.com 'foo.bar@gmail.com'
+
+
 
 """
 
@@ -150,7 +172,7 @@ class GMVaultLauncher(object):
                                  action='store_true',dest="encrypt", default=False)
         
         sync_parser.add_argument("-z", "--db-cleaning", \
-                          help="To activate or deactive the disk db cleaning. Automatically deactivated if a imap req is passed in args.",\
+                          help="Enable the removal from the gmvault db of the emails that have been deleted from the provided gmail account. ",\
                           dest="db_cleaning", default=None)
         
         sync_parser.add_argument("-m", "--multiple-db-owner", \
