@@ -269,10 +269,9 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 self._all_mail_folder = GIMAPFetcher.GOOGLE_MAIL_ALL
                 break
         
-        if the_dir == None:
+        if not self._all_mail_folder:
             #Error
-            raise Exception("Cannot find global dir %s or %s. Are you sure it is a GMail account" % \
-                            (GIMAPFetcher.GMAIL_ALL, GIMAPFetcher.GOOGLE_MAIL_ALL))
+            raise Exception("Cannot find global 'All Mail' folder %s or %s ! (Check whether 'Show in IMAP for 'All Mail' is enabled in Gmail (Go to Settings->Labels->All Mail)" % (GIMAPFetcher.GMAIL_ALL, GIMAPFetcher.GOOGLE_MAIL_ALL))
     
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def get_all_folders(self): 
