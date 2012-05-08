@@ -299,7 +299,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            Check that the server is a gmail server
         """
         if not GIMAPFetcher.GMAIL_EXTENSION in self.get_capabilities():
-            raise Exception("GIMAPFetcher is not connect to a IMAP GMAIL server. Please check host (%s) and port (%s)" % (self.host, self.port))
+            raise Exception("GIMAPFetcher is not connected to a IMAP GMAIL server. Please check host (%s) and port (%s)" % (self.host, self.port))
         
         return True
     
