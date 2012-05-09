@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #set -x
 
 # force a friendly umask
@@ -8,31 +8,30 @@ umask 002
 #################################
 ## GMVAULT Distribution home directory
 #################################
-GMVAULT_HOME=..
-
-#################################
-## if GMVAULT_HOME is relative,
-## build the absolute path
-#################################
-D=`dirname "$GMVAULT_HOME"`
-B=`basename "$GMVAULT_HOME"`
-GMVAULT_HOME="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
+HERE=$(unset CDPATH; cd `dirname $0`; pwd)
+GMVAULT_HOME=$(unset CDPATH; cd $HERE/..; pwd)
 
 #################################
 ## setup PYTHON_BIN
 #################################
 #look as if it was the packaged binary distribution
 if [ -f "$GMVAULT_HOME/lib/python-lib/bin/python" ]; then
-   PYTHON_BIN=$GMVAULT_HOME/lib/python-lib/bin/python
-   export PYTHONPATH=$GMVAULT_HOME/lib:$PYTHONPATH
+    PYTHON_BIN=$GMVAULT_HOME/lib/python-lib/bin/python
+    export PYTHONPATH=$GMVAULT_HOME/lib:$PYTHONPATH
 
 elif [ -f "$GMVAULT_HOME/bin/python" ]; then
-   #installed from src distribution (python bin is in the same dir as gmvault script)
-   PYTHON_BIN=$GMVAULT_HOME/bin/python
+    #installed from src distribution (python bin is in the same dir as gmvault script)
+    PYTHON_BIN=$GMVAULT_HOME/bin/python
+
 else
-   echo "Cannot find the python executable to set env var PYTHON_BIN."
-   echo "Please check where your python binary is."
-   exit 1
+    PYTHON_BIN=`which python2.7 2>/dev/null`
+
+fi
+
+if [ -n $PYTHON_BIN ]; then
+    echo "Cannot find the python executable to set env var PYTHON_BIN."
+    echo "Please check where your python binary is."
+    exit 1
 fi
 
 ###################################
@@ -57,4 +56,3 @@ res="$?"
 rm -f /tmp/gmvault.bootstrap.$$
 
 exit $res
-
