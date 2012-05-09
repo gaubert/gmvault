@@ -51,7 +51,7 @@ runner.bootstrap_run()
 EOF
 
 #call gmvault bootstrap
-$PYTHON_BIN /tmp/gmvault.bootstrap.$$ $ARGS
+$PYTHON_BIN /tmp/gmvault.bootstrap.$$ "$@"
 res="$?"
 
 rm -f /tmp/gmvault.bootstrap.$$
