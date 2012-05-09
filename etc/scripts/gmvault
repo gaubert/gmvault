@@ -25,11 +25,12 @@ elif [ -f "$GMVAULT_HOME/bin/python" ]; then
 
 else
     PYTHON_BIN=`which python2.7 2>/dev/null`
+    echo "Odd. Use default python2.7.x distribution"
 
 fi
 
-if [ -n $PYTHON_BIN ]; then
-    echo "Cannot find the python executable to set env var PYTHON_BIN."
+if [ ! $PYTHON_BIN ] || [ ! -f $PYTHON_BIN ]; then
+    echo "Error: Cannot find the python executable to set env var PYTHON_BIN."
     echo "Please check where your python binary is."
     exit 1
 fi

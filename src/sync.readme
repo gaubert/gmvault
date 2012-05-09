@@ -326,6 +326,7 @@ Documentation:
 Write Blog page for promotion
 
 ROAD MAP to 1.5-beta
+- Easy way to print exception on screen when problem (otherwise I am blind).
 - DONE: Fix folder bug
 - Add in documentation a paragraph stipulating that you need to make 'All Mail' visible
 - DONE tested Fix unlocalised problem 
@@ -333,7 +334,7 @@ ROAD MAP to 1.5-beta
 - Fix python script on pypi
 - Fix Windows version (add uninstall, start menu, ...)
 - Fix 2-legged oauth
-- imap req not working
+- DONE imap req not working.
 
  ROAD MAP to 1.5-final
 - Add chat backup

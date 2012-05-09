@@ -17,12 +17,12 @@ BUILD=$(BASEDIR)/build
 BUILDDIST=$(BUILD)/egg-dist
 ETC=$(BASEDIR)/etc
 
-#PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
-PYTHONBIN=python #MacOSX machine
+PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
+#PYTHONBIN=python #MacOSX machine
 #PYTHONWINBIN=python
 PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my windows machine at work
 #PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
-PYTHONVERSION=2.6
+PYTHONVERSION=2.7
 
 MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
 #MAKENSIS=/c/Program\ Files/NSIS/makensis.exe #windows laptop
@@ -73,8 +73,8 @@ gmv-linux-dist: clean init
 	#add python interpreter with virtualenv
 	cd $(GMVDIST)/$(GMVDISTNAME)/lib; virtualenv --no-site-packages python-lib
 	# copy local version of atom to avoid compilation problems
-	cp $(BASEDIR)/etc/libs/atom.tar.gz $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/lib/python2.6/site-packages/
-	cd $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/lib/python2.6/site-packages; tar zxvf atom.tar.gz; rm -f atom.tar.gz
+	cp $(BASEDIR)/etc/libs/atom.tar.gz $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/lib/python$(PYTHONVERSION)/site-packages/
+	cd $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/lib/python$(PYTHONVERSION)/site-packages; tar zxvf atom.tar.gz; rm -f atom.tar.gz
 	# install rest of the packages normally
 	cd $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/bin; ./pip install logbook
 	cd $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/bin; ./pip install IMAPClient
