@@ -326,9 +326,9 @@ Documentation:
 Write Blog page for promotion
 
 ROAD MAP to 1.5-beta
-- Easy way to print exception on screen when problem (otherwise I am blind).
+- DONE: Easy way to print exception on screen when problem (otherwise I am blind).
 - DONE: Fix folder bug
-- Add in documentation a paragraph stipulating that you need to make 'All Mail' visible
+- Add in documentation a paragraph stipulating that you need to make 'All Mail' visible and the 1000 emails limit
 - DONE tested Fix unlocalised problem 
 - DONE tested. Add --restart in sync and add restart per account. => Done with imapid to be tested
 - Fix python script on pypi

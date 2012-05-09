@@ -513,8 +513,10 @@ class GMVaultLauncher(object):
             LOG.critical("\nCRTL^C. Stop all operations.\n")
             on_error = False
         except socket.error:
-            LOG.critical("ERROR: Network problem. Please check your gmail server hostname, the internet connection or your network setup.")
-            LOG.critical("For more information see log file.\n")
+            LOG.critical("Error: Network problem. Please check your gmail server hostname, the internet connection or your network setup.\n")
+            LOG.critical("=== Exception traceback ===")
+            LOG.critical(gmvault_utils.get_exception_traceback())
+            LOG.critical("=== End of Exception traceback ===\n")
             die_with_usage = False
         except imaplib.IMAP4.error, imap_err:
             #bad login or password
@@ -524,11 +526,16 @@ class GMVaultLauncher(object):
                 LOG.critical("ERROR: Invalid credentials, cannot login to the gmail server. Please check your login and password or xoauth token.\n")
                 die_with_usage = False
             else:
-                LOG.critical("Error %s. For more information see log file\n" % (imap_err) )
-                LOG.exception(gmvault_utils.get_exception_traceback())
+                LOG.critical("Error: %s.\n" % (imap_err) )
+                LOG.critical("=== Exception traceback ===")
+                LOG.critical(gmvault_utils.get_exception_traceback())
+                LOG.critical("=== End of Exception traceback ===\n")
         except Exception, err:
-            LOG.critical("Error %s. For more information see log file\n" % (err) )
-            LOG.exception(gmvault_utils.get_exception_traceback())
+            LOG.critical("Error: %s.\n" % (err) )
+            LOG.critical("=== Exception traceback ===")
+            LOG.critical(gmvault_utils.get_exception_traceback())
+            LOG.critical("=== End of Exception traceback ===\n")
+            die_with_usage = False
         finally: 
             if on_error and die_with_usage:
                 args['parser'].die_with_usage()
