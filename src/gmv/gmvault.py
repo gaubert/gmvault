@@ -678,14 +678,20 @@ class GMVaulter(object):
                 if (nb_emails_processed % 20) == 0:
                     if gid:
                         self.save_lastid(self.OP_SYNC, gid)
+                        
+                #raise imaplib.IMAP4.abort("System Error")
             
             except imaplib.IMAP4.error, error:
                 # check if this is a cannot be fetched error 
                 # I do not like to do string guessing within an exception but I do not have any choice here
-                
-                LOG.exception("Error [%s]" % error.message, error )
-                
-                if error.message == "fetch failed: 'Some messages could not be FETCHed (Failure)'":
+                print(type(error))
+                LOG.critical("Error [%s]" % error.message)
+                LOG.critical("=== Exception traceback ===")
+                LOG.critical(gmvault_utils.get_exception_traceback())
+                LOG.critical("=== End of Exception traceback ===\n")
+                 
+                #quarantine emails that have raised an abort error
+                if type(error) == type(imaplib.IMAP4.abort("")) or error == "fetch failed: 'Some messages could not be FETCHed (Failure)'":
                     try:
                         #try to get the gmail_id
                         curr = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID) 
