@@ -29,7 +29,11 @@ python setup.py blahhhh.
 
 ## Install from PyPi
 
-pip install gmvault or easy_install install gmvault
+    pip install gmvault
+
+or
+
+    easy_install gmvault
 
 ## gmvault 2 mins start 
 
