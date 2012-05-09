@@ -26,6 +26,7 @@ Experimentation and validation of internal mechanisms
 
 import unittest
 import base64
+import imaplib
 
 
 import gmv.gmvault_utils as gmvault_utils
@@ -183,13 +184,15 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
                 """
                    Throw exceptions
                 """
-                raise imap_utils.PushEmailError("GIMAPFetcher cannot restore email in %s account." %("myaccount@gmail.com"))
+                raise imaplib.IMAP4.abort("GIMAPFetcher cannot restore email in %s account." %("myaccount@gmail.com"))
+                #raise imap_utils.PushEmailError("GIMAPFetcher cannot restore email in %s account." %("myaccount@gmail.com"))
             
         
         imap_fetch = MonkeyIMAPFetcher(host = None, port = None, login = None, credential = None)
         try:
             imap_fetch.push_email(None, None, None, None)
-        except Exception, err:
+        #except Exception, err:
+        except imaplib.IMAP4.error, err:
             self.assertEquals('GIMAPFetcher cannot restore email in myaccount@gmail.com account.', str(err))
         
         self.assertEquals(imap_fetch.connect_nb, 3)

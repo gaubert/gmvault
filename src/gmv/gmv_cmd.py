@@ -78,9 +78,9 @@ d) Custom synchronisation with an Gmail request for advance users
 
 #> gmvault sync --type custom --gmail-req 'in:inbox from:foo' 'foo.bar@gmail.com'
 
-e) Full synchronisation for German users that have to use googlemail instead of gmail
+e) restart Full synchronisation  from where it failed to not go through your mailbox again
 
-#> gmvault sync --imap-server imap.googlemail.com 'foo.bar@gmail.com'
+#> gmvault sync 'foo.bar@gmail.com' --restart
 
 
 
