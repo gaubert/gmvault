@@ -141,19 +141,19 @@ class GMVaultLauncher(object):
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
         
-        sync_parser.add_argument("--renew-oauth-tok", \
-                          help="renew the stored oauth token via an interactive authentication session.",
-                          action= 'store_const' , dest="oauth_token", const='renew')
-        
-        
         
         sync_parser.add_argument("-o", "--oauth", \
                           help="use oauth for authentication. (default recommended method)",\
                           action='store_const', dest="oauth_token", const='empty', default='not_seen')
         
-        #sync_parser.add_argument("-p", "--passwd", metavar = "PASS", \
-        #                  help="use password authentication. (not recommended)",
-        #                  action= NotSeenAction , dest="passwd", default='not_seen')
+        sync_parser.add_argument("-p", "--passwd", \
+                          help="use interactive password authentication. (not recommended)",
+                          action= 'store_const' , dest="passwd", const='empty', default='not_seen')
+        
+        sync_parser.add_argument("--renew-oauth-tok", \
+                          help="renew the stored oauth token via an interactive authentication session.",
+                          action= 'store_const' , dest="oauth_token", const='renew')
+         
         sync_parser.add_argument("--renew-passwd", \
                           help="renew the stored password via an interactive authentication session. (not recommended)",
                           action= 'store_const' , dest="passwd", const='renew')
@@ -161,10 +161,6 @@ class GMVaultLauncher(object):
         sync_parser.add_argument("--store-passwd", \
                           help="use interactive password authentication, encrypt and store the password. (not recommended)",
                           action= 'store_const' , dest="passwd", const='store')
-        
-        sync_parser.add_argument("-p", "--passwd", \
-                          help="use interactive password authentication. (not recommended)",
-                          action= 'store_const' , dest="passwd", const='empty', default='not_seen')
         
         sync_parser.add_argument("-r", "--imap-req", metavar = "REQ", \
                                  help="Imap request to restrict sync.",\
