@@ -230,7 +230,7 @@ class CredentialHelper(object):
         token  = None
         secret = None
         if os.path.exists(user_oauth_file_path):
-            LOG.critical("Use oauth credentials from %s." % (user_oauth_file_path))
+            LOG.critical("Get XOAuth credential from %s.\n" % (user_oauth_file_path))
             
             oauth_file  = open(user_oauth_file_path)
             
@@ -273,7 +273,7 @@ class CredentialHelper(object):
             # --passwd is here so look if there is a passwd in conf file 
             # or go in interactive mode
             
-            LOG.critical("Gmail password will be used for authentication.\n")
+            LOG.critical("Authentication performed with Gmail password.\n")
             
             passwd = cls.read_password(args['email'])
             
@@ -296,15 +296,20 @@ class CredentialHelper(object):
                 credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read' }
                                
         #elif args['passwd'] == 'not_seen' and args['oauth']:
-        elif args['passwd'] in ['not_seen', None] and args['oauth']:
+        elif args['passwd'] in ('not_seen', None) and args['oauth'] in (None, 'empty','renew'):
             # get token secret
             # if they are in a file then no need to call get_oauth_tok_sec
             # will have to add 2 legged or 3 legged
-            LOG.critical("Oauth will be used for authentication.\n")
+            LOG.critical("Authentication performed with Gmail XOAuth token.\n")
             
             token, secret = cls.read_oauth_tok_sec(args['email'])
            
-            if not token: 
+            if not token or args['oauth'] == 'renew':
+                
+                if args['oauth'] == 'renew':
+                    LOG.critical("Renew XOAuth token. Initiate interactive session to get it from Gmail.\n")
+                else:
+                    LOG.critical("Initiate interactive session to get XOAuth token from Gmail.\n")
                 token, secret = get_oauth_tok_sec(args['email'], use_webbrowser = True)
                 if not token:
                     raise Exception("Cannot get XOAuth token from Gmail. See Gmail error message")

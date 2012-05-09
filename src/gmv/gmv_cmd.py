@@ -140,6 +140,13 @@ class GMVaultLauncher(object):
                
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
+        
+        sync_parser.add_argument("--renew-oauth-tok", \
+                          help="renew the stored oauth token via an interactive authentication session.",
+                          action= 'store_const' , dest="oauth_token", const='renew')
+        
+        
+        
         sync_parser.add_argument("-o", "--oauth", \
                           help="use oauth for authentication. (default recommended method)",\
                           action='store_const', dest="oauth_token", const='empty', default='not_seen')
@@ -277,7 +284,7 @@ class GMVaultLauncher(object):
         
         #user entered both authentication methods
         if options.passwd == 'empty' and options.oauth_token == 'empty':
-            parser.error('You have to use one credential method. Please choose between oauth and password (recommend oauth).')
+            parser.error('You have to use one authentication method. Please choose between XOAuth and password (recommend XOAuth).')
         
         # user entered no authentication methods => go to default oauth
         if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
@@ -300,7 +307,7 @@ class GMVaultLauncher(object):
         #add db_dir
         parsed_args['db-dir']           = options.db_dir
 
-        LOG.critical("Use gmvault-db %s." % (parsed_args['db-dir'])) 
+        LOG.critical("Use gmvault-db located in %s.\n" % (parsed_args['db-dir'])) 
         
         # add host
         parsed_args['host']             = options.host
