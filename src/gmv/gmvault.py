@@ -20,6 +20,7 @@ import gzip
 import re
 import datetime
 import os
+import time
 import itertools
 import imaplib
 import fnmatch
@@ -452,7 +453,7 @@ class GMVaulter(object):
         self.src.connect()
         
         # enable compression if possible
-        self.src.enable_compression() 
+        #self.src.enable_compression() 
         
         self.use_encryption = use_encryption
         
@@ -678,21 +679,27 @@ class GMVaulter(object):
                     if gid:
                         self.save_lastid(self.OP_SYNC, gid)
                         
-                #raise imaplib.IMAP4.abort("System Error")
-            
-            except imaplib.IMAP4.abort, ab_err:
+            except imaplib.IMAP4.abort, _:
                 # imap abort error 
-                #try to quarantine it
+                # ignore it 
+                # will have to do something with these ignored messages
+                LOG.critical("Error while fetching message with imap id %s." % (the_id))
+                LOG.critical("\n=== Exception traceback ===\n")
+                LOG.critical(gmvault_utils.get_exception_traceback())
+                LOG.critical("=== End of Exception traceback ===\n")
                 try:
                     #try to get the gmail_id
+                    raise Exception("Error")
                     curr = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID) 
                 except Exception, _: #pylint:disable-msg=W0703
                     curr = None
+                    LOG.critical("Error when trying to get gmail id for message with imap id %s." % (the_id))
+                    LOG.critical("Disconnect, wait for 20 sec then reconnect.")
                     self.src.disconnect()
                     #could not fetch the gm_id so disconnect and sleep
-                    import time
-                    #sleep 30 sec
-                    time.sleep(30)
+                    #sleep 20 sec
+                    time.sleep(20)
+                    LOG.critical("Reconnecting ...")
                     self.src.connect()
                     
                 if curr:
@@ -703,17 +710,18 @@ class GMVaulter(object):
                 #add ignored id
                 self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
                 
+                LOG.critical("Forced to ignore message with imap id %s, (gmail id %s)." % (the_id, (gmail_id if gmail_id else "cannot be read")))
+                
             except imaplib.IMAP4.error, error:
                 # check if this is a cannot be fetched error 
                 # I do not like to do string guessing within an exception but I do not have any choice here
-                print(type(error))
-                LOG.critical("Error [%s]" % error.message)
-                LOG.critical("=== Exception traceback ===")
+                LOG.critical("Error while fetching message with imap id %s." % (the_id))
+                LOG.critical("\n=== Exception traceback ===\n")
                 LOG.critical(gmvault_utils.get_exception_traceback())
                 LOG.critical("=== End of Exception traceback ===\n")
                  
                 #quarantine emails that have raised an abort error
-                if type(error) == type(imaplib.IMAP4.abort("")) or error == "fetch failed: 'Some messages could not be FETCHed (Failure)'":
+                if error == "fetch failed: 'Some messages could not be FETCHed (Failure)'":
                     try:
                         #try to get the gmail_id
                         curr = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID) 
@@ -727,6 +735,9 @@ class GMVaulter(object):
                     
                     #add ignored id
                     self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
+                    
+                    LOG.critical("Ignore message with imap id %s, (gmail id %s)" % (the_id, (gmail_id if gmail_id else "cannot be read")))
+                
                 else:
                     raise error #rethrow error
     
