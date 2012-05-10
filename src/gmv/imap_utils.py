@@ -265,7 +265,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         the_dir = None
         for (flags, _, the_dir) in folders:
             #non localised GMAIL_ALL
-            if len(flags) >= 2 and flags[1] in (GIMAPFetcher.GENERIC_GMAIL_ALL):
+            if GIMAPFetcher.GENERIC_GMAIL_ALL in flags:
                     #it could be a localized Dir name
                     self._all_mail_folder = the_dir
                     break
