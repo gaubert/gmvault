@@ -337,6 +337,8 @@ ROAD MAP to 1.5-beta
 - DONE imap req not working.
 - See this issue and catch the exception and try to reinit the connection. (abort error is not raised it error again after a while=> need to find a way to park the email). Add an option to flag email if option is checked.
 
+# Fix labels bug and imap.abort bug
+
 
  ROAD MAP to 1.5-final
 - Add chat backup

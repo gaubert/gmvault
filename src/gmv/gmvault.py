@@ -262,7 +262,6 @@ class GmailStorer(object):
                      self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
                      self.THREAD_IDS_K : email_info[imap_utils.GIMAPFetcher.GMAIL_THREAD_ID],
                      self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]),
-                     self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
                      self.SUBJECT_K    : subject,
                      self.MSGID_K      : msgid
                    }
@@ -618,7 +617,7 @@ class GMVaulter(object):
                 
                 LOG.debug("\nProcess imap id %s" % ( the_id ))
                 
-                #get everything once for all
+                #get everything but data
                 new_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA )
                 
                 if new_data.get(the_id, None):
@@ -648,7 +647,7 @@ class GMVaulter(object):
                             #update local index id gid => index per directory to be thought out
                     else:  
                         
-                        #get everything once for all
+                        #get the data
                         email_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_DATA_ONLY )
                         
                         new_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY] = email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
@@ -679,6 +678,29 @@ class GMVaulter(object):
                     if gid:
                         self.save_lastid(self.OP_SYNC, gid)
             
+            except imaplib.IMAP4.abort, ab_err:
+                # imap abort error 
+                #try to quarantine it
+                try:
+                    #try to get the gmail_id
+                    curr = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID) 
+                except Exception, _: #pylint:disable-msg=W0703
+                    curr = None
+                    self.src.disconnect()
+                    #could not fetch the gm_id so disconnect and sleep
+                    import time
+                    #sleep 30 sec
+                    time.sleep(30)
+                    self.src.connect()
+                    
+                if curr:
+                    gmail_id = curr[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
+                else:
+                    gmail_id = None
+                    
+                #add ignored id
+                self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
+                
             except imaplib.IMAP4.error, error:
                 # check if this is a cannot be fetched error 
                 # I do not like to do string guessing within an exception but I do not have any choice here

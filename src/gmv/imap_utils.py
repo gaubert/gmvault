@@ -233,6 +233,9 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         # set to GMAIL_ALL dir by default and in readonly
         if go_to_all_folder:
             self.server.select_folder(self._all_mail_folder, readonly = self.readonly_folder)
+        
+        #enable compression
+        self.enable_compression()
             
     def disconnect(self):
         """
@@ -369,11 +372,15 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            labels: list of labels to create
            
         """
+        
+        #1.5-beta moved that out of the loop to minimize the number of calls
+        #to that method. (Could go further and memoize it)
+        
+        #get existing directories (or label parts)
+        folders = [ directory for (_, _, directory) in self.server.list_folders() ]
+            
         for lab in labels:
            
-            #get existing directories (or label parts)
-            folders = [ directory for (_, _, directory) in self.server.list_folders() ]
-            
             labs = self._get_dir_from_labels(lab)
             
             for directory in labs:
