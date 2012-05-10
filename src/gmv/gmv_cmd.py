@@ -581,7 +581,7 @@ def bootstrap_run():
 if __name__ == '__main__':
      
     #import sys
-    #sys.argv = ['gmvault.py', 'sync', 'guillaume.aubert@gmail.com']
+    #print("sys.argv=[%s]" %(sys.argv))
     bootstrap_run()
     
     sys.exit(0)
