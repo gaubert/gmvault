@@ -336,6 +336,8 @@ ROAD MAP to 1.5-beta
 - Fix 2-legged oauth
 - DONE imap req not working.
 - See this issue and catch the exception and try to reinit the connection. (abort error is not raised it error again after a while=> need to find a way to park the email). Add an option to flag email if option is checked.
+- Fix Mac OS X version
+- Add no compress option
 
 # Fix labels bug and imap.abort bug
 
@@ -348,6 +350,21 @@ the get_folder_list is called everytime (memoize it) or call it once at the begi
 - Add chat backup
 
 
+Release Note:
+
+Below are the new features and bug fixes implemented in Gmvault 1.5-beta,
+- gmvault bash script can now be launched from anywhere (bug fix, issue #a),
+- Gmvault now handle localised IMAP Folders (bug fix, issue #),
+- Add --restart option in sync mode to restart a backup that failed (Gmail throttle and cut the connection sometimes) from where it failed (feature #)
+- Add a restart per account name. If you have multiple accounts, the restart will be saved for all of them
+- Windows installer now contains an uninstaller and creates a shortcut folder in the Win Start Menu (feature #)
+- --req-imap -r option now works properly on Mac OSX. Fix gmvault bash script to correctly pass params to python prog (bug fix, issue #)
+- Fix issue of failing backup, ending up with imaplib.abort error: SystemError (bug fix issue #)
+- Handle labels that are numbers. imaplib returns int type labels when they are number (bug fix issue #)
+- print exception on screen when there is a problem in normal mode to give users the possibility to send the error message
+
+Documentation update:
+- Add Gmail Setting for Gmvault (make All Mail visible, check 1000 mail limit)
 
 
 
