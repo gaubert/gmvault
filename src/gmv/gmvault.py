@@ -194,10 +194,14 @@ class GmailStorer(object):
         # parse header fields to extract subject and msgid
         subject, msgid = self.parse_header_fields(email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS])
         
+        # need to convert labels that are number as string
+        # come from imap_lib when label is a number
+        labels = [ str(elem) for elem in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS] ]
+        
         #create json structure for metadata
         meta_obj = { 
                      self.ID_K         : email_info[imap_utils.GIMAPFetcher.GMAIL_ID],
-                     self.LABELS_K     : email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS],
+                     self.LABELS_K     : labels,
                      self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
                      self.THREAD_IDS_K : email_info[imap_utils.GIMAPFetcher.GMAIL_THREAD_ID],
                      self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]),
@@ -396,6 +400,10 @@ class GmailStorer(object):
         metadata = json.load(meta_fd)
         
         metadata[self.INT_DATE_K] =  gmvault_utils.e2datetime(metadata[self.INT_DATE_K])
+        
+        # force convertion of labels as string because imap_lib or Gmail Imap
+        # returns a num when the label is a number (ie. '00000')
+        metadata[self.LABELS_K] = [ str(elem) for elem in  metadata[self.LABELS_K] ]
         
         return metadata
     
