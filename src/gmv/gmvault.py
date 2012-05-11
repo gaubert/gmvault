@@ -692,7 +692,7 @@ class GMVaulter(object):
                     if gid:
                         self.save_lastid(self.OP_SYNC, gid)
                 
-                raise imaplib.IMAP4.error("fetch failed: 'Some messages could not be FETCHed (Failure)'")
+                #raise imaplib.IMAP4.error("fetch failed: 'Some messages could not be FETCHed (Failure)'")
                         
             except imaplib.IMAP4.abort, _:
                 # imap abort error 
@@ -739,6 +739,7 @@ class GMVaulter(object):
                 if str(error).find("'Some messages could not be FETCHed (Failure)'") >= 0:
                     try:
                         #try to get the gmail_id
+                        LOG.critical("One last try to fetch the GMAIL ID.")
                         curr = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID) 
                     except Exception, _: #pylint:disable-msg=W0703
                         curr = None
