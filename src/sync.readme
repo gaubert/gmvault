@@ -349,6 +349,7 @@ Note on bug with labels that are numbers:
 -----------------------------------------
 IMAPClient responseparser convert all str.isdigit() == True as int so we loose the information. Would need to change that.
 => Would need to redo the tokenParser (see for later).
+IMAP_ID =13 (en ai une) is the subject, email sent by turt.
 
 
  ROAD MAP to 1.5-final

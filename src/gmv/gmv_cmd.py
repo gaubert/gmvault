@@ -190,7 +190,7 @@ class GMVaultLauncher(object):
          # activate the restart mode
         sync_parser.add_argument("--no-compression", \
                                  action='store_false', dest='compression', \
-                                 default=True, help= 'disable email compression.')
+                                 default=True, help= 'disable email storage compression (gzip).')
         
         sync_parser.add_argument("--server", metavar = "HOSTNAME", \
                               action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
@@ -460,7 +460,7 @@ class GMVaultLauncher(object):
         if args.get('type', '') == 'full':
         
             #choose full sync. Ignore the request
-            syncer.sync({ 'type': 'imap', 'req': 'ALL' } , compress_on_disk = True, \
+            syncer.sync({ 'type': 'imap', 'req': 'ALL' } , compress_on_disk = args['compression'], \
                         db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'], restart = args['restart'])
             
         elif args.get('type', '') == 'quick':
@@ -475,7 +475,7 @@ class GMVaultLauncher(object):
             end   = today + datetime.timedelta(1)
             
             syncer.sync( { 'type': 'imap', 'req': syncer.get_imap_request_btw_2_dates(begin, end) }, \
-                           compress_on_disk = True, \
+                           compress_on_disk = args['compression'], \
                            db_cleaning = args['db-cleaning'], \
                            ownership_checking = args['ownership_control'])
             
@@ -484,7 +484,7 @@ class GMVaultLauncher(object):
             # pass an imap request. Assume that the user know what to do here
             LOG.critical("Perform custom synchronisation with request: %s" % (args['request']['req']))
             
-            syncer.sync(args['request'], compress_on_disk = True, db_cleaning = args['db-cleaning'], \
+            syncer.sync(args['request'], compress_on_disk = args['compression'], db_cleaning = args['db-cleaning'], \
                         ownership_checking = args['ownership_control'], restart = args['restart'])
         else:
             raise ValueError("Unknown synchronisation mode %s. Please use full (default), quick or custom.")

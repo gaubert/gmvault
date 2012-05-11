@@ -631,16 +631,8 @@ class GMVaulter(object):
                 
                 LOG.debug("\nProcess imap id %s" % ( the_id ))
                 
-                if the_id == 13:
-                    print("we have to break")
-                
                 #get everything but data
                 new_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA )
-                
-                #print("data = %s" %(new_data[the_id]))
-                
-                if 0 in new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS]:
-                    print("we have to break")
                 
                 if new_data.get(the_id, None):
                     
