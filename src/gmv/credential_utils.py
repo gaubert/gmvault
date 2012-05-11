@@ -182,13 +182,13 @@ class CredentialHelper(object):
         """
         oauth_file = '%s/%s.oauth' % (gmvault_utils.get_home_dir_path(), email)
     
-        fdesc = open(oauth_file, "w+")
+        fdesc = os.open(oauth_file, os.O_CREAT|os.O_WRONLY, 0600)
         
-        fdesc.write(token)
-        fdesc.write('::')
-        fdesc.write(secret)
+        os.write(fdesc, token)
+        os.write(fdesc, '::')
+        os.write(fdesc, secret)
     
-        fdesc.close()
+        os.close(fdesc)
     
     @classmethod
     def read_password(cls, email):
