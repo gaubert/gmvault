@@ -335,7 +335,7 @@ ROAD MAP to 1.5-beta
 - Fix Windows version (add uninstall, start menu, ...)
 - Fix 2-legged oauth
 - DONE imap req not working.
-- See this issue and catch the exception and try to reinit the connection. (abort error is not raised it error again after a while=> need to find a way to park the email). Add an option to flag email if option is checked.
+- DONE but not sure it is the right approach See this issue and catch the exception and try to reinit the connection. (abort error is not raised it error again after a while=> need to find a way to park the email). Add an option to flag email if option is checked.
 - Fix Mac OS X version
 - Add no compress option
 
@@ -344,6 +344,11 @@ ROAD MAP to 1.5-beta
 =======
 - fix the label issue when syncing (insure that the label is a string) or ignore it with a warning. When creating the labels,
 the get_folder_list is called everytime (memoize it) or call it once at the beginning of the method (not for every label).
+
+Note on bug with labels that are numbers:
+-----------------------------------------
+IMAPClient responseparser convert all str.isdigit() == True as int so we loose the information. Would need to change that.
+=> Would need to redo the tokenParser (see for later).
 
 
  ROAD MAP to 1.5-final

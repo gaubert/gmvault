@@ -187,6 +187,11 @@ class GMVaultLauncher(object):
                                  help="Allow the email database to be synchronized with emails from multiple accounts.",\
                                  action='store_true',dest="allow_mult_owners", default=False)
         
+         # activate the restart mode
+        sync_parser.add_argument("--no-compression", \
+                                 action='store_false', dest='compression', \
+                                 default=True, help= 'disable email compression.')
+        
         sync_parser.add_argument("--server", metavar = "HOSTNAME", \
                               action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
                               dest="host", default="imap.gmail.com")
@@ -377,6 +382,9 @@ class GMVaultLauncher(object):
             
             #add ownership checking
             parsed_args['ownership_control'] = not options.allow_mult_owners
+            
+            #compression flag
+            parsed_args['compression'] = options.compression
                 
                 
         elif parsed_args.get('command', '') == 'restore':
