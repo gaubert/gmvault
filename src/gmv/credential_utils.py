@@ -155,7 +155,7 @@ class CredentialHelper(object):
             secret = open(a_filepath).read()
         else:
             secret = gmvault_utils.make_password()
-            fdesc = open(a_filepath, 'w+')
+            fdesc = open(a_filepath, os.O_CREAT|os.O_WRONLY, 0600)
             fdesc.write(secret)
             fdesc.close()
         
@@ -167,7 +167,7 @@ class CredentialHelper(object):
         """
         passwd_file = '%s/%s.passwd' % (gmvault_utils.get_home_dir_path(), email)
     
-        fdesc = open(passwd_file, "w+")
+        fdesc = open(passwd_file, os.O_CREAT|os.O_WRONLY, 0600)
         
         cipher       = blowfish.Blowfish(cls.get_secret_key(cls.SECRET_FILEPATH % (gmvault_utils.get_home_dir_path())))
         cipher.initCTR()
