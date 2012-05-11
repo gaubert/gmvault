@@ -850,6 +850,10 @@ class GMVaulter(object):
             LOG.critical("Restart mode activated. Need to find information in Gmail, be patient.")
             imap_ids = self.get_gmails_ids_left_to_sync(imap_ids)
         
+        if not compress_on_disk:
+            LOG.critical("Disable compression when storing emails.")
+        
+        
         # create new emails in db and update existing emails
         self._create_update_sync(imap_ids, compress = compress_on_disk, ownership_control = ownership_checking)
         
