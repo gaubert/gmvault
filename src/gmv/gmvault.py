@@ -260,10 +260,15 @@ class GmailStorer(object):
         # parse header fields to extract subject and msgid
         subject, msgid = self.parse_header_fields(email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS])
         
+        # need to convert labels that are number as string
+        # come from imap_lib when label is a number
+        labels = [ str(elem) for elem in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS] ]
+        
+        
         #create json structure for metadata
         meta_obj = { 
                      self.ID_K         : email_info[imap_utils.GIMAPFetcher.GMAIL_ID],
-                     self.LABELS_K     : email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS],
+                     self.LABELS_K     : labels,
                      self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
                      self.THREAD_IDS_K : email_info[imap_utils.GIMAPFetcher.GMAIL_THREAD_ID],
                      self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]),
@@ -626,16 +631,16 @@ class GMVaulter(object):
                 
                 LOG.debug("\nProcess imap id %s" % ( the_id ))
                 
-                #if the_id == 12:
-                #    print("we have to break")
+                if the_id == 13:
+                    print("we have to break")
                 
                 #get everything but data
                 new_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA )
                 
                 #print("data = %s" %(new_data[the_id]))
                 
-                #if 0 in new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS]:
-                #    print("we have to break")
+                if 0 in new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS]:
+                    print("we have to break")
                 
                 if new_data.get(the_id, None):
                     
