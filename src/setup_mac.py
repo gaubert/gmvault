@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['gmv_cmd.py']
+APP = ['./gmv/gmv_cmd.py']
 DATA_FILES = []
 OPTIONS = {'argv_emulation': True}
 
@@ -15,5 +15,5 @@ setup(
     app=APP,
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
-    setup_requires=['py2app'],
+    setup_requires=['py2app','logbook'],
 )
