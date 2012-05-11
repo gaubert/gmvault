@@ -136,7 +136,8 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
                     #just trace it back for the moment
                     LOG.debug("IMAP (normal) error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
                     
-                    raise err
+                    #raise err
+                    reconnect(args[0], nb_tries, sock_err, m_sleep_time)
 
         return functools.wraps(the_func)(wrapper)
         #return wrapper

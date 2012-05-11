@@ -691,6 +691,8 @@ class GMVaulter(object):
                 if (nb_emails_processed % 20) == 0:
                     if gid:
                         self.save_lastid(self.OP_SYNC, gid)
+                
+                raise imaplib.IMAP4.error("fetch failed: 'Some messages could not be FETCHed (Failure)'")
                         
             except imaplib.IMAP4.abort, _:
                 # imap abort error 
@@ -734,7 +736,7 @@ class GMVaulter(object):
                 LOG.critical("=== End of Exception traceback ===\n")
                  
                 #quarantine emails that have raised an abort error
-                if error == "fetch failed: 'Some messages could not be FETCHed (Failure)'":
+                if str(error).find("'Some messages could not be FETCHed (Failure)'") >= 0:
                     try:
                         #try to get the gmail_id
                         curr = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID) 
