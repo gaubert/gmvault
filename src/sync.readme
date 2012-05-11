@@ -332,12 +332,12 @@ ROAD MAP to 1.5-beta
 - DONE tested Fix unlocalised problem 
 - DONE tested. Add --restart in sync and add restart per account. => Done with imapid to be tested
 - Fix python script on pypi
-- Fix Windows version (add uninstall, start menu, ...)
+- Done: Fix Windows version (add uninstall, start menu, ...) => no registry tweaking at the moment
 - Fix 2-legged oauth
 - DONE imap req not working.
 - DONE but not sure it is the right approach See this issue and catch the exception and try to reinit the connection. (abort error is not raised it error again after a while=> need to find a way to park the email). Add an option to flag email if option is checked.
 - Fix Mac OS X version
-- Add no compress option
+- Done Add no compress option
 
 # Fix labels bug and imap.abort bug
 
@@ -368,6 +368,7 @@ Below are the new features and bug fixes implemented in Gmvault 1.5-beta,
 - Fix issue of failing backup, ending up with imaplib.abort error: SystemError (bug fix issue #)
 - Handle labels that are numbers. imaplib returns int type labels when they are number (bug fix issue #)
 - print exception on screen when there is a problem in normal mode to give users the possibility to send the error message
+- --no-compression option to disable the compression and allow users to use their own compression
 
 Documentation update:
 - Add Gmail Setting for Gmvault (make All Mail visible, check 1000 mail limit)
