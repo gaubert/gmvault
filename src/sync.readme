@@ -337,9 +337,8 @@ ROAD MAP to 1.5-beta
 - DONE imap req not working.
 - DONE but not sure it is the right approach See this issue and catch the exception and try to reinit the connection. (abort error is not raised it error again after a while=> need to find a way to park the email). Add an option to flag email if option is checked.
 - Fix Mac OS X version
-- Done Add no compress option
-
-# Fix labels bug and imap.abort bug
+- DONE Add no compress option
+- DONE Fix imap.abort bug
 
 =======
 - fix the label issue when syncing (insure that the label is a string) or ignore it with a warning. When creating the labels,
@@ -354,6 +353,7 @@ IMAP_ID =13 (en ai une) is the subject, email sent by turt.
 
  ROAD MAP to 1.5-final
 - Add chat backup
+- Improv  reporting at the end of Gmvault (Insure that the reporting is always saved in a file at the end of the run).
 
 
 Release Note:
@@ -369,6 +369,7 @@ Below are the new features and bug fixes implemented in Gmvault 1.5-beta,
 - Handle labels that are numbers. imaplib returns int type labels when they are number (bug fix issue #)
 - print exception on screen when there is a problem in normal mode to give users the possibility to send the error message
 - --no-compression option to disable the compression and allow users to use their own compression
+- Fix Github Issue 4 (A bug was preventing Gmvault to finish its work when an email was not readable (corrupted ?) from Gmail
 
 Documentation update:
 - Add Gmail Setting for Gmvault (make All Mail visible, check 1000 mail limit)
