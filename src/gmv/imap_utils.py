@@ -68,12 +68,12 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
     if a_sleep_time <= 0:
         raise ValueError("a_sleep_time must be greater than 0")
     
-    def reconnect(the_self, rec_nb_tries, rec_error, rec_sleep_time = [1]):
+    def reconnect(the_self, rec_nb_tries, total_nb_tries, rec_error, rec_sleep_time = [1]):
         """
            Reconnect procedure. Sleep and try to reconnect
         """
         # go in retry mode if less than a_nb_tries
-        while rec_nb_tries[0] < a_nb_tries:
+        while rec_nb_tries[0] < total_nb_tries:
             
             LOG.critical("Disconnecting from Gmail Server and sleeping ...")
             the_self.disconnect()            
@@ -114,35 +114,36 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
                     
                     LOG.debug("error message = %s. traceback:%s" % (p_err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Cannot reach the gmail server (see logs). Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    LOG.critical("Cannot reach the Gmail server (see logs). Wait %s seconds and retrying." % (m_sleep_time[0]))
                     
-                    reconnect(args[0], nb_tries, p_err, m_sleep_time)
+                    reconnect(args[0], nb_tries, a_nb_tries, p_err, m_sleep_time)
                 
                 except imaplib.IMAP4.abort, err: #abort is recoverable and error is not
                     
-                    LOG.debug("error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
+                    LOG.debug("IMAP (abort) error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Cannot reach the gmail server (see logs). Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    LOG.critical("Cannot reach the Gmail server (see logs). Wait %s seconds and retrying." % (m_sleep_time[0]))
                     
                     # problem with this email, put it in quarantine
-                    reconnect(args[0], nb_tries, err, m_sleep_time)    
+                    reconnect(args[0], nb_tries, a_nb_tries, err, m_sleep_time)    
                     
                 except socket.error, sock_err:
                     LOG.debug("error message = %s. traceback:%s" % (sock_err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Cannot reach the gmail server (see logs). Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    LOG.critical("Cannot reach the Gmail server (see logs). Wait %s seconds and retrying." % (m_sleep_time[0]))
                     
-                    reconnect(args[0], nb_tries, sock_err, m_sleep_time)
+                    reconnect(args[0], nb_tries, a_nb_tries, sock_err, m_sleep_time)
                     
                 except imaplib.IMAP4.error, err:
                     
                     #just trace it back for the moment
                     LOG.debug("IMAP (normal) error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Cannot reach the gmail server (see logs). Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    LOG.critical("Error when reaching Gmail server. Wait %s seconds and retry up to 2 times." % (m_sleep_time[0]))
                     
                     #raise err
-                    reconnect(args[0], nb_tries, err, m_sleep_time)
+                    # retry 2 times before to quit
+                    reconnect(args[0], nb_tries, 2, err, m_sleep_time)
 
         return functools.wraps(the_func)(wrapper)
         #return wrapper

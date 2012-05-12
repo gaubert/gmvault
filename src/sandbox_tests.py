@@ -26,6 +26,7 @@ Experimentation and validation of internal mechanisms
 
 import unittest
 import base64
+import socket
 import imaplib
 
 
@@ -184,7 +185,9 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
                 """
                    Throw exceptions
                 """
-                raise imaplib.IMAP4.abort("GIMAPFetcher cannot restore email in %s account." %("myaccount@gmail.com"))
+                #raise imaplib.IMAP4.error("GIMAPFetcher cannot restore email in %s account." %("myaccount@gmail.com"))
+                #raise imaplib.IMAP4.abort("GIMAPFetcher cannot restore email in %s account." %("myaccount@gmail.com"))
+                raise socket.error("Error")
                 #raise imap_utils.PushEmailError("GIMAPFetcher cannot restore email in %s account." %("myaccount@gmail.com"))
             
         
