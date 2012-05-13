@@ -12,13 +12,14 @@ GMVDIST=$(BASEDIR)/dist
 GMVBUILD=$(BASEDIR)/build
 GMVBUILDDIST=$(GMVDIST)/build/egg-dist
 GMVWINBUILDDIST=$(GMVDIST)/inst
+GMVMACBUILDDIST=$(GMVDIST)/inst
 
 BUILD=$(BASEDIR)/build
 BUILDDIST=$(BUILD)/egg-dist
 ETC=$(BASEDIR)/etc
 
-PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
-#PYTHONBIN=python #MacOSX machine
+#PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
+PYTHONBIN=python #MacOSX machine
 #PYTHONWINBIN=python
 PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my windows machine at work
 #PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
@@ -82,8 +83,28 @@ gmv-linux-dist: clean init
 	# copy shell scripts in dist/bin
 	mkdir -p $(GMVDIST)/$(GMVDISTNAME)/bin
 	cp -R $(BASEDIR)/etc/scripts/gmvault $(GMVDIST)/$(GMVDISTNAME)/bin
-	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME).tar.gz ./$(GMVDISTNAME)
-	echo "distribution stored in $(GMVDIST)/$(GMVDISTNAME)"
+	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-linux-i686.tar.gz ./$(GMVDISTNAME)
+	@echo ""
+	@echo "=================================================================="
+	@echo ""
+	@echo "distribution $(GMVDISTNAME)-linux-i686.tar.gz stored in $(GMVDIST)"
+	@echo ""
+	@echo "=================================================================="
+
+gmv-mac-dist: clean init
+	cp -R $(BASEDIR)/src/gmv $(GMVDIST)
+	cp $(BASEDIR)/src/setup_mac.py $(GMVDIST)
+	cd $(GMVDIST); $(PYTHONBIN) setup_mac.py py2app
+	mkdir -p $(GMVDIST)/$(GMVDISTNAME)/bin ; mkdir -p $(GMVDIST)/$(GMVDISTNAME)/lib
+	cp $(BASEDIR)/etc/scripts/gmvault_mac $(GMVDIST)/$(GMVDISTNAME)/bin/gmvault
+	cp -R $(GMVDIST)/dist/gmv_cmd.app $(GMVDIST)/$(GMVDISTNAME)/lib
+	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-macosx-intel.tar.gz ./$(GMVDISTNAME)
+	@echo ""
+	@echo "========================================="
+	@echo ""
+	@echo "distribution $(GMVDISTNAME)-macosx-intel.tar.gz stored in $(GMVDIST)"
+	@echo ""
+	@echo "========================================="
 
 gmv-win-dist: init 
 	mkdir -p $(GMVWINBUILDDIST)
@@ -108,7 +129,7 @@ gmv-make-win-installer: gmv-win-dist
 
 
 clean: clean-build
-	cd $(GMVDIST); rm -Rf build; rm -Rf gmvault.egg-info; rm -Rf src; rm -f README* ;rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
+	cd $(GMVDIST); rm -Rf build; rm -Rf gmvault.egg-info; rm -f setup*.py ; rm -Rf dist ; rm -Rf src; rm -f README* ;rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
 
 clean-build:
 	cd $(GMVBUILD); rm -Rf egg-dist; 
