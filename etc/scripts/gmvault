@@ -18,6 +18,7 @@ GMVAULT_HOME=$(unset CDPATH; cd $HERE/..; pwd)
 if [ -f "$GMVAULT_HOME/lib/python-lib/bin/python" ]; then
     PYTHON_BIN=$GMVAULT_HOME/lib/python-lib/bin/python
     export PYTHONPATH=$GMVAULT_HOME/lib:$PYTHONPATH
+    export PYTHONHOME=$GMVAULT_HOME/lib:$PYTHONPATH
 
 elif [ -f "$GMVAULT_HOME/bin/python" ]; then
     #installed from src distribution (python bin is in the same dir as gmvault script)
