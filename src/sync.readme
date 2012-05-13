@@ -375,6 +375,14 @@ Documentation update:
 - Add Gmail Setting for Gmvault (make All Mail visible, check 1000 mail limit)
 
 
+TO DO:
+- make launch script for mac os x with mac app (see later if it can be launched with app)
+- add make rule for mac 
+- send test version to mac poeple
+- add release note
+- add donation button
+- add download page
+
 
 
 
