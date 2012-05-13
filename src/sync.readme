@@ -377,12 +377,12 @@ Documentation update:
 
 TO DO:
 - add clear message to signal that you've been throttled by Gmail
-- make launch script for mac os x with mac app (see later if it can be launched with app)
-- add make rule for mac 
-- send test version to mac poeple
 - add release note
 - add donation button
 - add download page
+DONE: - make launch script for mac os x with mac app (see later if it can be launched with app)
+DONE: - add make rule for mac 
+DONE: - send test version to mac poeple
 
 
 
