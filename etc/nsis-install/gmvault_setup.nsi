@@ -82,6 +82,8 @@ createDirectory "$SMPROGRAMS\Gmvault"
 createShortCut  "$SMPROGRAMS\Gmvault\gmvault-shell.lnk" "$INSTDIR\gmvault-shell.bat" "" "$INSTDIR\gmv-icon.ico"
 createShortCut  "$SMPROGRAMS\Gmvault\gmvault.lnk" "$INSTDIR\gmvault.bat" "" "$INSTDIR\gmv-icon.ico"
 createShortCut  "$SMPROGRAMS\Gmvault\uninstall.lnk" "$INSTDIR\uninstall.exe" "" ""
+createShortCut  "$SMPROGRAMS\Gmvault\README.txt" "$INSTDIR\README.txt" "" ""
+createShortCut  "$SMPROGRAMS\Gmvault\RELEASE-NOTE.txt" "$INSTDIR\RELEASE-NOTE.txt" "" ""
 
 ; Registry information for add/remove programs
 ;	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "DisplayName" "${COMPANYNAME} - ${APPNAME} - ${DESCRIPTION}"
@@ -111,6 +113,8 @@ File gmvault.bat
 File gmv-msg.bat
 File gmv-icon.ico
 File gmvault-shell.bat
+File RELEASE-NOTE.txt
+File README.txt
 File library.zip
 File python27.dll
 File w9xpopen.exe
@@ -139,6 +143,7 @@ Delete $INSTDIR\gmv_cmd.exe
 Delete $INSTDIR\library.zip
 Delete $INSTDIR\*.ico
 Delete $INSTDIR\*.bat
+Delete $INSTDIR\*.txt
 Delete $INSTDIR\python27.dll
 Delete $INSTDIR\w9xpopen.exe
 Delete $INSTDIR\*.pyd
