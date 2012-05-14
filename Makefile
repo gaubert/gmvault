@@ -122,6 +122,7 @@ gmv-mac-dist: clean init
 	mkdir -p $(GMVDIST)/$(GMVDISTNAME)/bin ; mkdir -p $(GMVDIST)/$(GMVDISTNAME)/lib
 	cp $(BASEDIR)/etc/scripts/gmvault_mac $(GMVDIST)/$(GMVDISTNAME)/bin/gmvault
 	cp -R $(GMVDIST)/dist/gmv_cmd.app $(GMVDIST)/$(GMVDISTNAME)/lib
+	cp -R $(BASEDIR)/etc/release-notes/release-note.txt $(GMVDIST)/$(GMVDISTNAME)
 	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-macosx-intel.tar.gz ./$(GMVDISTNAME)
 	@echo ""
 	@echo "========================================="
