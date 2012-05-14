@@ -21,12 +21,12 @@ ETC=$(BASEDIR)/etc
 #PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
 PYTHONBIN=python #MacOSX machine
 #PYTHONWINBIN=python
-PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my windows machine at work
-#PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
+#PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my windows machine at work
+PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
 PYTHONVERSION=2.7
 
-MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
-#MAKENSIS=/c/Program\ Files/NSIS/makensis.exe #windows laptop
+#MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
+MAKENSIS=/c/Program\ Files/NSIS/makensis.exe #windows laptop
 
 #VERSION is in gmv_cmd.py as GMVAULT_VERSION
 GMVVERSION=$(shell python $(BASEDIR)/etc/utils/find_version.py $(BASEDIR)/src/gmv/gmv_cmd.py)
@@ -142,8 +142,8 @@ gmv-win-dist: init
 	cp $(BASEDIR)/etc/scripts/gmvault.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault-shell.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)
-	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/bin/README.txt
-	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)$(GMVDISTNAME)/bin/RELEASE-NOTE.txt
+	cp $(BASEDIR)/README.md $(GMVWINBUILDDIST)/README.txt
+	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVWINBUILDDIST)
 	echo "distribution available in $(GMVWINBUILDDIST)"
 
 gmv-make-win-installer: gmv-win-dist
