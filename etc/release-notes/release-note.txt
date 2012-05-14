@@ -1,0 +1,36 @@
+Release Notes for the different versions:
+
+
+-------------------------------
+-------------------------------
+Version Gmvault-v1.5-beta:
+-------------------------------
+-------------------------------
+Date:
+
+
+Added new Features:
+-------------------
+- Add --restart option in sync mode to restart a failing backup (Gmail can throttle and cut the connection sometimes) from where it crashed. [Github feature #]
+- Add a restart per account name. If you have multiple accounts, the restart will be saved for all of them. [Github feature #]
+- Windows installer now contains an uninstaller and creates a shortcut folder in the Windows Start Menu. [Github feature #]
+- Add --no-compression option to disable the compression and allow users to use their own compression. [Github feature #]
+
+Bug Fixes:
+----------
+
+- Improve Mac OS X distribution. It is now a binary distribution that can run on all intel Mac OS X versions. It has been tested on 10.7 and 10.6. [Github issue #]
+- gmvault bash script can now be launched from anywhere. [Github issue #] 
+- Gmvault now handle localised IMAP Folders. [Github issue #]
+- --req-imap -r option now works properly on Mac OSX. Fix gmvault bash script to correctly pass params to python prog. [Github issue #]
+- Fix issue of failing backup, ending up with imaplib.abort error: SystemError. [Github issue #]
+- Handle labels that are numbers. IMAPClient returns int type labels when they are number [Github issue #]
+- Print exception on screen when there is a problem in normal mode to give users the possibility easily send the error message [Github issue #]
+- Fix bug preventing Gmvault to finish its work when an email was not readable (corrupted ?) from Gmail. [Github issue #]
+
+Shoutouts: 
+----------
+
+Thanks to 
+
+

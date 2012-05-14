@@ -53,6 +53,7 @@ gmv-egg-dist: init
 	echo "distribution stored in $(GMVBUILDDIST)"
 
 gmv-src-dist: clean init
+	# make src dist that can be downloaded
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
 	cp -R $(BASEDIR)/src $(GMVDIST)
 	cp $(BASEDIR)/setup.py $(GMVDIST)
@@ -61,9 +62,32 @@ gmv-src-dist: clean init
 	# copy scripts in dist
 	cp -R $(BASEDIR)/etc $(GMVDIST)
 	cd $(GMVDIST); $(PYTHONBIN) setup.py sdist -d ../$(GMVBUILD) 
+	@echo ""
+	@echo "=================================================================="
+	@echo ""
 	@echo "Distribution stored in $(GMVBUILD)"
 	@echo "To register on pypi cd ./build; tar zxvf gmvault-1.0-beta.tar.gz; cd gmvault-1.0-beta ; python setup.py register sdist upload"
 	@echo "If you do not change the version number, you will have to delete the release from the pypi website http://pypi.python.org and register it again"
+	@echo ""
+	@echo "=================================================================="
+
+gmv-pypi-dist: clean init
+	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
+	cp -R $(BASEDIR)/src $(GMVDIST)
+	cp $(BASEDIR)/setup.py $(GMVDIST)
+	cp -R $(BASEDIR)/README.md $(GMVDIST)
+	cp -R $(BASEDIR)/README.md $(GMVDIST)/README.txt
+	# copy scripts in dist
+	cp -R $(BASEDIR)/etc $(GMVDIST)
+	cd $(GMVDIST); $(PYTHONBIN) setup.py sdist -d ../$(GMVBUILD) 
+	@echo ""
+	@echo "=================================================================="
+	@echo ""
+	@echo "Distribution stored in $(GMVBUILD)"
+	@echo "To register on pypi cd ./build; tar zxvf gmvault-1.0-beta.tar.gz; cd gmvault-1.0-beta ; python setup.py register sdist upload"
+	@echo "If you do not change the version number, you will have to delete the release from the pypi website http://pypi.python.org and register it again"
+	@echo ""
+	@echo "=================================================================="
 
 gmv-linux-dist: clean init 
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)

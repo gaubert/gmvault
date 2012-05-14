@@ -384,6 +384,9 @@ DONE: - make launch script for mac os x with mac app (see later if it can be lau
 DONE: - add make rule for mac 
 DONE: - send test version to mac poeple
 
+Make setup.py version => generate it
+add download page
+
 
 
 
