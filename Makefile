@@ -57,8 +57,9 @@ gmv-src-dist: clean init
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
 	cp -R $(BASEDIR)/src $(GMVDIST)
 	cp $(BASEDIR)/setup.py $(GMVDIST)
-	cp -R $(BASEDIR)/README.md $(GMVDIST)
-	cp -R $(BASEDIR)/README.md $(GMVDIST)/README.txt
+	cp $(BASEDIR)/MANIFEST.in $(GMVDIST)
+	cp $(BASEDIR)/README.md $(GMVDIST)/README.txt
+	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/RELEASE-NOTE.txt
 	# copy scripts in dist
 	cp -R $(BASEDIR)/etc $(GMVDIST)
 	cd $(GMVDIST); $(PYTHONBIN) setup.py sdist -d ../$(GMVBUILD) 
@@ -66,8 +67,6 @@ gmv-src-dist: clean init
 	@echo "=================================================================="
 	@echo ""
 	@echo "Distribution stored in $(GMVBUILD)"
-	@echo "To register on pypi cd ./build; tar zxvf gmvault-1.0-beta.tar.gz; cd gmvault-1.0-beta ; python setup.py register sdist upload"
-	@echo "If you do not change the version number, you will have to delete the release from the pypi website http://pypi.python.org and register it again"
 	@echo ""
 	@echo "=================================================================="
 
@@ -75,8 +74,9 @@ gmv-pypi-dist: clean init
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
 	cp -R $(BASEDIR)/src $(GMVDIST)
 	cp $(BASEDIR)/setup.py $(GMVDIST)
-	cp -R $(BASEDIR)/README.md $(GMVDIST)
+	cp $(BASEDIR)/MANIFEST.in $(GMVDIST)
 	cp -R $(BASEDIR)/README.md $(GMVDIST)/README.txt
+	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/RELEASE-NOTE.txt
 	# copy scripts in dist
 	cp -R $(BASEDIR)/etc $(GMVDIST)
 	cd $(GMVDIST); $(PYTHONBIN) setup.py sdist -d ../$(GMVBUILD) 
@@ -107,6 +107,8 @@ gmv-linux-dist: clean init
 	# copy shell scripts in dist/bin
 	mkdir -p $(GMVDIST)/$(GMVDISTNAME)/bin
 	cp -R $(BASEDIR)/etc/scripts/gmvault $(GMVDIST)/$(GMVDISTNAME)/bin
+	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/bin/README.txt
+	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)$(GMVDISTNAME)/bin/RELEASE-NOTE.txt
 	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-linux-i686.tar.gz ./$(GMVDISTNAME)
 	@echo ""
 	@echo "=================================================================="
@@ -121,8 +123,9 @@ gmv-mac-dist: clean init
 	cd $(GMVDIST); $(PYTHONBIN) setup_mac.py py2app
 	mkdir -p $(GMVDIST)/$(GMVDISTNAME)/bin ; mkdir -p $(GMVDIST)/$(GMVDISTNAME)/lib
 	cp $(BASEDIR)/etc/scripts/gmvault_mac $(GMVDIST)/$(GMVDISTNAME)/bin/gmvault
+	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/bin/README.txt
+	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/$(GMVDISTNAME)/bin/RELEASE-NOTE.txt
 	cp -R $(GMVDIST)/dist/gmv_cmd.app $(GMVDIST)/$(GMVDISTNAME)/lib
-	cp -R $(BASEDIR)/etc/release-notes/release-note.txt $(GMVDIST)/$(GMVDISTNAME)
 	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-macosx-intel.tar.gz ./$(GMVDISTNAME)
 	@echo ""
 	@echo "========================================="
@@ -139,6 +142,8 @@ gmv-win-dist: init
 	cp $(BASEDIR)/etc/scripts/gmvault.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault-shell.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)
+	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/bin/README.txt
+	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)$(GMVDISTNAME)/bin/RELEASE-NOTE.txt
 	echo "distribution available in $(GMVWINBUILDDIST)"
 
 gmv-make-win-installer: gmv-win-dist
