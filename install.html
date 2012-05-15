@@ -102,7 +102,8 @@
             <h2>Compliant Python versions</h2>
 		 </div>
           <p>Gmvault has been heavily tested with <strong>Python 2.6.x</strong> and <strong>Python 2.7.x</strong> versions. Please use one of these versions to run Gmvault.</br>
-             Note that for the Windows, Linux and MacOSX binary packages, the target machine doesn't need to have pre-installed a compliant Python distribution as these packages embed a working Python dist.</p>
+             Note that for the Windows, Linux and MacOSX binary packages, the target machine doesn't need to have pre-installed a compliant Python distribution as these packages embed a working Python dist.
+			 </br>The source distribution will need a pre-installed Python 2.7.x or 2.6.x distribution installed. Note that Gmvault might work with an older (v2.5) or newer (3.x) Python version but it has not been tested.</p>
          <a name="win_install"></a><div class="page-header">
             <h2>Windows Installation</h2>
 		 </div>
@@ -151,9 +152,9 @@
                          <div class="span10 thumbnail">
                             <img src="./assets/img/gmvault-shell-window.png" alt="">
                          </div>
-                         <p>Go to <a href="#quickstart"></a> to quickly understand how to use Gmvault.
+                         <p>Go to <a href="#quickstart">Quick Start</a> to quickly understand how to use Gmvault.
 
-                         </br>Go to <a href="in_depth.html"></a> to understand all the Gmvault capabilities.</p>
+                         </br>Go to <a href="in_depth.html">In Depth</a> to understand all the Gmvault capabilities.</p>
          <div class="page-header">
             <a name="linmac_install"></a><h2>Linux and Mac OSX Binary Install</h2>
 			<p>Download and untar the binary tarball for Mac OSX or Linux 32bits or 64bits from the download page.</br>Untar the binary tarball distribution and go to the GMVAULT_HOME/bin dir to launch Gmvault.</p>
@@ -162,8 +163,8 @@ $ tar zxvf gmvault-v1.0-beta-MacOSX.tar.gz
 $ cd gmvault-v1.0-beta/bin</pre></p>
 		 </div>
          <div class="page-header">
-            <a name="py_install"></a><h2>Python Installation for MacOSX and Linux</h2>
-			<p>It is also possible to install Gmvault using the standard Python package installation method from Pypi.<br/>
+            <a name="py_install"></a><h2>Python Installation from Pypi</h2>
+			<p>It is also possible to install Gmvault using the standard Python package installation method from Pypi. This is working for all plateforms.<br/>
                You would need to have the <a href="http://bit.ly/easy_install">setup tools</a> or <a href="http://www.pip-installer.org/en/latest/index.html">pip</a> installed in your Python distribution.
                I would also recommend using gmvault in a <a href="http://pypi.python.org/pypi/virtualenv">virtualenv</a> isolated sandbox.<br/>
                Below is described an installation under a virtualenv sandbox. 
@@ -215,7 +216,7 @@ Installing collected packages: gdata, gmvault, IMAPClient, Logbook
 Successfully installed gdata gmvault IMAPClient Logbook
 Cleaning up...
 $
-</pre></p>
+</pre>Alternatively to pip, easy_install could also be used but we recommend using pip.</p>
 	 </div>
       </div> <!-- span10 -->
 
