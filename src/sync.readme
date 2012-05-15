@@ -363,7 +363,7 @@ Below are the new features and bug fixes implemented in Gmvault 1.5-beta,
 - Gmvault now handle localised IMAP Folders (bug fix, issue #),
 - Add --restart option in sync mode to restart a backup that failed (Gmail throttle and cut the connection sometimes) from where it failed (feature #)
 - Add a restart per account name. If you have multiple accounts, the restart will be saved for all of them
-- Windows installer now contains an uninstaller and creates a shortcut folder in the Win Start Menu (feature #)
+- Windows installer now contains an uninstaller and creates a shortcut folder in the Win Start Menu (feature #). Clean from uninstall menu
 - --req-imap -r option now works properly on Mac OSX. Fix gmvault bash script to correctly pass params to python prog (bug fix, issue #)
 - Fix issue of failing backup, ending up with imaplib.abort error: SystemError (bug fix issue #)
 - Handle labels that are numbers. imaplib returns int type labels when they are number (bug fix issue #)
@@ -383,7 +383,7 @@ DONE: - add release note
 DONE: - make launch script for mac os x with mac app (see later if it can be launched with app)
 DONE: - add make rule for mac 
 DONE: - send test version to mac poeple
-- Win uninstaller doesn't remove desktop shortcut and menu shortcut
+DONE: - Win uninstaller doesn't remove desktop shortcut and menu shortcut
 DONE: - README.txt and RELEASE-NOTE.txt cannot be read properly by Notepad (unix2dos)
 DONE: - Make src distrib with setup.py for linux
 
