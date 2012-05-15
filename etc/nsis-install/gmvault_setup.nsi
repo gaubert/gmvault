@@ -71,25 +71,25 @@ LangString msg ${LANG_ENGLISH} "English msg"
 
 !define STRTOREPL "SET EXE_DIR=$INSTDIR"
 
+; Define uninstaller_name
+!define UNINSTALLER_NAME "gmvault-uninstaller.exe"
+; Define website_link and start_link_dir
+!define WEBSITE_LINK "www.gmvault.org"
+!define START_LINK_DIR "$STARTMENU\Programs\Gmvault"
+
 ; The stuff to install
 Section "gmvault" ;No components page, name is not important
 
 ; Set output path to the installation directory.
 SetOutPath $INSTDIR
 
-; create uninstaller
-writeUninstaller "$INSTDIR/uninstall.exe"
-
 ; create shortscuts in menu
-;createDirectory "$SMPROGRAMS\Gmvault"
-!define WEBSITE_LINK "www.gmvault.org"
-!define START_LINK_DIR "$STARTMENU\Programs\Gmvault"
 ; install in the current user context instead of all users
 SetShellVarContext current 
 createDirectory "${START_LINK_DIR}"
 createShortCut  "${START_LINK_DIR}\gmvault-shell.lnk" "$INSTDIR\gmvault-shell.bat" "" "$INSTDIR\gmv-icon.ico"
 createShortCut  "${START_LINK_DIR}\gmvault.lnk" "$INSTDIR\gmvault.bat" "" "$INSTDIR\gmv-icon.ico"
-createShortCut  "${START_LINK_DIR}\uninstall.lnk" "$INSTDIR\uninstall.exe" "" ""
+createShortCut  "${START_LINK_DIR}\uninstall.lnk" "$INSTDIR\${UNINSTALLER_NAME}" "" ""
 createShortCut  "${START_LINK_DIR}\README.lnk" "$INSTDIR\README.txt" "" ""
 createShortCut  "${START_LINK_DIR}\RELEASE-NOTE.lnk" "$INSTDIR\RELEASE-NOTE.txt" "" ""
 
@@ -107,7 +107,7 @@ WriteRegStr HKCU "${REG_UNINSTALL}" "InstallLocation" "$\"$INSTDIR$\""
 WriteRegStr HKCU "${REG_UNINSTALL}" "InstallSource" "$\"$EXEDIR$\""
 WriteRegDWord HKCU "${REG_UNINSTALL}" "NoModify" 1
 WriteRegDWord HKCU "${REG_UNINSTALL}" "NoRepair" 1
-WriteRegStr HKCU "${REG_UNINSTALL}" "UninstallString" "$\"$INSTDIR\uninstall.lnk$\""
+WriteRegStr HKCU "${REG_UNINSTALL}" "UninstallString" "$\"$INSTDIR\gmvault-uninstaller.lnk$\""
 WriteRegStr HKCU "${REG_UNINSTALL}" "Comments" "Uninstalls Gmvault."
 
 ; Registry information for add/remove programs
@@ -156,7 +156,7 @@ MessageBox MB_OK "Error"
 ; =================================================
 ; Uninstaller
 ; =================================================
-WriteUninstaller $INSTDIR\Uninstall.exe
+writeUninstaller "$INSTDIR\${UNINSTALLER_NAME}"
 
 SectionEnd ; end the section
 
@@ -175,7 +175,8 @@ Delete $INSTDIR\*.pyd
 Delete $INSTDIR\Microsoft.VC90.CRT\*.dll
 Delete $INSTDIR\Microsoft.VC90.CRT\*.manifest
 rmDir /r $INSTDIR\Microsoft.VC90.CRT
-rmDir /r $INSTDIR
+;rmDir /r $INSTDIR
+rmDir $INSTDIR
 
 # Remove Start Menu Launcher
 delete "${START_LINK_DIR}\gmvault-shell.lnk"
