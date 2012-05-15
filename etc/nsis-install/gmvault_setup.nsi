@@ -13,13 +13,18 @@
 Name "gmvault_setup"
 
 ; Request user privileges only
+; with admin privileges that will allow to write in program files
+;RequestExecutionLevel admin
+; to install with user privileges only
 RequestExecutionLevel user
 
 ; The file to write
 OutFile "gmvault_setup.exe"
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\gmvault
+;InstallDir $PROGRAMFILES\gmvault
+; user installDIr
+InstallDir "$LOCALAPPDATA\gmvault"
 ;InstallDir d:\Programs\gmvault
 
 ; The text to prompt the user to enter a directory
@@ -88,7 +93,7 @@ SetOutPath $INSTDIR
 SetShellVarContext current 
 createDirectory "${START_LINK_DIR}"
 createShortCut  "${START_LINK_DIR}\gmvault-shell.lnk" "$INSTDIR\gmvault-shell.bat" "" "$INSTDIR\gmv-icon.ico"
-createShortCut  "${START_LINK_DIR}\gmvault.lnk" "$INSTDIR\gmvault.bat" "" "$INSTDIR\gmv-icon.ico"
+;createShortCut  "${START_LINK_DIR}\gmvault.lnk" "$INSTDIR\gmvault.bat" "" "$INSTDIR\gmv-icon.ico"
 createShortCut  "${START_LINK_DIR}\${UNINSTALLER_NAME}.lnk" "$INSTDIR\${UNINSTALLER_NAME}" "" ""
 createShortCut  "${START_LINK_DIR}\README.lnk" "$INSTDIR\README.txt" "" ""
 createShortCut  "${START_LINK_DIR}\RELEASE-NOTE.lnk" "$INSTDIR\RELEASE-NOTE.txt" "" ""
@@ -97,7 +102,7 @@ createShortCut  "${START_LINK_DIR}\RELEASE-NOTE.lnk" "$INSTDIR\RELEASE-NOTE.txt"
 !define REG_UNINSTALL "Software\Microsoft\Windows\CurrentVersion\Uninstall\Gmvault"
 
 WriteRegStr HKCU "${REG_UNINSTALL}" "DisplayName" "Gmvault"
-WriteRegStr HKCU "${REG_UNINSTALL}" "DisplayIcon" "$\"$INSTDIR\gmvault.bat$\""
+WriteRegStr HKCU "${REG_UNINSTALL}" "DisplayIcon" "$\"$INSTDIR\gmv-icon.ico$\""
 WriteRegStr HKCU "${REG_UNINSTALL}" "Publisher" "Guillaume Aubert"
 WriteRegStr HKCU "${REG_UNINSTALL}" "DisplayVersion" "1.5-beta"
 WriteRegDWord HKCU "${REG_UNINSTALL}" "EstimatedSize" 3 ;MB
@@ -107,7 +112,7 @@ WriteRegStr HKCU "${REG_UNINSTALL}" "InstallLocation" "$\"$INSTDIR$\""
 WriteRegStr HKCU "${REG_UNINSTALL}" "InstallSource" "$\"$EXEDIR$\""
 WriteRegDWord HKCU "${REG_UNINSTALL}" "NoModify" 1
 WriteRegDWord HKCU "${REG_UNINSTALL}" "NoRepair" 1
-WriteRegStr HKCU "${REG_UNINSTALL}" "UninstallString" "$\"$INSTDIR\gmvault-uninstaller.lnk$\""
+WriteRegStr HKCU "${REG_UNINSTALL}" "UninstallString" "$\"$INSTDIR\${UNINSTALLER_NAME}$\""
 WriteRegStr HKCU "${REG_UNINSTALL}" "Comments" "Uninstalls Gmvault."
 
 ;MessageBox MB_OK "$INSTDIR"
@@ -143,7 +148,12 @@ SectionEnd ; end the section
 ; The uninstall section
 Section "Uninstall"
 
-Delete $INSTDIR\${UNINSTALLER_NAME}
+; Deregister uninstaller from Add/Remove panel
+DeleteRegKey HKCU "${REG_UNINSTALL}"
+
+; Delete Desktop Shortcut
+Delete "$DESKTOP\gmvault-shell.lnk"
+
 Delete $INSTDIR\gmv_cmd.exe
 Delete $INSTDIR\library.zip
 Delete $INSTDIR\*.ico
@@ -154,6 +164,7 @@ Delete $INSTDIR\w9xpopen.exe
 Delete $INSTDIR\*.pyd
 Delete $INSTDIR\Microsoft.VC90.CRT\*.dll
 Delete $INSTDIR\Microsoft.VC90.CRT\*.manifest
+Delete $INSTDIR\${UNINSTALLER_NAME}
 rmDir /r $INSTDIR\Microsoft.VC90.CRT
 ;rmDir /r $INSTDIR
 rmDir $INSTDIR
