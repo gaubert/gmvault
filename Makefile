@@ -21,12 +21,12 @@ ETC=$(BASEDIR)/etc
 #PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
 PYTHONBIN=python #MacOSX machine
 #PYTHONWINBIN=python
-#PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my windows machine at work
-PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
+PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my windows machine at work
+#PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
 PYTHONVERSION=2.7
 
-#MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
-MAKENSIS=/c/Program\ Files/NSIS/makensis.exe #windows laptop
+MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
+#MAKENSIS=/c/Program\ Files/NSIS/makensis.exe #windows laptop
 
 #VERSION is in gmv_cmd.py as GMVAULT_VERSION
 GMVVERSION=$(shell python $(BASEDIR)/etc/utils/find_version.py $(BASEDIR)/src/gmv/gmv_cmd.py)
@@ -144,12 +144,13 @@ gmv-win-dist: init
 	cp $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/README.md $(GMVWINBUILDDIST)/README.txt
 	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVWINBUILDDIST)
+	unix2dos $(GMVWINBUILDDIST)/README.txt $(GMVWINBUILDDIST)/RELEASE-NOTE.txt
 	echo "distribution available in $(GMVWINBUILDDIST)"
 
 gmv-make-win-installer: gmv-win-dist
 	cp $(BASEDIR)/etc/nsis-install/gmvault_setup.nsi $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/nsis-install/images/*.bmp $(GMVWINBUILDDIST)
-	cp $(BASEDIR)/etc/nsis-install/images/*.ico $(GMVWINBUILDDIST)
+	cp $(BASEDIR)/etc/nsis-install/images/gmv-icon.ico $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/nsis-install/License.rtf $(GMVWINBUILDDIST)
 	echo "=== call gmvault_setup.nsi in $(GMVWINBUILDDIST) ==="
 	ls -la > /tmp/res.txt
