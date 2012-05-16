@@ -25,7 +25,7 @@ Untar the binary tarball distribution and go to the GMVAULT_HOME/bin dir to laun
 
 ## Install from the sources
 
-python setup.py blahhhh.
+python setup.py install
 
 ## Install from PyPi
 
