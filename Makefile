@@ -108,7 +108,7 @@ gmv-linux-dist: clean init
 	mkdir -p $(GMVDIST)/$(GMVDISTNAME)/bin
 	cp -R $(BASEDIR)/etc/scripts/gmvault $(GMVDIST)/$(GMVDISTNAME)/bin
 	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/bin/README.txt
-	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)$(GMVDISTNAME)/bin/RELEASE-NOTE.txt
+	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/$(GMVDISTNAME)/bin/RELEASE-NOTE.txt
 	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-linux-i686.tar.gz ./$(GMVDISTNAME)
 	@echo ""
 	@echo "=================================================================="
