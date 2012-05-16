@@ -106,7 +106,8 @@
          <a name="win_install"></a><div class="page-header">
             <h2>Windows Installation</h2>
 		 </div>
-           <p>Double click on <strong>gmvault_setup.exe</strong> to launch it. You should see the follow screens when installing:</p>
+           <p>Double click on <strong>gmvault_setup.exe</strong> to launch it. You should see the follow screens when installing:
+           </p>
 			 <ul class="thumbnails">
 				<li class="span5">
 				  <div class="thumbnail well">
@@ -138,9 +139,9 @@
 			 </ul> 
 
 			 <p>Note that Gmvault is installed with standard <strong>user privileges</strong>. 
-             </br>This means that you will not be able to install it in area necessitating Admin privileges like for instance C:\Program Files. 
-             </br>The Gmvault installer should have installed a Gmvault-shell from where you can easily launch gmvault.exe.
-				<br> Gmvault-shell can be launched via a Desktop shortcut. Alternatively, you can also find Gmvault in the Windows start-up menu.</p>
+             </br>This means that you will not be able to install it in areas necessitating <stong>Admin privileges</strong> like for instance C:\Program Files. 
+             </br></br>The Gmvault installer should have now installed a Gmvault-shell from where you can easily launch gmvault.bat.
+				<br> Gmvault-shell can be launched via a Desktop shortcut. Alternatively, you can also find it in the Gmvault folder of the Windows start-up menu.</p>
                          <p>Double click on the Desktop shortcut to launch the Gmvault-shell that will set all variables in order to easily operate Gmvault.</p>
 
                          <div class="span10 thumbnail well">
@@ -157,25 +158,23 @@
 
                          </br>Go to <a href="in_depth.html">In Depth</a> to understand all the Gmvault capabilities.</p>
          <div class="page-header">
-            <a name="mac_install"></a><h2>Mac OSX Installation</h2>
+            <a name="mac_install"></a><h2>Mac OSX Installation</h2></div>
 			<p>Download and untar the Mac OSX binary tarball.</br>Go to the GMVAULT_HOME/bin dir to launch Gmvault.</p>
             <p><pre>$ tar zxvf gmvault-v1.5-beta-macosx-intel.tar.gz
 $ cd gmvault-v1.5-beta/bin
 $./gmvault sync myuser@gmail.com </pre>
-The current Mac OS X distribution has been tested with OSX 10.7 and 10.6. If you have older Intel MAC OSX version try to use the binary distribution. Please go to the <a href="report_pb.html">Report a problem page</a> to signal any issues. Another alternative is to download and install the source distribution or to install Gmvault from Pypi.
+The current Mac OS X distribution has been tested with OSX 10.7 and 10.6. If you have older Intel MAC OSX version try to use this binary distribution. Please go to the <a href="report_pb.html">Report a problem page</a> to signal any issues. Another alternative is to download and install the source distribution or to install Gmvault from Pypi.
 </p>
-	 </div>
          <div class="page-header">
-            <a name="lin_install"></a><h2>Linux Installation</h2>
-                   <p>On Linux, it is recommended to install Gmvault using the source distribution or Pypi. There is an experimental 64bits binary tarball distribution. If you encounter a problem please report it <a href="report_pb.html">here</a>.
-			<p>Download and untar the binary tarball for Linux 64bits.</br>Go to the GMVAULT_HOME/bin dir to launch Gmvault.</p>
+            <a name="lin_install"></a><h2>Linux Installation</h2></div>
+            <p>On Linux, it is recommended to install Gmvault using the source distribution or Pypi. There is an experimental 64bits binary tarball distribution. If you encounter a problem please report it <a href="report_pb.html">here</a>.
+			Download and untar the binary tarball for Linux 64bits.</br>Go to the GMVAULT_HOME/bin dir to launch Gmvault.</p>
             <p><pre>$ tar zxvf gmvault-v1.5-beta-linux-i686.tar.gz
-$ cd gmvault-v1.5-beta/bin</pre></p>
-$ ./gmvault sync myuser@gmail.com 
-	 </div>
+$ cd gmvault-v1.5-beta/bin
+$ ./gmvault sync myuser@gmail.com</pre></p>
          <div class="page-header">
-            <a name="py_install"></a><h2>Python Installation from Pypi</h2>
-			<p>It is also possible to install Gmvault using the standard Python package installation method from Pypi. This is working for all plateforms.<br/>
+            <a name="py_install"></a><h2>Python Installation from Pypi</h2></div>
+			<p>It is also possible to install Gmvault using the standard Python package installation method from Pypi. This is working for all platforms.<br/>
                You would need to have the <a href="http://bit.ly/easy_install">setup tools</a> or <a href="http://www.pip-installer.org/en/latest/index.html">pip</a> installed in your Python distribution.
                I would also recommend using gmvault in a <a href="http://pypi.python.org/pypi/virtualenv">virtualenv</a> isolated sandbox.<br/>
                Below is described an installation under a virtualenv sandbox. 
@@ -228,6 +227,51 @@ Successfully installed gdata gmvault IMAPClient Logbook
 Cleaning up...
 $
 </pre>Alternatively to pip, easy_install could also be used but we recommend using pip.</p>
+         		<div class="page-header">
+            <h2>Python Source Installation</h2></div>
+            <p>The Source distribution is a standard python distribution installation. It is very similar to the installation from Pypi and working on all platforms.
+            </br>It is also recommended to use Gmvault within a virtualenv (see <a href="http://pypi.python.org/pypi/virtualenv">here</a> for info). Untar the downloaded source distribution and run:
+            <pre>$> cd gmvault-1.5-beta
+$> ~/virtualenv-test/bin/python setup.py install
+PATH = ./src/gmv/gmv_cmd.py
+
+1.5-beta
+Gmvault version = 1.5-beta
+
+running install
+running bdist_egg
+running egg_info
+writing requirements to gmvault.egg-info/requires.txt
+writing gmvault.egg-info/PKG-INFO
+writing top-level names to gmvault.egg-info/top_level.txt
+writing dependency_links to gmvault.egg-info/dependency_links.txt
+reading manifest file 'gmvault.egg-info/SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+writing manifest file 'gmvault.egg-info/SOURCES.txt'
+installing library code to build/bdist.macosx-10.7-intel/egg
+....
+running build_scripts
+creating build/scripts-2.7
+copying ./etc/scripts/gmvault -> build/scripts-2.7
+...
+Installing gmvault script to /Users/xxxx/virtualenv-test/bin
+
+Installed /Users/xxxx/virtualenv-test/lib/python2.7/site-packages/gmvault-1.5_beta-py2.7.egg
+Processing dependencies for gmvault==1.5-beta
+Searching for gdata==2.0.17
+Reading http://pypi.python.org/simple/gdata/
+Reading http://code.google.com/p/gdata-python-client/
+Best match: gdata 2.0.17
+Downloading http://gdata-python-client.googlecode.com/files/gdata-2.0.17.zip
+Processing gdata-2.0.17.zip
+Running gdata-2.0.17/setup.py -q bdist_egg --dist-dir /var/folders/w3/kzry2_2537bbjd9_pwyjsnlw0000gn/T/easy_install-Zg1PBK/gdata-2.0.17/egg-dist-tmp-_kskLT
+zip_safe flag not set; analyzing archive contents...
+Adding gdata 2.0.17 to easy-install.pth file
+...
+Finished processing dependencies for gmvault==1.5-beta
+>$ </pre>
+Please report any problems using <a href="report_pb.html">"Report a problem"</a> page.
+
 	 </div>
       </div> <!-- span10 -->
 
