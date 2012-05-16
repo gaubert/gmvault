@@ -187,7 +187,7 @@ class GMVaultLauncher(object):
                                  help="Allow the email database to be synchronized with emails from multiple accounts.",\
                                  action='store_true',dest="allow_mult_owners", default=False)
         
-         # activate the restart mode
+        # activate the restart mode
         sync_parser.add_argument("--no-compression", \
                                  action='store_false', dest='compression', \
                                  default=True, help= 'disable email storage compression (gzip).')
