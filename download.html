@@ -14,10 +14,14 @@
     <link href="assets/js/google-code-prettify/prettify.css" rel="stylesheet">
     <style>
       body {
-        /*padding-top: 60px;*/ /* was adding Gmvault and pushing it 60px to make the container go all the way to the bottom of the topbar */
       }
-      /* to properly fix the positionning of internal reference when name id used*/
       a[name]{position:relative;top:-40px; visibility:collapsed;}
+      .black-background { 
+          color: white; 
+          /* background-color: #0404B4 !important;  */
+          background-color: #2E2E2E !important; 
+          font-size: 14px;
+      } 
     </style>
     <link href="./assets/css/bootstrap-responsive.css" rel="stylesheet">
 
@@ -72,31 +76,94 @@
     </div>
     <div class="container-fluid">
     <div class="page-header">
-	  <h1>Download Gmvault</h1>
+	  <h2>Gmvault v1.5-beta</h2>
     </div>
     <div class="span10">
+        <h3>Distributions:</h3>
 	    <p>Select the right version according to your plateform from the table below:</p>
-        <h3>Gmvault-1.5-beta</h3>
-        <p>Please fill at least the following information to allow us to evaluating the validity of the request and reproduce the problem:
-        <pre>- What version of Gmvault do you use ?
-
-- On what Operating System (Linux flavour, MacOSX, Win7/XP/Vista) ?
-
-- Type of requests (Bug, documentation issue, features) ?
-
-- Explain the request subject (issue details, feature details):
-
-- In case of bug or issue, please detail how we can reproduce the problem:
-
-- Contact details (emails to recontact you if you didn't use the github interface):
-        </pre>
+        </br>
+        <!--<table class="table table-striped table-bordered ">-->
+        <table class="table table-bordered">
+			<tbody>
+			  <tr>
+				<th class="black-background" colspan="2">Windows 7, Vista, XP</th>
+			  </tr>
+			  <tr>
+				<td width="70%">Gmvault Installer for all Windows platforms.</td>
+				<td width="30%"><a href="https://github.com/downloads/gaubert/gmvault/gmvault_setup_v1.0-beta.exe">gmvault_setup_v1.0-beta.exe</a></td>
+			  </tr>
+            </tbody>
+        </table>
+        </br>
+        <table class="table table-bordered">
+            <tbody>
+			  <tr>
+				<th class="black-background" colspan="2">Mac OSX 10.7, 10.6 and other 64bits</th>
+			  </tr>
+			  <tr>
+				<td width="70%">Mac OSX tarball installer. Not tested with older Mac versions. Have a try or use the Python source distribution </td>
+				<td width="30%"><a href="https://github.com/downloads/gaubert/gmvault/gmvault-v1.0-beta-MacOSX.tar.gz">gmvault-v1.0-beta-MacOSX.tar.gz</a></td>
+			  </tr>
+			</tbody>
+        </table>
+        </br>
+        <table class="table table-bordered">
+            <tbody>
+			  <tr>
+				<th class="black-background" colspan="2">Python Source distribution</th>
+			  </tr>
+			  <tr>
+				<td width="70%">Valid for all platforms (Linux, Mac OSX, Windows) if you have a Python 2.7.x or 2.6.x preinstalled.
+                </br>This is the installation recommended for Linux.
+                </td>
+				<td width="30%"><a href="https://github.com/downloads/gaubert/gmvault/gmvault-v1.0-beta-MacOSX.tar.gz">gmvault-v1.0-beta-MacOSX.tar.gz</a></td>
+			  </tr>
+			</tbody>
+        </table>
+        </br>
+        <table class="table table-bordered">
+            <tbody>
+			  <tr>
+				<th class="black-background" colspan="2">Linux Binary distribution (experimental)</th>
+			  </tr>
+			  <tr>
+				<td width="70%">There is a 64bits packaged version for Linux. It is recommended to install the <strong>Python Source distribution</strong> on Linux.</td>
+				<td width="30%"><a href="https://github.com/downloads/gaubert/gmvault/gmvault-v1.0-beta-MacOSX.tar.gz">gmvault-v1.0-beta-MacOSX.tar.gz</a></td>
+			  </tr>
+			</tbody>
+        </table>
+        <h3>Release Information</h3>
+        <p>Gmvault v1.5-beta includes the following new features and bug fixes:
+        <h4>Added new Features:</h4>
+        <ul>
+			<li>Add --restart option in sync mode to restart a failing backup (Gmail can throttle and cut the connection sometimes) from where it crashed. [Github feature #7 #21]</li>
+			<li>Add a restart per account name. If you have multiple accounts, the restart will be saved for all of them. [Github feature #7]</li>
+			<li>The Windows installer now creates an uninstaller that appears in Control Panel/Remove Programs and can be uninstalled from there.[Github feature #32]</li>
+			<li>The Windws installer is a friendly installer (like Google Chrome) that do not necessitate Admin privileges. [Github feature #32]</li>
+			<li>Add --no-compression option to disable the compression and allow users to use their own compression. [Github feature #29]</li>
+			<li>Add --renew-oauth-tok to renew the oauth token from a given account from the command line tool gmvault. [Github feature #16]</li>
+        </ul>
+        <h4>Bug Fixes:</h4>
+        <ul>
+			<li>Improve Mac OS X distribution. It is now a binary distribution that can run on all intel Mac OS X versions(tested on 10.7 and 10.6). [Github issue #25 #4]</li>
+			<li>Fix gmvault bash script (launched from anywhere, sets the right Python Env variables). [Github issue #10 #13 #19 #22]</li>
+			<li>Gmvault now handle localised IMAP Folders. [Github issue #5]</li>
+			<li>Option --req-imap -r option now works properly on Mac OSX. Fix gmvault bash script to correctly pass params to python prog. [Github issue #23]</li>
+			<li>Fix issue of failing backup, ending up with imaplib.abort error: SystemError. [Github issue #4]</li>
+			<li>Error when you do not make the IMAP Gmail folder All Mail visible. [Github issue #2 #9]</li>
+			<li>Handle labels that are numbers. IMAPClient returns int type labels when they are number. It is now handled properly. [Github issue #24]</li>
+			<li>Print exception on screen when there is a problem in normal mode to give users the possibility easily send the error message. [Github issue #33]</li>
+			<li>Fix bug preventing Gmvault to finish its work when an email was not readable (corrupted ?) from Gmail. [Github issue #24]</li>
+        </ul>
 </p>
-        <h3>Using the Gmvault Github repository issue facility</h3>
-		<p>You can report bugs, issues , missing features on github in the issues area of the gmvault repository:<a href="https://github.com/gaubert/gmvault/issues">here</a>.</p>
-        <h3>Via email</h3>
-		You can also send an email to guillaume(dot)aubert(at)gmail(dot)com. If the email represent a valid issue, I will create an issue ticket on github.
-        </p>
-<strong>Many thanks, your help is precious to improve Gmvault.</strong>
+        <h3>Shout-outs </h3>
+		<p></br><strong>Thank you all for the supports on Twitter, Github.com and via our beloved Gmail.</strong>
+           </br>Please keep <strong>buzzing about Gmvault</strong> and let me know if you discover an issue (go <a href="./report_pb.html">here</a> to report the issue).
+         </br></br>Below is a special thanks for all poeple that reported problems, asked for features and helped me testing intermediate versions:
+         
+         </br>Github id:<pre>@namelessjon, @joeyates, @dmd, @pfsung, @miggaiowski, @offbyone, @jamesandres, @jarofgreen, @ghwegill, @rouge8, @sc68cal, @DanielHeath, @melpomene, @dwradcliffe, @tgulacsi, @joshkerr, @KeyvanJS, @glowbox, @gps, @zan5hin, @chbrown, @Anemome, @knurdle</pre>
+         </br> Thanks for @stevemorin on Twitter for the brainstorming.
+         </p>
 		</p>
 	</div>
   
