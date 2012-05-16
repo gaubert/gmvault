@@ -144,12 +144,13 @@ gmv-win-dist: init
 	cp $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/README.md $(GMVWINBUILDDIST)/README.txt
 	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVWINBUILDDIST)
+	#unix2dos $(GMVWINBUILDDIST)/README.txt $(GMVWINBUILDDIST)/RELEASE-NOTE.txt
 	echo "distribution available in $(GMVWINBUILDDIST)"
 
-gmv-make-win-installer: gmv-win-dist
+gmv-win-installer: gmv-win-dist
 	cp $(BASEDIR)/etc/nsis-install/gmvault_setup.nsi $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/nsis-install/images/*.bmp $(GMVWINBUILDDIST)
-	cp $(BASEDIR)/etc/nsis-install/images/*.ico $(GMVWINBUILDDIST)
+	cp $(BASEDIR)/etc/nsis-install/images/gmv-icon.ico $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/nsis-install/License.rtf $(GMVWINBUILDDIST)
 	echo "=== call gmvault_setup.nsi in $(GMVWINBUILDDIST) ==="
 	ls -la > /tmp/res.txt

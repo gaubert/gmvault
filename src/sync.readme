@@ -377,17 +377,15 @@ Documentation update:
 
 TO DO:
 - add clear message to signal that you've been throttled by Gmail
-- add release note
+DONE: - add release note
 - add donation button
 - add download page
 DONE: - make launch script for mac os x with mac app (see later if it can be launched with app)
 DONE: - add make rule for mac 
 DONE: - send test version to mac poeple
 - Win uninstaller doesn't remove desktop shortcut and menu shortcut
-- README.txt and RELEASE-NOTE.txt cannot be read properly by Notepad (unix2dos)
-
-Make setup.py version => generate it
-add download page
+DONE: - README.txt and RELEASE-NOTE.txt cannot be read properly by Notepad (unix2dos)
+DONE: - Make src distrib with setup.py for linux
 
 
 

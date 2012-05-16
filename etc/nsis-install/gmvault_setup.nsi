@@ -12,11 +12,19 @@
 ; The name of the installer
 Name "gmvault_setup"
 
+; Request user privileges only
+; with admin privileges that will allow to write in program files
+;RequestExecutionLevel admin
+; to install with user privileges only
+RequestExecutionLevel user
+
 ; The file to write
 OutFile "gmvault_setup.exe"
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\gmvault
+;InstallDir $PROGRAMFILES\gmvault
+; user installDIr
+InstallDir "$LOCALAPPDATA\gmvault"
 ;InstallDir d:\Programs\gmvault
 
 ; The text to prompt the user to enter a directory
@@ -68,42 +76,44 @@ LangString msg ${LANG_ENGLISH} "English msg"
 
 !define STRTOREPL "SET EXE_DIR=$INSTDIR"
 
+; Define uninstaller_name
+!define UNINSTALLER_NAME "gmvault-uninstaller.exe"
+; Define website_link and start_link_dir
+!define WEBSITE_LINK "www.gmvault.org"
+!define START_LINK_DIR "$STARTMENU\Programs\Gmvault"
+
 ; The stuff to install
 Section "gmvault" ;No components page, name is not important
 
 ; Set output path to the installation directory.
 SetOutPath $INSTDIR
 
-; create uninstaller
-writeUninstaller "$INSTDIR/uninstall.exe"
-
 ; create shortscuts in menu
-createDirectory "$SMPROGRAMS\Gmvault"
-createShortCut  "$SMPROGRAMS\Gmvault\gmvault-shell.lnk" "$INSTDIR\gmvault-shell.bat" "" "$INSTDIR\gmv-icon.ico"
-createShortCut  "$SMPROGRAMS\Gmvault\gmvault.lnk" "$INSTDIR\gmvault.bat" "" "$INSTDIR\gmv-icon.ico"
-createShortCut  "$SMPROGRAMS\Gmvault\uninstall.lnk" "$INSTDIR\uninstall.exe" "" ""
-createShortCut  "$SMPROGRAMS\Gmvault\README.txt" "$INSTDIR\README.txt" "" ""
-createShortCut  "$SMPROGRAMS\Gmvault\RELEASE-NOTE.txt" "$INSTDIR\RELEASE-NOTE.txt" "" ""
+; install in the current user context instead of all users
+SetShellVarContext current 
+createDirectory "${START_LINK_DIR}"
+createShortCut  "${START_LINK_DIR}\gmvault-shell.lnk" "$INSTDIR\gmvault-shell.bat" "" "$INSTDIR\gmv-icon.ico"
+;createShortCut  "${START_LINK_DIR}\gmvault.lnk" "$INSTDIR\gmvault.bat" "" "$INSTDIR\gmv-icon.ico"
+createShortCut  "${START_LINK_DIR}\${UNINSTALLER_NAME}.lnk" "$INSTDIR\${UNINSTALLER_NAME}" "" ""
+createShortCut  "${START_LINK_DIR}\README.lnk" "$INSTDIR\README.txt" "" ""
+createShortCut  "${START_LINK_DIR}\RELEASE-NOTE.lnk" "$INSTDIR\RELEASE-NOTE.txt" "" ""
 
-; Registry information for add/remove programs
-;	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "DisplayName" "${COMPANYNAME} - ${APPNAME} - ${DESCRIPTION}"
-;	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
-;	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
-;	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "InstallLocation" "$\"$INSTDIR$\""
-;	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "DisplayIcon" "$\"$INSTDIR\logo.ico$\""
-;	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "Publisher" "$\"${COMPANYNAME}$\""
-;	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "HelpLink" "$\"${HELPURL}$\""
-;	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "URLUpdateInfo" "$\"${UPDATEURL}$\""
-;	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "URLInfoAbout" "$\"${ABOUTURL}$\""
-;	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "DisplayVersion" "$\"${VERSIONMAJOR}.${VERSIONMINOR}.${VERSIONBUILD}$\""
-;	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "VersionMajor" ${VERSIONMAJOR}
-;	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "VersionMinor" ${VERSIONMINOR}
-;	# There is no option for modifying or repairing the install
-;	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "NoModify" 1
-;	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "NoRepair" 1
-;	# Set the INSTALLSIZE constant (!defined at the top of this script) so Add/Remove Programs can accurately report the size
-;	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "EstimatedSize" ${INSTALLSIZE}
+; Add information to appear in control panel or Win 7 programs
+!define REG_UNINSTALL "Software\Microsoft\Windows\CurrentVersion\Uninstall\Gmvault"
 
+WriteRegStr HKCU "${REG_UNINSTALL}" "DisplayName" "Gmvault"
+WriteRegStr HKCU "${REG_UNINSTALL}" "DisplayIcon" "$\"$INSTDIR\gmv-icon.ico$\""
+WriteRegStr HKCU "${REG_UNINSTALL}" "Publisher" "Guillaume Aubert"
+WriteRegStr HKCU "${REG_UNINSTALL}" "DisplayVersion" "1.5-beta"
+WriteRegDWord HKCU "${REG_UNINSTALL}" "EstimatedSize" 3 ;MB
+WriteRegStr HKCU "${REG_UNINSTALL}" "HelpLink" "${WEBSITE_LINK}"
+WriteRegStr HKCU "${REG_UNINSTALL}" "URLInfoAbout" "${WEBSITE_LINK}"
+WriteRegStr HKCU "${REG_UNINSTALL}" "InstallLocation" "$\"$INSTDIR$\""
+WriteRegStr HKCU "${REG_UNINSTALL}" "InstallSource" "$\"$EXEDIR$\""
+WriteRegDWord HKCU "${REG_UNINSTALL}" "NoModify" 1
+WriteRegDWord HKCU "${REG_UNINSTALL}" "NoRepair" 1
+WriteRegStr HKCU "${REG_UNINSTALL}" "UninstallString" "$\"$INSTDIR\${UNINSTALLER_NAME}$\""
+WriteRegStr HKCU "${REG_UNINSTALL}" "Comments" "Uninstalls Gmvault."
 
 ;MessageBox MB_OK "$INSTDIR"
 
@@ -131,14 +141,19 @@ MessageBox MB_OK "Error"
 ; =================================================
 ; Uninstaller
 ; =================================================
-WriteUninstaller $INSTDIR\Uninstall.exe
+writeUninstaller "$INSTDIR\${UNINSTALLER_NAME}"
 
 SectionEnd ; end the section
 
 ; The uninstall section
 Section "Uninstall"
 
-Delete $INSTDIR\uninstall.exe
+; Deregister uninstaller from Add/Remove panel
+DeleteRegKey HKCU "${REG_UNINSTALL}"
+
+; Delete Desktop Shortcut
+Delete "$DESKTOP\gmvault-shell.lnk"
+
 Delete $INSTDIR\gmv_cmd.exe
 Delete $INSTDIR\library.zip
 Delete $INSTDIR\*.ico
@@ -149,14 +164,18 @@ Delete $INSTDIR\w9xpopen.exe
 Delete $INSTDIR\*.pyd
 Delete $INSTDIR\Microsoft.VC90.CRT\*.dll
 Delete $INSTDIR\Microsoft.VC90.CRT\*.manifest
+Delete $INSTDIR\${UNINSTALLER_NAME}
 rmDir /r $INSTDIR\Microsoft.VC90.CRT
-rmDir /r $INSTDIR
+;rmDir /r $INSTDIR
+rmDir $INSTDIR
 
 # Remove Start Menu Launcher
-delete "$SMPROGRAMS\Gmvault\gmvault-shell.lnk"
-delete "$SMPROGRAMS\Gmvault\gmvault.lnk"
-delete "$SMPROGRAMS\Gmvault\uninstall.lnk"
-rmDir  "$SMPROGRAMS\Gmvault"
+delete "${START_LINK_DIR}\gmvault-shell.lnk"
+delete "${START_LINK_DIR}\gmvault.lnk"
+delete "${START_LINK_DIR}\README.lnk"
+delete "${START_LINK_DIR}\RELEASE-NOTE.lnk"
+delete "${START_LINK_DIR}\${UNINSTALLER_NAME}.lnk"
+rmDir  "${START_LINK_DIR}"
 
 
 SectionEnd ; end the section
