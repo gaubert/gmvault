@@ -20,10 +20,39 @@ Contains the class monkey patching IMAPClient and imaplib
 
 import zlib
 import time
+import datetime
 import imaplib  #for the exception
-from imapclient import IMAPClient
+import imapclient
 
+#need to monkey patch _convert_INTERNALDATE to work with imaplib2
+def mod_convert_INTERNALDATE(date_string, normalise_times=True):
+    
+        print("MOD CONVERTDATE")
+        mo = imaplib.InternalDate.match('INTERNALDATE "%s"' % date_string)
+        if not mo:
+            raise ValueError("couldn't parse date %r" % date_string)
+    
+        zoneh = int(mo.group('zoneh'))
+        zonem = (zoneh * 60) + int(mo.group('zonem'))
+        if mo.group('zonen') == '-':
+            zonem = -zonem
+        tz = imapclient.fixed_offset.FixedOffset(zonem)
+   
+        year = int(mo.group('year'))
+        mon = imaplib.Mon2num[mo.group('mon')]
+        day = int(mo.group('day'))
+        hour = int(mo.group('hour'))
+        minute = int(mo.group('min'))
+        sec = int(mo.group('sec'))
+    
+        dt = datetime.datetime(year, mon, day, hour, minute, sec, 0, tz)
+    
+        if normalise_times:
+            # Normalise to host system's timezone
+            return dt.astimezone(imapclient.fixed_offset.FixedOffset.for_system()).replace(tzinfo=None)
+        return dt
 
+imapclient.response_parser._convert_INTERNALDATE = mod_convert_INTERNALDATE
 
 #monkey patching add compress in COMMANDS of imap
 imaplib.Commands['COMPRESS'] = ('AUTH', 'SELECTED')
@@ -145,7 +174,7 @@ def seq_to_parenlist(flags):
         raise ValueError('invalid flags list: %r' % flags)
     return '(%s)' % ' '.join(flags)
     
-class MonkeyIMAPClient(IMAPClient): #pylint:disable-msg=R0903
+class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903
     """
        Need to extend the IMAPClient to do more things such as compression
        Compression inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
