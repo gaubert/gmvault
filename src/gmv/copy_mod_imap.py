@@ -23,8 +23,6 @@ import time
 import imaplib  #for the exception
 from imapclient import IMAPClient
 
-
-
 #monkey patching add compress in COMMANDS of imap
 imaplib.Commands['COMPRESS'] = ('AUTH', 'SELECTED')
 
@@ -144,6 +142,16 @@ def seq_to_parenlist(flags):
     elif not isinstance(flags, (tuple, list)):
         raise ValueError('invalid flags list: %r' % flags)
     return '(%s)' % ' '.join(flags)
+
+def messages_to_str(messages):
+        """Convert a sequence of messages ids or a single integer message id
+        into an id list string for use with IMAP commands
+        """
+        if isinstance(messages, (str, int, long)):
+            messages = (messages,)
+        elif not isinstance(messages, (tuple, list)):
+            raise ValueError('invalid message list: %r' % messages)
+        return ','.join([str(m) for m in messages])
     
 class MonkeyIMAPClient(IMAPClient): #pylint:disable-msg=R0903
     """
@@ -202,6 +210,69 @@ class MonkeyIMAPClient(IMAPClient): #pylint:disable-msg=R0903
             return [ ]
 
         return [ long(i) for i in data[0].split() ]
+
+    def fetch(self, messages, data, modifiers=None):
+            """Retrieve selected *data* associated with one or more *messages*.
+    
+            *data* should be specified as a sequnce of strings, one item
+           per data selector, for example ``['INTERNALDATE',
+            'RFC822']``.
+    
+            *modifiers* are required for some extensions to the IMAP
+            protocol (eg. RFC 4551). These should be a sequnce of strings
+            if specified, for example ``['CHANGEDSINCE 123']``.
+    
+            A dictionary is returned, indexed by message number. Each item
+            in this dictionary is also a dictionary, with an entry
+            corresponding to each item in *data*.
+    
+            In addition to an element for each *data* item, the dict
+            returned for each message also contains a *SEQ* key containing
+            the sequence number for the message. This allows for mapping
+            between the UID and sequence number (when the *use_uid*
+            property is ``True``).
+    
+            Example::
+    
+                >> c.fetch([3293, 3230], ['INTERNALDATE', 'FLAGS'])
+                {3230: {'FLAGS': ('\\Seen',),
+                        'INTERNALDATE': datetime.datetime(2011, 1, 30, 13, 32, 9),
+                        'SEQ': 84},
+                 3293: {'FLAGS': (),
+                        'INTERNALDATE': datetime.datetime(2011, 2, 24, 19, 30, 36),
+                        'SEQ': 110}}
+            """
+            if not messages:
+                return {}
+    
+            msg_list = messages_to_str(messages)
+            data_list = seq_to_parenlist([p.upper() for p in data])
+            modifiers_list = None
+            if modifiers is not None:
+                modifiers_list = seq_to_parenlist([m.upper() for m in modifiers])
+    
+            args = ['FETCH', msg_list, data_list, modifiers_list]
+            if self.use_uid:
+                args.insert(0, 'UID')
+            tag = self._imap._command(*args)
+            typ, data = self._imap._command_complete('FETCH', tag)
+            self._checkok('fetch', typ, data)
+            typ, data = self._imap._untagged_response(typ, data, 'FETCH')
+            return parse_fetch_response(data, self.normalise_times, self.use_uid)
+    
+    def _store(self, cmd, messages, flags):
+        """Worker function for the various flag manipulation methods.
+
+        *cmd* is the STORE command to use (eg. '+FLAGS').
+        """
+        if not messages:
+            return {}
+        data = self._command_and_check('store',
+                                       messages_to_str(messages),
+                                       cmd,
+                                       seq_to_parenlist(flags),
+                                       uid=True)
+        return self._flatten_dict(parse_fetch_response((data)))
     
     def append(self, folder, msg, flags=(), msg_time=None):
         """Append a message to *folder*.
