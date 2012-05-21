@@ -216,26 +216,6 @@ hr.soften {
   margin: 36px 0;
 }
 
-.footer-links {
-  min-height: 30px;
-  margin: 0;
-  padding: 5px 20px;
-  list-style: none;
-  overflow: hidden;
-}
-
-.footer-links li {
-  display: inline;
-  margin: 0 5px;
-  color: #999;
-}
-.footer-links .github-btn,
-.footer-links .tweet-btn,
-.footer-links .follow-btn {
-  position: relative;
-  top: 5px;
-}
-
 .quick-links {
   min-height: 30px;
   margin: 0;
@@ -300,11 +280,41 @@ hr.soften {
   padding: 35px 0 36px;
   border-top: 1px solid #e5e5e5;
 }
+
 .footer p {
   margin-bottom: 0;
   color: #555;
 }
 
+/* Footer Support
+------------------------- */
+.footer-links {
+  min-height: 10px;
+  margin: 0;
+  /*padding: 5px 20px;*/
+  list-style: none;
+  overflow: hidden;
+}
+.footer-links:first-child {
+  min-height: 0;
+}
+
+.footer-links ul {
+  margin: 0;
+}
+
+.footer-links li {
+  display: inline;
+  margin: 0 0px;
+  color: #555;
+}
+
+.footer-links .github-btn,
+.footer-links .tweet-btn,
+.footer-links .follow-btn {
+  position: relative;
+  top: 5px;
+}
 
 
 /* Special grid styles
