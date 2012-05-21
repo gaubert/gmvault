@@ -215,6 +215,27 @@ hr.soften {
 .bs-links {
   margin: 36px 0;
 }
+
+.footer-links {
+  min-height: 30px;
+  margin: 0;
+  padding: 5px 20px;
+  list-style: none;
+  overflow: hidden;
+}
+
+.footer-links li {
+  display: inline;
+  margin: 0 5px;
+  color: #999;
+}
+.footer-links .github-btn,
+.footer-links .tweet-btn,
+.footer-links .follow-btn {
+  position: relative;
+  top: 5px;
+}
+
 .quick-links {
   min-height: 30px;
   margin: 0;
