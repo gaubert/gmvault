@@ -23,6 +23,18 @@
     <!--<link rel="apple-touch-icon-precomposed" sizes="114x114" href="assets/ico/apple-touch-icon-114-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/ico/apple-touch-icon-72-precomposed.png">
     <link rel="apple-touch-icon-precomposed" href="assets/ico/apple-touch-icon-57-precomposed.png">-->
+
+    <script type="text/javascript">
+		/* <![CDATA[ */
+			(function() {
+				var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
+				s.type = 'text/javascript';
+				s.async = true;
+				s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
+				t.parentNode.insertBefore(s, t);
+			})();
+		/* ]]> */
+    </script>
   </head>
 
   <body data-spy="scroll" data-target=".subnav" data-offset="50"> 
@@ -98,7 +110,12 @@
         <a href="https://twitter.com/zoobert" class="twitter-follow-button" data-link-color="#0069D6" data-show-count="true">Follow @zoobert</a>
       </li>
       <li class="tweet-btn">
-        <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.gmvault.org" data-count="horizontal" data-via="zoobert" data-related="mdo:Creator of Gmvault">Tweet</a>
+        <a class="FlattrButton" style="display:none;" rev="flattr;button:compact;" href="http://gmvault.org"></a>
+        <noscript>
+             <a href="http://flattr.com/thing/689460/Gmvault-Gmail-backup" target="_blank">
+                <img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" />
+             </a>
+        </noscript>
       </li>
     </ul>
   </div>
@@ -161,11 +178,24 @@
     </div>
   </div><!--/row-->
 </div><!-- /.marketing -->
-
      <!-- Footer
       ================================================== -->
       <footer class="footer">
         <p class="pull-right"><a href="#">Back to top</a></p>
+  
+  <div class="footer-links">
+    <ul>
+      <li>Support Gmvault:</li>
+      <li class="tweet-btn">
+        <a class="FlattrButton" style="display:none;" rev="flattr;button:compact;" href="http://gmvault.org"></a>
+        <noscript>
+             <a href="http://flattr.com/thing/689460/Gmvault-Gmail-backup" target="_blank">
+                <img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" />
+             </a>
+        </noscript>
+      </li>
+    </ul>
+  </div>
         <p>Designed and built by <a href="http://twitter.com/zoobert" target="_blank">@zoobert</a>.</p>
         <p>Code licensed under the <a href="http://www.gnu.org/licenses/gpl-3.0.html" target="_blank">GPL v3.0</a>. Documentation licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
         <p>Web Site Template from <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a></p>
