@@ -168,7 +168,8 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gimap.connect()
         
         #labels_to_create = ['a', 'A', 'b/c', 'B/C/d', 'e/f/g', 'b/c/d', ]
-        labels_to_create = ['B/C/d', u'[Imap]/Trash', u'[Imap]/Sent', 'a', 'A', 'B/c', 'e/f/g', 'b/c/d', ]
+        labels_to_create = ['B/c', u'[Imap]/Trash', u'[Imap]/Sent', 'a', 'A', 'e/f/g', 'b/c/d', ]
+        
         gimap.create_gmail_labels(labels_to_create)
         
         #get existing directories (or label parts)
