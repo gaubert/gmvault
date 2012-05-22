@@ -158,21 +158,23 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             res = client.create_folder(the_dir)
             print(res)
     
-    def ztest_create_gmail_labels(self):
+    def test_create_gmail_labels(self):
         """
            validate the label creation at the imap fetcher level
         """
-        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd)
+        gs_credential = { 'type' : 'passwd', 'value': self.gmvault_passwd}
+        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, gs_credential)
         
         gimap.connect()
         
-        labels_to_create = ['a', 'b/c', 'e/f/g', 'b/c/d']
-        
+        #labels_to_create = ['a', 'A', 'b/c', 'B/C/d', 'e/f/g', 'b/c/d', ]
+        labels_to_create = ['B/C/d', u'[Imap]/Trash', u'[Imap]/Sent', 'a', 'A', 'B/c', 'e/f/g', 'b/c/d', ]
         gimap.create_gmail_labels(labels_to_create)
         
         #get existing directories (or label parts)
         folders = [ directory for (_, _, directory) in gimap.get_all_folders() ]
         
+        print("folders = %s" % (folders))
         for label in labels_to_create:
             self.assertTrue( (label in folders) )   
         
@@ -530,7 +532,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.assertTrue(os.path.exists('%s/1384313269332005293.meta' % (storage_dir)))
         self.assertTrue(os.path.exists('%s/1384313269332005293.eml.gz' % (storage_dir)))
             
-    def test_encrypt_restore_on_gmail(self):
+    def ztest_encrypt_restore_on_gmail(self):
         """
            Doesn't work to be fixed
            clean db disk

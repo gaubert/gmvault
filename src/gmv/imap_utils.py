@@ -391,13 +391,17 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             
         for lab in labels:
            
-            #split all labels and get them in lower case
-            labs = self._get_dir_from_labels(lab.lower()) 
+            #split all labels
+            labs = self._get_dir_from_labels(lab) 
             
             for directory in labs:
-                if (directory not in folders) and (directory not in self.GMAIL_SPECIAL_DIRS_LOWER):
+                low_directory = directory.lower() #get lower case directory but store original label
+                if (low_directory not in folders) and (low_directory not in self.GMAIL_SPECIAL_DIRS_LOWER):
                     if self.server.create_folder(directory) != 'Success':
                         raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
+                    
+                    #add created folder in folders
+                    folders.append(low_directory)
                     
     
     def delete_gmail_labels(self, labels):
