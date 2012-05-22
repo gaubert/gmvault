@@ -128,24 +128,6 @@ class CredentialHelper(object):
     
     SECRET_FILEPATH = '%s/token.sec' 
     
-    
-    @classmethod
-    def get_secret(cls):
-        """
-           Get a secret from secret file or generate it
-           TO BE REMOVED
-        """
-        secret_file_path = cls.SECRET_FILEPATH % (gmvault_utils.get_home_dir_path())
-        if os.path.exists(secret_file_path):
-            secret = open(secret_file_path).read()
-        else:
-            secret = gmvault_utils.make_password()
-            fdesc = open(secret_file_path, 'w+')
-            fdesc.write(secret)
-            fdesc.close()
-        
-        return secret
-    
     @classmethod
     def get_secret_key(cls, a_filepath):
         """
@@ -155,10 +137,15 @@ class CredentialHelper(object):
             secret = open(a_filepath).read()
         else:
             secret = gmvault_utils.make_password()
-            fdesc = open(a_filepath, os.O_CREAT|os.O_WRONLY, 0600)
-            fdesc.write(secret)
-            fdesc.close()
-        
+            
+            fdesc = os.open(a_filepath, os.O_CREAT|os.O_WRONLY, 0600)
+            
+            bytes = os.write(fdesc, secret)
+            os.close(fdesc) #close anyway
+            
+            if bytes < len(secret):
+                raise Exception("Error: Cannot write secret in %s" % (a_filepath))
+
         return secret
     
     @classmethod
@@ -167,14 +154,18 @@ class CredentialHelper(object):
         """
         passwd_file = '%s/%s.passwd' % (gmvault_utils.get_home_dir_path(), email)
     
-        fdesc = open(passwd_file, os.O_CREAT|os.O_WRONLY, 0600)
+        fdesc = os.open(passwd_file, os.O_CREAT|os.O_WRONLY, 0600)
         
         cipher       = blowfish.Blowfish(cls.get_secret_key(cls.SECRET_FILEPATH % (gmvault_utils.get_home_dir_path())))
         cipher.initCTR()
     
-        fdesc.write(cipher.encryptCTR(passwd))
+        encrypted = cipher.encryptCTR(passwd)
+        bytes = os.write(fdesc, encrypted)
     
-        fdesc.close()
+        os.close(fdesc)
+        
+        if bytes < len(encrypted):
+            raise Exception("Error: Cannot write password in %s" % (passwd_file))
         
     @classmethod
     def store_oauth_credentials(cls, email, token, secret):
@@ -339,20 +330,16 @@ class CredentialHelper(object):
         
         return xoauth_req
 
-
-
-
-if __name__ == '__main__':
-    
+def test_xoauth():
     """
-algo:
-get key and secret
-if key and secret in conf take it
-otherwise generate them with get_oauth_tok_sec
-save secret once you have it (encrypt or not ?)
-generate xoauth everytime your connect to imap
-do not use atom to create the request (no need to get a fake dependency
-"""
+        algo:
+        get key and secret
+        if key and secret in conf take it
+        otherwise generate them with get_oauth_tok_sec
+        save secret once you have it (encrypt or not ?)
+        generate xoauth everytime your connect to imap
+        do not use atom to create the request (no need to get a fake dependency
+    """
     log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, file_path="./gmvault.log") 
     
     token, secret = get_oauth_tok_sec('guillaume.aubert@gmail.com')
@@ -360,3 +347,18 @@ do not use atom to create the request (no need to get a fake dependency
     req = generate_xoauth_req(token, secret, 'guillaume.aubert@gmail.com')
     
     print(req)
+    
+def test_encryption():
+    """
+      quickly test encryption
+    """
+    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, file_path="./gmvault.log") 
+    CredentialHelper.get_secret_key("/tmp/toto.txt")
+    
+    CredentialHelper.store_passwd("toto.titi@gmail.com", "toto")
+
+
+if __name__ == '__main__':
+    
+    test_encryption()
+  
