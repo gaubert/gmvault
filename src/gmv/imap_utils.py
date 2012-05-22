@@ -169,6 +169,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     
     GMAIL_SPECIAL_DIRS = ['\\Inbox', '\\Starred', '\\Sent', '\\Draft', '\\Important']
     
+    GMAIL_SPECIAL_DIRS_LOWER = ['\\inbox', '\\starred', '\\sent', '\\draft', '\\important']
+    
     #to be removed
     EMAIL_BODY_OLD        = 'RFC822' #set msg as seen
     IMAP_BODY_PEEK     = 'BODY.PEEK[]' #get body without setting msg as seen
@@ -384,14 +386,16 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         #to that method. (Could go further and memoize it)
         
         #get existing directories (or label parts)
-        folders = [ directory for (_, _, directory) in self.server.list_folders() ]
+        # get in lower case because Gmail labels are case insensitive
+        folders = [ directory.lower() for (_, _, directory) in self.server.list_folders() ]
             
         for lab in labels:
            
-            labs = self._get_dir_from_labels(lab)
+            #split all labels and get them in lower case
+            labs = self._get_dir_from_labels(lab.lower()) 
             
             for directory in labs:
-                if (directory not in folders) and (directory not in self.GMAIL_SPECIAL_DIRS):
+                if (directory not in folders) and (directory not in self.GMAIL_SPECIAL_DIRS_LOWER):
                     if self.server.create_folder(directory) != 'Success':
                         raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
                     
