@@ -60,10 +60,13 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
     except gdata.service.FetchingOAuthRequestTokenFailed, err:
         if str(err).find('Timestamp') != -1:
             LOG.critical('Is your system clock up to date? See the FAQ http://code.google.com/p/googlecl/wiki/FAQ'\
-                         '#Timestamp_too_far_from_current_time')
-        else:
-            LOG.error('error %s' % (err))
-            #LOG.error(err[0]['body'].strip() + '; Request token retrieval failed!')
+                         '#Timestamp_too_far_from_current_time\n')
+            
+        LOG.critical("Received Error: %s.\n" % (err) )
+        LOG.critical("=== Exception traceback ===")
+        LOG.critical(gmvault_utils.get_exception_traceback())
+        LOG.critical("=== End of Exception traceback ===\n")
+            
         return (None, None)
     
     url_params = {}
@@ -83,7 +86,10 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
         try:
             webbrowser.open(str(auth_url))  
         except Exception, err: #pylint: disable-msg=W0703
-            LOG.exception(err)
+            LOG.critical("Error: %s.\n" % (err) )
+            LOG.critical("=== Exception traceback ===")
+            LOG.critical(gmvault_utils.get_exception_traceback())
+            LOG.critical("=== End of Exception traceback ===\n")
         
         raw_input("You should now see the web page on your browser now.\n"\
                   "If you don\'t, you can manually open:\n\n%s\n\nOnce you've granted gmvault access, press the Enter key.\n" % (auth_url))
@@ -96,7 +102,10 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
         final_token = gdata_serv.UpgradeToOAuthAccessToken(request_token)
     except gdata.service.TokenUpgradeFailed:
         LOG.critical('Token upgrade failed! Could not get OAuth access token.\n Did you grant gmvault access in your browser ?')
-
+        LOG.critical("=== Exception traceback ===")
+        LOG.critical(gmvault_utils.get_exception_traceback())
+        LOG.critical("=== End of Exception traceback ===\n")
+        
         return (None, None)
 
     return (final_token.key, final_token.secret)
@@ -238,12 +247,11 @@ class CredentialHelper(object):
                     if len(oauth_result) == 2:
                         token  = oauth_result[0]
                         secret = oauth_result[1]
-            except Exception, err: #pylint: disable-msg=W0703
-                LOG.error("Error when reading oauth info from %s" % (user_oauth_file_path))
-                
-                LOG.exception(err)
-                
+            except Exception, err: #pylint: disable-msg=W0703              
                 LOG.critical("Cannot read oauth credentials from %s. Force oauth credentials renewal." % (user_oauth_file_path))
+                LOG.critical("=== Exception traceback ===")
+                LOG.critical(gmvault_utils.get_exception_traceback())
+                LOG.critical("=== End of Exception traceback ===\n")
         
         if token: token   = token.strip() #pylint: disable-msg=C0321
         if secret: secret = secret.strip()  #pylint: disable-msg=C0321
@@ -308,6 +316,7 @@ class CredentialHelper(object):
                 else:
                     LOG.critical("Initiate interactive session to get XOAuth token from Gmail.\n")
                 token, secret = get_oauth_tok_sec(args['email'], use_webbrowser = True)
+                
                 if not token:
                     raise Exception("Cannot get XOAuth token from Gmail. See Gmail error message")
                 #store newly created token
