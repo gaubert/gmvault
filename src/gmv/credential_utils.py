@@ -82,7 +82,7 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
     if use_webbrowser:
         try:
             webbrowser.open(str(auth_url))  
-        except Exception, err: 
+        except Exception, err: #pylint: disable-msg=W0703
             LOG.exception(err)
         
         raw_input("You should now see the web page on your browser now.\n"\
@@ -113,19 +113,23 @@ def generate_xoauth_req(a_token, a_secret, email, two_legged=False):
          
         signature = gdata.gauth.generate_hmac_signature(http_request=request, consumer_key=a_token, consumer_secret=a_secret, \
                                                         timestamp=timestamp, nonce=nonce, version='1.0', next=None)
-        return '''GET https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s oauth_consumer_key="%s",oauth_nonce="%s",oauth_signature="%s",oauth_signature_method="HMAC-SHA1",oauth_timestamp="%s",oauth_version="1.0"''' % (email, urllib.quote(email), a_token, nonce, urllib.quote(signature), timestamp)
+        return '''GET https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s oauth_consumer_key="%s",oauth_nonce="%s",oauth_signature="%s",oauth_signature_method="HMAC-SHA1",oauth_timestamp="%s",oauth_version="1.0"''' \
+               % (email, urllib.quote(email), a_token, nonce, urllib.quote(signature), timestamp)
     else:
         request = atom.http_core.HttpRequest('https://mail.google.com/mail/b/%s/imap/' % email, 'GET')
         signature = gdata.gauth.generate_hmac_signature(
             http_request=request, consumer_key='anonymous', consumer_secret='anonymous', timestamp=timestamp,
             nonce=nonce, version='1.0', next=None, token = a_token, token_secret= a_secret)
-        return '''GET https://mail.google.com/mail/b/%s/imap/ oauth_consumer_key="anonymous",oauth_nonce="%s",oauth_signature="%s",oauth_signature_method="HMAC-SHA1",oauth_timestamp="%s",oauth_token="%s",oauth_version="1.0"''' % (email, nonce, urllib.quote(signature), timestamp, urllib.quote(a_token))
+        return '''GET https://mail.google.com/mail/b/%s/imap/ oauth_consumer_key="anonymous",oauth_nonce="%s",oauth_signature="%s",oauth_signature_method="HMAC-SHA1",oauth_timestamp="%s",oauth_token="%s",oauth_version="1.0"''' \
+               % (email, nonce, urllib.quote(signature), timestamp, urllib.quote(a_token))
 
 
 
 
 class CredentialHelper(object):
-    
+    """
+       Helper handling all credentials
+    """
     SECRET_FILEPATH = '%s/token.sec' 
     
     @classmethod
@@ -140,10 +144,10 @@ class CredentialHelper(object):
             
             fdesc = os.open(a_filepath, os.O_CREAT|os.O_WRONLY, 0600)
             
-            bytes = os.write(fdesc, secret)
+            the_bytes = os.write(fdesc, secret)
             os.close(fdesc) #close anyway
             
-            if bytes < len(secret):
+            if the_bytes < len(secret):
                 raise Exception("Error: Cannot write secret in %s" % (a_filepath))
 
         return secret
@@ -151,6 +155,7 @@ class CredentialHelper(object):
     @classmethod
     def store_passwd(cls, email, passwd):
         """
+           Encrypt and store gmail password
         """
         passwd_file = '%s/%s.passwd' % (gmvault_utils.get_home_dir_path(), email)
     
@@ -160,16 +165,17 @@ class CredentialHelper(object):
         cipher.initCTR()
     
         encrypted = cipher.encryptCTR(passwd)
-        bytes = os.write(fdesc, encrypted)
+        the_bytes = os.write(fdesc, encrypted)
     
         os.close(fdesc)
         
-        if bytes < len(encrypted):
+        if the_bytes < len(encrypted):
             raise Exception("Error: Cannot write password in %s" % (passwd_file))
         
     @classmethod
     def store_oauth_credentials(cls, email, token, secret):
         """
+           store oauth_credentials
         """
         oauth_file = '%s/%s.oauth' % (gmvault_utils.get_home_dir_path(), email)
     
@@ -232,20 +238,20 @@ class CredentialHelper(object):
                     if len(oauth_result) == 2:
                         token  = oauth_result[0]
                         secret = oauth_result[1]
-            except Exception, err:
+            except Exception, err: #pylint: disable-msg=W0703
                 LOG.error("Error when reading oauth info from %s" % (user_oauth_file_path))
                 
                 LOG.exception(err)
                 
                 LOG.critical("Cannot read oauth credentials from %s. Force oauth credentials renewal." % (user_oauth_file_path))
         
-        if token: token   = token.strip()
-        if secret: secret = secret.strip() 
+        if token: token   = token.strip() #pylint: disable-msg=C0321
+        if secret: secret = secret.strip()  #pylint: disable-msg=C0321
         
         return token, secret
             
     @classmethod
-    def get_credential(cls, args, test_mode = {'activate': False, 'value' : 'test_password'}):
+    def get_credential(cls, args, test_mode = {'activate': False, 'value' : 'test_password'}): #pylint: disable-msg=W0102
         """
            Deal with the credentials.
            1) Password
@@ -287,7 +293,7 @@ class CredentialHelper(object):
                 credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read' }
                                
         #elif args['passwd'] == 'not_seen' and args['oauth']:
-        elif args['passwd'] in ('not_seen', None) and args['oauth'] in (None, 'empty','renew', 'not_seen'):
+        elif args['passwd'] in ('not_seen', None) and args['oauth'] in (None, 'empty', 'renew', 'not_seen'):
             # get token secret
             # if they are in a file then no need to call get_oauth_tok_sec
             # will have to add 2 legged or 3 legged
