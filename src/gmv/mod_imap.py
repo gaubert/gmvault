@@ -21,15 +21,25 @@ Contains the class monkey patching IMAPClient and imaplib
 import zlib
 import time
 import datetime
+import re
 import imaplib  #for the exception
 import imapclient
+
+INTERNALDATE_RE = re.compile(r'.*INTERNALDATE "'
+r'(?P<day>[ 0123][0-9])-(?P<mon>[A-Z][a-z][a-z])-(?P<year>[0-9][0-9][0-9][0-9])'
+r' (?P<hour>[0-9][0-9]):(?P<min>[0-9][0-9]):(?P<sec>[0-9][0-9])'
+r' (?P<zonen>[-+])(?P<zoneh>[0-9][0-9])(?P<zonem>[0-9][0-9])'
+r'"')
+
+MON2NUM = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+        'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
 
 #need to monkey patch _convert_INTERNALDATE to work with imaplib2
 def mod_convert_INTERNALDATE(date_string, normalise_times=True):
     """
        monkey patched convert_INTERNALDATE
     """
-    mo = imaplib.InternalDate.match('INTERNALDATE "%s"' % date_string)
+    mo = INTERNALDATE_RE.match('INTERNALDATE "%s"' % date_string)
     if not mo:
         raise ValueError("couldn't parse date %r" % date_string)
     
@@ -40,7 +50,7 @@ def mod_convert_INTERNALDATE(date_string, normalise_times=True):
     tz = imapclient.fixed_offset.FixedOffset(zonem)
     
     year = int(mo.group('year'))
-    mon = imaplib.Mon2num[mo.group('mon')]
+    mon = MON2NUM[mo.group('mon')]
     day = int(mo.group('day'))
     hour = int(mo.group('hour'))
     minute = int(mo.group('min'))
