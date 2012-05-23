@@ -158,17 +158,18 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             res = client.create_folder(the_dir)
             print(res)
     
-    def test_create_gmail_labels(self):
+    def test_create_gmail_labels_upper_case(self):
         """
-           validate the label creation at the imap fetcher level
+           validate the label creation at the imap fetcher level.
+           Use upper case
         """
         gs_credential = { 'type' : 'passwd', 'value': self.gmvault_passwd}
         gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, gs_credential)
         
         gimap.connect()
         
-        #labels_to_create = ['a', 'A', 'b/c', 'B/C/d', 'e/f/g', 'b/c/d', ]
-        labels_to_create = ['B/c', u'[Imap]/Trash', u'[Imap]/Sent', 'a', 'A', 'e/f/g', 'b/c/d', ]
+        labels_to_create = ['B/C', 'B/C/d', 'B/C/D/e', 'c/d']
+        #labels_to_create = ['B/c', u'[Imap]/Trash', u'[Imap]/Sent', 'a', 'A', 'e/f/g', 'b/c/d', ]
         
         gimap.create_gmail_labels(labels_to_create)
         

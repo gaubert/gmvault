@@ -387,7 +387,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         #get existing directories (or label parts)
         # get in lower case because Gmail labels are case insensitive
-        folders = [ directory.lower() for (_, _, directory) in self.server.list_folders() ]
+        folders = [ directory.lower() for (flag, delimiter, directory) in self.server.list_folders() ]
             
         for lab in labels:
            
@@ -397,8 +397,14 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             for directory in labs:
                 low_directory = directory.lower() #get lower case directory but store original label
                 if (low_directory not in folders) and (low_directory not in self.GMAIL_SPECIAL_DIRS_LOWER):
-                    if self.server.create_folder(directory) != 'Success':
-                        raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
+                    try:
+                        if self.server.create_folder(directory) != 'Success':
+                            raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
+                    except imaplib.IMAP4.error, error:
+                        if str(error).startswith("create failed: '[ALREADYEXISTS] Duplicate folder"):
+                            LOG.critical("Ignore issue: %s.\n" % (err) )
+                        else:
+                            raise error
                     
                     #add created folder in folders
                     folders.append(low_directory)
@@ -406,9 +412,9 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     
     def delete_gmail_labels(self, labels):
         """
-           Delete passed labels
+           Delete passed labels. Beware experimental and labels must be ordered
         """
-        for label in labels:
+        for label in reversed(labels):
             
             labs = self._get_dir_from_labels(label)
             
