@@ -393,4 +393,8 @@ DONE: - Make src distrib with setup.py for linux
 
 
 check list_folders() to see what is gives and check that in works in any order
+Label management:
+The way [IMAP]/Trash, [IMAP]/Sent are created looks strange. 
+I can create [IMAP]/Trash and [IMAP]/Sent but they are not nested. I would like to know if I need to do an exception for them.
+
 
