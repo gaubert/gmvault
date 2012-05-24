@@ -370,7 +370,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         return dirs
     
-    def create_gmail_labels(self, labels):
+    def create_gmail_labels(self, labels, existing_folders):
         """
            Create folders and subfolders on Gmail in order
            to recreate the label hierarchy before to upload emails
@@ -387,7 +387,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         #get existing directories (or label parts)
         # get in lower case because Gmail labels are case insensitive
-        folders = [ directory.lower() for (flag, delimiter, directory) in self.server.list_folders() ]
+        listed_folders = set([ directory.lower() for (flag, delimiter, directory) in self.server.list_folders() ])
+        existing_folders = listed_folders.union(existing_folders)
             
         for lab in labels:
            
@@ -396,21 +397,26 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             
             for directory in labs:
                 low_directory = directory.lower() #get lower case directory but store original label
-                if (low_directory not in folders) and (low_directory not in self.GMAIL_SPECIAL_DIRS_LOWER):
+                if (low_directory not in existing_folders) and (low_directory not in self.GMAIL_SPECIAL_DIRS_LOWER):
                     try:
                         if self.server.create_folder(directory) != 'Success':
                             raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
                     except imaplib.IMAP4.error, error:
+                        #log error in log file if it exists
+                        LOG.debug(gmvault_utils.get_exception_traceback())
                         if str(error).startswith("create failed: '[ALREADYEXISTS] Duplicate folder"):
-                            LOG.critical("Ignore issue: %s.\n" % (err) )
+                            LOG.critical("Warning: label %s already exists on Gmail and Gmvault tried to create it. Ignore this issue." % (directory) )
                         else:
                             raise error
                     
                     #add created folder in folders
-                    folders.append(low_directory)
+                    existing_folders.add(low_directory)
+        
+        #return all existing folders
+        return existing_folders
                     
     
-    def delete_gmail_labels(self, labels):
+    def delete_gmail_labels(self, labels, force_delete = False):
         """
            Delete passed labels. Beware experimental and labels must be ordered
         """
@@ -419,8 +425,16 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             labs = self._get_dir_from_labels(label)
             
             for directory in reversed(labs):
-                if self.server.folder_exists(directory): #call server exists each time
-                    self.server.delete_folder(directory)
+                
+                #listed_folders = set([ repertoire.lower() for (flag, delimiter, repertoire) in self.server.xlist_folders() ])
+                
+                #print("Existing folders on server side = %s\n" % (listed_folders))
+                
+                if force_delete or ( (directory.lower() not in self.GMAIL_SPECIAL_DIRS_LOWER) and self.server.folder_exists(directory) ): #call server exists each time
+                    try:
+                        self.server.delete_folder(directory)
+                    except imaplib.IMAP4.error, ignored:
+                        LOG.debug(gmvault_utils.get_exception_traceback())
                     
          
     @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec

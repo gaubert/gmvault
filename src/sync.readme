@@ -397,4 +397,7 @@ Label management:
 The way [IMAP]/Trash, [IMAP]/Sent are created looks strange. 
 I can create [IMAP]/Trash and [IMAP]/Sent but they are not nested. I would like to know if I need to do an exception for them.
 
+Another Gmail specificity, when you create [IMAP]/Sent only [IMAP] will appear in the list of created folders (using list folders) list: [u'inbox', u'sent', u'sent messages', u'trash', u'[google mail]', u'[google mail]/all mail', u'[google mail]/drafts', u'[google mail]/important', u'[google mail]/sent mail', u'[google mail]/spam', u'[google mail]/starred', u'[google mail]/trash', u'[imap]']
 
+Gmail should fix the issue with the label [IMAP]/Sent, Draft, Trash. They cannot be deleted. Also if you create a/v as label it will be a flat label and later if you create a a/v will become a nested label.
+They should fix all these issues.

@@ -158,7 +158,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             res = client.create_folder(the_dir)
             print(res)
     
-    def ztest_create_gmail_labels_upper_case(self):
+    def test_create_gmail_labels_upper_case(self):
         """
            validate the label creation at the imap fetcher level.
            Use upper case
@@ -168,17 +168,32 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         gimap.connect()
         
-        labels_to_create = ['0','A','a', 'B/C', 'B/C/d', 'B/C/D/e', 'c/d']
+        
+        print("\nCreate labels.\n")
+        
+        labels_to_create = ['0','A','a', 'B/C', 'B/C/d', 'B/C/d/e', 'c/d']
         #labels_to_create = ['B/c', u'[Imap]/Trash', u'[Imap]/Sent', 'a', 'A', 'e/f/g', 'b/c/d', ]
         
-        gimap.create_gmail_labels(labels_to_create)
+        existing_folders = set()
         
-        #get existing directories (or label parts)
-        folders = [ directory.lower() for (_, _, directory) in gimap.get_all_folders() ]
+        existing_folders = gimap.create_gmail_labels(labels_to_create, existing_folders)
         
-        print("folders = %s" % (folders))
+        print("folders = %s\n" % (existing_folders))
         for label in labels_to_create:
-            self.assertTrue( (label.lower() in folders) )   
+            self.assertTrue( (label.lower() in existing_folders) )   
+            
+        labels_to_create = ['0','A','a', 'B/C', 'B/C/d', 'B/C/d/e', 'c/d', 'diablo3', 'blizzard', 'blizzard/diablo']
+        #labels_to_create = ['B/c', u'[Imap]/Trash', u'[Imap]/Sent', 'a', 'A', 'e/f/g', 'b/c/d', ]
+        
+        existing_folders = set()
+        
+        existing_folders = gimap.create_gmail_labels(labels_to_create, existing_folders)
+        
+        print("folders = %s\n" % (existing_folders))
+        for label in labels_to_create:
+            self.assertTrue( (label.lower() in existing_folders) )   
+        
+        print("Delete labels\n")
         
         gimap.delete_gmail_labels(labels_to_create)
         
@@ -196,27 +211,49 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, gs_credential)
         
         gimap.connect()
-         
+        
+        print("\nCreate labels.\n")
+        
         labels_to_create = [u'[IMAP]/Trash', u'[IMAP]/Sent']
         
-        gimap.create_gmail_labels(labels_to_create)
+        existing_folders = set()
+        
+        existing_folders = gimap.create_gmail_labels(labels_to_create, existing_folders)
         
         #get existing directories (or label parts)
-        print("xlist folders = %s\n" % (gimap.get_all_folders()) )
+        #print("xlist folders = %s\n" % (gimap.get_all_folders()) )
         
+        #folders = [ directory.lower() for (flags, delim, directory) in gimap.server.list_folders() ]
+        folders = [ directory.lower() for directory in existing_folders ]
         
-        folders = [ directory.lower() for (flags, delim, directory) in gimap.server.list_folders() ]
+        print("folders = %s\n" % (folders))
+        for label in labels_to_create:
+            self.assertTrue( (label.lower() in folders) )   
+            
+        # second creation
+        labels_to_create = [u'[RETEST]', u'[RETEST]/test', u'[RETEST]/Trash', u'[IMAP]/Trash', u'[IMAP]/Draft', u'[IMAP]/Sent', u'[IMAP]']
+        
+        existing_folders = gimap.create_gmail_labels(labels_to_create, existing_folders)
+        
+        folders = [ directory.lower() for directory in existing_folders ]
         
         print("folders = %s" % (folders))
         for label in labels_to_create:
-            self.assertTrue( (label.lower() in folders) )   
+            self.assertTrue( (label.lower() in folders) )  
+            
+        #it isn't possible to delete the [IMAP]/Sent, [IMAP]/Draft [IMAP]/Trash labels
+        # I give up and do not delete them in the test
+        labels_to_delete = [u'[RETEST]', u'[RETEST]/test', u'[RETEST]/Trash'] 
         
-        gimap.delete_gmail_labels(labels_to_create)
+        print("Delete labels\n")
+        
+        # delete them
+        gimap.delete_gmail_labels(labels_to_delete)
         
         #get existing directories (or label parts)
         folders = [ directory.lower() for (_, _, directory) in gimap.get_all_folders() ]
         
-        for label in labels_to_create: #check that they have been deleted
+        for label in labels_to_delete: #check that they have been deleted
             self.assertFalse( (label.lower() in folders) )
             
         
