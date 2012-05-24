@@ -493,8 +493,7 @@ class GMVaultLauncher(object):
         #print error report
         LOG.critical(syncer.get_error_report())
             
-    
-    
+
     def run(self, args):
         """
            Run the grep with the given args 
@@ -564,7 +563,7 @@ def activate_debug_mode():
     """
     LOG.critical("Debugging logs are going to be saved in file %s/gmvault.log.\n" % os.getenv("HOME","."))
     log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'DEBUG', file_path="%s/gmvault.log" % os.getenv("HOME","."))
-    
+
 def bootstrap_run():
     """ temporary bootstrap """
     
@@ -589,6 +588,9 @@ def bootstrap_run():
     
 if __name__ == '__main__':
      
+    #import memdebug
+    
+    #memdebug.start(8080)
     #import sys
     #print("sys.argv=[%s]" %(sys.argv))
     bootstrap_run()

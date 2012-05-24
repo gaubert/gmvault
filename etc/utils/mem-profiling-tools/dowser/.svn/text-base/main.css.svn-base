@@ -1,0 +1,54 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+#header {
+    text-align: center;
+    background-color: #CCCCCC;
+    margin: 0;
+    padding: 0.25em;
+}
+
+#header p {
+    margin: 0;
+    padding: 0.25em;
+}
+
+#header h1 a {
+    text-decoration: none;
+}
+
+#header h1 a:visited {
+    color: black;
+}
+
+h1 {
+    font: 900 20pt Verdana, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0.25em;
+}
+
+h2 {
+    text-align: center;
+}
+
+.obj {
+    border: 1px dashed #CCCCCC;
+    padding: 0.5em;
+    margin: 2px;
+    font: 10pt Arial, sans-serif;
+    vertical-align: middle;
+}
+
+.typename {
+    font-weight: bold;
+}
+
+.refs {
+    border: 1px solid #CCCCCC;
+    padding: 0.25em;
+    margin: 0;
+}
+

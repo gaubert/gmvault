@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>Dowser: Types</title>
+    <link href="%(maincss)s" rel="stylesheet" type="text/css" />
+
+<style type='text/css'>
+
+.typecount {
+    border: 1px dashed #CCCCCC;
+    padding: 0.5em;
+    margin: 2px;
+    font: 10pt Arial, sans-serif;
+    vertical-align: middle;
+    float: left;
+    width: 30%%;
+}
+
+.chart {
+    border-bottom: 1px solid #CCCCCC;
+    background-color: white;
+    padding: 0.25em;
+    margin: 0;
+}
+
+</style>
+</head>
+
+<body>
+<div id="header">
+    <h1><a href="%(home)s">Dowser</a>: Types</h1>
+</div>
+
+<div id="output">
+%(output)s
+</div>
+
+</body>
+</html>
