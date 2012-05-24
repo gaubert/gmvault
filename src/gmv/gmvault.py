@@ -952,7 +952,7 @@ class GMVaulter(object):
         total_nb_emails_to_restore = len(db_gmail_ids_info)
         LOG.critical("Got all emails id left to restore. Still %s emails to do.\n" % (total_nb_emails_to_restore) )
         
-        seen_labels = set() #set of seen labels to not call create_gmail_labels all the time
+        existing_labels = set() #set of existing labels to not call create_gmail_labels all the time
         nb_emails_restored= 0 #to count nb of emails restored
         timer = gmvault_utils.Timer() # needed for enhancing the user information
         timer.start()
@@ -970,15 +970,12 @@ class GMVaulter(object):
             labels = labels.union(extra_labels)
             
             # get list of labels to create 
-            labels_to_create = [ label for label in labels if label not in seen_labels]
+            labels_to_create = [ label for label in labels if label not in existing_labels]
             
             #create the non existing labels
-            self.src.create_gmail_labels(labels_to_create)
+            LOG.debug("Labels creation tentative for email with id %s." % (gm_id))
             
-            LOG.debug("Created labels %s for email with id %s." % (labels_to_create, gm_id))
-            
-            #update seen labels
-            seen_labels.update(set(labels_to_create))
+            existing_labels = self.src.create_gmail_labels(labels_to_create, existing_labels)
             
             try:
                 #restore email

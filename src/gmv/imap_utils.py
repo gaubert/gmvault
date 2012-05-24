@@ -401,6 +401,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                     try:
                         if self.server.create_folder(directory) != 'Success':
                             raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
+                        else:
+                            LOG.debug("============== ####### Created Labels %s." % (directory))
                     except imaplib.IMAP4.error, error:
                         #log error in log file if it exists
                         LOG.debug(gmvault_utils.get_exception_traceback())

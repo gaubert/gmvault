@@ -172,7 +172,6 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         print("\nCreate labels.\n")
         
         labels_to_create = ['0','A','a', 'B/C', 'B/C/d', 'B/C/d/e', 'c/d']
-        #labels_to_create = ['B/c', u'[Imap]/Trash', u'[Imap]/Sent', 'a', 'A', 'e/f/g', 'b/c/d', ]
         
         existing_folders = set()
         
