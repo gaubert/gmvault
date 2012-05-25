@@ -39,6 +39,7 @@ MON2NUM = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
         'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
 
 #need to monkey patch _convert_INTERNALDATE to work with imaplib2
+#modification of IMAPClient
 def mod_convert_INTERNALDATE(date_string, normalise_times=True):
     """
        monkey patched convert_INTERNALDATE
@@ -67,6 +68,7 @@ def mod_convert_INTERNALDATE(date_string, normalise_times=True):
         return dt.astimezone(imapclient.fixed_offset.FixedOffset.for_system()).replace(tzinfo=None)
     return dt
 
+#monkey patching is done here
 imapclient.response_parser._convert_INTERNALDATE = mod_convert_INTERNALDATE
 
 #monkey patching add compress in COMMANDS of imap
@@ -94,7 +96,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
         self.decompressor = zlib.decompressobj(-15)
         self.compressor   = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
         
-    def open(self, host = '', port = imaplib.IMAP4_SSL_PORT):
+    def open(self, host = '', port = imaplib.IMAP4_SSL_PORT): 
             """Setup connection to remote server on "host:port".
                 (default: localhost:standard IMAP4 SSL port).
             This connection will be used by the routines:
@@ -104,24 +106,32 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
             self.port   = port
             self.sock   = socket.create_connection((host, port))
             self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
-            #add this
+            
+            # This is the last correction added to avoid memory fragmentation in imaplib
+            # makefile creates a file object that makes use of cStringIO to avoid mem fragmentation
+            # it could be used without the compression 
+            # (maybe make 2 set of methods without compression and with compression)
             #self.file   = self.sslobj.makefile('rb')
     
     def read(self, size):
-        """Read 'size' bytes from remote."""
-        # sslobj.read() sometimes returns < size bytes
-        chunks = cStringIO.StringIO()
+        """
+            Read 'size' bytes from remote.
+            Call _intern_read that takes care of the compression
+        """
+        
+        chunks = cStringIO.StringIO() #use cStringIO.cStringIO to avoir too much fragmentation
         read = 0
         while read < size:
-            data = self._intern_read(min(size-read, 16384))
+            data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
             read += len(data)
             chunks.write(data)
         
-        return chunks.getvalue()
+        return chunks.getvalue() #return the cStringIO content
   
     def _intern_read(self, size):
         """
             Read at most 'size' bytes from remote.
+            Takes care of the compression
         """
         if self.decompressor is None:
             return self.sslobj.read(size)
@@ -135,16 +145,18 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
         
     def readline(self):
         """Read line from remote."""
-        line = cStringIO.StringIO()
+        line = cStringIO.StringIO() #use cStringIO to avoid memory fragmentation
         while 1:
-            char = self.read(1)
+            #make use of read that takes care of the compression
+            #it could be simplified without compression
+            char = self.read(1) 
             line.write(char)
             if char in ("\n", ""): 
                 return line.getvalue()
     
     def shutdown(self):
         """Close I/O established in "open"."""
-        #self.file.close()
+        #self.file.close() #if file created
         self.sock.close()
         
       
