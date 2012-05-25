@@ -22,6 +22,10 @@ import zlib
 import time
 import datetime
 import re
+import socket
+import ssl
+import cStringIO
+
 import imaplib  #for the exception
 import imapclient
 
@@ -90,83 +94,60 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
         self.decompressor = zlib.decompressobj(-15)
         self.compressor   = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
         
+    def open(self, host = '', port = imaplib.IMAP4_SSL_PORT):
+            """Setup connection to remote server on "host:port".
+                (default: localhost:standard IMAP4 SSL port).
+            This connection will be used by the routines:
+                read, readline, send, shutdown.
+            """
+            self.host   = host
+            self.port   = port
+            self.sock   = socket.create_connection((host, port))
+            self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
+            #add this
+            #self.file   = self.sslobj.makefile('rb')
+    
     def read(self, size):
         """Read 'size' bytes from remote."""
         # sslobj.read() sometimes returns < size bytes
-        chunks = []
+        chunks = cStringIO.StringIO()
         read = 0
         while read < size:
             data = self._intern_read(min(size-read, 16384))
             read += len(data)
-            chunks.append(data)
+            chunks.write(data)
         
-        return ''.join(chunks)
+        return chunks.getvalue()
   
     def _intern_read(self, size):
         """
             Read at most 'size' bytes from remote.
         """
-
         if self.decompressor is None:
             return self.sslobj.read(size)
 
         if self.decompressor.unconsumed_tail:
             data = self.decompressor.unconsumed_tail
         else:
-            data = self.sslobj.read(8192)
+            data = self.sslobj.read(8192) #maybe change to 16384
 
         return self.decompressor.decompress(data, size)
-    
+        
     def readline(self):
         """Read line from remote."""
-        line = []
+        line = cStringIO.StringIO()
         while 1:
             char = self.read(1)
-            line.append(char)
+            line.write(char)
             if char in ("\n", ""): 
-                return ''.join(line)
-        
-    MAX_READ = 16384
-    def nread(self, size):
-        """Read 'size' bytes from remote."""
-        # sslobj.read() sometimes returns < size bytes
-        if size <= self.MAX_READ:
-            return self._intern_read(size)
-        else:
-            chunks = ""
-            read = 0
-            while read < size:
-                data = self._intern_read(min(size-read, self.MAX_READ))
-                read += len(data)
-                chunks += data
-        
-        return chunks
-  
-    def _nintern_read(self, size):
-        """
-            Read at most 'size' bytes from remote.
-        """
-
-        if self.decompressor is None:
-            return self.sslobj.read(size)
-
-        if self.decompressor.unconsumed_tail:
-            data = self.decompressor.unconsumed_tail
-        else:
-            #data = self.sslobj.read(8192)
-            data = self.sslobj.read(size)
-
-        return self.decompressor.decompress(data, size)
+                return line.getvalue()
     
-    def nreadline(self):
-        """Read line from remote."""
-        line = []
-        while 1:
-            char = self.read(1)
-            line.append(char)
-            if char in ("\n", ""): 
-                return ''.join(line)
-  
+    def shutdown(self):
+        """Close I/O established in "open"."""
+        #self.file.close()
+        self.sock.close()
+        
+      
     def send(self, data):
         """send(data)
         Send 'data' to remote."""
@@ -174,7 +155,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
             data = self.compressor.compress(data)
             data += self.compressor.flush(zlib.Z_SYNC_FLUSH)
         self.sslobj.sendall(data)
-
+       
 def seq_to_parenlist(flags):
     """Convert a sequence of strings into parenthised list string for
     use with IMAP commands.
@@ -201,8 +182,6 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903
         """
            Factory method creating an IMAPCOMPSSL or a standard IMAP4 Class
         """
-        # Create the IMAP instance in a separate method to make unit tests easier
-        #ImapClass = self.ssl and imaplib.IMAP4_SSL or imaplib.IMAP4
         ImapClass = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
         return ImapClass(self.host, self.port)
     
