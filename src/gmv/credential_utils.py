@@ -247,7 +247,7 @@ class CredentialHelper(object):
                     if len(oauth_result) == 2:
                         token  = oauth_result[0]
                         secret = oauth_result[1]
-            except Exception, err: #pylint: disable-msg=W0703              
+            except Exception, _: #pylint: disable-msg=W0703              
                 LOG.critical("Cannot read oauth credentials from %s. Force oauth credentials renewal." % (user_oauth_file_path))
                 LOG.critical("=== Exception traceback ===")
                 LOG.critical(gmvault_utils.get_exception_traceback())
