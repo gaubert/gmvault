@@ -93,6 +93,7 @@ class GmailStorer(object):
         self._encryption_key = None
         self._cipher         = None
         
+        
     
     def store_db_owner(self, email_owner):
         """
@@ -130,6 +131,14 @@ class GmailStorer(object):
         
         return self._cipher
         
+    @classmethod
+    def get_encryption_key_path(cls, a_root_dir):
+        """
+           Return the path of the encryption key.
+           This is used to print that information to the user
+        """
+        return  '%s/%s/%s' % (a_root_dir, cls.INFO_AREA, cls.ENCRYPTION_KEY_FILENAME)
+    
     @classmethod
     def get_encryption_key(cls, a_info_dir):
         """
@@ -464,9 +473,6 @@ class GMVaulter(object):
         self.src = imap_utils.GIMAPFetcher(host, port, login, credential, readonly_folder = read_only_access)
         
         self.src.connect()
-        
-        # enable compression if possible
-        #self.src.enable_compression() 
         
         self.use_encryption = use_encryption
         
@@ -848,11 +854,15 @@ class GMVaulter(object):
         
         # check if there is a restart
         if restart:
-            LOG.critical("Restart mode activated. Need to find information in Gmail, be patient.")
+            LOG.critical("Restart mode activated. Need to find information in Gmail, be patient ...")
             imap_ids = self.get_gmails_ids_left_to_sync(imap_ids)
         
         if not compress_on_disk:
             LOG.critical("Disable compression when storing emails.")
+            
+        if self.use_encryption:
+            LOG.critical("Encryption activated. All emails will be encrypted before to be stored.")
+            LOG.critical("Please take care of the encryption key stored in (%s) or all your stored emails will become unreadable." % (GmailStorer.get_encryption_key_path(self.db_root_dir)))
         
         
         # create new emails in db and update existing emails

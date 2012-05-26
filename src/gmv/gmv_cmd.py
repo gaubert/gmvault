@@ -53,7 +53,7 @@ b) Quick restore (restore only the last 2 months to make regular updates) of you
 
 c) Restart a restore after a previous error (Gmail can cut the connection if it is too long)
 
-#> gmvault restore -d ~/gmvault-db anewfoo.bar@gmail.com --restart
+#> gmvault restore -d ~/gmvault-db anewfoo.bar@gmail.com --resume
 
 d) Add label to all restored emails
 
@@ -78,9 +78,9 @@ d) Custom synchronisation with an Gmail request for advance users
 
 #> gmvault sync --type custom --gmail-req 'in:inbox from:foo' 'foo.bar@gmail.com'
 
-e) restart Full synchronisation  from where it failed to not go through your mailbox again
+e) Resume Full synchronisation  from where it failed to not go through your mailbox again
 
-#> gmvault sync 'foo.bar@gmail.com' --restart
+#> gmvault sync 'foo.bar@gmail.com' --resume
 
 
 
@@ -170,10 +170,10 @@ class GMVaultLauncher(object):
                                  help="Gmail search request to restrict sync as defined in https://support.google.com/mail/bin/answer.py?hl=en&answer=7190",\
                                  dest="gmail_request", default=None)
         
-        # activate the restart mode
-        sync_parser.add_argument("--restart", \
+        # activate the resume mode --restart is deprecated
+        sync_parser.add_argument("--resume", "--restart", \
                                  action='store_true', dest='restart', \
-                                 default=False, help= 'Restart from the last saved gmail id.')
+                                 default=False, help= 'Resume the sync action from the last saved gmail id.')
         
         sync_parser.add_argument("-e", "--encrypt", \
                                  help="encrypt stored email messages in the database.",\
@@ -226,8 +226,8 @@ class GMVaultLauncher(object):
                                  action='store', dest='label', \
                                  default=None, help='Apply a label to restored emails')
         
-        # activate the restart mode
-        rest_parser.add_argument("--restart", \
+        # activate the resume mode --restart is deprecated
+        rest_parser.add_argument("--resume", "--restart", \
                                  action='store_true', dest='restart', \
                                  default=False, help= 'Restart from the last saved gmail id.')
         
