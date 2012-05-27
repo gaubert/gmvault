@@ -360,9 +360,9 @@ class GMVaultLauncher(object):
                 LOG.debug("No search request type passed: Get everything.")
                 parsed_args['request']   = {'type': 'imap', 'req':'ALL'}
             elif options.gmail_request and not options.imap_request:
-                parsed_args['request']   = { 'type': 'gmail', 'req' : options.gmail_request}
+                parsed_args['request']  = { 'type': 'gmail', 'req' : self._clean_imap_or_gm_request(options.gmail_request)}
             else:
-                parsed_args['request']    = { 'type':'imap',   'req' : options.imap_request}
+                parsed_args['request']  = { 'type':'imap',  'req' : self._clean_imap_or_gm_request(options.imap_request)}
         
             # add db-cleaning
             # if request passed put it False unless it has been forced by the user
@@ -405,6 +405,18 @@ class GMVaultLauncher(object):
         parsed_args['parser']           = parser
         
         return parsed_args
+    
+    def _clean_imap_or_gm_request(self, request):
+        """
+           Clean request passed by the user with the option --imap-req or --gmail-req.
+           Windows batch script preserve the single quote and unix shell doesn't.
+           If the request starts and ends with single quote eat them.
+        """
+        if (len(request) > 2) and (request[0] == "'" and request[-1] == "'"):
+            request =  request[1:-1]
+            
+        LOG.debug("clean_imap_or_gm_request. processed request = %s\n" % (request))
+        return request
     
     def _restore(self, args, credential):
         """

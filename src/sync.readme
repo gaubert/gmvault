@@ -379,7 +379,7 @@ TO DO v1.5-beta:
 - add clear message to signal that you've been throttled by Gmail
 DONE: - add release note
 - add donation button
-- add download page
+DONE: - add download page
 DONE: - make launch script for mac os x with mac app (see later if it can be launched with app)
 DONE: - add make rule for mac 
 DONE: - send test version to mac poeple
