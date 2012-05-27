@@ -412,10 +412,11 @@ class GMVaultLauncher(object):
            Windows batch script preserve the single quote and unix shell doesn't.
            If the request starts and ends with single quote eat them.
         """
+	print("original request = %s\n" % (request))
         if (len(request) > 2) and (request[0] == "'" and request[-1] == "'"):
             request =  request[1:-1]
             
-        LOG.debug("clean_imap_or_gm_request. processed request = %s\n" % (request))
+        print("clean_imap_or_gm_request. processed request = %s\n" % (request))
         return request
     
     def _restore(self, args, credential):
