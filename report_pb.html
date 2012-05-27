@@ -1,83 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Gmvault: gmail backup</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="backup and restore your gmail account">
-    <meta name="author" content="guillaume aubert">
+<head>
+<meta charset="utf-8">
+<title>Gmvault: gmail backup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="backup and restore your gmail account">
+<meta name="author" content="guillaume aubert">
 
-    <!-- Le styles -->
-    <link href="./assets/css/bootstrap.css" rel="stylesheet">
-    <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
-    <link href="assets/css/docs.css" rel="stylesheet">
-    <link href="assets/js/google-code-prettify/prettify.css" rel="stylesheet">
-    <style>
-      body {
-        /*padding-top: 60px;*/ /* was adding Gmvault and pushing it 60px to make the container go all the way to the bottom of the topbar */
-      }
-      /* to properly fix the positionning of internal reference when name id used*/
-      a[name]{position:relative;top:-40px; visibility:collapsed;}
-    </style>
-    <link href="./assets/css/bootstrap-responsive.css" rel="stylesheet">
+<!-- Le styles -->
+<link href="./assets/css/bootstrap.css" rel="stylesheet">
+<link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
+<link href="assets/css/docs.css" rel="stylesheet">
+<link href="assets/js/google-code-prettify/prettify.css" rel="stylesheet">
+<style>
+body { /*padding-top: 60px;*/ /* was adding Gmvault and pushing it 60px to make the container go all the way to the bottom of the topbar */ }
+/* to properly fix the positionning of internal reference when name id used*/
+      a[name] {
+	position:relative;
+	top:-40px;
+	visibility:collapsed;
+}
+</style>
+<link href="./assets/css/bootstrap-responsive.css" rel="stylesheet">
 
-    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
+<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+<!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    <!-- Le fav and touch icons -->
-    <link rel="shortcut icon" href="./assets/ico/gmv-favicon.ico">
-    <!--<link rel="apple-touch-icon-precomposed" sizes="114x114" href="./assets/ico/apple-touch-icon-114-precomposed.png">
+<!-- Le fav and touch icons -->
+<link rel="shortcut icon" href="./assets/ico/gmv-favicon.ico">
+<!--<link rel="apple-touch-icon-precomposed" sizes="114x114" href="./assets/ico/apple-touch-icon-114-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="./assets/ico/apple-touch-icon-72-precomposed.png">
     <link rel="apple-touch-icon-precomposed" href="./assets/ico/apple-touch-icon-57-precomposed.png">-->
-  </head>
+</head>
 
-  <body data-spy="scroll" data-target=".subnav" data-offset="50">
+<body data-spy="scroll" data-target=".subnav" data-offset="50">
 
-    <!-- Navbar
+<!-- Navbar
     ================================================== -->
-    <div class="navbar navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>
-          <a class="brand" href="./index.html">Gmvault</a>
-          <div class="nav-collapse">
-            <ul class="nav">
-              <li class="active">
-               <a href="./index.html">Overview</a>
-              </li>
-              <li class="">
-                <a href="./install.html">Documentation</a>
-              </li>
-              <li class="">
-                <a href="./report_pb.html">Report a problem</a>
-              </li>
-              <!--<li class="">
-                <a href="./contacts.html">Contacts</a>
-              </li>
-              -->
-              <li class="divider-vertical"></li>
-              <li class="">
-                <a href="./download.html">Download</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="container-fluid">
-    <div class="page-header">
-	  <h1>Reporting Bugs, required features or others</h1>
-    </div>
-    <div class="span10">
-        <h3>Information to provide</h3>
-        <p>Please fill at least the following information to allow us to evaluating the validity of the request and reproduce the problem:
-        <pre>- What version of Gmvault do you use ?
+<div class="navbar navbar-fixed-top">
+ <div class="navbar-inner">
+  <div class="container"> <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </a> <a class="brand" href="./index.html">Gmvault</a>
+   <div class="nav-collapse">
+    <ul class="nav">
+     <li class="active"> <a href="./index.html">Overview</a> </li>
+     <li class=""> <a href="./install.html">Documentation</a> </li>
+     <li class=""> <a href="./report_pb.html">Report a problem</a> </li>
+     <li class="divider-vertical"></li>
+     <li class=""> <a href="./download.html">Download</a> </li>
+    </ul>
+   </div>
+  </div>
+ </div>
+</div>
+<div class="container-fluid">
+ <div class="row-fluid">
+  <div class="span12">
+   <div class="page-header">
+    <h1>Reporting Bugs, required features or others</h1>
+   </div>
+   <h3>Information to provide</h3>
+   <p>Please fill at least the following information to allow us to evaluating the validity of the request and reproduce the problem:</p>
+   <pre>- What version of Gmvault do you use ?
 
 - On what Operating System (Linux flavour, MacOSX, Win7/XP/Vista) ?
 
@@ -89,40 +74,38 @@
 
 - Contact details (emails to recontact you if you didn't use the github interface):
         </pre>
-</p>
-        <h3>Using the Gmvault Github repository issue facility</h3>
-		<p>You can report bugs, issues , missing features on github in the issues area of the gmvault repository:<a href="https://github.com/gaubert/gmvault/issues">here</a>.</p>
-        <h3>Via email</h3>
-		You can also send an email to guillaume(dot)aubert(at)gmail(dot)com. If the email represent a valid issue, I will create an issue ticket on github.
-        </p>
-<strong>Many thanks, your help is precious to improve Gmvault.</strong>
-		</p>
-	</div>
-  
-    </div> <!-- /container -->
+   <h3>Using the Gmvault Github repository issue facility</h3>
+   <p>You can report bugs, issues , missing features on github in the issues area of the gmvault repository:<a href="https://github.com/gaubert/gmvault/issues">here</a>.</p>
+   <h3>Via email</h3>
+   <p> You can also send an email to guillaume(dot)aubert(at)gmail(dot)com. If the email represent a valid issue, I will create an issue ticket on github. </p>
+   <p> <strong>Many thanks, your help is precious to improve Gmvault.</strong> </p>
+  </div>
+ </div>
+</div>
+<!-- /container --> 
 
-    <!-- Le javascript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="./assets/js/jquery.js"></script>
-    <script src="./assets/js/bootstrap-transition.js"></script>
-    <script src="./assets/js/bootstrap-alert.js"></script>
-    <script src="./assets/js/bootstrap-modal.js"></script>
-    <script src="./assets/js/bootstrap-dropdown.js"></script>
-    <script src="./assets/js/bootstrap-scrollspy.js"></script>
-    <script src="./assets/js/bootstrap-tab.js"></script>
-    <script src="./assets/js/bootstrap-tooltip.js"></script>
-    <script src="./assets/js/bootstrap-popover.js"></script>
-    <script src="./assets/js/bootstrap-button.js"></script>
-    <script src="./assets/js/bootstrap-collapse.js"></script>
-    <script src="./assets/js/bootstrap-carousel.js"></script>
-    <script src="./assets/js/bootstrap-typeahead.js"></script>
+<!-- Le javascript
+    ================================================== --> 
+<!-- Placed at the end of the document so the pages load faster --> 
+<script src="./assets/js/jquery.js"></script> 
+<script src="./assets/js/bootstrap-transition.js"></script> 
+<script src="./assets/js/bootstrap-alert.js"></script> 
+<script src="./assets/js/bootstrap-modal.js"></script> 
+<script src="./assets/js/bootstrap-dropdown.js"></script> 
+<script src="./assets/js/bootstrap-scrollspy.js"></script> 
+<script src="./assets/js/bootstrap-tab.js"></script> 
+<script src="./assets/js/bootstrap-tooltip.js"></script> 
+<script src="./assets/js/bootstrap-popover.js"></script> 
+<script src="./assets/js/bootstrap-button.js"></script> 
+<script src="./assets/js/bootstrap-collapse.js"></script> 
+<script src="./assets/js/bootstrap-carousel.js"></script> 
+<script src="./assets/js/bootstrap-typeahead.js"></script> 
 
-    <!-- analytics with stathat -->
-    <img src="http://api.stathat.com/c?ukey=NjM3IHOkfz0i1DliotgKSxKEqGc~&key=uEWjLRysHJgQFmszTFzGKCBLRkFk&count=1" style="display:none;" width="1" height="1"/>
+<!-- analytics with stathat --> 
+<img src="http://api.stathat.com/c?ukey=NjM3IHOkfz0i1DliotgKSxKEqGc~&key=uEWjLRysHJgQFmszTFzGKCBLRkFk&count=1" style="display:none;" width="1" height="1"/> 
 
-	<!-- google analytics for gaubert.github.com/gmvault -->
-    <script type="text/javascript">
+<!-- google analytics for gaubert.github.com/gmvault --> 
+<script type="text/javascript">
 
 	  var _gaq = _gaq || [];
 	  _gaq.push(['_setAccount', 'UA-31019122-1']);
@@ -136,9 +119,9 @@
 	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 	  })();
 
-    </script>
-	<!-- google analytics for gmvault.org -->
-	<script type="text/javascript">
+    </script> 
+<!-- google analytics for gmvault.org --> 
+<script type="text/javascript">
 
 	  var _gaq = _gaq || [];
 	  _gaq.push(['_setAccount', 'UA-31356001-1']);
@@ -152,7 +135,5 @@
 	  })();
 
     </script>
-
-  </body>
+</body>
 </html>
-
