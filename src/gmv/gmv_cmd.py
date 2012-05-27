@@ -495,7 +495,7 @@ class GMVaultLauncher(object):
         elif args.get('type', '') == 'custom':
             
             # pass an imap request. Assume that the user know what to do here
-            LOG.critical("Perform custom synchronisation with request: %s" % (args['request']['req']))
+            LOG.critical("Perform custom synchronisation with %s request: %s" % (args['request']['type'], args['request']['req']))
             
             syncer.sync(args['request'], compress_on_disk = args['compression'], db_cleaning = args['db-cleaning'], \
                         ownership_checking = args['ownership_control'], restart = args['restart'])
