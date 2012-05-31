@@ -11,6 +11,9 @@ umask 002
 HERE=$(unset CDPATH; cd `dirname $0`; pwd)
 GMVAULT_HOME=$(unset CDPATH; cd $HERE/..; pwd)
 
+#set trap to remove temp file
+trap "rm -f /tmp/gmvault.bootstrap.$$" EXIT
+
 #################################
 ## setup PYTHON_BIN
 #################################
@@ -43,7 +46,6 @@ fi
 ## /tmp/rnpicker.bootstrap
 ###################################
 
-
 # keep args in variables
 ARGS="$@"
 
@@ -55,7 +57,5 @@ EOF
 #call gmvault bootstrap
 $PYTHON_BIN /tmp/gmvault.bootstrap.$$ "$@"
 res="$?"
-
-rm -f /tmp/gmvault.bootstrap.$$
 
 exit $res
