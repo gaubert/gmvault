@@ -22,6 +22,10 @@ import zlib
 import time
 import datetime
 import re
+import socket
+import ssl
+import cStringIO
+
 import imaplib  #for the exception
 import imapclient
 
@@ -35,6 +39,7 @@ MON2NUM = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
         'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
 
 #need to monkey patch _convert_INTERNALDATE to work with imaplib2
+#modification of IMAPClient
 def mod_convert_INTERNALDATE(date_string, normalise_times=True):
     """
        monkey patched convert_INTERNALDATE
@@ -63,6 +68,7 @@ def mod_convert_INTERNALDATE(date_string, normalise_times=True):
         return dt.astimezone(imapclient.fixed_offset.FixedOffset.for_system()).replace(tzinfo=None)
     return dt
 
+#monkey patching is done here
 imapclient.response_parser._convert_INTERNALDATE = mod_convert_INTERNALDATE
 
 #monkey patching add compress in COMMANDS of imap
@@ -90,83 +96,70 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
         self.decompressor = zlib.decompressobj(-15)
         self.compressor   = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
         
+    def open(self, host = '', port = imaplib.IMAP4_SSL_PORT): 
+            """Setup connection to remote server on "host:port".
+                (default: localhost:standard IMAP4 SSL port).
+            This connection will be used by the routines:
+                read, readline, send, shutdown.
+            """
+            self.host   = host
+            self.port   = port
+            self.sock   = socket.create_connection((host, port))
+            self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
+            
+            # This is the last correction added to avoid memory fragmentation in imaplib
+            # makefile creates a file object that makes use of cStringIO to avoid mem fragmentation
+            # it could be used without the compression 
+            # (maybe make 2 set of methods without compression and with compression)
+            #self.file   = self.sslobj.makefile('rb')
+    
     def read(self, size):
-        """Read 'size' bytes from remote."""
-        # sslobj.read() sometimes returns < size bytes
-        chunks = []
+        """
+            Read 'size' bytes from remote.
+            Call _intern_read that takes care of the compression
+        """
+        
+        chunks = cStringIO.StringIO() #use cStringIO.cStringIO to avoir too much fragmentation
         read = 0
         while read < size:
-            data = self._intern_read(min(size-read, 16384))
+            data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
             read += len(data)
-            chunks.append(data)
+            chunks.write(data)
         
-        return ''.join(chunks)
+        return chunks.getvalue() #return the cStringIO content
   
     def _intern_read(self, size):
         """
             Read at most 'size' bytes from remote.
+            Takes care of the compression
         """
-
         if self.decompressor is None:
             return self.sslobj.read(size)
 
         if self.decompressor.unconsumed_tail:
             data = self.decompressor.unconsumed_tail
         else:
-            data = self.sslobj.read(8192)
+            data = self.sslobj.read(8192) #maybe change to 16384
 
         return self.decompressor.decompress(data, size)
-    
+        
     def readline(self):
         """Read line from remote."""
-        line = []
+        line = cStringIO.StringIO() #use cStringIO to avoid memory fragmentation
         while 1:
-            char = self.read(1)
-            line.append(char)
+            #make use of read that takes care of the compression
+            #it could be simplified without compression
+            char = self.read(1) 
+            line.write(char)
             if char in ("\n", ""): 
-                return ''.join(line)
-        
-    MAX_READ = 16384
-    def nread(self, size):
-        """Read 'size' bytes from remote."""
-        # sslobj.read() sometimes returns < size bytes
-        if size <= self.MAX_READ:
-            return self._intern_read(size)
-        else:
-            chunks = ""
-            read = 0
-            while read < size:
-                data = self._intern_read(min(size-read, self.MAX_READ))
-                read += len(data)
-                chunks += data
-        
-        return chunks
-  
-    def _nintern_read(self, size):
-        """
-            Read at most 'size' bytes from remote.
-        """
-
-        if self.decompressor is None:
-            return self.sslobj.read(size)
-
-        if self.decompressor.unconsumed_tail:
-            data = self.decompressor.unconsumed_tail
-        else:
-            #data = self.sslobj.read(8192)
-            data = self.sslobj.read(size)
-
-        return self.decompressor.decompress(data, size)
+                return line.getvalue()
     
-    def nreadline(self):
-        """Read line from remote."""
-        line = []
-        while 1:
-            char = self.read(1)
-            line.append(char)
-            if char in ("\n", ""): 
-                return ''.join(line)
-  
+    def shutdown(self):
+        """Close I/O established in "open"."""
+        #self.file.close() #if file created
+        self.sock.close()
+        
+      
     def send(self, data):
         """send(data)
         Send 'data' to remote."""
@@ -174,7 +167,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
             data = self.compressor.compress(data)
             data += self.compressor.flush(zlib.Z_SYNC_FLUSH)
         self.sslobj.sendall(data)
-
+       
 def seq_to_parenlist(flags):
     """Convert a sequence of strings into parenthised list string for
     use with IMAP commands.
@@ -201,8 +194,6 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903
         """
            Factory method creating an IMAPCOMPSSL or a standard IMAP4 Class
         """
-        # Create the IMAP instance in a separate method to make unit tests easier
-        #ImapClass = self.ssl and imaplib.IMAP4_SSL or imaplib.IMAP4
         ImapClass = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
         return ImapClass(self.host, self.port)
     

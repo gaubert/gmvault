@@ -30,7 +30,7 @@ import gmvault
 from cmdline_utils  import CmdLineParser
 from credential_utils import CredentialHelper
 
-GMVAULT_VERSION="1.6-beta"
+GMVAULT_VERSION="1.6-develop"
 
 GLOBAL_HELP_EPILOGUE="""Examples:
 
@@ -53,7 +53,7 @@ b) Quick restore (restore only the last 2 months to make regular updates) of you
 
 c) Restart a restore after a previous error (Gmail can cut the connection if it is too long)
 
-#> gmvault restore -d ~/gmvault-db anewfoo.bar@gmail.com --restart
+#> gmvault restore -d ~/gmvault-db anewfoo.bar@gmail.com --resume
 
 d) Add label to all restored emails
 
@@ -78,9 +78,9 @@ d) Custom synchronisation with an Gmail request for advance users
 
 #> gmvault sync --type custom --gmail-req 'in:inbox from:foo' 'foo.bar@gmail.com'
 
-e) restart Full synchronisation  from where it failed to not go through your mailbox again
+e) Resume Full synchronisation  from where it failed to not go through your mailbox again
 
-#> gmvault sync 'foo.bar@gmail.com' --restart
+#> gmvault sync 'foo.bar@gmail.com' --resume
 
 
 
@@ -170,10 +170,10 @@ class GMVaultLauncher(object):
                                  help="Gmail search request to restrict sync as defined in https://support.google.com/mail/bin/answer.py?hl=en&answer=7190",\
                                  dest="gmail_request", default=None)
         
-        # activate the restart mode
-        sync_parser.add_argument("--restart", \
+        # activate the resume mode --restart is deprecated
+        sync_parser.add_argument("--resume", "--restart", \
                                  action='store_true', dest='restart', \
-                                 default=False, help= 'Restart from the last saved gmail id.')
+                                 default=False, help= 'Resume the sync action from the last saved gmail id.')
         
         sync_parser.add_argument("-e", "--encrypt", \
                                  help="encrypt stored email messages in the database.",\
@@ -226,8 +226,8 @@ class GMVaultLauncher(object):
                                  action='store', dest='label', \
                                  default=None, help='Apply a label to restored emails')
         
-        # activate the restart mode
-        rest_parser.add_argument("--restart", \
+        # activate the resume mode --restart is deprecated
+        rest_parser.add_argument("--resume", "--restart", \
                                  action='store_true', dest='restart', \
                                  default=False, help= 'Restart from the last saved gmail id.')
         
@@ -328,7 +328,7 @@ class GMVaultLauncher(object):
         parsed_args['port']             = port
              
         return parsed_args
-        
+    
     def parse_args(self):
         """ Parse command line arguments 
             
@@ -360,9 +360,9 @@ class GMVaultLauncher(object):
                 LOG.debug("No search request type passed: Get everything.")
                 parsed_args['request']   = {'type': 'imap', 'req':'ALL'}
             elif options.gmail_request and not options.imap_request:
-                parsed_args['request']   = { 'type': 'gmail', 'req' : options.gmail_request}
+                parsed_args['request']  = { 'type': 'gmail', 'req' : self._clean_imap_or_gm_request(options.gmail_request)}
             else:
-                parsed_args['request']    = { 'type':'imap',   'req' : options.imap_request}
+                parsed_args['request']  = { 'type':'imap',  'req' : self._clean_imap_or_gm_request(options.imap_request)}
         
             # add db-cleaning
             # if request passed put it False unless it has been forced by the user
@@ -406,6 +406,20 @@ class GMVaultLauncher(object):
         
         return parsed_args
     
+    def _clean_imap_or_gm_request(self, request):
+        """
+           Clean request passed by the user with the option --imap-req or --gmail-req.
+           Windows batch script preserve the single quote and unix shell doesn't.
+           If the request starts and ends with single quote eat them.
+        """
+        LOG.debug("clean_imap_or_gm_request. original request = %s\n" % (request))
+        
+        if request and (len(request) > 2) and (request[0] == "'" and request[-1] == "'"):
+            request =  request[1:-1]
+            
+        LOG.debug("clean_imap_or_gm_request. processed request = %s\n" % (request))
+        return request
+    
     def _restore(self, args, credential):
         """
            Execute All restore operations
@@ -447,7 +461,6 @@ class GMVaultLauncher(object):
         """
            Execute All synchronisation operations
         """
-        
         LOG.critical("Connect to Gmail server.")
         
         # handle credential in all levels
@@ -482,7 +495,7 @@ class GMVaultLauncher(object):
         elif args.get('type', '') == 'custom':
             
             # pass an imap request. Assume that the user know what to do here
-            LOG.critical("Perform custom synchronisation with request: %s" % (args['request']['req']))
+            LOG.critical("Perform custom synchronisation with %s request: %s" % (args['request']['type'], args['request']['req']))
             
             syncer.sync(args['request'], compress_on_disk = args['compression'], db_cleaning = args['db-cleaning'], \
                         ownership_checking = args['ownership_control'], restart = args['restart'])

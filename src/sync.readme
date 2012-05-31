@@ -375,11 +375,11 @@ Documentation update:
 - Add Gmail Setting for Gmvault (make All Mail visible, check 1000 mail limit)
 
 
-TO DO:
+TO DO v1.5-beta:
 - add clear message to signal that you've been throttled by Gmail
 DONE: - add release note
 - add donation button
-- add download page
+DONE: - add download page
 DONE: - make launch script for mac os x with mac app (see later if it can be launched with app)
 DONE: - add make rule for mac 
 DONE: - send test version to mac poeple
@@ -401,3 +401,14 @@ Another Gmail specificity, when you create [IMAP]/Sent only [IMAP] will appear i
 
 Gmail should fix the issue with the label [IMAP]/Sent, Draft, Trash. They cannot be deleted. Also if you create a/v as label it will be a flat label and later if you create a a/v will become a nested label.
 They should fix all these issues.
+
+TO DO V1.6-beta:
+- create list of fixes and added features
+- add support page with flattr and paypal and look for help
+- add drop down menu in documentation. Ask ahmed if we could have a floating toc on the left side.
+- fix Mac os x plateform issues 
+- fix deployment on Linux plateform
+- fix simple quote issue with gmail request 
+
+For single quote it is more complicated than that => Change all examples to double quotes because when single quote spaces are not handled
+
