@@ -158,7 +158,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             res = client.create_folder(the_dir)
             print(res)
     
-    def test_create_gmail_labels_upper_case(self):
+    def zztest_create_gmail_labels_upper_case(self):
         """
            validate the label creation at the imap fetcher level.
            Use upper case
@@ -202,7 +202,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         for label in labels_to_create: #check that they have been deleted
             self.assertFalse( (label.lower() in folders) )
     
-    def test_create_gmail_labels_android(self):
+    def zztest_create_gmail_labels_android(self):
         """
            Handle labels with [Imap]
         """
@@ -456,7 +456,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                 labels.append(label)
                 
             self.assertEquals(labels, metadata['labels'])
-        
+            
     def ztest_restore_one_email(self):
         """
            get one email from one account and restore it

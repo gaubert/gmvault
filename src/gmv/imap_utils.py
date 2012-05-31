@@ -244,7 +244,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             self.server.select_folder(self._all_mail_folder, readonly = self.readonly_folder)
         
         #enable compression
-        self.enable_compression()
+        #self.enable_compression()
             
     def disconnect(self):
         """
@@ -387,7 +387,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         #get existing directories (or label parts)
         # get in lower case because Gmail labels are case insensitive
-        listed_folders = set([ directory.lower() for (flag, delimiter, directory) in self.server.list_folders() ])
+        listed_folders = set([ directory.lower() for (_, _, directory) in self.server.list_folders() ])
         existing_folders = listed_folders.union(existing_folders)
             
         for lab in labels:
@@ -435,7 +435,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 if force_delete or ( (directory.lower() not in self.GMAIL_SPECIAL_DIRS_LOWER) and self.server.folder_exists(directory) ): #call server exists each time
                     try:
                         self.server.delete_folder(directory)
-                    except imaplib.IMAP4.error, ignored:
+                    except imaplib.IMAP4.error, _:
                         LOG.debug(gmvault_utils.get_exception_traceback())
                     
          

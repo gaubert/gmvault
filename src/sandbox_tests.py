@@ -159,9 +159,27 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         else:
             print("\nUnmatched")
     
+    
+    def test_memory_error_bug(self):
+        """
+           Try to push the memory error
+        """
+        # now read the password
+        import sys
+        import gmv.gmv_cmd as gmv_cmd
+        import email
         
+        fd = open('/Users/gaubert/gmvault-data/gmvault-db-bug/db/2004-10/1399791159741721320.eml')
+        email_body = fd.read()
+        mail = email.message_from_string(email_body)
+
+        print mail
         
-    def test_retry_mode(self):
+        sys.argv = ['gmvault.py', 'restore', '--db-dir', '/Users/gaubert/gmvault-data/gmvault-db-bug', 'gsync.mtester@gmail.com']
+        
+        gmv_cmd.bootstrap_run()
+        
+    def ztest_retry_mode(self):
         """
            Test that the decorators are functionning properly
         """
