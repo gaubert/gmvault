@@ -120,7 +120,7 @@ gmv-linux-dist: clean init
 gmv-mac-dist: clean init
 	cp -R $(BASEDIR)/src/gmv $(GMVDIST)
 	cp $(BASEDIR)/src/setup_mac.py $(GMVDIST)
-	cd $(GMVDIST); $(PYTHONBIN) setup_mac.py py2app
+	cd $(GMVDIST); $(PYTHONBIN) setup_mac.py py2app --arch=intel
 	mkdir -p $(GMVDIST)/$(GMVDISTNAME)/bin ; mkdir -p $(GMVDIST)/$(GMVDISTNAME)/lib
 	cp $(BASEDIR)/etc/scripts/gmvault_mac $(GMVDIST)/$(GMVDISTNAME)/bin/gmvault
 	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/bin/README.txt

@@ -57,7 +57,7 @@ c) Restart a restore after a previous error (Gmail can cut the connection if it 
 
 d) Add label to all restored emails
 
-#> gmvault restore --label "20120422-gmvault-restore" -d ~/gmvault-db anewfoo.bar@gmail.com
+#> gmvault restore --label '20120422-gmvault-restore' -d ~/gmvault-db anewfoo.bar@gmail.com
 """
 
 SYNC_HELP_EPILOGUE = """Examples:
