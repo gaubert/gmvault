@@ -1,12 +1,49 @@
 Release Notes for the different versions:
 
+-------------------------------
+-------------------------------
+Version Gmvault-v1.6-beta:
+-------------------------------
+-------------------------------
+Date: xx.06.2012
+
+
+Added new Features:
+-------------------
+- Rename --restart in --resume as it is easier to understand. Currently maintain support for --restart.
+
+Bug Fixes:
+----------
+- Fix issue that was preventing --encrypt to work [Github issue #37, #46]
+- Fix issue that was preventing the src and Pypi distribution to work with python2.7 on Linux Ubuntu. [Github issue #34]
+- Fix issue preventing --imap-req and --gmail-req to work on Windows plateform with request delimited by single quotes. [Github issue #35]
+- Fix issue preventing to restore special directories [IMAP]/Sent, [IMAP]/.. ... It is now handled correctly and will allow Android users to back up their mailbox [Github issue #31]
+- Fix issue preventing Gmvault to work on a Mac OS X intel 32 bit plateform. It now work on 64 and 32 bits Mac OS X intels. [Github issue #25, #39]
+- Fix Memory Error on Large restore. Gmvault was eating all the memory due to a bug in the underlying python libraries. [Github issue #42, #45]
+
+Web site Activity:
+------------------
+- Fix web site to work with low resolution screens (smart phones, ...). Thanks to @ahmadalfy for the help. [Github feature #41]
+
+
+Shoutouts to: 
+-------------
+
+Special shoutouts to the following githubbers that help me in raising issues, testing intermediate version and help me improving Gmvault.
+
+Also Special thanks to:
+
+Github id: @namelessjon, @joeyates, @dmd, @pfsung, @miggaiowski, @offbyone, @jamesandres, @jarofgreen, @ghwegill, @rouge8, @sc68cal, @DanielHeath, @melpomene, @dwradcliffe, @tgulacsi, @joshkerr, @KeyvanJS, @glowbox, @gps, @zan5hin, @chbrown, @Anemome, @knurdle  
+
+Many Thanks to @stevemorin on Twitter for the brainstorming session. Very helpful !! 
+
 
 -------------------------------
 -------------------------------
 Version Gmvault-v1.5-beta:
 -------------------------------
 -------------------------------
-Date:
+Date: 16.05.2012
 
 
 Added new Features:
