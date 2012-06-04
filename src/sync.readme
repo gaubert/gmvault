@@ -391,7 +391,6 @@ DONE: - Make src distrib with setup.py for linux
 
 
 
-
 check list_folders() to see what is gives and check that in works in any order
 Label management:
 The way [IMAP]/Trash, [IMAP]/Sent are created looks strange. 
@@ -403,13 +402,28 @@ Gmail should fix the issue with the label [IMAP]/Sent, Draft, Trash. They cannot
 They should fix all these issues.
 
 TO DO V1.6-beta:
-- create list of fixes and added features
-- add support page with flattr and paypal and look for help
+- DONE not DONE ?:create list of fixes and added features
+- DONE: add support page with flattr and paypal and look for help
 - add in doc that you need to enable imap and remove the 1000 emails limit
-- add drop down menu in documentation. Ask ahmed if we could have a floating toc on the left side.
-- fix Mac os x plateform issues 
-- fix deployment on Linux plateform
+- DONE: add drop down menu in documentation. 
+- Ask ahmed if we could have a floating toc on the left side.
+- DONE: fix Mac os x plateform issues 
+- fix deployment on Linux plateform. Not done use src for the moment.
 - DONE: fix simple quote issue with gmail request 
-
 For single quote it is more complicated than that => Change all examples to double quotes because when single quote spaces are not handled
+
+Documentation update:
+- Add Gmail Setting for Gmvault (make All Mail visible, check 1000 mail limit)
+
+TODO Tonight
+- Prepare release note if not done
+- Change the version name to v1.6-beta
+- Merge develop to master
+- create Windows version (test oauth, encryption, sync, restore) archive in nodebox
+- create Mac version (test oauth, encryption, sync, restore) archive in nodebox
+- create src version (test oauth, encryption, sync, restore) archive in nodebox
+- create pypi version (test oauth, encryption, sync, restore) archive in nodebox
+- create Linux version (test oauth, encryption, sync, restore) archive in nodebox
+- Follow filenames as defined in the download page.
+- Shoutout to the different poeple that helped.
 
