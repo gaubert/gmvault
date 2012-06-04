@@ -244,7 +244,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             self.server.select_folder(self._all_mail_folder, readonly = self.readonly_folder)
         
         #enable compression
-        #self.enable_compression()
+        self.enable_compression()
             
     def disconnect(self):
         """
