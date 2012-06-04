@@ -388,7 +388,6 @@ DONE: - README.txt and RELEASE-NOTE.txt cannot be read properly by Notepad (unix
 DONE: - Make src distrib with setup.py for linux
 
 
-<<<<<<< HEAD
 
 
 =======
@@ -396,7 +395,10 @@ Note How to build mac os x intel 32 and 64 bits version:
 --------------------------------------------------------
 You have to install the brew version which 64 bits only for my machine, then you install from the python download page a intel (64 and 32 bits) version.
 You can run py2app with --arch=intel that will create a 32/64 bits version (a universal version could be built the same way).
->>>>>>> 36c6430df944aefd76eab5e9bcc8177c6a58468e
+
+otool -L to check the lib dependencies on a mac
+file to see if it is 32/64 bits
+
 
 check list_folders() to see what is gives and check that in works in any order
 Label management:
