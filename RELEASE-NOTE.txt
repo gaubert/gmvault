@@ -5,7 +5,7 @@ Release Notes for the different versions:
 Version Gmvault-v1.6-beta:
 -------------------------------
 -------------------------------
-Date: xx.06.2012
+Date: 06.06.2012
 
 
 Added new Features:
