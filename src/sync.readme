@@ -412,5 +412,7 @@ TO DO V1.6-beta:
 - fix deployment on Linux plateform
 - DONE: fix simple quote issue with gmail request 
 
+Support page: respond to the PC World guy, add Thank you page when donating. 
+
 For single quote it is more complicated than that => Change all examples to double quotes because when single quote spaces are not handled
 
