@@ -140,32 +140,31 @@ a[name] {
    <p>Gmvault v1.5-beta includes the following new features and bug fixes:</p>
    <h4>Added new Features:</h4>
    <ul>
-    <li>Add --restart option in sync mode to restart a failing backup (Gmail can throttle and cut the connection sometimes) from where it crashed. [Github feature #7 #21]</li>
-    <li>Add a restart per account name. If you have multiple accounts, the restart will be saved for all of them. [Github feature #7]</li>
-    <li>The Windows installer now creates an uninstaller that appears in Control Panel/Remove Programs and can be uninstalled from there.[Github feature #32]</li>
-    <li>The Windws installer is a friendly installer (like Google Chrome) that do not necessitate Admin privileges. [Github feature #32]</li>
-    <li>Add --no-compression option to disable the compression and allow users to use their own compression. [Github feature #29]</li>
-    <li>Add --renew-oauth-tok to renew the oauth token from a given account from the command line tool gmvault. [Github feature #16]</li>
+    <li class="icon-plus">Add --restart option in sync mode to restart a failing backup (Gmail can throttle and cut the connection sometimes) from where it crashed. [Github feature #7 #21]</li>
+    <li class="icon-plus">Add a restart per account name. If you have multiple accounts, the restart will be saved for all of them. [Github feature #7]</li>
+    <li class="icon-plus">The Windows installer now creates an uninstaller that appears in Control Panel/Remove Programs and can be uninstalled from there.[Github feature #32]</li>
+    <li class="icon-plus">The Windws installer is a friendly installer (like Google Chrome) that do not necessitate Admin privileges. [Github feature #32]</li>
+    <li class="icon-plus">Add --no-compression option to disable the compression and allow users to use their own compression. [Github feature #29]</li>
+    <li class="icon-plus">Add --renew-oauth-tok to renew the oauth token from a given account from the command line tool gmvault. [Github feature #16]</li>
    </ul>
    <h4>Bug Fixes:</h4>
    <ul>
-    <li>Improve Mac OS X distribution. It is now a binary distribution that can run on all intel Mac OS X versions(tested on 10.7 and 10.6). [Github issue #25 #4]</li>
-    <li>Fix gmvault bash script (launched from anywhere, sets the right Python Env variables). [Github issue #10 #13 #19 #22]</li>
-    <li>Gmvault now handle localised IMAP Folders. [Github issue #5]</li>
-    <li>Option --req-imap -r option now works properly on Mac OSX. Fix gmvault bash script to correctly pass params to python prog. [Github issue #23]</li>
-    <li>Fix issue of failing backup, ending up with imaplib.abort error: SystemError. [Github issue #4]</li>
-    <li>Error when you do not make the IMAP Gmail folder All Mail visible. [Github issue #2 #9]</li>
-    <li>Handle labels that are numbers. IMAPClient returns int type labels when they are number. It is now handled properly. [Github issue #24]</li>
-    <li>Print exception on screen when there is a problem in normal mode to give users the possibility easily send the error message. [Github issue #33]</li>
-    <li>Fix bug preventing Gmvault to finish its work when an email was not readable (corrupted ?) from Gmail. [Github issue #24]</li>
+    <li class="icon-minus">Improve Mac OS X distribution. It is now a binary distribution that can run on all intel Mac OS X versions(tested on 10.7 and 10.6). [Github issue #25 #4]</li>
+    <li class="icon-minus">Fix gmvault bash script (launched from anywhere, sets the right Python Env variables). [Github issue #10 #13 #19 #22]</li>
+    <li class="icon-minus">Gmvault now handle localised IMAP Folders. [Github issue #5]</li>
+    <li class="icon-minus">Option --req-imap -r option now works properly on Mac OSX. Fix gmvault bash script to correctly pass params to python prog. [Github issue #23]</li>
+    <li class="icon-minus">Fix issue of failing backup, ending up with imaplib.abort error: SystemError. [Github issue #4]</li>
+    <li class="icon-minus">Error when you do not make the IMAP Gmail folder All Mail visible. [Github issue #2 #9]</li>
+    <li class="icon-minus">Handle labels that are numbers. IMAPClient returns int type labels when they are number. It is now handled properly. [Github issue #24]</li>
+    <li class="icon-minus">Print exception on screen when there is a problem in normal mode to give users the possibility easily send the error message. [Github issue #33]</li>
+    <li class="icon-minus">Fix bug preventing Gmvault to finish its work when an email was not readable (corrupted ?) from Gmail. [Github issue #24]</li>
    </ul>
    <h3>Shout-outs </h3>
    <p><strong>Thank you all for the supports on Twitter, Github.com and via our beloved Gmail.</strong> </br>
     Please keep <strong>buzzing about Gmvault</strong> and let me know if you discover an issue (go <a href="./report_pb.html">here</a> to report the issue). </br>
     </br>
     Below is a special thanks for all poeple that reported problems, asked for features and helped me testing intermediate versions:</p>
-   </br>
-   Github id:
+   <i class="icon-github-sign"></i> <strong>Github id</strong>:
    <pre>@namelessjon, @joeyates, @dmd, @pfsung, @miggaiowski, @offbyone, @jamesandres, @jarofgreen, @ghwegill, @rouge8, @sc68cal, @DanielHeath, @melpomene, @dwradcliffe, @tgulacsi, @joshkerr, @KeyvanJS, @glowbox, @gps, @zan5hin, @chbrown, @Anemome, @knurdle</pre>
    </br>
    Many Thanks to @stevemorin on Twitter for the brainstorming session. Very helpful !!
