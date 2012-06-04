@@ -57,7 +57,7 @@ c) Restart a restore after a previous error (Gmail can cut the connection if it 
 
 d) Add label to all restored emails
 
-#> gmvault restore --label '20120422-gmvault-restore' -d ~/gmvault-db anewfoo.bar@gmail.com
+#> gmvault restore --label "20120422-gmvault-restore" -d ~/gmvault-db anewfoo.bar@gmail.com
 """
 
 SYNC_HELP_EPILOGUE = """Examples:
@@ -72,15 +72,15 @@ b) Quick daily synchronisation (only the last 2 months are scanned)
 
 c) Custom synchronisation with an IMAP request for advance users
 
-#> gmvault sync --type custom --imap-req 'Since 1-Nov-2011 Before 10-Nov-2011' 'foo.bar@gmail.com'
+#> gmvault sync --type custom --imap-req "Since 1-Nov-2011 Before 10-Nov-2011" foo.bar@gmail.com
 
 d) Custom synchronisation with an Gmail request for advance users
 
-#> gmvault sync --type custom --gmail-req 'in:inbox from:foo' 'foo.bar@gmail.com'
+#> gmvault sync --type custom --gmail-req "in:inbox from:foo" foo.bar@gmail.com
 
 e) Resume Full synchronisation  from where it failed to not go through your mailbox again
 
-#> gmvault sync 'foo.bar@gmail.com' --resume
+#> gmvault sync foo.bar@gmail.com --resume
 
 
 
