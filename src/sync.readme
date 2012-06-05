@@ -433,6 +433,10 @@ TODO Tonight
 - Done: create src version (test oauth, encryption, sync, restore) archive in nodebox
 - Done: create pypi version (test oauth, encryption, sync, restore) archive in nodebox
 - Done: create Linux version (test oauth, encryption, sync, restore) archive in nodebox
-- Follow filenames as defined in the download page.
 - Done: Shoutout to the different poeple that helped.
+- Follow filenames as defined in the download page.
+- Merge gh-pages-supp in gh-pages (test it)
+- create tag for 1.6-beta and web-1.6-beta
+- Tweet for release and support page
+
 
