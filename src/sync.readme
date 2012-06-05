@@ -425,14 +425,14 @@ Documentation update:
 - Add Gmail Setting for Gmvault (make All Mail visible, check 1000 mail limit)
 
 TODO Tonight
-- Prepare release note if not done
-- Change the version name to v1.6-beta
-- Merge develop to master
-- create Windows version (test oauth, encryption, sync, restore) archive in nodebox
-- create Mac version (test oauth, encryption, sync, restore) archive in nodebox
-- create src version (test oauth, encryption, sync, restore) archive in nodebox
-- create pypi version (test oauth, encryption, sync, restore) archive in nodebox
-- create Linux version (test oauth, encryption, sync, restore) archive in nodebox
+- Done: Prepare release note if not done
+- Done: Change the version name to v1.6-beta
+- Done: Merge develop to master
+- Done: create Windows version (test oauth, encryption, sync, restore) archive in nodebox
+- Done: create Mac version (test oauth, encryption, sync, restore) archive in nodebox
+- Done: create src version (test oauth, encryption, sync, restore) archive in nodebox
+- Done: create pypi version (test oauth, encryption, sync, restore) archive in nodebox
+- Done: create Linux version (test oauth, encryption, sync, restore) archive in nodebox
 - Follow filenames as defined in the download page.
-- Shoutout to the different poeple that helped.
+- Done: Shoutout to the different poeple that helped.
 
