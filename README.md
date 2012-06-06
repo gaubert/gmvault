@@ -72,7 +72,7 @@ $>gmvault restore newfoo.bar@gmail.com -d /backup/emails-db
 
 Will restore /backup/emails-db in newfoo.bar@gmail.com
 
-Use --restart to restart from the last fatal error and not reupload once more the already treated emails.
+Use --resume or --restart to restart from the last fatal error and not reupload once more the already treated emails.
 
 $>gmvault restore newfoo.bar@gmail.com --restart
 
