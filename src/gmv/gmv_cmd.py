@@ -20,6 +20,8 @@ import socket
 import sys
 import datetime
 import os
+import signal
+import traceback
 
 import argparse
 import log_utils
@@ -577,6 +579,20 @@ def activate_debug_mode():
     LOG.critical("Debugging logs are going to be saved in file %s/gmvault.log.\n" % os.getenv("HOME","."))
     log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'DEBUG', file_path="%s/gmvault.log" % os.getenv("HOME","."))
 
+def sigusr1_handler(signum, frame):
+    
+    print "GMVAULT: Received SIGUSR1 -- Printing stack trace..."
+
+    f = open('/tmp/gmvault.traceback.txt', 'a')
+    traceback.print_stack(file=f)
+    f.close()
+
+def register_traceback_signal():
+    """ To register a USR1 signal allowing to get stack trace """
+    signal.signal(signal.SIGUSR1, sigusr1_handler)
+
+
+
 def bootstrap_run():
     """ temporary bootstrap """
     
@@ -606,6 +622,9 @@ if __name__ == '__main__':
     #memdebug.start(8080)
     #import sys
     #print("sys.argv=[%s]" %(sys.argv))
+    
+    register_traceback_signal()
+    
     bootstrap_run()
     
     sys.exit(0)
