@@ -84,6 +84,17 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
         """
         self.compressor = None
         self.decompressor = None
+
+        #statistics info
+        self._total_read_bytes = 0 #number of bytes read total
+        self._total_sent_bytes = 0 #number of bytes sent total
+
+        #throttling info
+        #self._start_throttling = None #will be used to throttle
+        self._rate = 50 * 1024 * 1024 # rate in bytes 5 K
+        self._per  = 1.0 # per second
+        self._last_check = None # last time rate was checked        
+        self._allowance = 0 # to calculate what is left
         
         imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
         
@@ -125,9 +136,40 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
             data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
             if not data: raise self.abort('ssl socket error: EOF') #to avoid infinite looping due to empty string returned
             read += len(data)
+            self._total_read_bytes += read
             chunks.write(data)
         
         return chunks.getvalue() #return the cStringIO content
+
+    def _throttle(self, msg_size):
+        """
+           Throttle connection if needed
+        """
+        if not self._last_check:
+           self._last_check = time.time()
+           return
+
+        current_time = time.time()
+
+        time_passed = current_time - self._last_check
+        self._last_check  = current_time
+
+        self._allowance += time_passed * (self._rate / self._per)
+
+        if self._allowance > self._rate:
+           self._allowance = self._rate
+        if self._allowance < 1.0:
+           print("wait %d\n" % ((1 - self._allowance) * (self._per/self._rate)))
+           time.sleep( (1 - self._allowance) * (self._per/self._rate))
+	       self._allowance = 0.0 
+        else:
+           self._allowance -= msg_size
+
+    def get_statistics(self):
+        """
+           Return statistics concerning connection
+        """
+        print("Connection, total read=%d\n" % ( self._total_read_bytes ))
   
     def _intern_read(self, size):
         """
