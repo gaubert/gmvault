@@ -29,9 +29,13 @@ elif [ -f "$GMVAULT_HOME/bin/python" ]; then
     PYTHON_BIN=$GMVAULT_HOME/bin/python
 
 else
+    #look for python2.7 first otherwise try python2.6
     PYTHON_BIN=`which python2.7 2>/dev/null`
-    echo "Odd. Use default python2.7.x distribution"
+    if [ ! $PYTHON_BIN ]; then
+       PYTHON_BIN=`which python2.6 2>/dev/null`
+    fi 
 
+    echo "Odd. Use default python2.7.x or 2.6.x distribution."
 fi
 
 if [ ! $PYTHON_BIN ] || [ ! -f $PYTHON_BIN ]; then
