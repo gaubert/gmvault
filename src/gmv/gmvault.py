@@ -368,7 +368,17 @@ class GmailStorer(object):
             data = '%s.crypt' % (data)
         
         meta = self.METADATA_FNAME % (the_dir, a_id)
+
+        #remove files if already quarantined
+        q_data_path = os.path.join(self._quarantine_dir, data)
+        q_meta_path = os.path.join(self._quarantine_dir, meta)
+
+        if os.path.exists(q_data_path):
+            os.remove(q_data_path)        
         
+        if os.path.exists(q_meta_path):
+            os.remove(q_meta_path)
+
         shutil.move(data, self._quarantine_dir)
         shutil.move(meta, self._quarantine_dir)
         
