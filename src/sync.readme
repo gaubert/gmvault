@@ -439,4 +439,15 @@ TODO Tonight
 - create tag for 1.6-beta and web-1.6-beta
 - Tweet for release and support page
 
+- Road map for v1.7 and more:
+
+--- Fix infinite loop and thorough testing
+--- Add throttling for upload,
+--- refactor code to support GUI reporting (async) or logging,
+--- Add documentation to configure Gmail and the missing options (encryption, ...),
+--- Try to fix the issue with bad emails (strange character maybe improve the quarantine management), 
+
+--- Add GUI
+--- Add backup statisitics reporting
+--- Add multi-emails backups
 
