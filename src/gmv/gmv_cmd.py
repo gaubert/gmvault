@@ -580,10 +580,12 @@ def activate_debug_mode():
     log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'DEBUG', file_path="%s/gmvault.log" % os.getenv("HOME","."))
 
 def sigusr1_handler(signum, frame):
-    
-    print "GMVAULT: Received SIGUSR1 -- Printing stack trace..."
 
-    f = open('/tmp/gmvault.traceback.txt', 'a')
+    filename = './gmvault.traceback.txt'
+    
+    print("GMVAULT: Received SIGUSR1 -- Printing stack trace in %s..." % (os.path.abspath(filename)))
+
+    f = open(filename, 'a')
     traceback.print_stack(file=f)
     f.close()
 
