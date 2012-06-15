@@ -75,6 +75,9 @@ imapclient.response_parser._convert_INTERNALDATE = mod_convert_INTERNALDATE
 imaplib.Commands['COMPRESS'] = ('AUTH', 'SELECTED')
 
 class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
+
+    SOCK_TIMEOUT = 20 # set a socket timeout of 20 sec to avoid for ever blockage in ssl.read
+
     """
        Add support for compression inspired by inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
     """
@@ -104,7 +107,10 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
             """
             self.host   = host
             self.port   = port
-            self.sock   = socket.create_connection((host, port))
+            
+            self.sock   = socket.create_connection((host, port), self.SOCK_TIMEOUT) #add so_timeout  
+
+            print("%%%%%%%%%%%%%% TIMEOUT = %s sec\n" % (self.sock.gettimeout()))
             self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
             
             # This is the last correction added to avoid memory fragmentation in imaplib
