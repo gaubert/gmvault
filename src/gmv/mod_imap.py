@@ -110,7 +110,6 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
             
             self.sock   = socket.create_connection((host, port), self.SOCK_TIMEOUT) #add so_timeout  
 
-            print("%%%%%%%%%%%%%% TIMEOUT = %s sec\n" % (self.sock.gettimeout()))
             self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
             
             # This is the last correction added to avoid memory fragmentation in imaplib
