@@ -1027,7 +1027,7 @@ class GMVaulter(object):
                     LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(abort)))
                     gstorer.quarantine_email(gm_id)
                     self.error_report['emails_in_quarantine'].append(gm_id)
-                    LOG.critical("Disconnect and reconnect to restart cleanly.")
+                    LOG.critical("Disconnecting and reconnecting to restart cleanly.")
                     self.src.reconnect() #reconnect
                 else:
                     raise abort
