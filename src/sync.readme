@@ -441,6 +441,7 @@ TODO Tonight
 
 - Road map for v1.7 and more:
 
+--- move oauth token somewhere else
 --- Fix infinite loop and thorough testing
 --- Add throttling for upload,
 --- refactor code to support GUI reporting (async) or logging,

@@ -1019,6 +1019,16 @@ class GMVaulter(object):
                 # save id every 20 restored emails
                 if (nb_emails_restored % 20) == 0:
                     self.save_lastid(self.OP_RESTORE, gm_id)
+                    
+            except imaplib.IMAP4.abort, abort:
+                
+                # if this is a Gmvault SSL Socket error quarantine the email and continue the restore
+                if str(abort) == "Gmvault ssl socket error: EOF":
+                    LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(abort)))
+                    gstorer.quarantine_email(gm_id)
+                    self.error_report['emails_in_quarantine'].append(gm_id)
+                else:
+                    raise abort
         
             except imaplib.IMAP4.error, err:
                 

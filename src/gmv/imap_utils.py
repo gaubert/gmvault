@@ -122,7 +122,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
                     
                     LOG.debug("IMAP (abort) error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Cannot reach the Gmail server. Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    LOG.critical("Received an IMAP abort error. Wait %s seconds and retrying." % (m_sleep_time[0]))
                     
                     # problem with this email, put it in quarantine
                     reconnect(args[0], nb_tries, a_nb_tries, err, m_sleep_time)    
@@ -448,7 +448,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         if self.login == 'guillaume.aubert@gmail.com':
             raise Exception("Cannot push to this account")
     
-        LOG.debug("Before to Append")
+        LOG.debug("Before to Append email contents")
         res = self.server.append(self._all_mail_folder, a_body, a_flags, a_internal_time)
     
         LOG.debug("Appended data with flags %s and internal time %s" % (a_flags, a_internal_time))

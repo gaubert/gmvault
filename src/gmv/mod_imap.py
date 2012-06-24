@@ -128,7 +128,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
         read = 0
         while read < size:
             data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
-            if not data: raise self.abort('ssl socket error: EOF') #to avoid infinite looping due to empty string returned
+            if not data: raise self.abort('Gmvault ssl socket error: EOF') #to avoid infinite looping due to empty string returned
             read += len(data)
             chunks.write(data)
         
