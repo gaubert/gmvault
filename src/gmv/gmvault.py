@@ -1022,6 +1022,8 @@ class GMVaulter(object):
                     
             except imaplib.IMAP4.abort, abort:
                 
+                LOG.critical("Received abort exception [%s]" % (str(abort)))
+                
                 # if this is a Gmvault SSL Socket error quarantine the email and continue the restore
                 if str(abort) == "Gmvault ssl socket error: EOF":
                     LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(abort)))
