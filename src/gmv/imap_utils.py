@@ -114,7 +114,10 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
                     
                     LOG.debug("error message = %s. traceback:%s" % (p_err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Cannot reach the Gmail server. Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    if nb_tries[0] < a_nb_tries:
+                        LOG.critical("Cannot reach the Gmail server. Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    else:
+                        LOG.critical("Tried too many times to execute the operation. Leave in error.")
                     
                     reconnect(args[0], nb_tries, a_nb_tries, p_err, m_sleep_time)
                 
@@ -122,8 +125,11 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
                     
                     LOG.debug("IMAP (abort) error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Received an IMAP abort error. Wait %s seconds and retrying." % (m_sleep_time[0]))
-                    
+                    if nb_tries[0] < a_nb_tries:
+                        LOG.critical("Received an IMAP abort error. Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    else:
+                        LOG.critical("Tried too many times to execute the operation. Leave in error.")
+                        
                     # problem with this email, put it in quarantine
                     reconnect(args[0], nb_tries, a_nb_tries, err, m_sleep_time)    
                     
