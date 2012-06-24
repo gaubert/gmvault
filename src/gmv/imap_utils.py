@@ -258,6 +258,13 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 
             self.server = None
     
+    def reconnect(self):
+        """
+           disconnect and connect again
+        """
+        self.disconnect()
+        self.reconnect()
+    
     def enable_compression(self):
         """
            Try to enable the compression
