@@ -106,6 +106,7 @@ class GMVaultLauncher(object):
     
     SYNC_TYPES    = ['full', 'quick', 'custom']
     RESTORE_TYPES = ['full', 'quick']
+    CHECK_TYPES   = ['full']
     
     DEFAULT_GMVAULT_DB = "%s/gmvault-db" % (os.getenv("HOME", "."))
     
@@ -267,11 +268,51 @@ class GMVaultLauncher(object):
         
         # check_db command
         check_parser = subparsers.add_parser('check', \
-                                            help='check and delete emails not present on Gmail anymore.')
+                                            help='Check and clean the disk database.')
+
+        #email argument
+        check_parser.add_argument('email', \
+                                 action='store', default='empty_$_email', help='email account to restore.')
         
+        # activate the restart mode
+        check_parser.add_argument("--restart", \
+                                 action='store_true', dest='restart', \
+                                 default=False, help= 'Restart from the last saved gmail id.')
+        
+        check_parser.add_argument("-d", "--db-dir", \
+                                 action='store', help="Database root directory. (default: ./gmvault-db)",\
+                                 dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
+        
+        # restore typ
+        check_parser.add_argument('-t','--type', \
+                                 action='store', dest='type', \
+                                 default='full', help='type of restoration: full|quick. (default: full)')
+     
+        # for both when seen add const empty otherwise not_seen
+        # this allow to distinguish between an empty value and a non seen option
+        check_parser.add_argument("-o", "--oauth", \
+                          help="use oauth for authentication. (default method)",\
+                          action='store_const', dest="oauth_token", const='empty', default='not_seen')
+        
+        check_parser.add_argument("-p", "--passwd", \
+                          help="use interactive password authentication. (not recommended)",
+                          action='store_const', dest="passwd", const='empty', default='not_seen')
+        
+        check_parser.add_argument("--server", metavar = "HOSTNAME", \
+                              action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
+                              dest="host", default="imap.gmail.com")
+            
+        check_parser.add_argument("--port", metavar = "PORT", \
+                              action='store', help="Gmail imap server port. (default: 993)",\
+                              dest="port", default=993)
+        
+        check_parser.add_argument("--debug", \
+                              action='store_true', help="Activate debugging info",\
+                              dest="debug", default=False)
         
         check_parser.set_defaults(verb='check')
-    
+        
+        
         
         
         # A config command
@@ -410,7 +451,7 @@ class GMVaultLauncher(object):
             
         elif parsed_args.get('command', '') == 'check':
             # parse common arguments for sync and restore
-            self._parse_common_args(options, parser, parsed_args)
+            self._parse_common_args(options, parser, parsed_args, self.CHECK_TYPES)
     
         elif parsed_args.get('command', '') == 'config':
             pass
@@ -528,7 +569,7 @@ class GMVaultLauncher(object):
         
         # handle credential in all levels
         checker = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
-                                   args['email'], credential, read_only_access = True, use_encryption = args['encrypt'])
+                                   args['email'], credential, read_only_access = True)
         
         checker.check_clean_db()
             
@@ -554,7 +595,7 @@ class GMVaultLauncher(object):
             
             elif args.get('command', '') == 'check':
                 
-                self._restore(args, credential)
+                self._check_db(args, credential)
                 
             elif args.get('command', '') == 'config':
                 
