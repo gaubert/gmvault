@@ -98,16 +98,15 @@ class GmailStorer(object):
         self._create_gmvault_db_version()
         
     
-    def _creation_gmvault_db_version(self):
+    def _create_gmvault_db_version(self):
         """
            Create the Gmvault database version if it doesn't already exist
         """
-        if not os.path.exists(self._info_dir):
-            fd = open('%s/%s' % (self._info_dir, self.GMVAULTDB_VERSION, "w+"))
+        version_file = '%s/%s' % (self._info_dir, self.GMVAULTDB_VERSION)
+        if not os.path.exists(version_file):
+            fd = open(version_file, "w+")
             fd.write(gmvault_utils.GMVAULT_VERSION)
             fd.close()
-        
-        
     
     def store_db_owner(self, email_owner):
         """
