@@ -444,6 +444,7 @@ TODO Tonight
 --- move oauth token somewhere else
 --- DONE: Fix infinite loop and thorough testing => Seems ok now I need to insure that it is easy to quarantine a message
 --- Add chat support
+--- Add local syncing for a particular period and not only for the full sync
 --- Add throttling for upload,
 --- refactor code to support GUI reporting (async) or logging,
 --- Add documentation to configure Gmail and the missing options (encryption, ...),
