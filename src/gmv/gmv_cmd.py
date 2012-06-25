@@ -76,9 +76,10 @@ c) Custom synchronisation with an IMAP request for advance users
 
 #> gmvault sync --type custom --imap-req "Since 1-Nov-2011 Before 10-Nov-2011" foo.bar@gmail.com
 
-d) Custom synchronisation with an Gmail request for advance users
+d) Custom synchronisation with an Gmail request for advance users.
+   Get all emails with label work and sent by foo.
 
-#> gmvault sync --type custom --gmail-req "in:inbox from:foo" foo.bar@gmail.com
+#> gmvault sync --type custom --gmail-req "in:work from:foo" foo.bar@gmail.com
 
 e) Resume Full synchronisation  from where it failed to not go through your mailbox again
 
