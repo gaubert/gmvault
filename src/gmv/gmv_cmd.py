@@ -32,7 +32,7 @@ import gmvault
 from cmdline_utils  import CmdLineParser
 from credential_utils import CredentialHelper
 
-GMVAULT_VERSION="1.6-beta"
+GMVAULT_VERSION=gmvault_utils.GMVAULT_VERSION
 
 GLOBAL_HELP_EPILOGUE="""Examples:
 

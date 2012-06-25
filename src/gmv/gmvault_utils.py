@@ -34,6 +34,8 @@ import log_utils
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
+GMVAULT_VERSION="1.6-beta"
+
 class memoized(object):
     """Decorator that caches a function's return value each time it is called.
     If called later with the same arguments, the cached value is returned, and

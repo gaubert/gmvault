@@ -64,6 +64,7 @@ class GmailStorer(object):
     INFO_AREA                  = '.info'  # contains metadata concerning the database
     ENCRYPTION_KEY_FILENAME    = '.storage_key.sec'
     EMAIL_OWNER                = '.email_account.info'
+    GMVAULTDB_VERSION            = '.gmvault_db_version.info'
         
     
     def __init__(self, a_storage_dir, encrypt_data = False):
@@ -92,6 +93,19 @@ class GmailStorer(object):
         self._encrypt_data   = encrypt_data
         self._encryption_key = None
         self._cipher         = None
+        
+        #add version if it is needed to migrate gmvault-db in the future
+        self._create_gmvault_db_version()
+        
+    
+    def _creation_gmvault_db_version(self):
+        """
+           Create the Gmvault database version if it doesn't already exist
+        """
+        if not os.path.exists(self._info_dir):
+            fd = open('%s/%s' % (self._info_dir, self.GMVAULTDB_VERSION, "w+"))
+            fd.write(gmvault_utils.GMVAULT_VERSION)
+            fd.close()
         
         
     
