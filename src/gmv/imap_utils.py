@@ -114,7 +114,10 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
                     
                     LOG.debug("error message = %s. traceback:%s" % (p_err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Cannot reach the Gmail server (see logs). Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    if nb_tries[0] < a_nb_tries:
+                        LOG.critical("Cannot reach the Gmail server. Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    else:
+                        LOG.critical("Stop retrying, tried too many times ...")
                     
                     reconnect(args[0], nb_tries, a_nb_tries, p_err, m_sleep_time)
                 
@@ -122,15 +125,18 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
                     
                     LOG.debug("IMAP (abort) error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Cannot reach the Gmail server (see logs). Wait %s seconds and retrying." % (m_sleep_time[0]))
-                    
+                    if nb_tries[0] < a_nb_tries:
+                        LOG.critical("Received an IMAP abort error. Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    else:
+                        LOG.critical("Stop retrying, tried too many times ...")
+                        
                     # problem with this email, put it in quarantine
                     reconnect(args[0], nb_tries, a_nb_tries, err, m_sleep_time)    
                     
                 except socket.error, sock_err:
                     LOG.debug("error message = %s. traceback:%s" % (sock_err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Cannot reach the Gmail server (see logs). Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    LOG.critical("Cannot reach the Gmail server. Wait %s seconds and retrying." % (m_sleep_time[0]))
                     
                     reconnect(args[0], nb_tries, a_nb_tries, sock_err, m_sleep_time)
                     
@@ -257,6 +263,13 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 LOG.exception(ignored)
                 
             self.server = None
+    
+    def reconnect(self):
+        """
+           disconnect and connect again
+        """
+        self.disconnect()
+        self.connect()
     
     def enable_compression(self):
         """
@@ -448,7 +461,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         if self.login == 'guillaume.aubert@gmail.com':
             raise Exception("Cannot push to this account")
     
-        LOG.debug("Before to Append")
+        LOG.debug("Before to Append email contents")
         res = self.server.append(self._all_mail_folder, a_body, a_flags, a_internal_time)
     
         LOG.debug("Appended data with flags %s and internal time %s" % (a_flags, a_internal_time))

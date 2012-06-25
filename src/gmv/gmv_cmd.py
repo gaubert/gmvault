@@ -20,6 +20,8 @@ import socket
 import sys
 import datetime
 import os
+import signal
+import traceback
 
 import argparse
 import log_utils
@@ -74,9 +76,10 @@ c) Custom synchronisation with an IMAP request for advance users
 
 #> gmvault sync --type custom --imap-req "Since 1-Nov-2011 Before 10-Nov-2011" foo.bar@gmail.com
 
-d) Custom synchronisation with an Gmail request for advance users
+d) Custom synchronisation with an Gmail request for advance users.
+   Get all emails with label work and sent by foo.
 
-#> gmvault sync --type custom --gmail-req "in:inbox from:foo" foo.bar@gmail.com
+#> gmvault sync --type custom --gmail-req "in:work from:foo" foo.bar@gmail.com
 
 e) Resume Full synchronisation  from where it failed to not go through your mailbox again
 
@@ -577,6 +580,22 @@ def activate_debug_mode():
     LOG.critical("Debugging logs are going to be saved in file %s/gmvault.log.\n" % os.getenv("HOME","."))
     log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'DEBUG', file_path="%s/gmvault.log" % os.getenv("HOME","."))
 
+def sigusr1_handler(signum, frame):
+
+    filename = './gmvault.traceback.txt'
+    
+    print("GMVAULT: Received SIGUSR1 -- Printing stack trace in %s..." % (os.path.abspath(filename)))
+
+    f = open(filename, 'a')
+    traceback.print_stack(file=f)
+    f.close()
+
+def register_traceback_signal():
+    """ To register a USR1 signal allowing to get stack trace """
+    signal.signal(signal.SIGUSR1, sigusr1_handler)
+
+
+
 def bootstrap_run():
     """ temporary bootstrap """
     
@@ -606,6 +625,9 @@ if __name__ == '__main__':
     #memdebug.start(8080)
     #import sys
     #print("sys.argv=[%s]" %(sys.argv))
+    
+    register_traceback_signal()
+    
     bootstrap_run()
     
     sys.exit(0)
