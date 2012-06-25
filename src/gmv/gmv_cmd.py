@@ -40,6 +40,7 @@ a) Get help for each of the individual commands
 
 #> gmvault sync -h
 #> gmvault restore --help
+#> gmvault check -h
 
 """
 
@@ -263,6 +264,13 @@ class GMVaultLauncher(object):
         rest_parser.set_defaults(verb='restore')
     
         rest_parser.epilogue = REST_HELP_EPILOGUE
+        
+        # check_db command
+        check_parser = subparsers.add_parser('check', \
+                                            help='check and delete emails not present on Gmail anymore.')
+        
+        
+        check_parser.set_defaults(verb='check')
     
         
         
@@ -399,7 +407,10 @@ class GMVaultLauncher(object):
             parsed_args['label'] = options.label
             
             parsed_args['restart'] = options.restart
-
+            
+        elif parsed_args.get('command', '') == 'check':
+            # parse common arguments for sync and restore
+            self._parse_common_args(options, parser, parsed_args)
     
         elif parsed_args.get('command', '') == 'config':
             pass
@@ -508,6 +519,18 @@ class GMVaultLauncher(object):
         
         #print error report
         LOG.critical(syncer.get_error_report())
+        
+    def _check_db(self, args, credential):
+        """
+           Check DB
+        """
+        LOG.critical("Connect to Gmail server.")
+        
+        # handle credential in all levels
+        checker = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
+                                   args['email'], credential, read_only_access = True, use_encryption = args['encrypt'])
+        
+        checker.check_clean_db()
             
 
     def run(self, args):
@@ -526,6 +549,10 @@ class GMVaultLauncher(object):
                 self._sync(args, credential)
                 
             elif args.get('command', '') == 'restore':
+                
+                self._restore(args, credential)
+            
+            elif args.get('command', '') == 'check':
                 
                 self._restore(args, credential)
                 

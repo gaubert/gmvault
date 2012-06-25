@@ -896,6 +896,18 @@ class GMVaulter(object):
         
         return self.error_report
     
+    def check_clean_db(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL):
+        """
+           Check and clean the database (remove file that are not anymore in Gmail
+        """
+        
+        # get all imap ids in All Mail
+        imap_ids = self.src.search(imap_req)
+        
+        #delete supress emails from DB since last sync
+        self._delete_sync(imap_ids, db_cleaning = True)
+        
+    
     def remote_sync(self):
         """
            Sync with a remote source (IMAP mirror or cloud storage area)
