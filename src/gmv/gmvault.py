@@ -474,7 +474,7 @@ class GMVaulter(object):
        Main object operating over gmail
     """ 
     #NB_GRP_OF_ITEMS  = 100
-    NB_GRP_OF_ITEMS  = 700
+    NB_GRP_OF_ITEMS  = 1000
     RESTORE_PROGRESS = 'last_id.restore'
     SYNC_PROGRESS     = 'last_id.sync'
     
@@ -813,6 +813,8 @@ class GMVaulter(object):
             nb_items = self.NB_GRP_OF_ITEMS if len(db_gmail_ids) >= self.NB_GRP_OF_ITEMS else len(db_gmail_ids)
             
             timer.start()
+            timer2 = gmvault_utils.Timer()
+            
             #calculate the list elements to delete
             #query nb_items items in one query to minimise number of imap queries
             for group_imap_id in itertools.izip_longest(fillvalue=None, *[iter(imap_ids)]*nb_items):
@@ -825,9 +827,9 @@ class GMVaulter(object):
                 
                 #for key in data:
                 #    db_gmail_ids.discard(data[key][imap_utils.GIMAPFetcher.GMAIL_ID])
-                
+                timer2.start()
                 db_gmail_ids.difference_update({ data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data })
-                
+                LOG.critical("Difference Elapsed time = %s" % (timer.elapsed_human_time()))
                 
                 #quit loop if db set is already empty
                 if len(db_gmail_ids) == 0:
