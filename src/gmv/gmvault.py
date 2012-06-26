@@ -826,7 +826,7 @@ class GMVaulter(object):
                 #for key in data:
                 #    db_gmail_ids.discard(data[key][imap_utils.GIMAPFetcher.GMAIL_ID])
                 
-                db_gmail_ids -= [ data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data ]
+                db_gmail_ids.difference_update({ data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data })
                 
                 
                 #quit loop if db set is already empty
