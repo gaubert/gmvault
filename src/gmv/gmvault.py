@@ -473,8 +473,7 @@ class GMVaulter(object):
     """
        Main object operating over gmail
     """ 
-    #NB_GRP_OF_ITEMS  = 100
-    NB_GRP_OF_ITEMS  = 2000
+    NB_GRP_OF_ITEMS  = 1500
     RESTORE_PROGRESS = 'last_id.restore'
     SYNC_PROGRESS     = 'last_id.sync'
     
