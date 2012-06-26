@@ -829,7 +829,7 @@ class GMVaulter(object):
                 #    db_gmail_ids.discard(data[key][imap_utils.GIMAPFetcher.GMAIL_ID])
                 timer2.start()
                 db_gmail_ids.difference_update({ data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data })
-                LOG.critical("Difference Elapsed time = %s" % (timer2.elapsed_human_time()))
+                LOG.critical("Difference Elapsed time = %s sec" % (timer2.elapsed()))
                 
                 #quit loop if db set is already empty
                 if len(db_gmail_ids) == 0:
