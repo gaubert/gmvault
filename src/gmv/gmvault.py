@@ -795,10 +795,15 @@ class GMVaulter(object):
             
             LOG.critical("Check if emails need to be disk cleaned.")
             
+            timer = gmvault_utils.Timer()
+            timer.start()
+            
             #get gmail_ids from db
             db_gmail_ids_info = gstorer.get_all_existing_gmail_ids()
             
             LOG.critical("got all existing ids from disk nb of ids to check: %s" % (len(db_gmail_ids_info)) )
+            
+            LOG.critical("Elapsed time = %s" % (timer.elapsed_human_time()))
             
             #create a set of keys
             db_gmail_ids = set(db_gmail_ids_info.keys())
@@ -806,6 +811,7 @@ class GMVaulter(object):
             # optimize nb of items
             nb_items = self.NB_GRP_OF_ITEMS if len(db_gmail_ids) >= self.NB_GRP_OF_ITEMS else len(db_gmail_ids)
             
+            timer.start()
             #calculate the list elements to delete
             #query nb_items items in one query to minimise number of imap queries
             for group_imap_id in itertools.izip_longest(fillvalue=None, *[iter(imap_ids)]*nb_items):
@@ -827,6 +833,7 @@ class GMVaulter(object):
                 if len(db_gmail_ids) == 0:
                     break
     
+            LOG.critical("Elapsed time = %s" % (timer.elapsed_human_time()))
             LOG.critical("Will delete %s email(s) from disk db" % (len(db_gmail_ids)) )
             for gm_id in db_gmail_ids:
                 LOG.critical("gm_id %s not in imap. Delete it" % (gm_id))
