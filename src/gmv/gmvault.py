@@ -828,10 +828,10 @@ class GMVaulter(object):
                 LOG.critical("========== fetching time = %s sec" % (timer2.elapsed_ms()))
                 
                 timer2.start()
-                #for key in data:
-                #    db_gmail_ids.discard(data[key][imap_utils.GIMAPFetcher.GMAIL_ID])
+                for key in data:
+                    db_gmail_ids.discard(data[key][imap_utils.GIMAPFetcher.GMAIL_ID])
                 
-                db_gmail_ids.difference_update({ data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data })
+                #db_gmail_ids.difference_update({ data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data })
                 LOG.critical("########## Difference time = %s sec" % (timer2.elapsed_ms()))
                 
                 #quit loop if db set is already empty
