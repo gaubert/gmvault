@@ -474,7 +474,7 @@ class GMVaulter(object):
        Main object operating over gmail
     """ 
     #NB_GRP_OF_ITEMS  = 100
-    NB_GRP_OF_ITEMS  = 1000
+    NB_GRP_OF_ITEMS  = 5000
     RESTORE_PROGRESS = 'last_id.restore'
     SYNC_PROGRESS     = 'last_id.sync'
     
@@ -825,14 +825,14 @@ class GMVaulter(object):
                 
                 timer2.start()
                 data = self.src.fetch(group_imap_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID)
-                LOG.critical("fetching time = %s sec" % (timer2.elapsed_ms()))
+                LOG.critical("========== fetching time = %s sec" % (timer2.elapsed_ms()))
                 
                 timer2.start()
                 #for key in data:
                 #    db_gmail_ids.discard(data[key][imap_utils.GIMAPFetcher.GMAIL_ID])
                 
                 db_gmail_ids.difference_update({ data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data })
-                LOG.critical("Difference Elapsed time = %s sec" % (timer2.elapsed_ms()))
+                LOG.critical("########## Difference time = %s sec" % (timer2.elapsed_ms()))
                 
                 #quit loop if db set is already empty
                 if len(db_gmail_ids) == 0:
