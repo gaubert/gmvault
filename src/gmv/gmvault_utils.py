@@ -137,6 +137,12 @@ class Timer(object):
         
         return int(round(now - self._start))
     
+    def elapsed_ms(self):
+        """
+          return elapsed time up to micro second
+        """
+        return time.time() - self._start
+    
     def elapsed_human_time(self, suffixes=['y','w','d','h','m','s'], add_s=False, separator=' '):
         """
         Takes an amount of seconds and turns it into a human-readable amount of time.
