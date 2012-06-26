@@ -823,13 +823,13 @@ class GMVaulter(object):
                 
                 data = self.src.fetch(group_imap_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID)
                 
-                imap_gmail_ids = set()
+                #imap_gmail_ids = set()
                 
                 for key in data:
-                    imap_gmail_ids.add(data[key][imap_utils.GIMAPFetcher.GMAIL_ID])
-                    #db_gmail_ids.discard(data[key][imap_utils.GIMAPFetcher.GMAIL_ID])
+                    #imap_gmail_ids.add(data[key][imap_utils.GIMAPFetcher.GMAIL_ID])
+                    db_gmail_ids.discard(data[key][imap_utils.GIMAPFetcher.GMAIL_ID])
                 
-                db_gmail_ids -= imap_gmail_ids
+                #db_gmail_ids -= imap_gmail_ids
                 
                 #quit loop if db set is already empty
                 if len(db_gmail_ids) == 0:
