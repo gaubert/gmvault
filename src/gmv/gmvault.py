@@ -819,11 +819,9 @@ class GMVaulter(object):
             #query nb_items items in one query to minimise number of imap queries
             for group_imap_id in itertools.izip_longest(fillvalue=None, *[iter(imap_ids)]*nb_items):
                 
-                timer2.start()
                 # if None in list remove it
                 if None in group_imap_id: 
                     group_imap_id = [ im_id for im_id in group_imap_id if im_id != None ]
-                LOG.critical("list comprehension Elapsed time = %s sec" % (timer2.elapsed_ms()))
                 
                 timer2.start()
                 data = self.src.fetch(group_imap_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID)
