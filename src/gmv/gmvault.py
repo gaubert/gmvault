@@ -826,14 +826,8 @@ class GMVaulter(object):
                 data = self.src.fetch(group_imap_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID)
                 LOG.critical("========== fetching time = %s sec" % (timer2.elapsed_ms()))
                 
-                timer2.start()
-                #for key in data:
-                #    db_gmail_ids.discard(data[key][imap_utils.GIMAPFetcher.GMAIL_ID])
-                
                 db_gmail_ids.difference_update({ data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data })
-                LOG.critical("########## Difference time = %s sec" % (timer2.elapsed_ms()))
                 
-                #quit loop if db set is already empty
                 if len(db_gmail_ids) == 0:
                     break
     
@@ -898,25 +892,24 @@ class GMVaulter(object):
             LOG.critical("Encryption activated. All emails will be encrypted before to be stored.")
             LOG.critical("Please take care of the encryption key stored in (%s) or all your stored emails will become unreadable." % (GmailStorer.get_encryption_key_path(self.db_root_dir)))
         
-        
         # create new emails in db and update existing emails
         self._create_update_sync(imap_ids, compress = compress_on_disk, ownership_control = ownership_checking)
         
         #delete supress emails from DB since last sync
-        self._delete_sync(imap_ids, db_cleaning)
+        self.check_clean_db(db_cleaning)
         
         return self.error_report
     
-    def check_clean_db(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL):
+    def check_clean_db(self, db_cleaning, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL):
         """
            Check and clean the database (remove file that are not anymore in Gmail
         """
-        
-        # get all imap ids in All Mail
-        imap_ids = self.src.search(imap_req)
-        
-        #delete supress emails from DB since last sync
-        self._delete_sync(imap_ids, db_cleaning = True)
+        if db_cleaning:
+            # get all imap ids in All Mail
+            imap_ids = self.src.search(imap_req)
+            
+            #delete supress emails from DB since last sync
+            self._delete_sync(imap_ids, db_cleaning)
         
     
     def remote_sync(self):
@@ -986,7 +979,7 @@ class GMVaulter(object):
            
     def restore(self, pivot_dir = None, extra_labels = [], restart = False):
         """
-           Test method to restore emails in gmail 
+           restore emails in a gmail account
         """
         LOG.critical("Restore emails in gmail account %s." % (self.login) ) 
         

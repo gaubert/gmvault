@@ -184,8 +184,8 @@ class GMVaultLauncher(object):
                                  help="encrypt stored email messages in the database.",\
                                  action='store_true',dest="encrypt", default=False)
         
-        sync_parser.add_argument("-z", "--db-cleaning", \
-                          help="Enable the removal from the gmvault db of the emails that have been deleted from the provided gmail account. ",\
+        sync_parser.add_argument("-z", "--db-cleaning", metavar = "VAL",\
+                          help="Enable/disable the removal from the gmvault db of the emails that have been deleted from the given gmail account. VAL = yes or no.",\
                           dest="db_cleaning", default=None)
         
         sync_parser.add_argument("-m", "--multiple-db-owner", \
@@ -425,9 +425,15 @@ class GMVaultLauncher(object):
             # if there is a value then it is forced
             if options.db_cleaning: 
                 parsed_args['db-cleaning'] = parser.convert_to_boolean(options.db_cleaning)
-            elif parsed_args['request'] and not options.db_cleaning:
-                #else if we have a request and not forced put it to false
-                parsed_args['db-cleaning'] = False
+            
+            #elif parsed_args['request']['req'] != 'ALL' and not options.db_cleaning:
+            #    #else if we have a request and not forced put it to false
+            #    parsed_args['db-cleaning'] = False
+                
+            if parsed_args['db-cleaning']:
+                LOG.critical("Activate Gmvault db cleaning.")
+            else:
+                LOG.critical("Disable deletion of emails that are in Gmvault db and not anymore in Gmail.")
                 
             #add encryption option
             parsed_args['encrypt'] = options.encrypt
@@ -571,7 +577,7 @@ class GMVaultLauncher(object):
         checker = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
                                    args['email'], credential, read_only_access = True)
         
-        checker.check_clean_db()
+        checker.check_clean_db(db_cleaning = True)
             
 
     def run(self, args):
