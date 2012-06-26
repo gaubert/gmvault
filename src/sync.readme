@@ -444,12 +444,13 @@ TODO Tonight
 --- move oauth token somewhere else
 --- DONE: Fix infinite loop and thorough testing => Seems ok now I need to insure that it is easy to quarantine a message
 --- Add chat support
---- Add local syncing for a particular period and not only for the full sync
+--- DONE: Add local syncing for a particular period and not only for the full sync. It is now automatic but there is a side effect (if multi owner, will clean everything from DB).
 --- Add throttling for upload,
 --- refactor code to support GUI reporting (async) or logging,
 --- Add documentation to configure Gmail and the missing options (encryption, ...),
 --- Try to fix the issue with bad emails (strange character maybe improve the quarantine management), 
 --- Add a functionality to delete files that are not anymore in Gmail
+--- No db cleaning activated by default. If it is activated and DB contains emails from multiple owners then deactivate cleaning as otherwise it will remove everything from the others owners
 
 
 --- Add GUI
