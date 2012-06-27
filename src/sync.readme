@@ -444,6 +444,7 @@ TODO Tonight
 --- move oauth token somewhere else
 --- DONE: Fix infinite loop and thorough testing => Seems ok now I need to insure that it is easy to quarantine a message
 --- Add chat support
+--- DONE: Email fetched always being as seen. Fixed
 --- DONE: Add local syncing for a particular period and not only for the full sync. It is now automatic but there is a side effect (if multi owner, will clean everything from DB).
 --- Add throttling for upload,
 --- refactor code to support GUI reporting (async) or logging,
