@@ -683,6 +683,20 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         syncer._create_update_sync([142221L], compress = True)
         
+    def test_check_flags(self):
+        """
+           Check flags 
+        """
+        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        
+        gimap.connect()
+       
+        ids = [155226]
+        
+        res = gimap.fetch(ids, [gimap.GMAIL_ID])
+        
+        print(res)
+        
         
 
 def tests():

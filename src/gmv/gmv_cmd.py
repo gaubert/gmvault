@@ -438,9 +438,6 @@ class GMVaultLauncher(object):
             #add encryption option
             parsed_args['encrypt'] = options.encrypt
             
-            #add ownership checking
-            parsed_args['ownership_control'] = not options.allow_mult_owners
-            
             #compression flag
             parsed_args['compression'] = options.compression
                 
