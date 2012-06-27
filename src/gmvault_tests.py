@@ -687,13 +687,19 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            Check flags 
         """
-        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        credential    = { 'type' : 'passwd', 'value': self.passwd}
+        #print("credential %s\n" % (credential))
+        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, credential)
         
         gimap.connect()
        
-        ids = [155226]
+        imap_ids  = [155182]
+        gmail_id = 1405877259414135030
+
+        imap_ids = [155070]
         
-        res = gimap.fetch(ids, [gimap.GMAIL_ID])
+        #res = gimap.fetch(imap_ids, [gimap.GMAIL_ID, gimap.IMAP_FLAGS])
+        res = gimap.fetch(imap_ids, gimap.GET_ALL_BUT_DATA)
         
         print(res)
         

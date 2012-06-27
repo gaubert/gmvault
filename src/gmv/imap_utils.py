@@ -181,7 +181,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     EMAIL_BODY_OLD        = 'RFC822' #set msg as seen
     IMAP_BODY_PEEK     = 'BODY.PEEK[]' #get body without setting msg as seen
     
-    IMAP_HEADER_FIELDS = 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]'
+    IMAP_HEADER_FIELDS = 'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT)]'
     
     #GET_IM_UID_RE
     APPENDUID         = '^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'
