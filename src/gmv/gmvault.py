@@ -793,18 +793,22 @@ class GMVaulter(object):
         if db_cleaning:
             gstorer = GmailStorer(self.db_root_dir)
             
-            LOG.critical("Check if emails need to be disk cleaned.")
+            LOG.critical("Checkings to remove from the Gmvault db all emails that are not anymore on Gmail.\n")
+            timer = gmvault_utils.Timer()
+            timer.start()
             
             #get gmail_ids from db
             db_gmail_ids_info = gstorer.get_all_existing_gmail_ids()
             
-            LOG.critical("got all existing ids from disk nb of ids to check: %s" % (len(db_gmail_ids_info)) )
+            LOG.critical("Got all existing ids from the Gmvault db. Nb of ids to check: %s.\n" % (len(db_gmail_ids_info)) )
             
             #create a set of keys
             db_gmail_ids = set(db_gmail_ids_info.keys())
             
             # optimize nb of items
             nb_items = self.NB_GRP_OF_ITEMS if len(db_gmail_ids) >= self.NB_GRP_OF_ITEMS else len(db_gmail_ids)
+
+            LOG.critical("Call Gmail to check which email has been deleted. Might take few minutes ...") 
              
             #calculate the list elements to delete
             #query nb_items items in one query to minimise number of imap queries
@@ -814,7 +818,6 @@ class GMVaulter(object):
                 if None in group_imap_id: 
                     group_imap_id = [ im_id for im_id in group_imap_id if im_id != None ]
                 
-                timer2.start()
                 data = self.src.fetch(group_imap_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID)
              
                 db_gmail_ids.difference_update({ data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data })
@@ -822,10 +825,13 @@ class GMVaulter(object):
                 if len(db_gmail_ids) == 0:
                     break
     
-            LOG.critical("Will delete %s email(s) from disk db" % (len(db_gmail_ids)) )
+            LOG.critical("Need to delete %s email(s) from Gmvault db." % (len(db_gmail_ids)) )
             for gm_id in db_gmail_ids:
                 LOG.critical("gm_id %s not in Gmail. Delete it" % (gm_id))
                 gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
+            
+            LOG.critical("\nDeletion checkup done in %s." % (timer.elapsed_human_time()))
+
         else:
             LOG.debug("db_cleaning is off so ignore removing deleted emails from disk.")
         
