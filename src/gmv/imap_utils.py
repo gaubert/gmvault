@@ -161,7 +161,6 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     '''
     GMAIL_EXTENSION   = 'X-GM-EXT-1'  # GMAIL capability
     GMAIL_ALL         = '[Gmail]/All Mail' #GMAIL All Mail mailbox
-    GOOGLE_MAIL_ALL   = '[Google Mail]/All Mail' #Google Mail All Mail mailbox for Germany
     GENERIC_GMAIL_ALL = u'\\AllMail' # unlocalised GMAIL ALL
     GMAIL_ID          = 'X-GM-MSGID' #GMAIL ID attribute
     GMAIL_THREAD_ID   = 'X-GM-THRID'
@@ -177,12 +176,10 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     
     GMAIL_SPECIAL_DIRS_LOWER = ['\\inbox', '\\starred', '\\sent', '\\draft', '\\important']
     
-    #to be removed
-    EMAIL_BODY_OLD        = 'RFC822' #set msg as seen
     IMAP_BODY_PEEK     = 'BODY.PEEK[]' #get body without setting msg as seen
+    IMAP_HEADER_PEEK_FIELDS = 'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT)]' #get the body info without setting msg as seen
     
-    IMAP_HEADER_PEEK_FIELDS = 'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT)]'
-    IMAP_HEADER_FIELDS      = 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]'
+    IMAP_HEADER_FIELDS_KEY      = 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]' #key used to find these fields in the IMAP Response
     
     #GET_IM_UID_RE
     APPENDUID         = '^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'

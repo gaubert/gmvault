@@ -214,7 +214,7 @@ class GmailStorer(object):
         meta_desc = open(meta_path, 'w')
         
         # parse header fields to extract subject and msgid
-        subject, msgid = self.parse_header_fields(email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS])
+        subject, msgid = self.parse_header_fields(email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS_KEY])
         
         # need to convert labels that are number as string
         # come from imap_lib when label is a number
@@ -280,7 +280,7 @@ class GmailStorer(object):
             data_desc.write(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
             
         # parse header fields to extract subject and msgid
-        subject, msgid = self.parse_header_fields(email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS])
+        subject, msgid = self.parse_header_fields(email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS_KEY])
         
         # need to convert labels that are number as string
         # come from imap_lib when label is a number
