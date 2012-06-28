@@ -449,6 +449,7 @@ TODO Tonight
 --- refactor code to support GUI reporting (async) or logging,
 --- fix case when multi-owner db and cleaning activated (deactivate it because otherwise emails from the other accounts will be deleted)
 --- No db cleaning activated by default. If it is activated and DB contains emails from multiple owners then deactivate cleaning as otherwise it will remove everything from the others owners
+--- Redo restore per yyyy-month directory (sorted per min to max order). Currently it is done by min to max order on Ids and the oldest in not the smallest.
 --- DONE: Fix case when unread messages are restored. Now it works.
 --- DONE: Email fetched always being as seen. Fixed
 --- DONE: Add a functionality to delete files that are not anymore in Gmail
