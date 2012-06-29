@@ -127,8 +127,47 @@ class GmailStorer(object):
             return open(fname).read()
         
         return None
-           
     
+    @classmethod
+    def create_info_dir(cls):
+        """
+           Create info dir
+        """
+        pass
+        
+    @classmethod
+    def get_db_owners(self):
+        """
+           Get the email owners for the gmvault-db. Because except in particular cases, the db will be only linked to one email.
+        """
+        owners = []
+        fname = '%s/%s' % (self._info_dir, self.EMAIL_OWNER)
+        if os.path.exists(fname): 
+            with open(fname,'r') as fd:
+                line = fd.readline()
+                if line:
+                    line.strip()
+                    owners.append(line)
+        
+        return owners
+    
+    def store_db_owners(self, email_owners):
+        """
+           Store email owners in the owner file in order to manage when there are multiple owner (no syncing for example)
+        """
+        owners = self.get_db_owners()
+        
+        owners = set(owners) #create a set
+        owners += email_owners # do a union of both collection
+        
+        #write result in file
+        fname = '%s/%s' % (self._info_dir, self.EMAIL_OWNER)
+        
+        with open(fname,'w+') as fd:
+            for owner in owners:
+                fd.write('%s\n' % (owner))
+        
+        
             
     def get_encryption_cipher(self):
         """
@@ -634,7 +673,8 @@ class GMVaulter(object):
     def _create_update_sync(self, imap_ids, compress, ownership_control = True ):
         """
            First part of the double pass strategy: 
-           create and update emails in db
+           - create and update emails in db
+           
         """
         gstorer =  GmailStorer(self.db_root_dir, self.use_encryption)
         
