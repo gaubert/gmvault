@@ -278,14 +278,23 @@ class GmailStorer(object):
          
         return email_info[imap_utils.GIMAPFetcher.GMAIL_ID]
     
+    def bury_chat(self, chat_info, local_dir = None, compress = False):   
+        """
+            store chats into 2 files (.meta and .eml files)
+            Arguments:
+            chat_info: the chat content
+            local_dir: intermediary dir
+            compress : if compress is True, use gzip compression
+        """
+        
         
     def bury_email(self, email_info, local_dir = None, compress = False):
         """
            store all email info in 2 files (.meta and .eml files)
            Arguments:
-             email_info: info
+             email_info: the email content
              local_dir : intermdiary dir (month dir)
-             compress  : If compress is True, use gzip compression
+             compress  : if compress is True, use gzip compression
         """
         
         if local_dir:
@@ -544,6 +553,9 @@ class GMVaulter(object):
                               'emails_in_quarantine' : [],
                               'reconnections' : 0}
         
+        #instantiate gstorer
+        self.gstorer =  GmailStorer(self.db_root_dir, self.use_encryption)
+        
     @classmethod
     def get_imap_request_btw_2_dates(cls, begin_date, end_date):
         """
@@ -653,12 +665,12 @@ class GMVaulter(object):
         return False
     
     
-    def _check_email_db_ownership(self, gstorer, ownership_control):
+    def _check_email_db_ownership(self, ownership_control):
         """
            Check email database ownership.
         """
         #check that the gmvault-db is not associated with another user
-        db_owner = gstorer.get_db_owner()
+        db_owner = self.gstorer.get_db_owner()
         if ownership_control:
             if db_owner and (db_owner != self.login): #db owner should not be different unless bypass activated
                 raise Exception("The email database %s is already associated with %s. Use option (-m, --multiple-db-owner) if you want to link it with %s" \
@@ -670,20 +682,27 @@ class GMVaulter(object):
             else:
                 LOG.critical("The email database %s can host emails from multiple email accounts." % (self.db_root_dir))
     
-    def _create_update_sync(self, imap_ids, compress, ownership_control = True ):
+    def _sync_chats(self, compress):
+        """
+           backup the chat messages
+        """
+        # get all imap ids in AllMail/Chats
+        chat_req = ""
+        imap_ids = self.src.search(chat_req)
+        
+        # get if from imap with resume mode maybe
+        
+        #bury in db (with a chat dir and under dir)
+        
+        # handle errors
+        
+    
+    def _sync_emails(self, imap_ids, compress, ownership_control = True ):
         """
            First part of the double pass strategy: 
            - create and update emails in db
            
         """
-        gstorer =  GmailStorer(self.db_root_dir, self.use_encryption)
-        
-        #check ownership 
-        self._check_email_db_ownership(gstorer, ownership_control)
-            
-        #save db_owner for next time
-        gstorer.store_db_owner(self.login)
-        
         total_nb_emails_to_process = len(imap_ids) # total number of emails to get
         
         LOG.critical("%d emails to be fetched." % (total_nb_emails_to_process))
@@ -712,7 +731,7 @@ class GMVaulter(object):
                     LOG.critical("Process email num %d (imap_id:%s) from %s." % (nb_emails_processed, the_id, the_dir))
                 
                     #pass the dir and the ID
-                    curr_metadata = GMVaulter.check_email_on_disk( gstorer , \
+                    curr_metadata = GMVaulter.check_email_on_disk( self.gstorer , \
                                                                    new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID], \
                                                                    the_dir)
                     
@@ -723,7 +742,7 @@ class GMVaulter(object):
                         
                         if self._metadata_needs_update(curr_metadata, new_data[the_id]):
                             #restore everything at the moment
-                            gid  = gstorer.bury_metadata(new_data[the_id], local_dir = the_dir)
+                            gid  = self.gstorer.bury_metadata(new_data[the_id], local_dir = the_dir)
                             
                             LOG.debug("update email with imap id %s and gmail id %s." % (the_id, gid))
                             
@@ -736,7 +755,7 @@ class GMVaulter(object):
                         new_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY] = email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
                         
                         # store data on disk within year month dir 
-                        gid  = gstorer.bury_email(new_data[the_id], local_dir = the_dir, compress = compress)
+                        gid  = self.gstorer.bury_email(new_data[the_id], local_dir = the_dir, compress = compress)
                         
                         #update local index id gid => index per directory to be thought out
                         LOG.debug("Create and store email with imap id %s, gmail id %s." % (the_id, gid))   
@@ -860,7 +879,9 @@ class GMVaulter(object):
                 
                 data = self.src.fetch(group_imap_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID)
              
-                db_gmail_ids.difference_update({ data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data })
+                # syntax for 2.7 set comprehension { data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data }
+                # need to create a list for 2.6
+                db_gmail_ids.difference_update([data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data ])
                 
                 if len(db_gmail_ids) == 0:
                     break
@@ -913,6 +934,13 @@ class GMVaulter(object):
         """
            sync mode 
         """
+        #check ownership to have one email per db unless user wants different
+        self._check_email_db_ownership(ownership_checking)
+            
+        #save db_owner for next time
+        #TODO Change that to store only when there is a new owner
+        self.gstorer.store_db_owner(self.login)
+        
         # get all imap ids in All Mail
         imap_ids = self.src.search(imap_req)
         
@@ -928,8 +956,12 @@ class GMVaulter(object):
             LOG.critical("Encryption activated. All emails will be encrypted before to be stored.")
             LOG.critical("Please take care of the encryption key stored in (%s) or all your stored emails will become unreadable." % (GmailStorer.get_encryption_key_path(self.db_root_dir)))
         
-        # create new emails in db and update existing emails
-        self._create_update_sync(imap_ids, compress = compress_on_disk, ownership_control = ownership_checking)
+        # backup emails
+        self._sync_emails(imap_ids, compress = compress_on_disk, ownership_control = ownership_checking)
+        
+        # backup chats
+        self._sync_chats(compress)
+        
         
         #delete supress emails from DB since last sync
         self.check_clean_db(db_cleaning)
