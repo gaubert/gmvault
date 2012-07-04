@@ -209,14 +209,15 @@ class GmailStorer(object):
         else:
             return None, None
     
-    def instrumented_get_all_existing_gmail_ids(self, pivot_dir = None):
+    def instrument_get_all_existing_gmail_ids(self, pivot_dir = None):
         """
            get all existing gmail_ids from the database within the passed month 
            and all posterior months
            Seems to be ordered properly
         """
-        gmail_ids = collections_utils.OrderedDict() #orderedDict compatible for version 2.5
-        other = collections_utils.OrderedDict()
+        #beware OrderedDict preserve the order per insertion and not per key or other
+        gmail_ids = {}
+        other     = {}
         
         if pivot_dir == None:
             the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
@@ -239,11 +240,13 @@ class GmailStorer(object):
             #other['%s-%s' % (metadata[u'gm_id'], metadata[u'internal_date']) ] = datetime.datetime.fromtimestamp(metadata[u'internal_date'])
             other['%s' % (metadata[u'gm_id']) ] = datetime.datetime.fromtimestamp(metadata[u'internal_date'])
             
+        #sort dirs
+        gmail_ids = collections_utils.OrderedDict(sorted(gmail_ids.items(), key=lambda t: t[0]))
+        other = collections_utils.OrderedDict(sorted(other.items(), key=lambda t: t[0]))
         
-        fd = open("/tmp/order1.txt", "w+")
+        fd = open("/tmp/order.txt", "w+")
         for key in other:
             fd.write("%s : %s\n" % (key, other[key]))
-        
         
         return gmail_ids 
     
@@ -252,7 +255,9 @@ class GmailStorer(object):
            get all existing gmail_ids from the database within the passed month 
            and all posterior months
         """
-        gmail_ids = collections_utils.OrderedDict() #orderedDict compatible for version 2.5
+        # first create a normal dir and sort it below with an OrderedDict
+        # beware orderedDict preserve order by insertion and not by key order
+        gmail_ids = {}
         
         if pivot_dir == None:
             the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
@@ -270,6 +275,10 @@ class GmailStorer(object):
         for filepath in the_iter:
             directory, fname = os.path.split(filepath)
             gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+
+        #sort by key 
+        #used own orderedDict to be compliant with version 2.5
+        gmail_ids = collections_utils.OrderedDict(sorted(gmail_ids.items(), key=lambda t: t[0]))
         
         return gmail_ids
     
