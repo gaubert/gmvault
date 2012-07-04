@@ -687,14 +687,15 @@ class GMVaulter(object):
            backup the chat messages
         """
         # get all imap ids in AllMail/Chats
-        chat_req = ""
-        imap_ids = self.src.search(chat_req)
+        #chat_req = ""
+        #imap_ids = self.src.search(chat_req)
         
         # get if from imap with resume mode maybe
         
         #bury in db (with a chat dir and under dir)
         
         # handle errors
+        pass
         
     
     def _sync_emails(self, imap_ids, compress, ownership_control = True ):
@@ -960,7 +961,7 @@ class GMVaulter(object):
         self._sync_emails(imap_ids, compress = compress_on_disk, ownership_control = ownership_checking)
         
         # backup chats
-        self._sync_chats(compress)
+        self._sync_chats(compress = compress_on_disk)
         
         
         #delete supress emails from DB since last sync
