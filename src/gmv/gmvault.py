@@ -208,7 +208,45 @@ class GmailStorer(object):
             return (matched.group('subject'), matched.group('msgid'))
         else:
             return None, None
-         
+    
+    def instrumented_get_all_existing_gmail_ids(self, pivot_dir = None):
+        """
+           get all existing gmail_ids from the database within the passed month 
+           and all posterior months
+           Seems to be ordered properly
+        """
+        gmail_ids = collections_utils.OrderedDict() #orderedDict compatible for version 2.5
+        other = collections_utils.OrderedDict()
+        
+        if pivot_dir == None:
+            the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
+        else:
+            
+            # get all yy-mm dirs to list
+            dirs = gmvault_utils.get_all_directories_posterior_to(pivot_dir, gmvault_utils.get_all_dirs_under(self._db_dir))
+            
+            #create all iterators and chain them to keep the same interface
+            iter_dirs = [gmvault_utils.dirwalk('%s/%s' % (self._db_dir, the_dir), "*.meta") for the_dir in dirs]
+            
+            the_iter = itertools.chain.from_iterable(iter_dirs)
+        
+        #get all ids
+        for filepath in the_iter:
+            directory, fname = os.path.split(filepath)
+            gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+            metadata = json.load(open(filepath))
+            
+            #other['%s-%s' % (metadata[u'gm_id'], metadata[u'internal_date']) ] = datetime.datetime.fromtimestamp(metadata[u'internal_date'])
+            other['%s' % (metadata[u'gm_id']) ] = datetime.datetime.fromtimestamp(metadata[u'internal_date'])
+            
+        
+        fd = open("/tmp/order1.txt", "w+")
+        for key in other:
+            fd.write("%s : %s\n" % (key, other[key]))
+        
+        
+        return gmail_ids 
+    
     def get_all_existing_gmail_ids(self, pivot_dir = None):
         """
            get all existing gmail_ids from the database within the passed month 
@@ -232,7 +270,7 @@ class GmailStorer(object):
         for filepath in the_iter:
             directory, fname = os.path.split(filepath)
             gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
-            
+        
         return gmail_ids
     
     def bury_metadata(self, email_info, local_dir = None):
@@ -486,7 +524,7 @@ class GmailStorer(object):
         
         metadata[self.INT_DATE_K] =  gmvault_utils.e2datetime(metadata[self.INT_DATE_K])
         
-        # force convertion of labels as string because imap_lib or Gmail Imap
+        # force convertion of labels as string because IMAPClient
         # returns a num when the label is a number (ie. '00000')
         metadata[self.LABELS_K] = [ str(elem) for elem in  metadata[self.LABELS_K] ]
         
