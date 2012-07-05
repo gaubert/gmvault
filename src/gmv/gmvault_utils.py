@@ -301,11 +301,14 @@ def get_all_directories_posterior_to(a_dir, dirs):
     return [ name for name in sorted(dirs, key=cmp_to_key(compare_yymm_dir))\
              if compare_yymm_dir(a_dir, name) <= 0 ]
 
-def get_all_dirs_under(root_dir):
+def get_all_dirs_under(root_dir, ignored_dirs = []):
     """
        Get all directory names under (1 level only) the root dir
+       params:
+          root_dir   : the dir to look under
+          ignored_dir: ignore the dir if it is in this list of dirnames 
     """
-    return [ name for name in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, name)) ]
+    return [ name for name in os.listdir(root_dir) if ( os.path.isdir(os.path.join(root_dir, name)) and (name not in ignored_dirs) ) ]
 
 def datetime2imapdate(a_datetime):
     """
@@ -389,7 +392,7 @@ def delete_all_under(path, delete_top_dir = False):
     if delete_top_dir:
         os.rmdir(path)
         
-def ordered_dirwalk(a_dir, a_wildcards= '*', sort_func = sorted):
+def ordered_dirwalk(a_dir, a_file_wildcards= '*', a_dir_ignore_list = [], sort_func = sorted):
     """
         Walk a directory tree, using a generator.
         This implementation returns only the files in all the subdirectories.
@@ -405,13 +408,15 @@ def ordered_dirwalk(a_dir, a_wildcards= '*', sort_func = sorted):
         fullpath = os.path.join(a_dir, the_file)
         if os.path.isdir(fullpath):
             sub_dirs.append(fullpath) #it is a sub_dir
-        elif fnmatch.fnmatch(fullpath, a_wildcards):
+        elif fnmatch.fnmatch(fullpath, a_file_wildcards):
             yield fullpath
         
     #iterate over sub_dirs
-    for sub_dir in sub_dirs:
-        for p_elem in ordered_dirwalk(sub_dir, a_wildcards):
-            yield p_elem 
+    for sub_dir in sort_func(sub_dirs):
+        print("Sub_dir = %s\n" % (sub_dir))
+        if sub_dir not in a_dir_ignore_list:
+            for p_elem in ordered_dirwalk(sub_dir, a_file_wildcards):
+                yield p_elem 
   
 def dirwalk(a_dir, a_wildcards= '*'):
     """

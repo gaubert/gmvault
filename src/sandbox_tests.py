@@ -160,7 +160,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
             print("\nUnmatched")
     
     
-    def test_memory_error_bug(self):
+    def ztest_memory_error_bug(self):
         """
            Try to push the memory error
         """
@@ -225,6 +225,26 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         import os
         for root, dirs, files in os.walk('/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db/db'):
             print("root: %s, sub-dirs : %s, files = %s" % (root, dirs, files))
+    
+    def test_ordered_os_walk(self):
+        """
+           test ordered os walk
+        """
+        import gmv.gmvault_utils as gmvu
+        
+        for vals in gmvu.ordered_dirwalk('/home/aubert/gmvault-db.old/db', a_wildcards="*.meta"):
+            #print("vals = %s\n" % (vals))
+            pass
+        
+        
+        
+        
+        import os
+        for root, dirs, files in os.walk('/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db/db'):
+            print("root: %s, sub-dirs : %s, files = %s" % (root, dirs, files))
+            
+            
+    
     
     def ztest_logging(self):
         """
