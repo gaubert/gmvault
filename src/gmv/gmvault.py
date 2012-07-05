@@ -208,13 +208,16 @@ class GmailStorer(object):
             return (matched.group('subject'), matched.group('msgid'))
         else:
             return None, None
-         
-    def get_all_existing_gmail_ids(self, pivot_dir = None):
+    
+    def instrument_get_all_existing_gmail_ids(self, pivot_dir = None):
         """
            get all existing gmail_ids from the database within the passed month 
            and all posterior months
+           Seems to be ordered properly
         """
-        gmail_ids = collections_utils.OrderedDict() #orderedDict compatible for version 2.5
+        #beware OrderedDict preserve the order per insertion and not per key or other
+        gmail_ids = {}
+        other     = {}
         
         if pivot_dir == None:
             the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
@@ -232,7 +235,51 @@ class GmailStorer(object):
         for filepath in the_iter:
             directory, fname = os.path.split(filepath)
             gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+            metadata = json.load(open(filepath))
             
+            #other['%s-%s' % (metadata[u'gm_id'], metadata[u'internal_date']) ] = datetime.datetime.fromtimestamp(metadata[u'internal_date'])
+            other['%s' % (metadata[u'gm_id']) ] = datetime.datetime.fromtimestamp(metadata[u'internal_date'])
+            
+        #sort dirs
+        gmail_ids = collections_utils.OrderedDict(sorted(gmail_ids.items(), key=lambda t: t[0]))
+        other = collections_utils.OrderedDict(sorted(other.items(), key=lambda t: t[0]))
+        
+        fd = open("/tmp/order.txt", "w+")
+        for key in other:
+            fd.write("%s : %s\n" % (key, other[key]))
+        
+        return gmail_ids 
+    
+    def get_all_existing_gmail_ids(self, pivot_dir = None):
+        """
+           get all existing gmail_ids from the database within the passed month 
+           and all posterior months
+        """
+        # first create a normal dir and sort it below with an OrderedDict
+        # beware orderedDict preserve order by insertion and not by key order
+        gmail_ids = {}
+        
+        if pivot_dir == None:
+            the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
+        else:
+            
+            # get all yy-mm dirs to list
+            dirs = gmvault_utils.get_all_directories_posterior_to(pivot_dir, gmvault_utils.get_all_dirs_under(self._db_dir))
+            
+            #create all iterators and chain them to keep the same interface
+            iter_dirs = [gmvault_utils.dirwalk('%s/%s' % (self._db_dir, the_dir), "*.meta") for the_dir in dirs]
+            
+            the_iter = itertools.chain.from_iterable(iter_dirs)
+        
+        #get all ids
+        for filepath in the_iter:
+            directory, fname = os.path.split(filepath)
+            gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+
+        #sort by key 
+        #used own orderedDict to be compliant with version 2.5
+        gmail_ids = collections_utils.OrderedDict(sorted(gmail_ids.items(), key=lambda t: t[0]))
+        
         return gmail_ids
     
     def bury_metadata(self, email_info, local_dir = None):
@@ -486,7 +533,7 @@ class GmailStorer(object):
         
         metadata[self.INT_DATE_K] =  gmvault_utils.e2datetime(metadata[self.INT_DATE_K])
         
-        # force convertion of labels as string because imap_lib or Gmail Imap
+        # force convertion of labels as string because IMAPClient
         # returns a num when the label is a number (ie. '00000')
         metadata[self.LABELS_K] = [ str(elem) for elem in  metadata[self.LABELS_K] ]
         
@@ -687,15 +734,30 @@ class GMVaulter(object):
            backup the chat messages
         """
         # get all imap ids in AllMail/Chats
-        chat_req = ""
-        imap_ids = self.src.search(chat_req)
+        #chat_req = ""
+        #imap_ids = self.src.search(chat_req)
         
-        # get if from imap with resume mode maybe
-        
-        #bury in db (with a chat dir and under dir)
-        
-        # handle errors
-        
+        #search for "Chats" folder and its signature
+        #here, it is "[Gmail]/Chats"
+        #sock.select("[Gmail]/Chats", True)
+        #sock.search(None, '(ALL)')
+        #resp, data = sock.fetch('1:*', '(RFC822)')
+        LOG.info("Before selection")
+        self.src.find_and_select_chats_folder()
+        LOG.info("Selection is finished")
+
+        ids = self.src.search({ 'type': 'imap', 'req': 'ALL' })
+
+        #loop over all ids, get email store email
+        for the_id in ids:
+            #retrieve email from destination email account
+            data      = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_ALL_INFO)
+
+            LOG.critical("id %s, data=%s \n" % (the_id, data))
+
+            #file_path = gstorer.bury_email(data[the_id], compress = compress)
+
+            #LOG.critical("Stored email %d in %s" %(the_id, file_path))
     
     def _sync_emails(self, imap_ids, compress, ownership_control = True ):
         """
@@ -941,6 +1003,10 @@ class GMVaulter(object):
         #TODO Change that to store only when there is a new owner
         self.gstorer.store_db_owner(self.login)
         
+        self._sync_chats(compress = compress_on_disk)
+        import sys
+        sys.exit(1)
+        
         # get all imap ids in All Mail
         imap_ids = self.src.search(imap_req)
         
@@ -960,7 +1026,7 @@ class GMVaulter(object):
         self._sync_emails(imap_ids, compress = compress_on_disk, ownership_control = ownership_checking)
         
         # backup chats
-        self._sync_chats(compress)
+        self._sync_chats(compress = compress_on_disk)
         
         
         #delete supress emails from DB since last sync
