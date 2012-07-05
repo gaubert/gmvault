@@ -742,14 +742,22 @@ class GMVaulter(object):
         #sock.select("[Gmail]/Chats", True)
         #sock.search(None, '(ALL)')
         #resp, data = sock.fetch('1:*', '(RFC822)')
-        self.find_chats_folder()
-        
-        # get if from imap with resume mode maybe
-        
-        #bury in db (with a chat dir and under dir)
-        
-        # handle errors
-        
+        LOG.info("Before selection")
+        self.src.find_and_select_chats_folder()
+        LOG.info("Selection is finished")
+
+        ids = self.src.search({ 'type': 'imap', 'req': 'ALL' })
+
+        #loop over all ids, get email store email
+        for the_id in ids:
+            #retrieve email from destination email account
+            data      = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_ALL_INFO)
+
+            LOG.critical("id %s, data=%s \n" % (the_id, data))
+
+            #file_path = gstorer.bury_email(data[the_id], compress = compress)
+
+            #LOG.critical("Stored email %d in %s" %(the_id, file_path))
     
     def _sync_emails(self, imap_ids, compress, ownership_control = True ):
         """
