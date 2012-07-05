@@ -737,12 +737,18 @@ class GMVaulter(object):
         #chat_req = ""
         #imap_ids = self.src.search(chat_req)
         
+        #search for "Chats" folder and its signature
+        #here, it is "[Gmail]/Chats"
+        #sock.select("[Gmail]/Chats", True)
+        #sock.search(None, '(ALL)')
+        #resp, data = sock.fetch('1:*', '(RFC822)')
+        self.find_chats_folder()
+        
         # get if from imap with resume mode maybe
         
         #bury in db (with a chat dir and under dir)
         
         # handle errors
-        pass
         
     
     def _sync_emails(self, imap_ids, compress, ownership_control = True ):
