@@ -995,6 +995,10 @@ class GMVaulter(object):
         #TODO Change that to store only when there is a new owner
         self.gstorer.store_db_owner(self.login)
         
+        self._sync_chats(compress = compress_on_disk)
+        import sys
+        sys.exit(1)
+        
         # get all imap ids in All Mail
         imap_ids = self.src.search(imap_req)
         
