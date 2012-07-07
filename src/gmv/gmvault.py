@@ -276,6 +276,28 @@ class GmailStorer(object):
         
         return gmail_ids 
     
+    def get_all_chats_gmail_ids(self):
+        """
+           Get only chats dirs 
+        """
+        # first create a normal dir and sort it below with an OrderedDict
+        # beware orderedDict preserve order by insertion and not by key order
+        gmail_ids = {}
+        
+        the_iter = gmvault_utils.ordered_dirwalk('%s/%s' % (self._db_dir, self.CHATS_AREA), "*.meta")
+        
+        #get all ids
+        for filepath in the_iter:
+            directory, fname = os.path.split(filepath)
+            gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+
+        #sort by key 
+        #used own orderedDict to be compliant with version 2.5
+        gmail_ids = collections_utils.OrderedDict(sorted(gmail_ids.items(), key=lambda t: t[0]))
+        
+        return gmail_ids
+        
+        
     def get_all_existing_gmail_ids(self, pivot_dir = None):
         """
            get all existing gmail_ids from the database within the passed month 
@@ -286,14 +308,16 @@ class GmailStorer(object):
         gmail_ids = {}
         
         if pivot_dir == None:
-            the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
+            #the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
+            the_iter = gmvault_utils.ordered_dirwalk(self._db_dir, "*.meta", ['chats'])
         else:
             
             # get all yy-mm dirs to list
             dirs = gmvault_utils.get_all_directories_posterior_to(pivot_dir, gmvault_utils.get_all_dirs_under(self._db_dir))
             
             #create all iterators and chain them to keep the same interface
-            iter_dirs = [gmvault_utils.dirwalk('%s/%s' % (self._db_dir, the_dir), "*.meta") for the_dir in dirs]
+            #iter_dirs = [gmvault_utils.dirwalk('%s/%s' % (self._db_dir, the_dir), "*.meta") for the_dir in dirs]
+            iter_dirs = [gmvault_utils.ordered_dirwalk('%s/%s' % (self._db_dir, the_dir), "*.meta", ['chats']) for the_dir in dirs]
             
             the_iter = itertools.chain.from_iterable(iter_dirs)
         
@@ -801,7 +825,7 @@ class GMVaulter(object):
                         
                         gid = new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
                         
-                        the_dir      = self.gstorer.get_sub_chats_dir(nb_chats_processed,limit_per_dir = 70)
+                        the_dir      = self.gstorer.get_sub_chats_dir(nb_chats_processed)
                         
                         LOG.critical("Process chat num %d (imap_id:%s) from %s." % (nb_chats_processed, the_id, the_dir))
                     
@@ -813,15 +837,16 @@ class GMVaulter(object):
                         #if on disk check that the data is not different
                         if curr_metadata:
                             
-                            LOG.debug("metadata for %s already exists. Check if different." % (gid))
-                            
                             if self._metadata_needs_update(curr_metadata, new_data[the_id]):
+                                
+                                LOG.debug("Chat with imap id %s and gmail id %s has changed. Updated it." % (the_id, gid))
+                                
                                 #restore everything at the moment
                                 gid  = self.gstorer.bury_chat_metadata(new_data[the_id], local_dir = the_dir)
                                 
-                                LOG.debug("update email with imap id %s and gmail id %s." % (the_id, gid))
-                                
                                 #update local index id gid => index per directory to be thought out
+                            else:
+                                LOG.debug("The metadata for chat %s already exists and is identical to the one on GMail." % (gid))
                         else:  
                             
                             #get the data
@@ -965,12 +990,15 @@ class GMVaulter(object):
                         LOG.debug("metadata for %s already exists. Check if different." % (gid))
                         
                         if self._metadata_needs_update(curr_metadata, new_data[the_id]):
+                            
+                            LOG.debug("Chat with imap id %s and gmail id %s has changed. Updated it." % (the_id, gid))
+                            
                             #restore everything at the moment
                             gid  = self.gstorer.bury_metadata(new_data[the_id], local_dir = the_dir)
                             
-                            LOG.debug("update email with imap id %s and gmail id %s." % (the_id, gid))
-                            
                             #update local index id gid => index per directory to be thought out
+                        else:
+                            LOG.debug("On disk metadata for %s is up to date." % (gid))
                     else:  
                         
                         #get the data
@@ -1274,6 +1302,130 @@ class GMVaulter(object):
         return new_gmail_ids_info 
            
     def restore(self, pivot_dir = None, extra_labels = [], restart = False):
+        """
+           Restore emails in a gmail account
+        """
+        self.restore_chats(extra_labels, restart)
+        
+        self.restore_emails(pivot_dir, extra_labels, restart)
+        
+    def restore_chats(self, extra_labels = [], restart = False):
+        """
+           restore chats
+        """
+        LOG.critical("Restore chats in gmail account %s." % (self.login) ) 
+        
+        #crack email database
+        gstorer = GmailStorer(self.db_root_dir, self.use_encryption)
+        
+        LOG.critical("Read chats info from %s gmvault-db." % (self.db_root_dir))
+        
+        #for the restore (save last_restored_id in .gmvault/last_restored_id
+        
+        #get gmail_ids from db
+        db_gmail_ids_info = gstorer.get_all_chats_gmail_ids()
+        
+        LOG.critical("Total number of chats to restore %s" % (len(db_gmail_ids_info.keys())))
+        
+        if restart:
+            db_gmail_ids_info = self.get_gmails_ids_left_to_restore(db_gmail_ids_info)
+        
+        total_nb_emails_to_restore = len(db_gmail_ids_info)
+        LOG.critical("Got all chats id left to restore. Still %s chats to do.\n" % (total_nb_emails_to_restore) )
+        
+        existing_labels = set() #set of existing labels to not call create_gmail_labels all the time
+        nb_emails_restored= 0 #to count nb of emails restored
+        timer = gmvault_utils.Timer() # needed for enhancing the user information
+        timer.start()
+        
+        for gm_id in db_gmail_ids_info:
+            
+            LOG.critical("Restore chat with id %s." % (gm_id))
+            
+            email_meta, email_data = gstorer.unbury_email(gm_id)
+            
+            LOG.debug("Unburied chat with id %s." % (gm_id))
+            
+            #labels for this email => real_labels U extra_labels
+            labels = set(email_meta[gstorer.LABELS_K])
+            labels = labels.union(extra_labels)
+            
+            # get list of labels to create 
+            labels_to_create = [ label for label in labels if label not in existing_labels]
+            
+            #create the non existing labels
+            LOG.debug("Labels creation tentative for chat with id %s." % (gm_id))
+            
+            existing_labels = self.src.create_gmail_labels(labels_to_create, existing_labels)
+            
+            try:
+                #restore email
+                self.src.push_email(email_data, \
+                                    email_meta[gstorer.FLAGS_K] , \
+                                    email_meta[gstorer.INT_DATE_K], \
+                                    labels)
+                
+                LOG.debug("Pushed chat with id %s." % (gm_id))
+                
+                nb_emails_restored += 1
+                
+                #indicate every 10 messages the number of messages left to process
+                left_emails = (total_nb_emails_to_restore - nb_emails_restored)
+                
+                if (nb_emails_restored % 50) == 0 and (left_emails > 0): 
+                    elapsed = timer.elapsed() #elapsed time in seconds
+                    LOG.critical("\n== Processed %d chats in %s. %d left to be restored (time estimate %s).==\n" % \
+                                 (nb_emails_restored, timer.seconds_to_human_time(elapsed), left_emails, timer.estimate_time_left(nb_emails_restored, elapsed, left_emails)))
+                
+                # save id every 20 restored emails
+                if (nb_emails_restored % 20) == 0:
+                    self.save_lastid(self.OP_RESTORE, gm_id)
+                    
+            except imaplib.IMAP4.abort, abort:
+                
+                # if this is a Gmvault SSL Socket error quarantine the email and continue the restore
+                if str(abort).find("=> Gmvault ssl socket error: EOF") >= 0:
+                    LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(abort)))
+                    gstorer.quarantine_email(gm_id)
+                    self.error_report['emails_in_quarantine'].append(gm_id)
+                    LOG.critical("Disconnecting and reconnecting to restart cleanly.")
+                    self.src.reconnect() #reconnect
+                else:
+                    raise abort
+        
+            except imaplib.IMAP4.error, err:
+                
+                LOG.error("Catched IMAP Error %s" % (str(err)))
+                LOG.exception(err)
+                
+                #When the email cannot be read from Database because it was empty when returned by gmail imap
+                #quarantine it.
+                if str(err) == "APPEND command error: BAD ['Invalid Arguments: Unable to parse message']":
+                    LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(err)))
+                    gstorer.quarantine_email(gm_id)
+                    self.error_report['emails_in_quarantine'].append(gm_id) 
+                else:
+                    raise err
+            except imap_utils.PushEmailError, p_err:
+                LOG.error("Catch the following exception %s" % (str(p_err)))
+                LOG.exception(p_err)
+                
+                if p_err.quarantined():
+                    LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it: err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(p_err)))
+                    gstorer.quarantine_email(gm_id)
+                    self.error_report['emails_in_quarantine'].append(gm_id) 
+                else:
+                    raise p_err          
+            except Exception, err:
+                LOG.error("Catch the following exception %s" % (str(err)))
+                LOG.exception(err)
+                raise err
+            
+            
+        return self.error_report
+        
+        
+    def restore_emails(self, pivot_dir = None, extra_labels = [], restart = False):
         """
            restore emails in a gmail account
         """
