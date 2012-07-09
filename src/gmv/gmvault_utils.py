@@ -419,7 +419,6 @@ def ordered_dirwalk(a_dir, a_file_wildcards= '*', a_dir_ignore_list = [], sort_f
         
     #iterate over sub_dirs
     for sub_dir in sort_func(sub_dirs):
-        print("Sub_dir = %s\n" % (sub_dir))
         if os.path.basename(sub_dir) not in a_dir_ignore_list:
             for p_elem in ordered_dirwalk(sub_dir, a_file_wildcards):
                 yield p_elem 

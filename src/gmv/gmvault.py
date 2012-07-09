@@ -1179,7 +1179,7 @@ class GMVaulter(object):
             db_gmail_ids = set(db_gmail_ids_info.keys())
             
             # optimize nb of items
-            nb_items = self.NB_GRP_OF_ITEMS if len(db_gmail_ids) >= self.NB_GRP_OF_ITEMS else len(db_gmail_ids)
+            nb_items = self.NB_GRP_OF_ITEMS if len(imap_ids) >= self.NB_GRP_OF_ITEMS else len(imap_ids)
 
             LOG.critical("Call Gmail to check which email has been deleted. Might take few minutes ...") 
              
@@ -1191,8 +1191,9 @@ class GMVaulter(object):
                 if None in group_imap_id: 
                     group_imap_id = [ im_id for im_id in group_imap_id if im_id != None ]
                 
+                #LOG.debug("Interrogate Gmail Server for %s" % (str(group_imap_id)))
                 data = self.src.fetch(group_imap_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID)
-             
+
                 # syntax for 2.7 set comprehension { data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data }
                 # need to create a list for 2.6
                 db_gmail_ids.difference_update([data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data ])
@@ -1200,7 +1201,7 @@ class GMVaulter(object):
                 if len(db_gmail_ids) == 0:
                     break
     
-            LOG.critical("Need to delete %s email(s) from Gmvault db." % (len(db_gmail_ids)) )
+            LOG.critical("Need to delete %s email(s) from gmvault db." % (len(db_gmail_ids)) )
             for gm_id in db_gmail_ids:
                 LOG.critical("gm_id %s not in Gmail. Delete it" % (gm_id))
                 gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
