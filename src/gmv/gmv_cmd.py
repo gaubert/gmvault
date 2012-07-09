@@ -272,21 +272,11 @@ class GMVaultLauncher(object):
 
         #email argument
         check_parser.add_argument('email', \
-                                 action='store', default='empty_$_email', help='email account to restore.')
-        
-        # activate the restart mode
-        check_parser.add_argument("--restart", \
-                                 action='store_true', dest='restart', \
-                                 default=False, help= 'Restart from the last saved gmail id.')
+                                 action='store', default='empty_$_email', help='gmail account against which to check.')
         
         check_parser.add_argument("-d", "--db-dir", \
                                  action='store', help="Database root directory. (default: ./gmvault-db)",\
                                  dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
-        
-        # restore typ
-        check_parser.add_argument('-t','--type', \
-                                 action='store', dest='type', \
-                                 default='full', help='type of restoration: full|quick. (default: full)')
      
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
@@ -350,7 +340,7 @@ class GMVaultLauncher(object):
         # add oauth tok
         parsed_args['oauth']            = options.oauth_token
         
-        #add sync type
+        #add ops type
         if options.type:
             if options.type.lower() in list_of_types:
                 parsed_args['type'] = options.type.lower()
@@ -456,6 +446,11 @@ class GMVaultLauncher(object):
             parsed_args['restart'] = options.restart
             
         elif parsed_args.get('command', '') == 'check':
+            
+            #add defaults for type
+            options.type    = 'full'
+            options.restart = False
+            
             # parse common arguments for sync and restore
             self._parse_common_args(options, parser, parsed_args, self.CHECK_TYPES)
     
