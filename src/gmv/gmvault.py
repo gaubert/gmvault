@@ -895,7 +895,7 @@ class GMVaulter(object):
                     # save id every 20 restored emails
                     if (nb_chats_processed % 20) == 0:
                         if gid:
-                            self.save_lastid(self.OP_SYNC, gid)
+                            self.save_lastid(self.OP_CHAT_SYNC, gid)
                     
                 except imaplib.IMAP4.abort, _:
                     # imap abort error 
@@ -1055,7 +1055,7 @@ class GMVaulter(object):
                 # save id every 20 restored emails
                 if (nb_emails_processed % 20) == 0:
                     if gid:
-                        self.save_lastid(self.OP_SYNC, gid)
+                        self.save_lastid(self.OP_EMAIL_SYNC, gid)
                 
             except imaplib.IMAP4.abort, _:
                 # imap abort error 
@@ -1426,7 +1426,7 @@ class GMVaulter(object):
                 
                 # save id every 20 restored emails
                 if (nb_emails_restored % 20) == 0:
-                    self.save_lastid(self.OP_RESTORE, gm_id)
+                    self.save_lastid(self.OP_CHAT_RESTORE, gm_id)
                     
             except imaplib.IMAP4.abort, abort:
                 
@@ -1542,7 +1542,7 @@ class GMVaulter(object):
                 
                 # save id every 20 restored emails
                 if (nb_emails_restored % 20) == 0:
-                    self.save_lastid(self.OP_RESTORE, gm_id)
+                    self.save_lastid(self.OP_EMAIL_RESTORE, gm_id)
                     
             except imaplib.IMAP4.abort, abort:
                 
