@@ -818,7 +818,7 @@ class GMVaulter(object):
         # check if there is a restart
         if restart:
             LOG.critical("Restart mode activated. Need to find information in Gmail, be patient ...")
-            imap_ids = self.get_gmails_ids_left_to_sync(imap_ids)
+            imap_ids = self.get_gmails_ids_left_to_sync(self.OP_CHAT_SYNC, imap_ids)
         
         total_nb_chats_to_process = len(imap_ids) # total number of emails to get
         
@@ -844,7 +844,7 @@ class GMVaulter(object):
                         
                         the_dir      = self.gstorer.get_sub_chats_dir(nb_chats_processed)
                         
-                        LOG.critical("Process chat num %d (imap_id:%s) from %s." % (nb_chats_processed, the_id, the_dir))
+                        LOG.critical("Process chat num %d (imap_id:%s) into %s." % (nb_chats_processed, the_id, the_dir))
                     
                         #pass the dir and the ID
                         curr_metadata = GMVaulter.check_email_on_disk( self.gstorer , \
@@ -977,7 +977,7 @@ class GMVaulter(object):
         # check if there is a restart
         if restart:
             LOG.critical("Restart mode activated for emails. Need to find information in Gmail, be patient ...")
-            imap_ids = self.get_gmails_ids_left_to_sync(imap_ids)
+            imap_ids = self.get_gmails_ids_left_to_sync(self.OP_EMAIL_SYNC, imap_ids)
         
         total_nb_emails_to_process = len(imap_ids) # total number of emails to get
         
@@ -1142,10 +1142,15 @@ class GMVaulter(object):
         self.timer.start() #start syncing emails
         
         # backup emails
+        #imap_ids = []
+        
         imap_ids = self._sync_emails(imap_req, compress = compress_on_disk, restart = restart, ownership_control = ownership_checking)
         
         # backup chats
-        imap_ids.extend(self._sync_chats(compress = compress_on_disk, restart = restart))
+        chats_ids = self._sync_chats(compress = compress_on_disk, restart = restart)
+        
+        # create full list of imap_ids
+        imap_ids.extend(chats_ids)
         
         #delete supress emails from DB since last sync
         self._delete_sync(self, imap_ids, db_cleaning)
@@ -1205,13 +1210,19 @@ class GMVaulter(object):
         else:
             LOG.debug("db_cleaning is off so ignore removing deleted emails from disk.")
         
-    def get_gmails_ids_left_to_sync(self, imap_ids):
+    def get_gmails_ids_left_to_sync(self, op_type, imap_ids):
         """
            Get the ids that still needs to be sync
            Return a list of ids
         """
         
-        filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, self.EMAIL_SYNC_PROGRESS)
+        filename = self.OP_TO_FILENAME.get(op_type, None)
+        
+        if not filename:
+            raise Exception("Bad Operation (%s) in save_last_id. This should not happen, send the error to the software developers." % (op_type))
+        
+        
+        filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)
         
         if not os.path.exists(filepath):
             LOG.critical("last_id.sync file %s doesn't exist.\nSync the full list of backed up emails." %(filepath))
@@ -1236,40 +1247,6 @@ class GMVaulter(object):
         except Exception, _: #ignore any exception and try to get all ids in case of problems.
             #element not in keys return current set of keys
             LOG.critical("Error: Cannot restore from last restore gmail id. It is not in Gmail. Sync the complete list of gmail ids requested from Gmail.")
-        
-        return new_gmail_ids
-
-    def get_chat_ids_left_to_sync(self, imap_ids):
-        """
-           Get the ids that still needs to be sync
-           Return a list of ids
-        """
-        
-        filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, self.CHAT_SYNC_PROGRESS)
-        
-        if not os.path.exists(filepath):
-            LOG.critical("%s file %s doesn't exist.\nSync the full list of backed up emails." % (self.CHAT_SYNC_PROGRESS, filepath))
-            return imap_ids
-        
-        json_obj = json.load(open(filepath, 'r'))
-        
-        last_id = json_obj['last_id']
-        
-        last_id_index = -1
-        
-        new_gmail_ids = imap_ids
-        
-        try:
-            #get imap_id from stored gmail_id
-            dummy = self.src.search({'type':'imap', 'req':'X-GM-MSGID %s' % (last_id)})
-            
-            imap_id = dummy[0]
-            last_id_index = imap_ids.index(imap_id)
-            LOG.critical("Restart from gmail id %s (imap id %s)." % (last_id, imap_id))
-            new_gmail_ids = imap_ids[last_id_index:]   
-        except Exception, _: #ignore any exception and try to get all ids in case of problems.
-            #element not in keys return current set of keys
-            LOG.critical("Error: Cannot restore from last restore chat gmail id. It is not in Gmail. Sync the complete list of gmail ids requested from Gmail.")
         
         return new_gmail_ids
         
@@ -1314,13 +1291,18 @@ class GMVaulter(object):
         
         fd.close()
         
-    def get_gmails_ids_left_to_restore(self, db_gmail_ids_info):
+    def get_gmails_ids_left_to_restore(self, op_type, db_gmail_ids_info):
         """
            Get the ids that still needs to be restored
            Return a dict key = gm_id, val = directory
         """
+        filename = self.OP_TO_FILENAME.get(op_type, None)
         
-        filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, self.EMAIL_RESTORE_PROGRESS)
+        if not filename:
+            raise Exception("Bad Operation (%s) in save_last_id. This should not happen, send the error to the software developers." % (op_type))
+        
+        
+        filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)
         
         if not os.path.exists(filepath):
             LOG.critical("last_id restore file %s doesn't exist.\nRestore the full list of backed up emails." %(filepath))
@@ -1375,7 +1357,7 @@ class GMVaulter(object):
         LOG.critical("Total number of chats to restore %s" % (len(db_gmail_ids_info.keys())))
         
         if restart:
-            db_gmail_ids_info = self.get_gmails_ids_left_to_restore(db_gmail_ids_info)
+            db_gmail_ids_info = self.get_gmails_ids_left_to_restore(self.OP_CHAT_RESTORE, db_gmail_ids_info)
         
         total_nb_emails_to_restore = len(db_gmail_ids_info)
         LOG.critical("Got all chats id left to restore. Still %s chats to do.\n" % (total_nb_emails_to_restore) )
@@ -1491,7 +1473,7 @@ class GMVaulter(object):
         LOG.critical("Total number of elements to restore %s" % (len(db_gmail_ids_info.keys())))
         
         if restart:
-            db_gmail_ids_info = self.get_gmails_ids_left_to_restore(db_gmail_ids_info)
+            db_gmail_ids_info = self.get_gmails_ids_left_to_restore(self.OP_EMAIL_RESTORE, db_gmail_ids_info)
         
         total_nb_emails_to_restore = len(db_gmail_ids_info)
         LOG.critical("Got all emails id left to restore. Still %s emails to do.\n" % (total_nb_emails_to_restore) )
