@@ -128,6 +128,12 @@ class Timer(object):
            start the timer
         """
         self._start = time.time()
+        
+    def reset(self):
+        """
+           reset the timer to 0
+        """
+        self._start = time.time()
     
     def elapsed(self):
         """
