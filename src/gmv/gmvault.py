@@ -636,8 +636,17 @@ class GMVaulter(object):
     EMAIL_SYNC_PROGRESS     = 'email_last_id.sync'
     CHAT_SYNC_PROGRESS      = 'chat_last_id.sync'
     
-    OP_RESTORE = "RESTORE"
-    OP_SYNC    = "SYNC"
+    OP_EMAIL_RESTORE = "EM_RESTORE"
+    OP_EMAIL_SYNC    = "EM_SYNC"
+    OP_CHAT_RESTORE  = "CH_RESTORE"
+    OP_CHAT_SYNC    = "CH_SYNC"
+    
+    OP_TO_FILENAME = { OP_EMAIL_RESTORE : EMAIL_RESTORE_PROGRESS,
+                       OP_EMAIL_SYNC    : EMAIL_SYNC_PROGRESS,
+                       OP_CHAT_RESTORE  : CHAT_RESTORE_PROGRESS,
+                       OP_CHAT_SYNC     : CHAT_SYNC_PROGRESS
+                     }
+    
     
     def __init__(self, db_root_dir, host, port, login, credential, read_only_access = True, use_encryption = False): #pylint:disable-msg=R0913
         """
@@ -952,14 +961,19 @@ class GMVaulter(object):
                         raise error #rethrow error
         finally:
             self.src.select_all_mail_folder() #always reselect all mail folder
+        
+        return imap_ids
     
     
-    def _sync_emails(self, imap_ids, compress, restart, ownership_control = True ):
+    def _sync_emails(self, imap_req, compress, restart, ownership_control = True ):
         """
            First part of the double pass strategy: 
            - create and update emails in db
            
         """
+        # get all imap ids in All Mail
+        imap_ids = self.src.search(imap_req)
+        
         # check if there is a restart
         if restart:
             LOG.critical("Restart mode activated for emails. Need to find information in Gmail, be patient ...")
@@ -1105,6 +1119,39 @@ class GMVaulter(object):
                 
                 else:
                     raise error #rethrow error
+        return imap_ids
+    
+    def sync(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False, ownership_checking = True, restart = False):
+        """
+           sync mode 
+        """
+        #check ownership to have one email per db unless user wants different
+        self._check_email_db_ownership(ownership_checking)
+            
+        #save db_owner for next time
+        #TODO Change that to store only when there is a new owner
+        self.gstorer.store_db_owner(self.login)
+                
+        if not compress_on_disk:
+            LOG.critical("Disable compression when storing emails.")
+            
+        if self.use_encryption:
+            LOG.critical("Encryption activated. All emails will be encrypted before to be stored.")
+            LOG.critical("Please take care of the encryption key stored in (%s) or all your stored emails will become unreadable." % (GmailStorer.get_encryption_key_path(self.db_root_dir)))
+        
+        self.timer.start() #start syncing emails
+        
+        # backup emails
+        imap_ids = self._sync_emails(imap_req, compress = compress_on_disk, restart = restart, ownership_control = ownership_checking)
+        
+        # backup chats
+        imap_ids.extend(self._sync_chats(compress = compress_on_disk, restart = restart))
+        
+        #delete supress emails from DB since last sync
+        self._delete_sync(self, imap_ids, db_cleaning)
+        
+        return self.error_report
+
     
     def _delete_sync(self, imap_ids, db_cleaning):
         """
@@ -1116,8 +1163,7 @@ class GMVaulter(object):
             gstorer = GmailStorer(self.db_root_dir)
             
             LOG.critical("Checkings to remove from the Gmvault db all emails that are not anymore on Gmail.\n")
-            timer = gmvault_utils.Timer()
-            timer.start()
+            self.timer.start()
             
             #get gmail_ids from db
             db_gmail_ids_info = gstorer.get_all_existing_gmail_ids()
@@ -1154,7 +1200,7 @@ class GMVaulter(object):
                 LOG.critical("gm_id %s not in Gmail. Delete it" % (gm_id))
                 gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
             
-            LOG.critical("\nDeletion checkup done in %s." % (timer.elapsed_human_time()))
+            LOG.critical("\nDeletion checkup done in %s." % (self.timer.elapsed_human_time()))
 
         else:
             LOG.debug("db_cleaning is off so ignore removing deleted emails from disk.")
@@ -1226,40 +1272,7 @@ class GMVaulter(object):
             LOG.critical("Error: Cannot restore from last restore chat gmail id. It is not in Gmail. Sync the complete list of gmail ids requested from Gmail.")
         
         return new_gmail_ids
-    
-    def sync(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False, ownership_checking = True, restart = False):
-        """
-           sync mode 
-        """
-        #check ownership to have one email per db unless user wants different
-        self._check_email_db_ownership(ownership_checking)
-            
-        #save db_owner for next time
-        #TODO Change that to store only when there is a new owner
-        self.gstorer.store_db_owner(self.login)
         
-        # get all imap ids in All Mail
-        imap_ids = self.src.search(imap_req)
-                
-        if not compress_on_disk:
-            LOG.critical("Disable compression when storing emails.")
-            
-        if self.use_encryption:
-            LOG.critical("Encryption activated. All emails will be encrypted before to be stored.")
-            LOG.critical("Please take care of the encryption key stored in (%s) or all your stored emails will become unreadable." % (GmailStorer.get_encryption_key_path(self.db_root_dir)))
-        
-        self.timer.start() #start syncing emails
-        # backup emails
-        self._sync_emails(imap_ids, compress = compress_on_disk, restart = restart, ownership_control = ownership_checking)
-        
-        # backup chats
-        self._sync_chats(compress = compress_on_disk, restart = restart)
-        
-        #delete supress emails from DB since last sync
-        self.check_clean_db(db_cleaning)
-        
-        return self.error_report
-    
     def check_clean_db(self, db_cleaning, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL):
         """
            Check and clean the database (remove file that are not anymore in Gmail
@@ -1286,14 +1299,12 @@ class GMVaulter(object):
            For the moment reopen the file every time
         """
         
+        filename = self.OP_TO_FILENAME.get(op_type, None)
         
-        if op_type == self.OP_RESTORE:
-            filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, self.RESTORE_PROGRESS)
-        elif op_type == self.OP_SYNC:
-            filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, self.SYNC_PROGRESS)
-        else:
-            raise Exception("Bad Operation in save_restore_last_id. This should not happen, send the error to the software developers.")
+        if not filename:
+            raise Exception("Bad Operation (%s) in save_last_id. This should not happen, send the error to the software developers." % (op_type))
         
+        filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)  
         
         fd = open(filepath, 'w')
         
