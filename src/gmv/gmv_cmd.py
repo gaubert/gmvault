@@ -180,6 +180,16 @@ class GMVaultLauncher(object):
                                  action='store_true', dest='restart', \
                                  default=False, help= 'Resume the sync action from the last saved gmail id.')
         
+        # activate the resume mode --restart is deprecated
+        sync_parser.add_argument("--emails-only", \
+                                 action='store_true', dest='only_emails', \
+                                 default=False, help= 'Only sync emails.')
+        
+        # activate the resume mode --restart is deprecated
+        sync_parser.add_argument("--chats-only", \
+                                 action='store_true', dest='only_chats', \
+                                 default=False, help= 'Only sync chats.')
+        
         sync_parser.add_argument("-e", "--encrypt", \
                                  help="encrypt stored email messages in the database.",\
                                  action='store_true',dest="encrypt", default=False)
@@ -405,6 +415,13 @@ class GMVaultLauncher(object):
                 parsed_args['request']  = { 'type': 'gmail', 'req' : self._clean_imap_or_gm_request(options.gmail_request)}
             else:
                 parsed_args['request']  = { 'type':'imap',  'req' : self._clean_imap_or_gm_request(options.imap_request)}
+                
+            # handle emails or chats only
+            if options.only_emails and options.only_chats:
+                parser.error("--emails-only and --chats-only cannot be used together. Please choose one.")
+           
+            parsed_args['emails_only'] = options.only_emails
+            parsed_args['chats_only']  = options.only_chats
         
             # add db-cleaning
             # if request passed put it False unless it has been forced by the user
@@ -480,7 +497,7 @@ class GMVaultLauncher(object):
         """
            Execute All restore operations
         """
-        LOG.critical("Connect to Gmail server.")
+        LOG.critical("Connect to Gmail server.\n")
         # Create a gmvault releaving read_only_access
         restorer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
                                        args['email'], credential, read_only_access = False)
@@ -517,7 +534,7 @@ class GMVaultLauncher(object):
         """
            Execute All synchronisation operations
         """
-        LOG.critical("Connect to Gmail server.")
+        LOG.critical("Connect to Gmail server.\n")
         
         # handle credential in all levels
         syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
@@ -530,7 +547,8 @@ class GMVaultLauncher(object):
         
             #choose full sync. Ignore the request
             syncer.sync({ 'type': 'imap', 'req': 'ALL' } , compress_on_disk = args['compression'], \
-                        db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'], restart = args['restart'])
+                        db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'], restart = args['restart'], \
+                        emails_only = args['emails_only'], chats_only = args['chats_only'])
             
         elif args.get('type', '') == 'quick':
             
@@ -546,7 +564,8 @@ class GMVaultLauncher(object):
             syncer.sync( { 'type': 'imap', 'req': syncer.get_imap_request_btw_2_dates(begin, end) }, \
                            compress_on_disk = args['compression'], \
                            db_cleaning = args['db-cleaning'], \
-                           ownership_checking = args['ownership_control'])
+                           ownership_checking = args['ownership_control'], restart = args['restart'], \
+                           emails_only = args['emails_only'], chats_only = args['chats_only'])
             
         elif args.get('type', '') == 'custom':
             
@@ -554,7 +573,8 @@ class GMVaultLauncher(object):
             LOG.critical("Perform custom synchronisation with %s request: %s" % (args['request']['type'], args['request']['req']))
             
             syncer.sync(args['request'], compress_on_disk = args['compression'], db_cleaning = args['db-cleaning'], \
-                        ownership_checking = args['ownership_control'], restart = args['restart'])
+                        ownership_checking = args['ownership_control'], restart = args['restart'], \
+                        emails_only = args['emails_only'], chats_only = args['chats_only'])
         else:
             raise ValueError("Unknown synchronisation mode %s. Please use full (default), quick or custom.")
         
@@ -566,7 +586,7 @@ class GMVaultLauncher(object):
         """
            Check DB
         """
-        LOG.critical("Connect to Gmail server.")
+        LOG.critical("Connect to Gmail server.\n")
         
         # handle credential in all levels
         checker = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \

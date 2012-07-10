@@ -1121,7 +1121,8 @@ class GMVaulter(object):
                     raise error #rethrow error
         return imap_ids
     
-    def sync(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False, ownership_checking = True, restart = False):
+    def sync(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False, ownership_checking = True, \
+            restart = False, emails_only = False, chats_only = False):
         """
            sync mode 
         """
@@ -1141,14 +1142,23 @@ class GMVaulter(object):
         
         self.timer.start() #start syncing emails
         
-        # backup emails
-        #self._sync_emails(imap_req, compress = compress_on_disk, restart = restart, ownership_control = ownership_checking)
+        if not chats_only:
+            # backup emails
+            LOG.critical("Synchronize emails\n")
+            self._sync_emails(imap_req, compress = compress_on_disk, restart = restart, ownership_control = ownership_checking)
+        else:
+            LOG.critical("Skip emails synchronization.\n")
         
-        # backup chats
-        chat_ids = self._sync_chats(compress = compress_on_disk, restart = restart)
+        chat_ids = []
+        if not emails_only:
+            # backup chats
+            LOG.critical("Synchronize chats.\n")
+            chat_ids = self._sync_chats(compress = compress_on_disk, restart = restart)
+        else:
+            LOG.critical("Skip chats synchronization.\n")
         
         #delete supress emails from DB since last sync
-        self._delete_sync(self, db_cleaning, chat_ids)
+        self._delete_sync(db_cleaning, chat_ids)
         
         return self.error_report
 
