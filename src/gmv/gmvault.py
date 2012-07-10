@@ -1142,18 +1142,13 @@ class GMVaulter(object):
         self.timer.start() #start syncing emails
         
         # backup emails
-        #imap_ids = []
-        
-        imap_ids = self._sync_emails(imap_req, compress = compress_on_disk, restart = restart, ownership_control = ownership_checking)
+        #self._sync_emails(imap_req, compress = compress_on_disk, restart = restart, ownership_control = ownership_checking)
         
         # backup chats
-        chats_ids = self._sync_chats(compress = compress_on_disk, restart = restart)
-        
-        # create full list of imap_ids
-        imap_ids.extend(chats_ids)
+        chat_ids = self._sync_chats(compress = compress_on_disk, restart = restart)
         
         #delete supress emails from DB since last sync
-        self._delete_sync(self, imap_ids, db_cleaning)
+        self._delete_sync(self, db_cleaning, chat_ids)
         
         return self.error_report
 
@@ -1173,7 +1168,7 @@ class GMVaulter(object):
             #get gmail_ids from db
             db_gmail_ids_info = gstorer.get_all_existing_gmail_ids()
             
-            LOG.critical("Got all existing ids from the Gmvault db. Nb of ids to check: %s.\n" % (len(db_gmail_ids_info)) )
+            LOG.critical("Got all existing ids from the Gmvault db. Number of emails in db: %s.\n" % (len(db_gmail_ids_info)) )
             
             #create a set of keys
             db_gmail_ids = set(db_gmail_ids_info.keys())
@@ -1181,7 +1176,7 @@ class GMVaulter(object):
             # optimize nb of items
             nb_items = self.NB_GRP_OF_ITEMS if len(imap_ids) >= self.NB_GRP_OF_ITEMS else len(imap_ids)
 
-            LOG.critical("Call Gmail to check which email has been deleted. Might take few minutes ...") 
+            LOG.critical("Call Gmail to check the stored emails against the Gmail emails ids and see which ones have been deleted.\n\nMight take few minutes ...") 
              
             #calculate the list elements to delete
             #query nb_items items in one query to minimise number of imap queries
@@ -1251,13 +1246,16 @@ class GMVaulter(object):
         
         return new_gmail_ids
         
-    def check_clean_db(self, db_cleaning, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL):
+    def check_clean_db(self, db_cleaning, chat_ids = []):
         """
            Check and clean the database (remove file that are not anymore in Gmail
         """
         if db_cleaning:
             # get all imap ids in All Mail
-            imap_ids = self.src.search(imap_req)
+            imap_ids = self.src.search(imap_utils.GIMAPFetcher.IMAP_ALL)
+            
+            # add additional chat ids
+            imap_ids.extend(chat_ids)
             
             #delete supress emails from DB since last sync
             self._delete_sync(imap_ids, db_cleaning)
