@@ -558,6 +558,8 @@ class GMVaultLauncher(object):
             today = datetime.date.today()
             begin = today - datetime.timedelta(gmvault_utils.get_conf_defaults().getint("Sync","quick_days", 8))
             
+            LOG.critical("Quikc sync mode. Check for new emails since %s." % (begin.strftime('%d-%b-%Y')))
+            
             # today + 1 day
             end   = today + datetime.timedelta(1)
             

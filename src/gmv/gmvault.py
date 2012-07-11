@@ -1144,7 +1144,7 @@ class GMVaulter(object):
         
         if not chats_only:
             # backup emails
-            LOG.critical("Synchronize emails\n")
+            LOG.critical("Start emails synchronization.\n")
             self._sync_emails(imap_req, compress = compress_on_disk, restart = restart, ownership_control = ownership_checking)
         else:
             LOG.critical("Skip emails synchronization.\n")
@@ -1152,7 +1152,7 @@ class GMVaulter(object):
         chat_ids = []
         if not emails_only:
             # backup chats
-            LOG.critical("Synchronize chats.\n")
+            LOG.critical("Start chats synchronization.\n")
             chat_ids = self._sync_chats(compress = compress_on_disk, restart = restart)
         else:
             LOG.critical("Skip chats synchronization.\n")
