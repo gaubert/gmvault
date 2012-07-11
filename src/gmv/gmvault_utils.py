@@ -24,6 +24,7 @@ import time
 import calendar
 import fnmatch
 import functools
+import shutil
 
 import StringIO
 import sys
@@ -31,6 +32,7 @@ import traceback
 import random 
 
 import log_utils 
+import conf.conf_helper
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
@@ -451,6 +453,70 @@ def get_home_dir_path():
     makedirs(gmvault_dir)
     
     return gmvault_dir
+
+CONF_FILE = "gmvault_defaults.conf"
+
+@memoized
+def get_conf_defaults():
+    """
+       Return the conf object containing the defaults stored in HOME/gmvault_defaults.conf
+       Beware it is memoized
+    """
+    filepath = get_conf_filepath()
+    
+    if filepath:
+        
+        os.environ[conf.conf_helper.Conf.ENVNAME] = filepath
+    
+        cf = conf.conf_helper.Conf.get_instance()
+    
+        LOG.debug("Load defaults from %s" % (filepath))
+        
+        return cf
+    else:
+        return conf.conf_helper.MockConf() #retrun MockObject that will play defaults
+    
+DEFAULT_CONF_FILE = """#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Gmvault Configuration file containing Gmvault defaults.
+#  DO NOT CHANGE IT IF YOU ARE NOT AN ADVANCED USER
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[Sync]
+quick_days=7
+
+[Restore]
+quick_days=7
+
+#Do not touch any parameters below as it could force an overwrite of this file
+[Common]
+conf_version=1.7-beta
+"""
+
+def get_conf_filepath():
+    """
+       If default file is not present, generate it from scratch.
+       If it cannot be created, then return None
+    """
+    home_conf_file = "%s/%s" % (get_home_dir_path(), CONF_FILE)
+    
+    if not os.path.exists(home_conf_file):
+        LOG.critical("Create defaults in %s. Please touch this file only if you know what to do." % (home_conf_file))
+        try:
+            fd = open(home_conf_file, "w+")
+            fd.write(DEFAULT_CONF_FILE)
+            fd.close()
+        except Exception, err:
+            #catch all error and let run gmvault with defaults if needed
+            LOG.critical("Ignore Error when trying to create conf file for defaults in %s:\n%s.\n" % (get_home_dir_path(), err) )
+            LOG.debug("=== Exception traceback ===")
+            LOG.debug(get_exception_traceback())
+            LOG.debug("=== End of Exception traceback ===\n")
+            #return default file instead
+            return
+    
+    return home_conf_file
+
+        
             
 if __name__ == '__main__':
    
