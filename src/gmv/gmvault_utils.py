@@ -462,7 +462,7 @@ def get_conf_defaults():
        Return the conf object containing the defaults stored in HOME/gmvault_defaults.conf
        Beware it is memoized
     """
-    filepath = get_and_create_default_conf_file()
+    filepath = get_default_conf_file()
     
     if os.path.exists(filepath):
         
@@ -476,25 +476,31 @@ def get_conf_defaults():
     else:
         raise Exception("Cannot find home default conf file nor default conf file. Please report this error to the Gmvault developers.")
 
-def get_and_create_default_conf_file():
+DEFAULT_CONF_FILE = """#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Gmvault Configuration file containing Gmvault defaults.
+#  DO NOT CHANGE IT IF YOU ARE NOT AN ADVANCED USER
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[Sync]
+quick_days=7
+
+#Do not touch any parameters below as it could force an overwrite of this file
+[Common]
+conf_version=1.7-beta
+"""
+
+def get_default_conf_file():
     """
-       If there is no gmvault_defaults.conf, create it first.
-       Ignore any errors and continue with the software defaults if the file cannot be copied to its destination.
+       If default file is not present, generate it from scratch
     """
     home_conf_file = "%s/%s" % (get_home_dir_path(), CONF_FILE)
     
     if not os.path.exists(home_conf_file):
         LOG.critical("Create defaults in %s. Please touch this file only if you know what to do." % (home_conf_file))
-        
-        mod_path     = conf.__path__
-        mod_path     =  os.path.abspath(mod_path[0])
-        default_file = "%s/%s" % (mod_path, CONF_FILE)
-        
         try:
-            shutil.copyfile(default_file, home_conf_file)
-            
-            return home_conf_file
-            
+            fd = open(home_conf_file, "w+")
+            fd.write(DEFAULT_CONF_FILE)
+            fd.close()
         except Exception, err:
             #catch all error and let run gmvault with defaults if needed
             LOG.critical("Ignore Error when trying to copy conf default file in %s: %s.\n" % (get_home_dir_path(), err) )
@@ -502,10 +508,10 @@ def get_and_create_default_conf_file():
             LOG.debug(get_exception_traceback())
             LOG.debug("=== End of Exception traceback ===\n")
             #return default file instead
-            return default_file
-    
+            return
     
     return home_conf_file
+
         
             
 if __name__ == '__main__':
