@@ -679,9 +679,6 @@ def bootstrap_run():
     
     LOG.critical("")
     
-    # force instanciation of conf to load the defaults
-    gmvault_utils.get_conf_defaults() 
-    
     gmvlt = GMVaultLauncher()
     
     args = gmvlt.parse_args()
@@ -690,6 +687,9 @@ def bootstrap_run():
     if args['debug']:
         LOG.critical("Activate debugging information.")
         activate_debug_mode()
+    
+    # force instanciation of conf to load the defaults
+    gmvault_utils.get_conf_defaults() 
     
     gmvlt.run(args)
    
