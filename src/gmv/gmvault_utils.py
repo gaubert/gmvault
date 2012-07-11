@@ -462,9 +462,9 @@ def get_conf_defaults():
        Return the conf object containing the defaults stored in HOME/gmvault_defaults.conf
        Beware it is memoized
     """
-    filepath = get_default_conf_file()
+    filepath = get_conf_filepath()
     
-    if os.path.exists(filepath):
+    if filepath:
         
         os.environ[conf.conf_helper.Conf.ENVNAME] = filepath
     
@@ -474,8 +474,8 @@ def get_conf_defaults():
         
         return cf
     else:
-        raise Exception("Cannot find home default conf file nor default conf file. Please report this error to the Gmvault developers.")
-
+        return conf.conf_helper.MockConf() #retrun MockObject that will play defaults
+    
 DEFAULT_CONF_FILE = """#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  Gmvault Configuration file containing Gmvault defaults.
 #  DO NOT CHANGE IT IF YOU ARE NOT AN ADVANCED USER
@@ -484,14 +484,18 @@ DEFAULT_CONF_FILE = """#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [Sync]
 quick_days=7
 
+[Restore]
+quick_days=7
+
 #Do not touch any parameters below as it could force an overwrite of this file
 [Common]
 conf_version=1.7-beta
 """
 
-def get_default_conf_file():
+def get_conf_filepath():
     """
-       If default file is not present, generate it from scratch
+       If default file is not present, generate it from scratch.
+       If it cannot be created, then return None
     """
     home_conf_file = "%s/%s" % (get_home_dir_path(), CONF_FILE)
     
@@ -503,7 +507,7 @@ def get_default_conf_file():
             fd.close()
         except Exception, err:
             #catch all error and let run gmvault with defaults if needed
-            LOG.critical("Ignore Error when trying to copy conf default file in %s: %s.\n" % (get_home_dir_path(), err) )
+            LOG.critical("Ignore Error when trying to create conf file for defaults in %s:\n%s.\n" % (get_home_dir_path(), err) )
             LOG.debug("=== Exception traceback ===")
             LOG.debug(get_exception_traceback())
             LOG.debug("=== End of Exception traceback ===\n")

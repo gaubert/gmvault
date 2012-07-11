@@ -24,45 +24,20 @@ import conf.exceptions
                                       
 from utils.struct_parser import Compiler, CompilerError
 
-class EmptyConf(object):
+class MockConf(object):
     """
-       EmptyConfiguration Object that returns only defaults
+       MockConf Object that returns only defaults
     """
+    def __init__(self, use_resource=True):
+        """
+           default constructor
+        """
+        pass
+    
     def get(self, section, option, default=None, fail_if_missing=False):
         """ get one option from a section.
-        
-            return the default if it is not found and if fail_if_missing is False, otherwise return NoOptionError
-          
-            :param section: Section where to find the option
-            :type  section: str
-            :param option:  Option to get
-            :param default: Default value to return if fail_if_missing is False
-            :param fail_if_missing: Will throw an exception when the option is not found and fail_if_missing is true
-               
-            :returns: the option as a string
-            
-            :except NoOptionError: Raised only when fail_is_missing set to True
-        
         """
-        # all options are kept in lowercase
-        opt = self.optionxform(option)
-        
-        if section not in self._sections:
-            #check if it is a ENV section
-            dummy = None
-            if section == Conf._ENVGROUP:
-                r = conf.resource.Resource(CliArgument=None, EnvVariable=opt)
-                dummy = r.getValue()
-            elif section == Conf._CLIGROUP:
-                r = conf.resource.Resource(CliArgument=opt, EnvVariable=None)
-                dummy = r.getValue()
-            #return default if dummy is None otherwise return dummy
-            return ((self._get_defaults(section, opt, default, fail_if_missing)) if dummy == None else dummy)
-        elif opt in self._sections[section]:
-            return self._replace_vars(self._sections[section][opt], "%s[%s]" % (section, option), - 1)
-        else:
-            return self._get_defaults(section, opt, default, fail_if_missing)
-        
+        return default
     
     def print_content(self, substitute_values = True):
         """ print all the options variables substituted.
@@ -70,23 +45,7 @@ class EmptyConf(object):
             :param a_substitue_vals: bool for substituting values
             :returns: the string containing all sections and variables
         """
-        
-        result_str = ""
-        
-        for section_name in self._sections:
-            result_str += "[%s]\n" % (section_name)
-            section = self._sections[section_name]
-            for option in section:
-                if option != '__name__':
-                    if substitute_values:
-                        result_str += "%s = %s\n" % (option, self.get(section_name, option))
-                    else:
-                        result_str += "%s = %s\n" % (option, self._sections[section_name][option])
-            
-            result_str += "\n"
-        
-        return result_str
-            
+        raise conf.exceptions.Error("Not implemented in MockupConf")            
 
     def items(self, section):
         """ return all items from a section. Items is a list of tuples (option,value)
@@ -99,19 +58,7 @@ class EmptyConf(object):
             Raises:
                exception NoSectionError if the section cannot be found
         """
-        try:
-            all_sec = self._sections[section]
-            # make a copy
-            a_copy = all_sec.copy()
-            # remove __name__ from d
-            if "__name__" in a_copy:
-                del a_copy["__name__"]
-                
-            return a_copy.items()
-        
-        except KeyError:
-            raise conf.exceptions.NoSectionError(section)
-
+        raise conf.exceptions.Error("Not implemented in MockupConf") 
   
     def getint(self, section, option, default=0, fail_if_missing=False):
         """Return the int value of the option.
@@ -143,8 +90,6 @@ class EmptyConf(object):
     def get_dict(self, section, option, default=None, fail_if_missing=False):
         """ get a dict """
         return default
-        
-        
  
      
 

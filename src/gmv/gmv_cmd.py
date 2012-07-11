@@ -498,7 +498,7 @@ class GMVaultLauncher(object):
             
             # today - 2 months
             today = datetime.date.today()
-            begin = today - datetime.timedelta(2*365/12)
+            begin = today - datetime.timedelta(gmvault_utils.get_conf_defaults().getint("Restore","quick_days", 8))
             
             starting_dir = gmvault_utils.get_ym_from_datetime(begin)
             
@@ -538,7 +538,7 @@ class GMVaultLauncher(object):
             
             # today - 2 months
             today = datetime.date.today()
-            begin = today - datetime.timedelta(gmvault_utils.get_conf_defaults().getint("Sync","quick_days", 5))
+            begin = today - datetime.timedelta(gmvault_utils.get_conf_defaults().getint("Sync","quick_days", 8))
             
             # today + 1 day
             end   = today + datetime.timedelta(1)
