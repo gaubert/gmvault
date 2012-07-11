@@ -534,11 +534,11 @@ class GMVaultLauncher(object):
             
         elif args.get('type', '') == 'quick':
             
-            #sync only the last 2 months in order to be quick (cleaning is import here because recent days might move again
+            #sync only the last x days (taken in defaults) in order to be quick (cleaning is import here because recent days might move again
             
             # today - 2 months
             today = datetime.date.today()
-            begin = today - datetime.timedelta(2*365/12)
+            begin = today - datetime.timedelta(gmvault_utils.get_conf_defaults().getint("Sync","quick_days", 5))
             
             # today + 1 day
             end   = today + datetime.timedelta(1)
@@ -663,7 +663,11 @@ def register_traceback_signal():
     """ To register a USR1 signal allowing to get stack trace """
     signal.signal(signal.SIGUSR1, sigusr1_handler)
 
-
+def setup_default_conf():
+    """
+       set the environment GMVAULT_CONF_FILE which is necessary for Conf object
+    """
+    gmvault_utils.get_conf_defaults() # force instanciation of conf to load the defaults
 
 def bootstrap_run():
     """ temporary bootstrap """
@@ -674,6 +678,9 @@ def bootstrap_run():
     init_logging()
     
     LOG.critical("")
+    
+    # force instanciation of conf to load the defaults
+    gmvault_utils.get_conf_defaults() 
     
     gmvlt = GMVaultLauncher()
     

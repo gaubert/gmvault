@@ -24,6 +24,7 @@ import time
 import calendar
 import fnmatch
 import functools
+import shutil
 
 import StringIO
 import sys
@@ -31,6 +32,7 @@ import traceback
 import random 
 
 import log_utils 
+import conf.conf_helper
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
@@ -451,6 +453,47 @@ def get_home_dir_path():
     makedirs(gmvault_dir)
     
     return gmvault_dir
+
+CONF_FILE = "gmvault_defaults.conf"
+
+@memoized
+def get_conf_defaults():
+    """
+       Return the conf object containing the defaults stored in HOME/gmvault_defaults.conf
+       Beware it is memoized
+    """
+    create_default_conf_file()
+    
+    conf_file = "%s/%s" % (get_home_dir_path(), CONF_FILE)
+    
+    os.environ[conf.conf_helper.Conf.ENVNAME] = conf_file
+    
+    cf = conf.conf_helper.Conf.get_instance()
+    
+    LOG.debug("Load defaults from %s" % (conf_file))
+    
+    return cf
+
+def create_default_conf_file():
+    """
+       If there is no gmvault_defaults.conf, create it first.
+       Ignore any errors and continue with the software defaults if the file cannot be copied to its destination.
+    """
+    home_conf_file = "%s/%s" % (get_home_dir_path(), CONF_FILE)
+    
+    if not os.path.exists(home_conf_file):
+        try:
+            mod_path     = conf.__path__
+            default_file = "%s/%s" % (mod_path, CONF_FILE)
+            shutil.copyfile(default_file, home_conf_file)
+        except Exception, err:
+            #catch all error and let run gmvault with defaults if needed
+            LOG.critical("Ignore Error when trying to copy conf default file in %s: %s.\n" % (get_home_dir_path(), err) )
+            LOG.critical("=== Exception traceback ===")
+            LOG.critical(get_exception_traceback())
+            LOG.critical("=== End of Exception traceback ===\n")
+        
+        
             
 if __name__ == '__main__':
    
