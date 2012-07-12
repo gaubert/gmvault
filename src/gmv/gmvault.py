@@ -65,8 +65,9 @@ class GmailStorer(object):
     SUB_CHAT_AREA              = 'chats/%s'
     INFO_AREA                  = '.info'  # contains metadata concerning the database
     ENCRYPTION_KEY_FILENAME    = '.storage_key.sec'
-    EMAIL_OWNER                = '.email_account.info'
-    GMVAULTDB_VERSION            = '.gmvault_db_version.info'
+    OLD_EMAIL_OWNER            = '.email_account.info' #deprecated
+    EMAIL_OWNER                = '.owner_account.info'
+    GMVAULTDB_VERSION          = '.gmvault_db_version.info'
         
     
     def __init__(self, a_storage_dir, encrypt_data = False):
@@ -139,69 +140,35 @@ class GmailStorer(object):
            Store the email owner in .info dir. This is used to avoid synchronizing multiple email accounts in gmvault-db.
            Always wipe out completly the file
         """
-        fd = open('%s/%s' % (self._info_dir, self.EMAIL_OWNER), "w+")
+        owners = self.get_db_owners()
         
-        list_of_owners = json.load(fd)
-        
-        if email_owner not in list_of_owners:
-            list_of_owners.append(email_owner)
-            json.dump(list_of_owners, fd, ensure_ascii = False)
-        
-        
-        fd.flush()
-        fd.close() 
+        if email_owner not in owners:
+            owners.append(email_owner)
+            fd = open('%s/%s' % (self._info_dir, self.EMAIL_OWNER), "w+")
+            json.dump(owners, fd, ensure_ascii = False)
+            fd.flush()
+            fd.close()
         
     
-    def get_db_owner(self):
+    def get_db_owners(self):
         """
            Get the email owner for the gmvault-db. Because except in particular cases, the db will be only linked to one meail.
         """
         fname = '%s/%s' % (self._info_dir, self.EMAIL_OWNER)
         if os.path.exists(fname):    
-            return open(fname).read()
+            fd = open(fname)
+            list_of_owners = json.load(fd)
+            fd.close()
+            return list_of_owners
         
-        return None
+        return []
    
     def get_info_dir(self):
         """
            Return the info dir of gmvault-db
         """ 
         return self._info_dir
-   
-    @classmethod
-    def get_db_owners(self):
-        """
-           Get the email owners for the gmvault-db. Because except in particular cases, the db will be only linked to one email.
-        """
-        owners = []
-        fname = '%s/%s' % (self._info_dir, self.EMAIL_OWNER)
-        if os.path.exists(fname): 
-            with open(fname,'r') as fd:
-                line = fd.readline()
-                if line:
-                    line.strip()
-                    owners.append(line)
         
-        return owners
-    
-    def store_db_owners(self, email_owners):
-        """
-           Store email owners in the owner file in order to manage when there are multiple owner (no syncing for example)
-        """
-        owners = self.get_db_owners()
-        
-        owners = set(owners) #create a set
-        owners += email_owners # do a union of both collection
-        
-        #write result in file
-        fname = '%s/%s' % (self._info_dir, self.EMAIL_OWNER)
-        
-        with open(fname,'w+') as fd:
-            for owner in owners:
-                fd.write('%s\n' % (owner))
-        
-        
-            
     def get_encryption_cipher(self):
         """
            Return the cipher to encrypt an decrypt.
@@ -637,7 +604,7 @@ class GMVaulter(object):
     """
        Main object operating over gmail
     """ 
-    NB_GRP_OF_ITEMS         = 1500
+    NB_GRP_OF_ITEMS         = 1400
     EMAIL_RESTORE_PROGRESS  = 'email_last_id.restore'
     CHAT_RESTORE_PROGRESS   = 'chat_last_id.restore'
     EMAIL_SYNC_PROGRESS     = 'email_last_id.sync'
@@ -798,19 +765,28 @@ class GMVaulter(object):
     def _check_email_db_ownership(self, ownership_control):
         """
            Check email database ownership.
+           If ownership control activated then fail if a new additional owner is added.
+           Else if no ownership control allow one more user and save it in the list of owners
+           
+           Return the number of owner this will be used to activate or not the db clean.
+           Activating a db cleaning on a multiownership db would be a catastrophy as it would delete all
+           the emails from the others users.
         """
         #check that the gmvault-db is not associated with another user
-        db_owner = self.gstorer.get_db_owner()
+        db_owners = self.gstorer.get_db_owners()
         if ownership_control:
-            if db_owner and (db_owner != self.login): #db owner should not be different unless bypass activated
-                raise Exception("The email database %s is already associated with %s. Use option (-m, --multiple-db-owner) if you want to link it with %s" \
-                                % (self.db_root_dir, db_owner, self.login))
+            if len(db_owners) > 0 and self.login not in db_owners: #db owner should not be different unless bypass activated
+                raise Exception("The email database %s is already associated with one or many logins: %s. Use option (-m, --multiple-db-owner) if you want to link it with %s" \
+                                % (self.db_root_dir, ", ".join(db_owners), self.login))
         else:
-            if db_owner:
-                LOG.critical("The email database %s is hosting email from %s. It will now also store emails from %s" \
-                             % (self.db_root_dir, db_owner, self.login))
-            else:
-                LOG.critical("The email database %s can host emails from multiple email accounts." % (self.db_root_dir))
+            if len(db_owners) == 0:
+                LOG.critical("Establish %s as the owner of the Gmvault db %s." % (self.login, self.db_root_dir))  
+            elif len(db_owners) > 0 and self.login not in db_owners:
+                LOG.critical("The email database %s is hosting emails from %s. It will now also store emails from %s" \
+                             % (self.db_root_dir, ", ".join(db_owners), self.login))
+                
+        #try to save db_owner in the list of owners
+        self.gstorer.store_db_owner(self.login)
     
     def _sync_chats(self, compress, restart):
         """
@@ -1134,11 +1110,8 @@ class GMVaulter(object):
            sync mode 
         """
         #check ownership to have one email per db unless user wants different
+        #save the owner if new
         self._check_email_db_ownership(ownership_checking)
-            
-        #save db_owner for next time
-        #TODO Change that to store only when there is a new owner
-        self.gstorer.store_db_owner(self.login)
                 
         if not compress_on_disk:
             LOG.critical("Disable compression when storing emails.")
@@ -1156,16 +1129,18 @@ class GMVaulter(object):
         else:
             LOG.critical("Skip emails synchronization.\n")
         
-        chat_ids = []
         if not emails_only:
             # backup chats
             LOG.critical("Start chats synchronization.\n")
-            chat_ids = self._sync_chats(compress = compress_on_disk, restart = restart)
+            self._sync_chats(compress = compress_on_disk, restart = restart)
         else:
             LOG.critical("Skip chats synchronization.\n")
         
         #delete supress emails from DB since last sync
-        self.check_clean_db(db_cleaning)
+        if len(self.gstorer.get_db_owners()) <= 1:
+            self.check_clean_db(db_cleaning)
+        else:
+            LOG.critical("Deactivate database cleaning on a multi-owners Gmvault db.")
         
         return self.error_report
 
@@ -1270,7 +1245,14 @@ class GMVaulter(object):
         """
            Check and clean the database (remove file that are not anymore in Gmail
         """
-        if db_cleaning:
+        owners = self.gstorer.get_db_owners()
+        if not db_cleaning: #decouple the 2 conditions for activating cleaning
+            LOG.debug("db_cleaning is off so ignore removing deleted emails from disk.")
+            return
+        elif len(owners) > 1:
+            LOG.critical("Gmvault db owned by multiple owners: %s. Cannot activate database cleaning." % (", ".join(owners)))
+            return
+        else:
             LOG.critical("Look for emails/chats that are still in the Gmvault db but in Gmail anymore.\n")
             # get all imap ids in All Mail
             imap_ids = self.src.search(imap_utils.GIMAPFetcher.IMAP_ALL)
@@ -1291,9 +1273,6 @@ class GMVaulter(object):
             LOG.debug("Got all existing ids from the Gmail server. Number of remote emails: %s.\n" % (len(imap_ids)) )
             #delete supress emails from DB since last sync
             self._delete_sync(imap_ids)
-        else:
-            LOG.debug("db_cleaning is off so ignore removing deleted emails from disk.")
-        
     
     def remote_sync(self):
         """
