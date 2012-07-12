@@ -809,9 +809,9 @@ class GMVaulter(object):
         """
            backup the chat messages
         """
-        LOG.info("Before selection")
+        LOG.debug("Before selection")
         self.src.find_and_select_chats_folder()
-        LOG.info("Selection is finished")
+        LOG.debug("Selection is finished")
 
         imap_ids = self.src.search({ 'type': 'imap', 'req': 'ALL' })
         
@@ -1158,17 +1158,26 @@ class GMVaulter(object):
             LOG.critical("Skip chats synchronization.\n")
         
         #delete supress emails from DB since last sync
-        self._delete_sync(chat_ids, db_cleaning)
+        self.check_clean_db(db_cleaning)
         
         return self.error_report
 
     
-    def _delete_sync(self, imap_ids, db_cleaning):
+    def _delete_sync(self, imap_ids):
         """
            Delete emails from the database if necessary
            imap_ids      : all remote imap_ids to check
            delete_dry_run: True to simulate everything but the deletion
         """ 
+        """
+          Remove parameter imap_ids
+          Get all emails imap_ids
+          Get all chat imap_ids
+          Get all emails and chats stored db id
+          Delete all emails and chats that are on disks but not on imap
+        """
+        
+        
         if db_cleaning:
             gstorer = GmailStorer(self.db_root_dir)
             
@@ -1256,7 +1265,7 @@ class GMVaulter(object):
         
         return new_gmail_ids
         
-    def check_clean_db(self, db_cleaning, chat_ids = []):
+    def check_clean_db(self, db_cleaning):
         """
            Check and clean the database (remove file that are not anymore in Gmail
         """
@@ -1264,11 +1273,20 @@ class GMVaulter(object):
             # get all imap ids in All Mail
             imap_ids = self.src.search(imap_utils.GIMAPFetcher.IMAP_ALL)
             
-            # add additional chat ids
-            imap_ids.extend(chat_ids)
+            # get all chats ids
+            try:
+                self.src.find_and_select_chats_folder()
+
+                chats_ids = self.src.search({ 'type': 'imap', 'req': 'ALL' })
+            
+                # add additional chat ids
+                imap_ids.extend(chats_ids)
+                
+            finally:
+                self.src.select_all_mail_folder()
             
             #delete supress emails from DB since last sync
-            self._delete_sync(imap_ids, db_cleaning)
+            self._delete_sync(imap_ids)
         
     
     def remote_sync(self):
