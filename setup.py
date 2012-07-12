@@ -35,10 +35,10 @@ def find_version(path):
     raise Exception("Cannot find GMVAULT_VERSION in %s\n" % (path))
 
 
-path=os.path.join(os.path.dirname(__file__),'./src/gmv/gmv_cmd.py')
+path=os.path.join(os.path.dirname(__file__),'./src/gmv/gmvault_utils.py')
 print("PATH = %s\n" % (path))
 
-version = find_version(os.path.join(os.path.dirname(__file__),'./src/gmv/gmv_cmd.py'))
+version = find_version(os.path.join(os.path.dirname(__file__),'./src/gmv/gmvault_utils.py'))
 
 print("Gmvault version = %s\n" % (version))
 README = os.path.join(os.path.dirname(__file__), './README.md')

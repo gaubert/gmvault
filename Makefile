@@ -33,7 +33,7 @@ GMVVERSION=$(shell python $(BASEDIR)/etc/utils/find_version.py $(BASEDIR)/src/gm
 GMVDISTNAME=gmvault-v$(GMVVERSION)
 
 
-all: gmv-linux-dist
+all: gmv-src-dist
 
 version:
 	@echo $(GMVVERSION)
