@@ -1158,7 +1158,7 @@ class GMVaulter(object):
             LOG.critical("Skip chats synchronization.\n")
         
         #delete supress emails from DB since last sync
-        self._delete_sync(db_cleaning, chat_ids)
+        self._delete_sync(chat_ids, db_cleaning)
         
         return self.error_report
 
