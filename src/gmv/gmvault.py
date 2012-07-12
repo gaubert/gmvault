@@ -1281,7 +1281,7 @@ class GMVaulter(object):
                 self.src.select_all_mail_folder()
             
 
-            LOG.critical("Got all existing ids from the Gmail server. Number of remote emails: %s.\n" % (len(imap_ids)) )
+            LOG.debug("Got all existing ids from the Gmail server. Number of remote emails: %s.\n" % (len(imap_ids)) )
             #delete supress emails from DB since last sync
             self._delete_sync(imap_ids)
         else:
