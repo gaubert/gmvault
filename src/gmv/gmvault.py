@@ -140,7 +140,15 @@ class GmailStorer(object):
            Always wipe out completly the file
         """
         fd = open('%s/%s' % (self._info_dir, self.EMAIL_OWNER), "w+")
-        fd.write(email_owner)
+        
+        list_of_owners = json.load(fd)
+        
+        if email_owner not in list_of_owners:
+            list_of_owners.append(email_owner)
+            json.dump(list_of_owners, fd, ensure_ascii = False)
+        
+        
+        fd.flush()
         fd.close() 
         
     
