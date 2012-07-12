@@ -1178,7 +1178,6 @@ class GMVaulter(object):
         """
         gstorer = GmailStorer(self.db_root_dir)
         
-        LOG.critical("Checkings to remove from the Gmvault db all emails that are not anymore on Gmail.\n")
         self.timer.start()
         
         #get gmail_ids from db
@@ -1265,6 +1264,7 @@ class GMVaulter(object):
            Check and clean the database (remove file that are not anymore in Gmail
         """
         if db_cleaning:
+            LOG.critical("Look for emails/chats that are still in the Gmvault db but in Gmail anymore.\n")
             # get all imap ids in All Mail
             imap_ids = self.src.search(imap_utils.GIMAPFetcher.IMAP_ALL)
             
@@ -1280,6 +1280,8 @@ class GMVaulter(object):
             finally:
                 self.src.select_all_mail_folder()
             
+
+            LOG.critical("Got all existing ids from the Gmail server. Number of remote emails: %s.\n" % (len(imap_ids)) )
             #delete supress emails from DB since last sync
             self._delete_sync(imap_ids)
         else:
