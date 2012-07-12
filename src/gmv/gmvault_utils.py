@@ -24,7 +24,6 @@ import time
 import calendar
 import fnmatch
 import functools
-import shutil
 
 import StringIO
 import sys
@@ -482,10 +481,10 @@ DEFAULT_CONF_FILE = """#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [Sync]
-quick_days=7
+quick_days=10
 
 [Restore]
-quick_days=7
+quick_days=10
 
 #Do not touch any parameters below as it could force an overwrite of this file
 [Common]
