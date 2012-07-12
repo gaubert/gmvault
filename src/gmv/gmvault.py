@@ -153,14 +153,13 @@ class GmailStorer(object):
             return open(fname).read()
         
         return None
-    
-    @classmethod
-    def create_info_dir(cls):
+   
+    def get_info_dir(self):
         """
-           Create info dir
-        """
-        pass
-        
+           Return the info dir of gmvault-db
+        """ 
+        return self._info_dir
+   
     @classmethod
     def get_db_owners(self):
         """
@@ -1307,7 +1306,8 @@ class GMVaulter(object):
         if not filename:
             raise Exception("Bad Operation (%s) in save_last_id. This should not happen, send the error to the software developers." % (op_type))
         
-        filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)  
+        #filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)  
+        filepath = '%s/%s_%s' % (self.gstorer.get_info_dir(), self.login, filename)  
         
         fd = open(filepath, 'w')
         
