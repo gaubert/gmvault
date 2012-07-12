@@ -308,7 +308,6 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
         #use xlist because of localized dir names
         folders = self.server.xlist_folders()
-        LOG.debug("Folders = %s\n" % (folders))
         
         for (_, _, the_dir) in folders:
             #non localised GMAIL_CHATS
