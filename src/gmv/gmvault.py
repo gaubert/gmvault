@@ -106,6 +106,23 @@ class GmailStorer(object):
         #add version if it is needed to migrate gmvault-db in the future
         self._create_gmvault_db_version()
         
+        
+    def get_info_from_existing_sub_chats_dir(self):
+        """
+           
+        """
+        nb_to_dir = {}
+        if os.path.exists(self._sub_chats_dir):
+            dirs = os.listdir(self._sub_chats_dir)
+            for the_dir in dirs:
+                the_split = the_dir.split("-")
+                if len(the_split) != 2:
+                    raise Exception("Should get 2 elements in %s" % (the_split))
+                
+                nb_to_dir[int(the_split[0])] = the_split[1]
+                
+            the_max = max(nb_to_dir)
+        
     def get_sub_chats_dir(self, nb_emails_process, limit_per_dir = 2000):
         """
            Get sub_chats_dir
@@ -260,16 +277,16 @@ class GmailStorer(object):
         
         chat_dir = '%s/%s' % (self._db_dir, self.CHATS_AREA)
         if os.path.exists(chat_dir):
-           the_iter = gmvault_utils.ordered_dirwalk(chat_dir, "*.meta")
+            the_iter = gmvault_utils.ordered_dirwalk(chat_dir, "*.meta")
         
-           #get all ids
-           for filepath in the_iter:
-              directory, fname = os.path.split(filepath)
-              gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+            #get all ids
+            for filepath in the_iter:
+                directory, fname = os.path.split(filepath)
+                gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
 
-           #sort by key 
-           #used own orderedDict to be compliant with version 2.5
-           gmail_ids = collections_utils.OrderedDict(sorted(gmail_ids.items(), key=lambda t: t[0]))
+            #sort by key 
+            #used own orderedDict to be compliant with version 2.5
+            gmail_ids = collections_utils.OrderedDict(sorted(gmail_ids.items(), key=lambda t: t[0]))
         
         return gmail_ids
         
