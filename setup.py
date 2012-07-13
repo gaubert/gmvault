@@ -62,11 +62,11 @@ setup(name='gmvault',
       author_email='guillaume.aubert@gmail.com',
       url='http://www.gmvault.org',
       license='GPLv3',
-      packages=['gmv'],
+      packages=['gmv','gmv.conf'],
       package_dir = {'gmv':'./src/gmv'},
       scripts=['./etc/scripts/gmvault'],
       package_data={'': ['release-note.txt']},
       include_package_data=True,
       #install_requires=['argparse','Logbook==0.3', 'IMAPClient==0.8.1','gdata==2.0.17']
-      install_requires=['Logbook==0.3', 'IMAPClient==0.8.1','gdata==2.0.17']
+      install_requires=['Logbook==0.3', 'IMAPClient==0.9','gdata==2.0.17']
       )
