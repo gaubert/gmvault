@@ -19,10 +19,12 @@
 import sys
 import os
 
-import conf.conf_helper
+import gmv.conf.conf_helper as conf
 
 class ResourceError(Exception):
-    """Base class for ressource exceptions"""
+    """
+        Base class for ressource exceptions 
+    """
 
     def __init__(self,aMsg):
         
@@ -98,7 +100,7 @@ class Resource(object):
                 #print "i = %d, val = %s\n"%(i,sys.argv[i])
                 if len(sys.argv) <= i:
                     # No more thing to read in the command line so quit
-                    print "Resource: Commandline argument %s has no value\n"%(self._cliArg)
+                    print "Resource: Commandline argument %s has no value\n" % (self._cliArg)
                     return None 
                 else:
                     #print "i+1 = %d, val = %s\n"%(i+1,sys.argv[i+1])
@@ -124,9 +126,9 @@ class Resource(object):
         """
            Try to read the info from the Configuration if possible
         """
-        if (self._confGroup is not None) and (self._confProperty is not None):
-            if conf_helper.Conf.can_be_instanciated():
-                return conf_helper.Conf.get_instance().get(self._confGroup,self._confProperty)
+        if self._confGroup and self._confProperty:
+            if conf.Conf.can_be_instanciated():
+                return conf.Conf.get_instance().get(self._confGroup, self._confProperty)
         
         return None
           

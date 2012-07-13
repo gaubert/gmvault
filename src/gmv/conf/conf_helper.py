@@ -19,10 +19,10 @@
 import os
 import re
 
-import conf.resource
-import conf.exceptions
+import gmv.conf.resource as resource
+import gmv.conf.exceptions as exceptions
                                       
-from utils.struct_parser import Compiler, CompilerError
+import gmv.conf.utils.struct_parser as struct_parser
 
 class MockConf(object):
     """
@@ -45,7 +45,7 @@ class MockConf(object):
             :param a_substitue_vals: bool for substituting values
             :returns: the string containing all sections and variables
         """
-        raise conf.exceptions.Error("Not implemented in MockupConf")            
+        raise exceptions.Error("Not implemented in MockupConf")            
 
     def items(self, section):
         """ return all items from a section. Items is a list of tuples (option,value)
@@ -58,7 +58,7 @@ class MockConf(object):
             Raises:
                exception NoSectionError if the section cannot be found
         """
-        raise conf.exceptions.Error("Not implemented in MockupConf") 
+        raise exceptions.Error("Not implemented in MockupConf") 
   
     def getint(self, section, option, default=0, fail_if_missing=False):
         """Return the int value of the option.
@@ -137,7 +137,7 @@ class Conf(object):
         
         """
         #No conf info passed to the resource so the Resource will not look into the conf (to avoid recursive search)
-        the_res = conf.resource.Resource(cls.CLINAME, cls.ENVNAME)
+        the_res = resource.Resource(cls.CLINAME, cls.ENVNAME)
         
         filepath = the_res.getValue(aRaiseException=False)
         
@@ -151,7 +151,7 @@ class Conf(object):
         #TODO docstring ==> use resource ????
         
         # create resource for the conf file
-        self._conf_resource = conf.resource.Resource(Conf.CLINAME, Conf.ENVNAME)
+        self._conf_resource = resource.Resource(Conf.CLINAME, Conf.ENVNAME)
         
         # list of sections
         self._sections = {}
@@ -172,7 +172,7 @@ class Conf(object):
                 a_file = self._conf_resource.getValue() 
              
             if a_file is None:
-                raise conf.exceptions.Error("Conf. Error, need a configuration file path")
+                raise exceptions.Error("Conf. Error, need a configuration file path")
             
             f_desc = open(a_file, 'r') 
                 
@@ -207,7 +207,7 @@ class Conf(object):
                exception NoOptionError if fail_if_missing is True
         """
         if fail_if_missing:
-            raise conf.Error(2, "No option %s in section %s" %(option, section))
+            raise exceptions.Error(2, "No option %s in section %s" %(option, section))
         else:
             if default is not None:
                 return str(default)
@@ -237,10 +237,10 @@ class Conf(object):
             #check if it is a ENV section
             dummy = None
             if section == Conf._ENVGROUP:
-                r = conf.resource.Resource(CliArgument=None, EnvVariable=opt)
+                r = resource.Resource(CliArgument=None, EnvVariable=opt)
                 dummy = r.getValue()
             elif section == Conf._CLIGROUP:
-                r = conf.resource.Resource(CliArgument=opt, EnvVariable=None)
+                r = resource.Resource(CliArgument=opt, EnvVariable=None)
                 dummy = r.getValue()
             #return default if dummy is None otherwise return dummy
             return ((self._get_defaults(section, opt, default, fail_if_missing)) if dummy == None else dummy)
@@ -296,7 +296,7 @@ class Conf(object):
             return a_copy.items()
         
         except KeyError:
-            raise conf.exceptions.NoSectionError(section)
+            raise exceptions.NoSectionError(section)
 
     def has_option(self, section, option):
         """Check for the existence of a given option in a given section."""
@@ -349,7 +349,7 @@ class Conf(object):
             closing_brack_index += 1
             i += 1
     
-        raise conf.exceptions.SubstitutionError(lineno, location, "Missing a closing bracket in %s" % (tolook))
+        raise exceptions.SubstitutionError(lineno, location, "Missing a closing bracket in %s" % (tolook))
 
     # very permissive regex
     _SUBSGROUPRE = re.compile(r"%\((?P<group>\w*)\[(?P<option>(.*))\]\)")
@@ -387,7 +387,7 @@ class Conf(object):
             m     = self._SUBSGROUPRE.match(var)
         
             if m == None:
-                raise conf.exceptions.SubstitutionError(lineno, location, "Cannot match a group[option] in %s but found an opening bracket (. Malformated expression " % (var))
+                raise exceptions.SubstitutionError(lineno, location, "Cannot match a group[option] in %s but found an opening bracket (. Malformated expression " % (var))
             else:
             
                 # recursive calls
@@ -399,15 +399,15 @@ class Conf(object):
                     # if it is in CLIGROUP then check CLI argument with a Resource object
                     # otherwise check in standard groups
                     if g == Conf._ENVGROUP:
-                        r = conf.resource.Resource(CliArgument=None, EnvVariable=o)
+                        r = resource.Resource(CliArgument=None, EnvVariable=o)
                         dummy = r.getValue()
                     elif g == Conf._CLIGROUP:
-                        r = conf.resource.Resource(CliArgument=o, EnvVariable=None)
+                        r = resource.Resource(CliArgument=o, EnvVariable=None)
                         dummy = r.getValue()
                     else:
                         dummy = self._sections[g][self.optionxform(o)]
                 except KeyError, _: #IGNORE:W0612
-                    raise conf.exceptions.SubstitutionError(lineno, location, "Property %s[%s] doesn't exist in this configuration file \n" % (g, o))
+                    raise exceptions.SubstitutionError(lineno, location, "Property %s[%s] doesn't exist in this configuration file \n" % (g, o))
             
             toparse = toparse.replace(var, dummy)
             
@@ -447,10 +447,10 @@ class Conf(object):
         
         # parse it and return an error if invalid
         try:
-            compiler = Compiler()
+            compiler = struct_parser.Compiler()
             return compiler.compile_list(val)
-        except CompilerError, err: 
-            raise conf.exceptions.Error(err.message)
+        except struct_parser.CompilerError, err: 
+            raise exceptions.Error(err.message)
     
     def getlist(self, section, option, default=None, fail_if_missing=False):
         """ Deprecated, use get_list instead"""
@@ -468,10 +468,10 @@ class Conf(object):
         
         # parse it and return an error if invalid
         try:
-            compiler = Compiler()
+            compiler = struct_parser.Compiler()
             return compiler.compile_dict(val)
-        except CompilerError, err: 
-            raise conf.exceptions.Error(err.message)
+        except struct_parser.CompilerError, err: 
+            raise exceptions.Error(err.message)
         
         
     def optionxform(self, optionstr):
@@ -498,7 +498,7 @@ class Conf(object):
         
         # Error if depth is MAX_INCLUDE_DEPTH 
         if depth >= Conf._MAX_INCLUDE_DEPTH:
-            raise conf.exceptions.IncludeError("Error. Cannot do more than %d nested includes. It is probably a mistake as you might have created a loop of includes" % (Conf._MAX_INCLUDE_DEPTH))
+            raise exceptions.IncludeError("Error. Cannot do more than %d nested includes. It is probably a mistake as you might have created a loop of includes" % (Conf._MAX_INCLUDE_DEPTH))
         
         # remove %include from the path and we should have a path
         i = line.find('%include')
@@ -512,19 +512,19 @@ class Conf(object):
             dummy = line[i+1:].strip()
             f_i = dummy.find('>')
             if f_i == -1:
-                raise conf.exceptions.IncludeError("Error. > is missing in the include line no %s: %s. It should be %include<mode:group_name> path" \
+                raise exceptions.IncludeError("Error. > is missing in the include line no %s: %s. It should be %%include<mode:group_name> path" \
                                                    % (line, lineno), origin )
             else:
                 group_name = None
-                format     = dummy[:f_i].strip()
+                the_format     = dummy[:f_i].strip()
                 
-                the_list = format.split(':')
+                the_list = the_format.split(':')
                 if len(the_list) != 2 :
-                    raise conf.exceptions.IncludeError("Error. The mode and the group_name are not in the include line no %s: %s."\
-                                                       " It should be %include<mode:group_name> path" \
+                    raise exceptions.IncludeError("Error. The mode and the group_name are not in the include line no %s: %s."\
+                                                       " It should be %%include<mode:group_name> path" \
                                                        % (line, lineno), origin )
                 else:
-                    format, group_name = the_list
+                    the_format, group_name = the_list
                     #strip the group name
                     group_name = group_name.strip()
                     
@@ -533,7 +533,7 @@ class Conf(object):
                 # replace variables if there are any
                 path = self._replace_vars(path, line, lineno)
                 
-                raise conf.exceptions.IncludeError("External Module reading not enabled in this ConfHelper")
+                raise exceptions.IncludeError("External Module reading not enabled in this ConfHelper")
                 #self._read_with_module(group_name, format, path, origin)
         else:
             # normal include   
@@ -544,11 +544,10 @@ class Conf(object):
             
             # check if file exits
             if not os.path.exists(path):
-                raise conf.exceptions.IncludeError("the config file to include %s does not exits" % (path), origin)
+                raise exceptions.IncludeError("the config file to include %s does not exits" % (path), origin)
             else:
-                fp = open(path, 'r')
                 # add include file and populate the section hash
-                self._read(fp, path, depth + 1)
+                self._read(open(path, 'r'), path, depth + 1)
 
     def _read(self, fp, fpname, depth=0):
         """Parse a sectioned setup file.
@@ -600,7 +599,7 @@ class Conf(object):
                     optname = None
                 # no section header in the file?
                 elif cursect is None:
-                    raise conf.exceptions.MissingSectionHeaderError(fpname, lineno, line)
+                    raise exceptions.MissingSectionHeaderError(fpname, lineno, line)
                 # an option line?
                 else:
                     mo = self.OPTCRE.match(line)
@@ -624,7 +623,7 @@ class Conf(object):
                         # raised at the end of the file and will contain a
                         # list of all bogus lines
                         if not err:
-                            err = conf.exceptions.ParsingError(fpname)
+                            err = exceptions.ParsingError(fpname)
                         err.append(lineno, repr(line))
         # if any parsing errors occurred, raise an exception
         if err:

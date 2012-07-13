@@ -16,7 +16,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import logging
 import tokenize
 import token
 import StringIO
@@ -84,14 +83,10 @@ class Token(object):
          
 
 class Tokenizer(object):
-    """ create tokens for parsing the grammar. 
+    """ 
+        Create tokens for parsing the grammar. 
         This class is a wrapper around the python tokenizer adapt to the DSL that is going to be used.
-    """
-    
-    # Class members
-    c_log = logging.getLogger("query.Tokenizer")
-    c_log.setLevel(logging.DEBUG)
-    
+    """    
     def __init__(self):
         """ constructor """
         # list of tokens
