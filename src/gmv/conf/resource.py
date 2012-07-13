@@ -19,7 +19,7 @@
 import sys
 import os
 
-import gmv.conf.conf_helper as conf
+import conf_helper as conf
 
 class ResourceError(Exception):
     """
