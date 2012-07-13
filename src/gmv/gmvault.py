@@ -258,16 +258,18 @@ class GmailStorer(object):
         # beware orderedDict preserve order by insertion and not by key order
         gmail_ids = {}
         
-        the_iter = gmvault_utils.ordered_dirwalk('%s/%s' % (self._db_dir, self.CHATS_AREA), "*.meta")
+        chat_dir = '%s/%s' % (self._db_dir, self.CHATS_AREA)
+        if os.path.exists(chat_dir):
+           the_iter = gmvault_utils.ordered_dirwalk(chat_dir, "*.meta")
         
-        #get all ids
-        for filepath in the_iter:
-            directory, fname = os.path.split(filepath)
-            gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+           #get all ids
+           for filepath in the_iter:
+              directory, fname = os.path.split(filepath)
+              gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
 
-        #sort by key 
-        #used own orderedDict to be compliant with version 2.5
-        gmail_ids = collections_utils.OrderedDict(sorted(gmail_ids.items(), key=lambda t: t[0]))
+           #sort by key 
+           #used own orderedDict to be compliant with version 2.5
+           gmail_ids = collections_utils.OrderedDict(sorted(gmail_ids.items(), key=lambda t: t[0]))
         
         return gmail_ids
         
