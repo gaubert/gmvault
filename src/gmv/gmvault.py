@@ -1215,7 +1215,8 @@ class GMVaulter(object):
             raise Exception("Bad Operation (%s) in save_last_id. This should not happen, send the error to the software developers." % (op_type))
         
         
-        filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)
+        #filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)
+        filepath = '%s/%s_%s' % (self.gstorer.get_info_dir(), self.login, filename)
         
         if not os.path.exists(filepath):
             LOG.critical("last_id.sync file %s doesn't exist.\nSync the full list of backed up emails." %(filepath))
@@ -1317,7 +1318,8 @@ class GMVaulter(object):
             raise Exception("Bad Operation (%s) in save_last_id. This should not happen, send the error to the software developers." % (op_type))
         
         
-        filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)
+        #filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)
+        filepath = '%s/%s_%s' % (self.gstorer.get_info_dir(), self.login, filename)
         
         if not os.path.exists(filepath):
             LOG.critical("last_id restore file %s doesn't exist.\nRestore the full list of backed up emails." %(filepath))

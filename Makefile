@@ -29,7 +29,7 @@ PYTHONVERSION=2.7
 MAKENSIS=/c/Program\ Files/NSIS/makensis.exe #windows laptop
 
 #VERSION is in gmv_cmd.py as GMVAULT_VERSION
-GMVVERSION=$(shell python $(BASEDIR)/etc/utils/find_version.py $(BASEDIR)/src/gmv/gmv_cmd.py)
+GMVVERSION=$(shell python $(BASEDIR)/etc/utils/find_version.py $(BASEDIR)/src/gmv/gmvault_utils.py)
 GMVDISTNAME=gmvault-v$(GMVVERSION)
 
 
