@@ -877,8 +877,8 @@ class GMVaulter(object):
                         LOG.critical("\n== Processed %d emails in %s. %d left to be stored (time estimate %s).==\n" % \
                                      (nb_chats_processed,  self.timer.seconds_to_human_time(elapsed), left_emails, self.timer.estimate_time_left(nb_chats_processed, elapsed, left_emails)))
                     
-                    # save id every 20 restored emails
-                    if (nb_chats_processed % 20) == 0:
+                    # save id every 10 restored emails
+                    if (nb_chats_processed % 10) == 0:
                         if gid:
                             self.save_lastid(self.OP_CHAT_SYNC, gid)
                     
@@ -1037,8 +1037,8 @@ class GMVaulter(object):
                     LOG.critical("\n== Processed %d emails in %s. %d left to be stored (time estimate %s).==\n" % \
                                  (nb_emails_processed,  self.timer.seconds_to_human_time(elapsed), left_emails, self.timer.estimate_time_left(nb_emails_processed, elapsed, left_emails)))
                 
-                # save id every 20 restored emails
-                if (nb_emails_processed % 20) == 0:
+                # save id every 10 restored emails
+                if (nb_emails_processed % 10) == 0:
                     if gid:
                         self.save_lastid(self.OP_EMAIL_SYNC, gid)
                 
