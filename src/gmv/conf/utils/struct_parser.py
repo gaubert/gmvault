@@ -38,9 +38,9 @@ class TokenizerError(Exception):
 
 class Token(object):
     
-    def __init__(self, type, num, value, begin, end, parsed_line):
+    def __init__(self, a_type, num, value, begin, end, parsed_line):
         
-        self._type  = type
+        self._type  = a_type
         self._num   = num
         self._value = value
         self._begin = begin

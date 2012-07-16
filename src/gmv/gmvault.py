@@ -34,6 +34,8 @@ import gmvault_utils
 import imap_utils
 import credential_utils
 
+
+
 LOG = log_utils.LoggerFactory.get_logger('gmvault')
             
 class GmailStorer(object):
@@ -42,6 +44,7 @@ class GmailStorer(object):
     ''' 
     DATA_FNAME     = "%s/%s.eml"
     METADATA_FNAME = "%s/%s.meta"
+    CHAT_GM_LABEL  = "gmvault-chats"
     
     ID_K         = 'gm_id'
     EMAIL_K      = 'email'
@@ -67,8 +70,7 @@ class GmailStorer(object):
     ENCRYPTION_KEY_FILENAME    = '.storage_key.sec'
     OLD_EMAIL_OWNER            = '.email_account.info' #deprecated
     EMAIL_OWNER                = '.owner_account.info'
-    GMVAULTDB_VERSION          = '.gmvault_db_version.info'
-        
+    GMVAULTDB_VERSION          = '.gmvault_db_version.info'   
     
     def __init__(self, a_storage_dir, encrypt_data = False):
         """
@@ -80,13 +82,15 @@ class GmailStorer(object):
         self._top_dir = a_storage_dir
         
         self._db_dir          = '%s/%s' % (a_storage_dir, GmailStorer.DB_AREA)
-        self._chats_dir       = '%s/%s' % (self._db_dir, GmailStorer.CHATS_AREA)
         self._quarantine_dir  = '%s/%s' % (a_storage_dir, GmailStorer.QUARANTINE_AREA)
         self._info_dir        = '%s/%s' % (a_storage_dir, GmailStorer.INFO_AREA)
+        self._chats_dir       = '%s/%s' % (self._db_dir, GmailStorer.CHATS_AREA)
         
         self._sub_chats_dir   = None
         self._sub_chats_inc   = -1
         self._sub_chats_nb    = -1
+        
+        self._limit_per_chat_dir = gmvault_utils.get_conf_defaults().getint("Common","limit_per_chat_dir", 1500)
         
         
         #make dirs
@@ -97,7 +101,6 @@ class GmailStorer(object):
         gmvault_utils.makedirs(self._chats_dir)
         gmvault_utils.makedirs(self._quarantine_dir)
         gmvault_utils.makedirs(self._info_dir)
-        gmvault_utils.makedirs(self._chats_dir)
         
         self.fsystem_info_cache = {}
         
@@ -109,11 +112,14 @@ class GmailStorer(object):
         self._create_gmvault_db_version()
         
         
-    def get_info_from_existing_sub_chats_dir(self):
+    def init_sub_chats_dir(self):
         """
            get info from existing sub chats
         """
         nb_to_dir = {}
+        
+        LOG.debug("LIMIT_PER_CHAT_DIR = %s" % (self._limit_per_chat_dir) )
+        
         if os.path.exists(self._chats_dir):
             dirs = os.listdir(self._chats_dir)
             for the_dir in dirs:
@@ -121,46 +127,47 @@ class GmailStorer(object):
                 if len(the_split) != 2:
                     raise Exception("Should get 2 elements in %s" % (the_split))
                 
-                nb_to_dir[int(the_split[0])] = the_dir
+                nb_to_dir[int(the_split[1])] = the_dir
                 
+            
+            if len(nb_to_dir) == 0:
+                # no sub dir yet. Set it up
+                self._sub_chats_nb  = 0
+                self._sub_chats_inc = 1
+                self._sub_chats_dir = self.SUB_CHAT_AREA % ("subchats-%s" % (self._sub_chats_inc))
+                gmvault_utils.makedirs("%s/%s" % (self._db_dir, self._sub_chats_dir))
+            
             # treat when more than limit chats in max dir 
             # treat when no dirs
             # add limit  as attribute limit_per_dir = 2000
-            the_max = max(nb_to_dir)
-            
-            files = os.listdir("%s/%s" % (self._chats_dir, nb_to_dir[the_max]))
-            
-            self._sub_chats_nb  = len(files)/2
-            
-            self._sub_chats_inc = the_max
-            
-            self._sub_chats_dir = nb_to_dir[the_max] 
+            else:
+                the_max = max(nb_to_dir)
+                files = os.listdir("%s/%s" % (self._chats_dir, nb_to_dir[the_max]))
+                self._sub_chats_nb  = len(files)/2
+                self._sub_chats_inc = the_max
+                self._sub_chats_dir = self.SUB_CHAT_AREA % nb_to_dir[the_max] 
             
         
-    def get_sub_chats_dir(self, inc = 1):
+    def get_sub_chats_dir(self):
         """
            Get sub_chats_dir
         """
         if self._sub_chats_inc == -1:
-            self.get_info_from_existing_sub_chats_dir()
-        
-        self._sub_chats_dir
-        
-        if self._sub_chats_nb + 1 > self._sub_chat_limit:
+            self.init_sub_chats_dir()
+         
+        if self._sub_chats_nb >= self._limit_per_chat_dir:
             self._sub_chats_inc += 1
-            self._sub_chats_nb  = 1
+            
+            self._sub_chats_nb  = 1 
+            
             self._sub_chats_dir = self.SUB_CHAT_AREA % ("subchats-%s" % (self._sub_chats_inc))
-            gmvault_utils.makedirs(self._sub_chats_dir)
+            gmvault_utils.makedirs('%s/%s' % (self._db_dir, self._sub_chats_dir))
+            
             return self._sub_chats_dir
         else:
             self._sub_chats_nb += 1
             return self._sub_chats_dir
-        
-        
-        #if not self._sub_chats_dir: # no subchats dir
-        #        self._sub_chats_dir = self.SUB_CHAT_AREA % ("subchats-%s" % (self._sub_chats_inc))
-        #        gmvault_utils.makedirs('%s/%s' % (self._db_dir, self._sub_chats_dir))
-        #        return self._sub_chats_dir
+    
         
     
     def _create_gmvault_db_version(self):
@@ -350,7 +357,7 @@ class GmailStorer(object):
         """
            Like bury metadata but with an extra label gmvault-chat
         """
-        extra_labels = ['gmvault-chats']
+        extra_labels = [GmailStorer.CHAT_GM_LABEL]
         return self.bury_metadata(email_info, local_dir, extra_labels)
     
     def bury_metadata(self, email_info, local_dir = None, extra_labels = []):
@@ -769,7 +776,7 @@ class GMVaulter(object):
         return None
     
     @classmethod
-    def _metadata_needs_update(cls, curr_metadata, new_metadata):
+    def _metadata_needs_update(cls, curr_metadata, new_metadata, chat_metadata = False):
         """
            Needs update
         """
@@ -790,6 +797,11 @@ class GMVaulter(object):
         
         #check labels
         prev_labels = set(new_metadata['X-GM-LABELS'])
+        
+        if chat_metadata: #add gmvault-chats labels
+            prev_labels.add(GmailStorer.CHAT_GM_LABEL)
+            
+        
         for label in curr_metadata['labels']:
             if label not in prev_labels:
                 return True
@@ -865,7 +877,7 @@ class GMVaulter(object):
                         
                         gid = new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
                         
-                        the_dir      = self.gstorer.get_sub_chats_dir(nb_chats_processed)
+                        the_dir      = self.gstorer.get_sub_chats_dir()
                         
                         LOG.critical("Process chat num %d (imap_id:%s) into %s." % (nb_chats_processed, the_id, the_dir))
                     
@@ -877,7 +889,7 @@ class GMVaulter(object):
                         #if on disk check that the data is not different
                         if curr_metadata:
                             
-                            if self._metadata_needs_update(curr_metadata, new_data[the_id]):
+                            if self._metadata_needs_update(curr_metadata, new_data[the_id], chat_metadata = True):
                                 
                                 LOG.debug("Chat with imap id %s and gmail id %s has changed. Updated it." % (the_id, gid))
                                 

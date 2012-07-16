@@ -489,6 +489,7 @@ quick_days=10
 #Do not touch any parameters below as it could force an overwrite of this file
 [Common]
 conf_version=1.7-beta
+limit_per_chat_dir=2000
 """
 
 def get_conf_filepath():

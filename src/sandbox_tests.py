@@ -232,9 +232,9 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         """
         import gmv.gmvault as gmv
         
-        storer = gmv.GmailStorer("/home/aubert/gmvault-db")
+        storer = gmv.GmailStorer("/Users/gaubert/gmvault-db")
         
-        storer.get_info_from_existing_sub_chats_dir()
+        storer.init_sub_chats_dir()
        
         
     
@@ -245,7 +245,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         import gmv.gmvault_utils as gmvu
         
         for vals in gmvu.ordered_dirwalk('/home/aubert/gmvault-db.old/db', a_wildcards="*.meta"):
-            #print("vals = %s\n" % (vals))
+            print("vals = %s\n" % (vals))
             pass
         
         import os
