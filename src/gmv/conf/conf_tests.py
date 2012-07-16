@@ -20,13 +20,13 @@
 import unittest
 import sys
 import os
-import conf.conf_helper
+import gmv.conf.conf_helper
 
 
 
 
 def tests():
-    suite = unittest.TestLoader().loadTestsFromModule(conf.conf_tests)
+    suite = unittest.TestLoader().loadTestsFromModule(gmv.conf.conf_tests)
     unittest.TextTestRunner(verbosity=2).run(suite)
 
 
@@ -35,7 +35,7 @@ class TestConf(unittest.TestCase):
     def _get_tests_dir_path(self):
         """ get the org.ctbto.conf.tests path depending on where it is defined """
         
-        fmod_path = conf.__path__
+        fmod_path = gmv.conf.__path__
         
         test_dir = "%s/tests"%fmod_path[0]
         
@@ -46,7 +46,7 @@ class TestConf(unittest.TestCase):
         # necessary for the include with the VAR ENV substitution
         os.environ["DIRCONFENV"] = self._get_tests_dir_path()
          
-        self.conf = conf.conf_helper.Conf(use_resource=False)
+        self.conf = gmv.conf.conf_helper.Conf(use_resource=False)
     
         fp = open('%s/%s' % (self._get_tests_dir_path(), "test.config"))
     
@@ -161,9 +161,9 @@ class TestConf(unittest.TestCase):
         self._create_fake_conf_file_in_tmp()
         
         # need to setup the ENV containing the the path to the conf file:
-        os.environ[conf.conf_helper.Conf.ENVNAME] = "/tmp/fake_conf.config"
+        os.environ[gmv.conf.conf_helper.Conf.ENVNAME] = "/tmp/fake_conf.config"
    
-        self.conf = conf.conf_helper.Conf.get_instance()
+        self.conf = gmv.conf.conf_helper.Conf.get_instance()
         
         s = self.conf.get("MainDatabaseAccess","driverClassName")
         
@@ -273,6 +273,59 @@ class TestConf(unittest.TestCase):
             return
          
         self.fail('Should never reach that point')
+        
+class TestResource(unittest.TestCase):
+    
+    def testResourceSimpleCli(self):
+        """testResourceSimpleCli: read resource from CLI"""
+        # set command line
+        sys.argv.append("--LongName")
+        sys.argv.append("My Cli Value")
+        
+        r = gmv.conf.conf_helper.Resource(CliArgument="--LongName",EnvVariable=None) 
+        
+        self.assertEqual("My Cli Value",r.getValue())
+        
+        # look for LongName without --. It should be formalized by the Resource object
+        r = gmv.conf.conf_helper.Resource(CliArgument="LongName",EnvVariable=None) 
+        
+        self.assertEqual("My Cli Value",r.getValue())
+    
+    def testResourceFromEnv(self): 
+        """testResourceFromENV: read resource from ENV"""   
+        #ENV 
+        os.environ["MYENVVAR"]="My ENV Value"
+  
+        r = gmv.conf.conf_helper.Resource(CliArgument=None,EnvVariable="MYENVVAR")
+        
+        self.assertEqual("My ENV Value",r.getValue())
+        
+    def ztestResourcePriorityRules(self):
+        """testResourcePriorityRules: test priority rules"""   
+        r = gmv.conf.conf_helper.Resource(CliArgument="--LongName",EnvVariable="MYENVVAR")
+  
+        self.assertEqual("My Cli Value",r.getValue())
+  
+    def testResourceGetDifferentTypes(self):
+        """testResourceGetDifferentTypes: return resource in different types"""
+        
+        os.environ["MYENVVAR"]="yes"
+        r = gmv.conf.conf_helper.Resource(CliArgument=None,EnvVariable="MYENVVAR")
+        
+        self.assertEqual(r.getValueAsBoolean(),True)
+        
+        os.environ["MYENVVAR"]="4"
+  
+        r = gmv.conf.conf_helper.Resource(CliArgument=None,EnvVariable="MYENVVAR")
+  
+        self.assertEqual(r.getValueAsInt()+1,5)
+        
+        os.environ["MYENVVAR"]="4.345"
+  
+        r = gmv.conf.conf_helper.Resource(CliArgument=None,EnvVariable="MYENVVAR")
+  
+        self.assertEqual(r.getValueAsFloat()+1,5.345)
+ 
         
 if __name__ == '__main__':
     tests()
