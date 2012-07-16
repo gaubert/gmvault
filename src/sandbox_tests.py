@@ -226,7 +226,19 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         for root, dirs, files in os.walk('/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db/db'):
             print("root: %s, sub-dirs : %s, files = %s" % (root, dirs, files))
     
-    def test_ordered_os_walk(self):
+    def test_get_subdir_info(self):
+        """
+           test get subdir info
+        """
+        import gmv.gmvault as gmv
+        
+        storer = gmv.GmailStorer("/home/aubert/gmvault-db")
+        
+        storer.get_info_from_existing_sub_chats_dir()
+       
+        
+    
+    def ztest_ordered_os_walk(self):
         """
            test ordered os walk
         """
@@ -235,9 +247,6 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         for vals in gmvu.ordered_dirwalk('/home/aubert/gmvault-db.old/db', a_wildcards="*.meta"):
             #print("vals = %s\n" % (vals))
             pass
-        
-        
-        
         
         import os
         for root, dirs, files in os.walk('/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db/db'):

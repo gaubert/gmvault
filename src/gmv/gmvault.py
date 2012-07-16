@@ -80,12 +80,14 @@ class GmailStorer(object):
         self._top_dir = a_storage_dir
         
         self._db_dir          = '%s/%s' % (a_storage_dir, GmailStorer.DB_AREA)
-        self._chats_dir       = '%s/%s' % (a_storage_dir, GmailStorer.CHATS_AREA)
+        self._chats_dir       = '%s/%s' % (self._db_dir, GmailStorer.CHATS_AREA)
         self._quarantine_dir  = '%s/%s' % (a_storage_dir, GmailStorer.QUARANTINE_AREA)
         self._info_dir        = '%s/%s' % (a_storage_dir, GmailStorer.INFO_AREA)
         
         self._sub_chats_dir   = None
-        self._sub_chats_inc   = 1
+        self._sub_chats_inc   = -1
+        self._sub_chats_nb    = -1
+        
         
         #make dirs
         if not os.path.exists(self._db_dir):
@@ -109,37 +111,56 @@ class GmailStorer(object):
         
     def get_info_from_existing_sub_chats_dir(self):
         """
-           
+           get info from existing sub chats
         """
         nb_to_dir = {}
-        if os.path.exists(self._sub_chats_dir):
-            dirs = os.listdir(self._sub_chats_dir)
+        if os.path.exists(self._chats_dir):
+            dirs = os.listdir(self._chats_dir)
             for the_dir in dirs:
                 the_split = the_dir.split("-")
                 if len(the_split) != 2:
                     raise Exception("Should get 2 elements in %s" % (the_split))
                 
-                nb_to_dir[int(the_split[0])] = the_split[1]
+                nb_to_dir[int(the_split[0])] = the_dir
                 
+            # treat when more than limit chats in max dir 
+            # treat when no dirs
+            # add limit  as attribute limit_per_dir = 2000
             the_max = max(nb_to_dir)
+            
+            files = os.listdir("%s/%s" % (self._chats_dir, nb_to_dir[the_max]))
+            
+            self._sub_chats_nb  = len(files)/2
+            
+            self._sub_chats_inc = the_max
+            
+            self._sub_chats_dir = nb_to_dir[the_max] 
+            
         
-    def get_sub_chats_dir(self, nb_emails_process, limit_per_dir = 2000):
+    def get_sub_chats_dir(self, inc = 1):
         """
            Get sub_chats_dir
         """
-        if not self._sub_chats_dir: # no subchats dir
-                self._sub_chats_dir = self.SUB_CHAT_AREA % ("subchats-%s" % (self._sub_chats_inc))
-                gmvault_utils.makedirs('%s/%s' % (self._db_dir, self._sub_chats_dir))
-                return self._sub_chats_dir
+        if self._sub_chats_inc == -1:
+            self.get_info_from_existing_sub_chats_dir()
         
-        if nb_emails_process <= (limit_per_dir * self._sub_chats_inc):
-            return self._sub_chats_dir
-        else:
+        self._sub_chats_dir
+        
+        if self._sub_chats_nb + 1 > self._sub_chat_limit:
             self._sub_chats_inc += 1
+            self._sub_chats_nb  = 1
             self._sub_chats_dir = self.SUB_CHAT_AREA % ("subchats-%s" % (self._sub_chats_inc))
             gmvault_utils.makedirs(self._sub_chats_dir)
             return self._sub_chats_dir
-                
+        else:
+            self._sub_chats_nb += 1
+            return self._sub_chats_dir
+        
+        
+        #if not self._sub_chats_dir: # no subchats dir
+        #        self._sub_chats_dir = self.SUB_CHAT_AREA % ("subchats-%s" % (self._sub_chats_inc))
+        #        gmvault_utils.makedirs('%s/%s' % (self._db_dir, self._sub_chats_dir))
+        #        return self._sub_chats_dir
         
     
     def _create_gmvault_db_version(self):
