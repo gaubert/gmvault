@@ -137,8 +137,9 @@ gmv-mac-dist: clean init
 gmv-win-dist: init 
 	mkdir -p $(GMVWINBUILDDIST)
 	cp -R $(BASEDIR)/src/gmv $(GMVDIST)
-	cp $(BASEDIR)/src/setup_win.py $(GMVDIST)/gmv
-	cd $(GMVDIST)/gmv; $(PYTHONWINBIN) setup_win.py py2exe -d ../../$(GMVWINBUILDDIST)
+	cp -R $(BASEDIR)/src/gmv_runner.py $(GMVDIST)
+	cp $(BASEDIR)/src/setup_win.py $(GMVDIST)
+	cd $(GMVDIST); $(PYTHONWINBIN) setup_win.py py2exe -d ../../$(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault-shell.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)
