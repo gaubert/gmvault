@@ -21,8 +21,8 @@ ETC=$(BASEDIR)/etc
 #PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
 PYTHONBIN=python #MacOSX machine
 #PYTHONWINBIN=python
-#PYTHONWINBIN=/cygdrive/d/Programs/python2.7/python.exe #for my windows machine at work
-PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
+PYTHONWINBIN=/drives/d/Programs/python2.7/python.exe #for my windows machine at work
+#PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
 PYTHONVERSION=2.7
 
 #MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
@@ -139,7 +139,7 @@ gmv-win-dist: init
 	cp -R $(BASEDIR)/src/gmv $(GMVDIST)
 	cp -R $(BASEDIR)/src/gmv_runner.py $(GMVDIST)
 	cp $(BASEDIR)/src/setup_win.py $(GMVDIST)
-	cd $(GMVDIST); $(PYTHONWINBIN) setup_win.py py2exe -d ../../$(GMVWINBUILDDIST)
+	cd $(GMVDIST); $(PYTHONWINBIN) setup_win.py py2exe -d ../$(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault-shell.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)
