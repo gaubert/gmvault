@@ -118,7 +118,7 @@ WriteRegStr HKCU "${REG_UNINSTALL}" "Comments" "Uninstalls Gmvault."
 ;MessageBox MB_OK "$INSTDIR"
 
 ; Put file there
-File gmv_cmd.exe
+File gmv_runner.exe
 File gmvault.bat
 File gmv-msg.bat
 File gmv-icon.ico
@@ -154,7 +154,7 @@ DeleteRegKey HKCU "${REG_UNINSTALL}"
 ; Delete Desktop Shortcut
 Delete "$DESKTOP\gmvault-shell.lnk"
 
-Delete $INSTDIR\gmv_cmd.exe
+Delete $INSTDIR\gmv_runner.exe
 Delete $INSTDIR\library.zip
 Delete $INSTDIR\*.ico
 Delete $INSTDIR\*.bat
