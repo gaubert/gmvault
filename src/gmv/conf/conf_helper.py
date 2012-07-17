@@ -19,8 +19,8 @@ import sys
 import os
 import re
 
-import gmv.conf.exceptions as exceptions
                                       
+import gmv.conf.exceptions as exceptions
 import gmv.conf.utils.struct_parser as struct_parser
 
 class ResourceError(Exception):
