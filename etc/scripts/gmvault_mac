@@ -15,12 +15,12 @@ GMVAULT_HOME=$(unset CDPATH; cd $HERE/..; pwd)
 ## setup PYTHON_BIN
 #################################
 #look as if it was the packaged binary distribution
-if [ -f "$GMVAULT_HOME/lib/gmv_cmd.app/Contents/MacOS/gmv_cmd" ]; then
-    GMV_BIN=$GMVAULT_HOME/lib/gmv_cmd.app/Contents/MacOS/gmv_cmd
+if [ -f "$GMVAULT_HOME/lib/gmv_runner.app/Contents/MacOS/gmv_runner" ]; then
+    GMV_BIN=$GMVAULT_HOME/lib/gmv_runner.app/Contents/MacOS/gmv_runner
 
 else
-    echo "Error: Cannot find the gmv_cmd.app. Please check where the gmv_cmd.app is."
-    echo "It should be under GMVAULT_HOME/lib"
+    echo "Error: Cannot find the gmv_runner.app. Please check where the gmv_runner.app is."
+    echo "It should be under $GMVAULT_HOME/lib"
     exit 1
 fi
 

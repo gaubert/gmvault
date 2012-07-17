@@ -119,13 +119,14 @@ gmv-linux-dist: clean init
 
 gmv-mac-dist: clean init
 	cp -R $(BASEDIR)/src/gmv $(GMVDIST)
+	cp -R $(BASEDIR)/src/gmv_runner.py $(GMVDIST)
 	cp $(BASEDIR)/src/setup_mac.py $(GMVDIST)
 	cd $(GMVDIST); $(PYTHONBIN) setup_mac.py py2app --arch=intel
 	mkdir -p $(GMVDIST)/$(GMVDISTNAME)/bin ; mkdir -p $(GMVDIST)/$(GMVDISTNAME)/lib
 	cp $(BASEDIR)/etc/scripts/gmvault_mac $(GMVDIST)/$(GMVDISTNAME)/bin/gmvault
 	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/bin/README.txt
 	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/$(GMVDISTNAME)/bin/RELEASE-NOTE.txt
-	cp -R $(GMVDIST)/dist/gmv_cmd.app $(GMVDIST)/$(GMVDISTNAME)/lib
+	cp -R $(GMVDIST)/dist/gmv_runner.app $(GMVDIST)/$(GMVDISTNAME)/lib
 	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-macosx-intel.tar.gz ./$(GMVDISTNAME)
 	@echo ""
 	@echo "========================================="
@@ -161,9 +162,11 @@ gmv-win-installer: gmv-win-dist
 
 
 clean: clean-build
+	mkdir -p $(GMVDIST)
 	cd $(GMVDIST); rm -Rf build; rm -Rf gmvault.egg-info; rm -f setup*.py ; rm -Rf dist ; rm -Rf src; rm -f README* ;rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
 
 clean-build:
+	mkdir -p $(GMVBUILD)
 	cd $(GMVBUILD); rm -Rf egg-dist; 
 	rm -Rf $(GMVDIST)/$(GMVDISTNAME)
 	rm -Rf $(GMVWINBUILDDIST)
