@@ -319,7 +319,7 @@ class GmailStorer(object):
         return gmail_ids
         
         
-    def get_all_existing_gmail_ids(self, pivot_dir = None):
+    def get_all_existing_gmail_ids(self, pivot_dir = None, ignore_sub_dir = ['chats']):
         """
            get all existing gmail_ids from the database within the passed month 
            and all posterior months
@@ -330,7 +330,7 @@ class GmailStorer(object):
         
         if pivot_dir == None:
             #the_iter = gmvault_utils.dirwalk(self._db_dir, "*.meta")
-            the_iter = gmvault_utils.ordered_dirwalk(self._db_dir, "*.meta", ['chats'])
+            the_iter = gmvault_utils.ordered_dirwalk(self._db_dir, "*.meta", ignore_sub_dir)
         else:
             
             # get all yy-mm dirs to list
@@ -338,7 +338,7 @@ class GmailStorer(object):
             
             #create all iterators and chain them to keep the same interface
             #iter_dirs = [gmvault_utils.dirwalk('%s/%s' % (self._db_dir, the_dir), "*.meta") for the_dir in dirs]
-            iter_dirs = [gmvault_utils.ordered_dirwalk('%s/%s' % (self._db_dir, the_dir), "*.meta", ['chats']) for the_dir in dirs]
+            iter_dirs = [gmvault_utils.ordered_dirwalk('%s/%s' % (self._db_dir, the_dir), "*.meta", ignore_sub_dir) for the_dir in dirs]
             
             the_iter = itertools.chain.from_iterable(iter_dirs)
         
@@ -1197,7 +1197,7 @@ class GMVaulter(object):
         return self.error_report
 
     
-    def _delete_sync(self, imap_ids):
+    def _delete_sync(self, imap_ids, db_gmail_ids, db_gmail_ids_info):
         """
            Delete emails from the database if necessary
            imap_ids      : all remote imap_ids to check
@@ -1210,17 +1210,7 @@ class GMVaulter(object):
           Get all emails and chats stored db id
           Delete all emails and chats that are on disks but not on imap
         """
-        gstorer = GmailStorer(self.db_root_dir)
         
-        self.timer.start()
-        
-        #get gmail_ids from db
-        db_gmail_ids_info = gstorer.get_all_existing_gmail_ids()
-        
-        LOG.critical("Got all existing ids from the Gmvault db. Number of emails in db: %s.\n" % (len(db_gmail_ids_info)) )
-        
-        #create a set of keys
-        db_gmail_ids = set(db_gmail_ids_info.keys())
         
         # optimize nb of items
         nb_items = self.NB_GRP_OF_ITEMS if len(imap_ids) >= self.NB_GRP_OF_ITEMS else len(imap_ids)
@@ -1249,9 +1239,7 @@ class GMVaulter(object):
         LOG.critical("Need to delete %s email(s) from gmvault db." % (len(db_gmail_ids)) )
         for gm_id in db_gmail_ids:
             LOG.critical("gm_id %s not in Gmail. Delete it" % (gm_id))
-            gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
-        
-        LOG.critical("\nDeletion checkup done in %s." % (self.timer.elapsed_human_time()))
+            self.gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
         
     def get_gmails_ids_left_to_sync(self, op_type, imap_ids):
         """
@@ -1307,25 +1295,43 @@ class GMVaulter(object):
             return
         else:
             LOG.critical("Look for emails/chats that are still in the Gmvault db but in Gmail anymore.\n")
+            
+            #get gmail_ids from db
+            LOG.critical("Read all gmail ids from the Gmvault db. It might take a bit of time ...\n")
+            
+            self.timer.start()
+            
+            db_gmail_ids_info = self.gstorer.get_all_existing_gmail_ids(ignore_sub_dir=[])
+        
+            LOG.critical("Got all existing ids from the Gmvault db. Number of emails in db: %s.\n" % (len(db_gmail_ids_info)) )
+        
+            #create a set of keys
+            db_gmail_ids = set(db_gmail_ids_info.keys())
+            
             # get all imap ids in All Mail
             imap_ids = self.src.search(imap_utils.GIMAPFetcher.IMAP_ALL)
+            
+            LOG.debug("Got %s email imap_ids" % (len(imap_ids)))
+            
+            #delete supress emails from DB since last sync
+            self._delete_sync(imap_ids, db_gmail_ids, db_gmail_ids_info)
             
             # get all chats ids
             try:
                 self.src.find_and_select_chats_folder()
 
-                chats_ids = self.src.search({ 'type': 'imap', 'req': 'ALL' })
+                chats_ids = self.src.search(imap_utils.GIMAPFetcher.IMAP_ALL)
+                
+                LOG.debug("Got %s chat imap_ids" % (len(chats_ids)))
             
-                # add additional chat ids
-                imap_ids.extend(chats_ids)
+                #delete supress emails from DB since last sync
+                self._delete_sync(chats_ids, db_gmail_ids, db_gmail_ids_info)
                 
             finally:
                 self.src.select_all_mail_folder()
             
-
-            LOG.debug("Got all existing ids from the Gmail server. Number of remote emails: %s.\n" % (len(imap_ids)) )
-            #delete supress emails from DB since last sync
-            self._delete_sync(imap_ids)
+            LOG.critical("\nDeletion checkup done in %s." % (self.timer.elapsed_human_time()))
+            
     
     def remote_sync(self):
         """
