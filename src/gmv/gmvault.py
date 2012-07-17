@@ -1216,7 +1216,7 @@ class GMVaulter(object):
         nb_items = self.NB_GRP_OF_ITEMS if len(imap_ids) >= self.NB_GRP_OF_ITEMS else len(imap_ids)
         
         LOG.critical("Call Gmail to check the stored emails against the Gmail emails ids and see which ones have been deleted.\n\n"\
-                     "Might take few minutes ...") 
+                     "Might take few minutes ...\n") 
          
         #calculate the list elements to delete
         #query nb_items items in one query to minimise number of imap queries
