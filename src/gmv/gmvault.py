@@ -1377,14 +1377,14 @@ class GMVaulter(object):
         LOG.critical("Restore operation performed in %s.\n" \
                      % (self.timer.seconds_to_human_time(self.timer.elapsed())))
        
-    def common_restore(self, type, db_gmail_ids_info, extra_labels = [], restart = False): #pylint:disable=W0102
+    def common_restore(self, the_type, db_gmail_ids_info, extra_labels = [], restart = False): #pylint:disable=W0102
         """
            common_restore 
         """
-        if type == "chats":
+        if the_type == "chats":
             msg = "chats"
             op  = self.OP_CHAT_RESTORE
-        elif type == "emails":
+        elif the_type == "emails":
             msg = "emails"
             op  = self.OP_EMAIL_RESTORE
         

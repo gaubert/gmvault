@@ -1,22 +1,24 @@
 #!/bin/bash
-#set -x
+set -x
 
 # force a friendly umask
 umask 002
 
-# Runs on Linux
+# Runs on Mac OS X
 #################################
 ## GMVAULT Distribution home directory
 #################################
-HERE=$(unset CDPATH; cd `dirname $0`; pwd)
-GMVAULT_HOME=$(unset CDPATH; cd $HERE/..; pwd)
+CDIR=`dirname "$0"`
+HERE=$(unset CDPATH; cd "$CDIR"; pwd)
+GMVAULT_HOME=$(unset CDPATH; cd "$HERE/.."; pwd)
+
 
 #################################
 ## setup PYTHON_BIN
 #################################
 #look as if it was the packaged binary distribution
 if [ -f "$GMVAULT_HOME/lib/gmv_runner.app/Contents/MacOS/gmv_runner" ]; then
-    GMV_BIN=$GMVAULT_HOME/lib/gmv_runner.app/Contents/MacOS/gmv_runner
+    GMV_BIN="$GMVAULT_HOME/lib/gmv_runner.app/Contents/MacOS/gmv_runner"
 
 else
     echo "Error: Cannot find the gmv_runner.app. Please check where the gmv_runner.app is."
@@ -25,7 +27,7 @@ else
 fi
 
 ##### execute it ##########
-$GMV_BIN "$@"
+"$GMV_BIN" "$@"
 res="$?"
 
 exit $res
