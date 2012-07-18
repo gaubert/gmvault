@@ -32,9 +32,9 @@ import gmvault
 from cmdline_utils  import CmdLineParser
 from credential_utils import CredentialHelper
 
-GMVAULT_VERSION=gmvault_utils.GMVAULT_VERSION
+GMVAULT_VERSION = gmvault_utils.GMVAULT_VERSION
 
-GLOBAL_HELP_EPILOGUE="""Examples:
+GLOBAL_HELP_EPILOGUE = """Examples:
 
 a) Get help for each of the individual commands
 
@@ -92,7 +92,7 @@ e) Resume Full synchronisation  from where it failed to not go through your mail
 
 LOG = log_utils.LoggerFactory.get_logger('gmv')
 
-class NotSeenAction(argparse.Action):
+class NotSeenAction(argparse.Action): #pylint:disable=R0903
     """
        to differenciate between a seen and non seen command
     """
@@ -103,6 +103,9 @@ class NotSeenAction(argparse.Action):
             setattr(namespace, self.dest, values)
 
 class GMVaultLauncher(object):
+    """
+       GMVault launcher handling the command parsing
+    """
     
     SYNC_TYPES    = ['full', 'quick', 'custom']
     RESTORE_TYPES = ['full', 'quick']
@@ -135,7 +138,7 @@ class GMVaultLauncher(object):
         sync_parser.add_argument('email', \
                                  action='store', default='empty_$_email', help='email to sync with.')
         # sync typ
-        sync_parser.add_argument('-t','--type', \
+        sync_parser.add_argument('-t', '--type', \
                                  action='store', dest='type', \
                                  default='full', help='type of synchronisation: full|quick|custom. (default: full)')
         
@@ -172,7 +175,8 @@ class GMVaultLauncher(object):
                                  dest="imap_request", default=None)
         
         sync_parser.add_argument("-g", "--gmail-req", metavar = "REQ", \
-                                 help="Gmail search request to restrict sync as defined in https://support.google.com/mail/bin/answer.py?hl=en&answer=7190",\
+                                 help="Gmail search request to restrict sync as defined in"\
+                                      "https://support.google.com/mail/bin/answer.py?hl=en&answer=7190",\
                                  dest="gmail_request", default=None)
         
         # activate the resume mode --restart is deprecated
@@ -194,8 +198,9 @@ class GMVaultLauncher(object):
                                  help="encrypt stored email messages in the database.",\
                                  action='store_true',dest="encrypt", default=False)
         
-        sync_parser.add_argument("-z", "--db-cleaning", metavar = "VAL",\
-                          help="Enable/disable the removal from the gmvault db of the emails that have been deleted from the given gmail account. VAL = yes or no.",\
+        sync_parser.add_argument("-z", "--db-cleaning", metavar = "VAL", \
+                          help="Enable/disable the removal from the gmvault db of the emails "\
+                               "that have been deleted from the given gmail account. VAL = yes or no.",\
                           dest="db_cleaning", default=None)
         
         sync_parser.add_argument("-m", "--multiple-db-owner", \
@@ -232,12 +237,12 @@ class GMVaultLauncher(object):
                                  action='store', default='empty_$_email', help='email account to restore.')
         
         # restore typ
-        rest_parser.add_argument('-t','--type', \
+        rest_parser.add_argument('-t', '--type', \
                                  action='store', dest='type', \
                                  default='full', help='type of restoration: full|quick. (default: full)')
         
         # add a label
-        rest_parser.add_argument('-l','--label', \
+        rest_parser.add_argument('-l', '--label', \
                                  action='store', dest='label', \
                                  default=None, help='Apply a label to restored emails')
         
@@ -312,19 +317,10 @@ class GMVaultLauncher(object):
         
         check_parser.set_defaults(verb='check')
         
-        
-        
-        
-        # A config command
-        #config_parser = subparsers.add_parser('config', help='add/delete/modify properties in configuration.')
-        #config_parser.add_argument('dirname', action='store', help='New directory to create')
-        #config_parser.add_argument('--read-only', default=False, action='store_true', help='Set permissions to prevent writing to the directory',)
-        #config_parser.set_defaults(verb='config') 
-        
         return parser
       
-    
-    def _parse_common_args(self, options, parser, parsed_args, list_of_types = []):
+    @classmethod
+    def _parse_common_args(cls, options, parser, parsed_args, list_of_types = []): #pylint:disable=W0102
         """
            Parse the common arguments for sync and restore
         """
@@ -373,7 +369,7 @@ class GMVaultLauncher(object):
                 port = int(options.port)
             else:
                 port = options.port
-        except Exception, _:
+        except Exception, _: #pylint:disable=W0703
             parser.error("--port option %s is not a number. Please check the port value" % (port))
             
         # add port
@@ -479,7 +475,8 @@ class GMVaultLauncher(object):
         
         return parsed_args
     
-    def _clean_imap_or_gm_request(self, request):
+    @classmethod
+    def _clean_imap_or_gm_request(cls, request):
         """
            Clean request passed by the user with the option --imap-req or --gmail-req.
            Windows batch script preserve the single quote and unix shell doesn't.
@@ -493,7 +490,8 @@ class GMVaultLauncher(object):
         LOG.debug("clean_imap_or_gm_request. processed request = %s\n" % (request))
         return request
     
-    def _restore(self, args, credential):
+    @classmethod
+    def _restore(cls, args, credential):
         """
            Execute All restore operations
         """
@@ -515,7 +513,7 @@ class GMVaultLauncher(object):
             
             # today - 2 months
             today = datetime.date.today()
-            begin = today - datetime.timedelta(gmvault_utils.get_conf_defaults().getint("Restore","quick_days", 8))
+            begin = today - datetime.timedelta(gmvault_utils.get_conf_defaults().getint("Restore", "quick_days", 8))
             
             starting_dir = gmvault_utils.get_ym_from_datetime(begin)
             
@@ -529,8 +527,8 @@ class GMVaultLauncher(object):
         #print error report
         LOG.critical(restorer.get_error_report()) 
             
-            
-    def _sync(self, args, credential):
+    @classmethod        
+    def _sync(cls, args, credential):
         """
            Execute All synchronisation operations
         """
@@ -556,7 +554,7 @@ class GMVaultLauncher(object):
             
             # today - 2 months
             today = datetime.date.today()
-            begin = today - datetime.timedelta(gmvault_utils.get_conf_defaults().getint("Sync","quick_days", 8))
+            begin = today - datetime.timedelta(gmvault_utils.get_conf_defaults().getint("Sync", "quick_days", 8))
             
             LOG.critical("Quikc sync mode. Check for new emails since %s." % (begin.strftime('%d-%b-%Y')))
             
@@ -583,8 +581,9 @@ class GMVaultLauncher(object):
         
         #print error report
         LOG.critical(syncer.get_error_report())
-        
-    def _check_db(self, args, credential):
+    
+    @classmethod
+    def _check_db(cls, args, credential):
         """
            Check DB
         """
@@ -597,7 +596,7 @@ class GMVaultLauncher(object):
         checker.check_clean_db(db_cleaning = True)
             
 
-    def run(self, args):
+    def run(self, args): #pylint:disable=R0912
         """
            Run the grep with the given args 
         """
@@ -671,15 +670,18 @@ def activate_debug_mode():
     LOG.critical("Debugging logs are going to be saved in file %s/gmvault.log.\n" % os.getenv("HOME","."))
     log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'DEBUG', file_path="%s/gmvault.log" % os.getenv("HOME","."))
 
-def sigusr1_handler(signum, frame):
+def sigusr1_handler(signum, frame): #pylint:disable=W0613
+    """
+      Signal handler to get stack trace if program is stuck
+    """
 
     filename = './gmvault.traceback.txt'
     
     print("GMVAULT: Received SIGUSR1 -- Printing stack trace in %s..." % (os.path.abspath(filename)))
 
-    f = open(filename, 'a')
-    traceback.print_stack(file=f)
-    f.close()
+    the_f = open(filename, 'a')
+    traceback.print_stack(file = the_f)
+    the_f.close()
 
 def register_traceback_signal():
     """ To register a USR1 signal allowing to get stack trace """

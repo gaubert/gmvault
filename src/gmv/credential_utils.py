@@ -200,8 +200,8 @@ class CredentialHelper(object):
     def read_password(cls, email):
         """
            Read password credentials
-           Look for the defined in env GMVAULT_DIR so by default to ~/.gmvault
-           Look for file GMVAULT_DIR/email.passwd
+           Look by default to ~/.gmvault
+           Look for file ~/.gmvault/email.passwd
         """
         gmv_dir = gmvault_utils.get_home_dir_path()
         
@@ -225,8 +225,8 @@ class CredentialHelper(object):
     def read_oauth_tok_sec(cls, email):
         """
            Read oauth token secret credential
-           Look for the defined in env GMVAULT_DIR so by default to ~/.gmvault
-           Look for file GMVAULT_DIR/email.oauth
+           Look by default to ~/.gmvault
+           Look for file ~/.gmvault/email.oauth
         """
         gmv_dir = gmvault_utils.get_home_dir_path()
         

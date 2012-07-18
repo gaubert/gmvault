@@ -439,7 +439,7 @@ def dirwalk(a_dir, a_wildcards= '*'):
 @memoized
 def get_home_dir_path():
     """
-       Get the Home dir
+       Get the gmvault dir
     """
     gmvault_dir = os.getenv("GMVAULT_DIR", None)
     
@@ -486,10 +486,18 @@ quick_days=10
 [Restore]
 quick_days=10
 
-#Do not touch any parameters below as it could force an overwrite of this file
-[Common]
-conf_version=1.7-beta
+[General]
 limit_per_chat_dir=2000
+
+#Do not touch any parameters below as it could force an overwrite of this file
+[VERSION]
+conf_version=1.7-alpha
+
+#set environment variables for the program locally
+#they will be read only once the conf file has been loaded
+[ENV]
+#by default it is ~/.gmvault
+
 """
 
 def get_conf_filepath():
