@@ -672,7 +672,7 @@ def activate_debug_mode():
 
 def sigusr1_handler(signum, frame): #pylint:disable=W0613
     """
-      Signal handler to get stack trace if program is stuck
+      Signal handler to get stack trace if the program is stuck
     """
 
     filename = './gmvault.traceback.txt'
