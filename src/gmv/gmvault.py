@@ -1256,7 +1256,8 @@ class GMVaulter(object):
             #get gmail_ids from db
             LOG.critical("Read all gmail ids from the Gmvault db. It might take a bit of time ...\n")
             
-            self.timer.start()
+            timer = gmvault_utils.Timer() # needed for enhancing the user information
+            timer.start()
             
             db_gmail_ids_info = self.gstorer.get_all_existing_gmail_ids()
         
@@ -1291,7 +1292,7 @@ class GMVaulter(object):
             finally:
                 self.src.select_all_mail_folder()
             
-            LOG.critical("\nDeletion checkup done in %s." % (self.timer.elapsed_human_time()))
+            LOG.critical("\nDeletion checkup done in %s." % (timer.elapsed_human_time()))
             
     
     def remote_sync(self):
