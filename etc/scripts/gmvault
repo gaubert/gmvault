@@ -8,8 +8,9 @@ umask 002
 #################################
 ## GMVAULT Distribution home directory
 #################################
-HERE=$(unset CDPATH; cd `dirname $0`; pwd)
-GMVAULT_HOME=$(unset CDPATH; cd $HERE/..; pwd)
+CDIR=`dirname "$0"`
+HERE=$(unset CDPATH; cd "$CDIR"; pwd)
+GMVAULT_HOME=$(unset CDPATH; cd "$HERE/.."; pwd)
 
 #set trap to remove temp file
 trap "rm -f /tmp/gmvault.bootstrap.$$" EXIT
@@ -19,14 +20,14 @@ trap "rm -f /tmp/gmvault.bootstrap.$$" EXIT
 #################################
 #look as if it was the packaged binary distribution
 if [ -f "$GMVAULT_HOME/lib/python-lib/bin/python" ]; then
-    PYTHON_BIN=$GMVAULT_HOME/lib/python-lib/bin/python
-    export PYTHONPATH=$GMVAULT_HOME/lib:$PYTHONPATH
+    PYTHON_BIN="$GMVAULT_HOME/lib/python-lib/bin/python"
+    export PYTHONPATH="$GMVAULT_HOME/lib:$PYTHONPATH"
     #set pythonhome but it should not be necessary
-    export PYTHONHOME=$GMVAULT_HOME/lib/python-lib
+    export PYTHONHOME="$GMVAULT_HOME/lib/python-lib"
 
 elif [ -f "$GMVAULT_HOME/bin/python" ]; then
     #installed from src distribution (python bin is in the same dir as gmvault script)
-    PYTHON_BIN=$GMVAULT_HOME/bin/python
+    PYTHON_BIN="$GMVAULT_HOME/bin/python"
 
 else
     #look for python2.7 first otherwise try python2.6
@@ -38,7 +39,7 @@ else
     echo "Odd. Use default python2.7.x or 2.6.x distribution."
 fi
 
-if [ ! $PYTHON_BIN ] || [ ! -f $PYTHON_BIN ]; then
+if [ ! "$PYTHON_BIN" ] || [ ! -f "$PYTHON_BIN" ]; then
     echo "Error: Cannot find the python executable to set env var PYTHON_BIN."
     echo "Please check where your python binary is."
     exit 1
@@ -59,7 +60,7 @@ runner.bootstrap_run()
 EOF
 
 #call gmvault bootstrap
-$PYTHON_BIN /tmp/gmvault.bootstrap.$$ "$@"
+"$PYTHON_BIN" /tmp/gmvault.bootstrap.$$ "$@"
 res="$?"
 
 exit $res
