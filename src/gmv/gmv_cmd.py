@@ -522,7 +522,7 @@ class GMVaultLauncher(object):
             
             #call restore
             labels = [args['label']] if args['label'] else []
-            restorer.restore(extra_labels = labels, restart = args['restart'])
+            restorer.restore(extra_labels = labels, restart = args['restart'], emails_only = args['emails_only'], chats_only = args['chats_only'])
             
         elif args.get('type', '') == 'quick':
             
