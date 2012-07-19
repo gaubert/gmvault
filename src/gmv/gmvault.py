@@ -1147,7 +1147,7 @@ class GMVaulter(object):
             LOG.critical("Start chats synchronization.\n")
             self._sync_chats(compress = compress_on_disk, restart = restart)
         else:
-            LOG.critical("Skip chats synchronization.\n")
+            LOG.critical("\nSkip chats synchronization.\n")
         
         #delete supress emails from DB since last sync
         if len(self.gstorer.get_db_owners()) <= 1:
