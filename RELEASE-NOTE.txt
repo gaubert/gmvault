@@ -2,6 +2,49 @@ Release Notes for the different versions:
 
 -------------------------------
 -------------------------------
+Version Gmvault-v1.7-alpha:
+-------------------------------
+-------------------------------
+Date: 19.07.2012
+
+New Features:
+-------------------
+- GTalk chat logs are now backed up when Chats label can be accessed via IMAP. 
+- GTalk chats can be restored in a different account in label gmvault-chats as Chats in read-only.
+- Option to Clean the Gmvault db on disk is now by default activated. Gmvault-db will now reflect your GMail account and emails that have been trashed from there will be deleted from the Gmvault-db.
+  Use option --db-cleaning no to deactivate it. 
+  Beware if you have a Gmvault db containg emails from multiple accounts: You will have to resync in quick mode with --db-cleaning no with both accounts to no have part of it deleted.
+- Add options --chats-only and --emails-only to synchronise only emails or chats.
+- Add check command for only cleaning your Gmvault db.
+- Create default configuration file $HOME/.gmvault/gmvault_defaults.conf in order to make some options customisable.
+- Change quick sync and restore time to 7 days. It can be configured in $HOME/.gmvault/gmvault_defaults.conf.
+- The default dir $HOME/.gmvault can now be moved with the ENV variable GMVAULT_DIR. [Github features #57]
+
+Bug Fixes:
+----------
+- Stability dramatically improved. Memory Consumption bug in socket and imap_lib layer fixed. [Github issue #42, #54, #45]
+- Stability dramatically improved. Cpu infinite Consumption bug fixed in ssl layer. [Github issue #51, #45]
+- When Restored unread messages are now always marked as unread in Gmail. A bug was preventing them to be restored as unread in some cases.
+- Restore emails in chronologic order. Before they were restored in filesystem listing order.
+- Mac OSX and Linux Gmvault clients can now be contained by a directory name with a space character.
+- Handle NULL character in emails that was preventing them from being restored. The emails are now moved to the quarantine area.
+
+Web site Activity:
+------------------
+- None
+
+
+Shoutouts to: 
+-------------
+
+Special shoutouts to the following githubbers that help me in raising issues, testing intermediate version and help me improving Gmvault.
+
+Also Special thanks to:
+
+Github id: ....
+
+-------------------------------
+-------------------------------
 Version Gmvault-v1.6-beta:
 -------------------------------
 -------------------------------
