@@ -1381,14 +1381,9 @@ class GMVaulter(object):
         if not emails_only:
             # backup chats
             LOG.critical("Start chats restoration.\n")
-            self._sync_chats(compress = compress_on_disk, restart = restart)
+            self.restore_chats(extra_labels, restart)
         else:
             LOG.critical("Skip chats restoration.\n")
-        
-        
-        
-        
-        self.restore_chats(extra_labels, restart)
         
         LOG.critical("Restore operation performed in %s.\n" \
                      % (self.timer.seconds_to_human_time(self.timer.elapsed())))
