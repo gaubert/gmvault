@@ -250,6 +250,16 @@ class GMVaultLauncher(object):
         rest_parser.add_argument("--resume", "--restart", \
                                  action='store_true', dest='restart', \
                                  default=False, help= 'Restart from the last saved gmail id.')
+                                 
+        # activate the resume mode --restart is deprecated
+        rest_parser.add_argument("--emails-only", \
+                                 action='store_true', dest='only_emails', \
+                                 default=False, help= 'Only sync emails.')
+        
+        # activate the resume mode --restart is deprecated
+        rest_parser.add_argument("--chats-only", \
+                                 action='store_true', dest='only_chats', \
+                                 default=False, help= 'Only sync chats.')
         
         rest_parser.add_argument("-d", "--db-dir", \
                                  action='store', help="Database root directory. (default: ./gmvault-db)",\
@@ -458,6 +468,13 @@ class GMVaultLauncher(object):
             
             parsed_args['restart'] = options.restart
             
+            # handle emails or chats only
+            if options.only_emails and options.only_chats:
+                parser.error("--emails-only and --chats-only cannot be used together. Please choose one.")
+           
+            parsed_args['emails_only'] = options.only_emails
+            parsed_args['chats_only']  = options.only_chats
+            
         elif parsed_args.get('command', '') == 'check':
             
             #add defaults for type
@@ -519,7 +536,7 @@ class GMVaultLauncher(object):
             
             #call restore
             labels = [args['label']] if args['label'] else []
-            restorer.restore(pivot_dir = starting_dir, extra_labels = labels, restart = args['restart'])
+            restorer.restore(pivot_dir = starting_dir, extra_labels = labels, restart = args['restart'], emails_only = args['emails_only'], chats_only = args['chats_only'])
         
         else:
             raise ValueError("Unknown synchronisation mode %s. Please use full (default), quick.")

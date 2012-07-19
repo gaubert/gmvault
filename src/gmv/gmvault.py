@@ -1365,15 +1365,30 @@ class GMVaulter(object):
             
         return new_gmail_ids_info 
            
-    def restore(self, pivot_dir = None, extra_labels = [], restart = False): #pylint:disable=W0102
+    def restore(self, pivot_dir = None, extra_labels = [], restart = False, emails_only = False, chats_only = False): #pylint:disable=W0102
         """
            Restore emails in a gmail account
         """
         self.timer.start() #start restoring
         
-        self.restore_chats(extra_labels, restart)
+        if not chats_only:
+            # backup emails
+            LOG.critical("Start emails restoration.\n")
+            self.restore_emails(pivot_dir, extra_labels, restart)
+        else:
+            LOG.critical("Skip emails restoration.\n")
         
-        self.restore_emails(pivot_dir, extra_labels, restart)
+        if not emails_only:
+            # backup chats
+            LOG.critical("Start chats restoration.\n")
+            self._sync_chats(compress = compress_on_disk, restart = restart)
+        else:
+            LOG.critical("Skip chats restoration.\n")
+        
+        
+        
+        
+        self.restore_chats(extra_labels, restart)
         
         LOG.critical("Restore operation performed in %s.\n" \
                      % (self.timer.seconds_to_human_time(self.timer.elapsed())))
