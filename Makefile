@@ -62,7 +62,7 @@ gmv-src-dist: clean init
 	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/RELEASE-NOTE.txt
 	# copy scripts in dist
 	cp -R $(BASEDIR)/etc $(GMVDIST)
-	cd $(GMVDIST); $(PYTHONBIN) setup.py sdist -d ../$(GMVBUILD) 
+	cd $(GMVDIST); $(PYTHONBIN) setup.py sdist -d ../$(GMVBUILD)
 	@echo ""
 	@echo "=================================================================="
 	@echo ""
