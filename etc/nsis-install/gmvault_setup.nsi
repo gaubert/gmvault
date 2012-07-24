@@ -10,7 +10,7 @@
 !include "TextFunc.nsh" ; for replacing INSTDIR in gmvault
 
 ; The name of the installer
-Name "gmvault_setup"
+Name "gmvault"
 
 ; Request user privileges only
 ; with admin privileges that will allow to write in program files
