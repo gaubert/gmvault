@@ -57,7 +57,7 @@ FunctionEnd
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION finishpageaction
 
 
-!define MUI_WELCOMEPAGE_TITLE "GMVAULT Setup"
+!define MUI_WELCOMEPAGE_TITLE "GMVAULT Installer"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "License.rtf"
