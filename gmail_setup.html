@@ -65,36 +65,64 @@
       </div>
     </div>
 
-    <div class="container">
+    <div class="container-fluid">
      <div class="page-header">
        <a name="gmailsetup"></a><h1>Gmail Setup</h1>
      </div>
-        <p>Before to start using Gmvault, you should check that Gmail is properly setup to let Gmvault work optimally. 
-        </br>In Gmail the IMAP access needs to be enable and the limit of number of emails per IMAP folders needs to be disabled.
+        <p>Before to start using Gmvault, you should check that Gmail is properly configured to let Gmvault work optimally. 
+     <div class="page-header">
+        <h3>Enabling IMAP in Gmail</h3>
+     </div>
+        In Gmail, the IMAP access needs to be enable and the limit of number of emails per IMAP folders needs to be disabled.
         </br>Check below how to do it:
         <div class="thumbnail">
 		   <h5>Go to GMail settings:</h5>
 		   <img src="./assets/img/gmvault_setup-1.jpg" alt="">
         </div>
         </br>
-        </br>
-        </br>
+        <p>Click on the Gmail Settings button on the right top side and click on Forwarding and POP/IMAP option.</p>
         <div class="thumbnail">
-		  <h5>Click on the right side Gmail Settings:</h5>
+		  <h5>Click on Forwarding and POP/IMAP:</h5>
 		  </br>
 		  <img src="./assets/img/gmvault_setup-2.jpg"" alt="">
         </div>
         </br>
         </br>
-        </br>
+        <p>You can now enable IMAP and disable the limit of emails per folders.</p>
         <div class="thumbnail">
-		  <h5>Enable IMAP and disable the limit of emails per folders:</h5>
+		  <h5>Enabling IMAP and disabling the limit of emails per folders:</h5>
 		  </br>
 		  <img src="./assets/img/gmvault_setup-3.jpg"" alt="">
         </div>
+      <div class="page-header">
+        <h3>Enabling specific folders on Gmail IMAP</h3>
+     </div>
+        <p>You will also have to make the folders "All Mail" and "Chats" available on Gmail IMAP.</p>
+        <div class="thumbnail">
+		   <h5>Go to Labels:</h5>
+		   <img src="./assets/img/gmvault_setup-4.jpg" alt="">
+        </div>
         </br>
-        </br>
-        </br>
+        <p>With these setting, Gmvault should work like a charm.</p>
+      <div class="page-header"> <a name="quickstart"></a>
+        <h1>Quick Start</h1>
+      </div>
+     <p>Once you have installed and configured Gmvault (see <a href="install.html">Install</a> and <a href="#gmailsetup">Gmail Setup</a>), you can start using it in 2 minutes. </br>
+      Go to the bin directory of your distribution and simply type:</p>
+     <pre>$>cd GMVAULTHOME/bin
+$>./gmvault sync foo.bar@gmail.com</pre>
+     <p>You will have to authenticate yourself the first time you use Gmvault for a particular account. Just follow the instruction given on screen. </br>
+      After that Gmvault will automatically authenticate itself using the credentials stored in $HOME/.gmvault (or %HOME%/.gmvault for Windows). </br>
+      Once authenticated, Gmvault will start to backup your complete gmail account by default into $HOME/gmvault-db or %HOME%/gmvault-db. </br>
+      To restore your emails into an account use the following command:</p>
+     <pre>$>./gmvault restore MYNEWfoo.bar@gmail.com</pre>
+     By default, Gmvault will restore the emails from $HOME/gmvault-db or %HOME%/gmvault-db into the given account. Use the -d or --db-dir to point to another local email repository. </br>
+     It is recommended to have one local email repository per account but with the option -m , --multiple-db-owner you can backup multiple Gmail accounts in one repository. </br>
+     You might have to enter into an authentication phase if it is a new account for gmvault. Gmvault will store all credentials into $HOME/.gmvault (or %HOME%/.gmvault for Windows) and you can always go this directory and delete them if you wish. </br>
+     If you wish to daily backup you email box please use the following command:
+     <pre>$>./gmvault sync -t quick foo.bar@gmail.com</pre>
+     <p> That command will try to update the given local repository with the last 2 months of emails. Only new emails contents will be downloaded so it should only take few minutes. </br>
+      For more information regarding the different Gmvault options, please refer to the <a href="./in_depth.html">In Depth</a> part of the documentation. </p>
    <!-- Footer
       ================================================== -->
       <footer class="footer">
