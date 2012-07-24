@@ -28,7 +28,7 @@ class Example(wx.Frame):
 
         lbox = wx.BoxSizer(wx.VERTICAL)
 
-        listbox = wx.ListBox(panel, -1, size=(100,200))
+        listbox = wx.ListBox(panel, -1, size=(100,50))
 
 
         #add button panel and its sizer
@@ -58,8 +58,8 @@ class Example(wx.Frame):
         #buttonbox.Add(clr)
 
         btnPanel.SetSizer(bbox)
-        lbox.Add(listbox, 5, wx.EXPAND | wx.ALL, 1)
-        lbox.Add(btnPanel, 1, wx.EXPAND | wx.ALL, 1)
+        lbox.Add(listbox, 1, wx.EXPAND | wx.ALL, 1)
+        lbox.Add(btnPanel, 0, wx.EXPAND | wx.ALL, 1)
         #lbox.Add(buttonbox, 1, wx.EXPAND | wx.ALL, 1)
 
         #hbox.Add(lbox, 1, wx.EXPAND | wx.ALL, 7)
@@ -81,5 +81,5 @@ class Example(wx.Frame):
 if __name__ == '__main__':
   
     app = wx.App()
-    Example(None, title='Border')
+    Example(None, title='Gmvault-test')
     app.MainLoop()
