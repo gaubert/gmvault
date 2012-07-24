@@ -10,7 +10,7 @@
 !include "TextFunc.nsh" ; for replacing INSTDIR in gmvault
 
 ; The name of the installer
-Name "gmvault"
+Name "Gmvault"
 
 ; Request user privileges only
 ; with admin privileges that will allow to write in program files
@@ -19,7 +19,7 @@ Name "gmvault"
 RequestExecutionLevel user
 
 ; The file to write
-OutFile "gmvault_setup.exe"
+OutFile "gmvault_installer.exe"
 
 ; The default installation directory
 ;InstallDir $PROGRAMFILES\gmvault
@@ -57,7 +57,7 @@ FunctionEnd
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION finishpageaction
 
 
-!define MUI_WELCOMEPAGE_TITLE "GMVAULT Installer"
+!define MUI_WELCOMEPAGE_TITLE "Gmvault Installer"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "License.rtf"

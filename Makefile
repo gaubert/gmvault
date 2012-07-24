@@ -157,8 +157,8 @@ gmv-win-installer: gmv-win-dist
 	echo "=== call gmvault_setup.nsi in $(GMVWINBUILDDIST) ==="
 	ls -la > /tmp/res.txt
 	cd $(GMVWINBUILDDIST); $(MAKENSIS) ./gmvault_setup.nsi
-	mv $(GMVWINBUILDDIST)/gmvault_setup.exe $(GMVWINBUILDDIST)/gmvault_setup_v$(GMVVERSION).exe
-	echo "gmvault_setup_v$(GMVVERSION).exe available in $(GMVWINBUILDDIST)"
+	mv $(GMVWINBUILDDIST)/gmvault_installer.exe $(GMVWINBUILDDIST)/gmvault_installer_v$(GMVVERSION).exe
+	echo "gmvault_installer_v$(GMVVERSION).exe available in $(GMVWINBUILDDIST)"
 
 
 clean: clean-build
