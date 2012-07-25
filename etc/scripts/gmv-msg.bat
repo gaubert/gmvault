@@ -1,5 +1,6 @@
 @ECHO OFF
 @color 2
+@mode 140,55
 
 REM To print a message in console once the gmvault-shell has been launched
 ECHO Welcome to gmvault (version 1.7-alpha). 
