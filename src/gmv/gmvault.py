@@ -292,7 +292,7 @@ class GmailStorer(object): #pylint:disable=R0902
         else:
             
             # get all yy-mm dirs to list
-            dirs = gmvault_utils.get_all_directories_posterior_to(pivot_dir, gmvault_utils.get_all_dirs_under(self._db_dir))
+            dirs = gmvault_utils.get_all_directories_posterior_to(pivot_dir, gmvault_utils.get_all_dirs_under(self._db_dir, ignore_sub_dir))
             
             #create all iterators and chain them to keep the same interface
             #iter_dirs = [gmvault_utils.dirwalk('%s/%s' % (self._db_dir, the_dir), "*.meta") for the_dir in dirs]
@@ -1251,7 +1251,7 @@ class GMVaulter(object):
             LOG.critical("Gmvault db hosting emails from different accounts: %s.\nCannot activate database cleaning." % (", ".join(owners)))
             return
         else:
-            LOG.critical("Look for emails/chats that are still in the Gmvault db but in Gmail servers anymore.\n")
+            LOG.critical("Look for emails/chats that are in the Gmvault db but not in Gmail servers anymore.\n")
             
             #get gmail_ids from db
             LOG.critical("Read all gmail ids from the Gmvault db. It might take a bit of time ...\n")
