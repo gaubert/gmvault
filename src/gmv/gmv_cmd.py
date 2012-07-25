@@ -237,7 +237,7 @@ class GMVaultLauncher(object):
                                  action='store', default='empty_$_email', help='email account to restore.')
         
         # restore typ
-        rest_parser.add_argument('-t', '--type', \
+        rest_parser.add_argument('-t', '-type', '--type', \
                                  action='store', dest='type', \
                                  default='full', help='type of restoration: full|quick. (default: full)')
         

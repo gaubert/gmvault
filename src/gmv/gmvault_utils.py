@@ -484,6 +484,8 @@ DEFAULT_CONF_FILE = """#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 quick_days=10
 
 [Restore]
+# it is 10 days but currently it will always be the current month or the last 2 months
+# the notion of days is not yet apparent in restore (only months).
 quick_days=10
 
 [General]

@@ -1374,6 +1374,10 @@ class GMVaulter(object):
         if not chats_only:
             # backup emails
             LOG.critical("Start emails restoration.\n")
+            
+            if pivot_dir:
+                LOG.critical("Quick mode activated. Will only restore all emails since %s.\n" % (pivot_dir))
+            
             self.restore_emails(pivot_dir, extra_labels, restart)
         else:
             LOG.critical("Skip emails restoration.\n")
