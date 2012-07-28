@@ -58,11 +58,13 @@ body { /*padding-top: 60px;*/ /* was adding Gmvault and pushing it 60px to make 
          <li class=""> <a href="#lin_install">Linux Installation</a> </li>
          <li class=""> <a href="#py_install">Python Installation</a> </li>
          <li class="divider"></li>
-         <li class=""> <a href="#quickstart">Quick Start</a> </li>
+         <li class=""> <a href="./gmail_setup.html">Gmail Setup</a> </li>
+         <li class=""> <a href="./gmail_setup.html#quickstart">Quick Start</a> </li>
          <li class=""> <a href="./in_depth.html">In Depth</a> </li>
        </ul>
      </li>
-     <li class=""> <a href="#quickstart"><i class="icon-time icon-small"></i>Quick Start</a> </li>
+     <li class=""> <a href="./gmail_setup.html"><i class="icon-time icon-small"></i>Gmail Setup</a> </li>
+     <li class=""> <a href="./gmail_setup.html#quickstart"><i class="icon-time icon-small"></i>Quick Start</a> </li>
      <li class=""> <a href="./in_depth.html"><i class="icon-cogs icon-small"></i>In Depth</a> </li>
      <li class=""> <a href="./report_pb.html"><i class="icon-exclamation-sign icon-small"></i>Report a problem</a> </li>
      <li class="divider-vertical"></li>
@@ -75,7 +77,8 @@ body { /*padding-top: 60px;*/ /* was adding Gmvault and pushing it 60px to make 
    </div>
   </div>
  </div>
-</div>
+</div> <!-- End Navbar -->
+
 <div class="container-fluid">
  <div class="row-fluid">
   <div class="span12">
@@ -158,8 +161,8 @@ body { /*padding-top: 60px;*/ /* was adding Gmvault and pushing it 60px to make 
    </div>
    <p>Download and untar the Mac OSX binary tarball.</br>
     Go to the GMVAULT_HOME/bin dir to launch Gmvault.</p>
-   <pre>$ tar zxvf gmvault-v1.5-beta-macosx-intel.tar.gz
-$ cd gmvault-v1.5-beta/bin
+   <pre>$ tar zxvf gmvault-v1.7-beta-macosx-intel.tar.gz
+$ cd gmvault-v1.7-beta/bin
 $./gmvault sync myuser@gmail.com</pre>
    <p>The current Mac OS X distribution has been tested with OSX 10.7 and 10.6. If you have older Intel MAC OSX version try to use this binary distribution. Please go to the <a href="report_pb.html">Report a problem page</a> to signal any issues. Another alternative is to download and install the source distribution or to install Gmvault from Pypi.</p>
    <div class="page-header"> <a name="lin_install"></a>
@@ -167,8 +170,8 @@ $./gmvault sync myuser@gmail.com</pre>
    </div>
     <p>On Linux, it is recommended to install Gmvault using the source distribution or Pypi. There is an experimental 64bits binary tarball distribution. If you encounter a problem please report it <a href="report_pb.html">here</a>. Download and untar the binary tarball for Linux 64bits.</br>
      Go to the GMVAULT_HOME/bin dir to launch Gmvault.</p>
-    <pre>$ tar zxvf gmvault-v1.5-beta-linux-i686.tar.gz
-$ cd gmvault-v1.5-beta/bin
+    <pre>$ tar zxvf gmvault-v1.7-beta-linux-i686.tar.gz
+$ cd gmvault-v1.7-beta/bin
 $ ./gmvault sync myuser@gmail.com</pre>
     <div class="page-header"> <a name="py_install"></a>
      <h2>Python Installation from Pypi</h2>
@@ -177,13 +180,13 @@ $ ./gmvault sync myuser@gmail.com</pre>
      You would need to have the <a href="http://bit.ly/easy_install">setup tools</a> or <a href="http://www.pip-installer.org/en/latest/index.html">pip</a> installed in your Python distribution.
      I would also recommend using gmvault in a <a href="http://pypi.python.org/pypi/virtualenv">virtualenv</a> isolated sandbox.<br/>
      Below is described an installation under a virtualenv sandbox. </p>
-    <pre>$ virtualenv --no-site-packages gmvault-1.0-beta
-New python executable in gmvault-1.0-beta/bin/python
+    <pre>$ virtualenv --no-site-packages gmvault-1.7-beta
+New python executable in gmvault-1.7-beta/bin/python
 Installing setuptools............done.
-$ cd gmvault-1.0-beta/bin
+$ cd gmvault-1.7-beta/bin
 $./pip install gmvault
 Downloading/unpacking gmvault
-  Downloading gmvault-1.0-beta.tar.gz (47Kb): 47Kb downloaded
+  Downloading gmvault-1.7-beta.tar.gz (47Kb): 47Kb downloaded
   Running setup.py egg_info for package gmvault
 
 Downloading/unpacking Logbook==0.3 (from gmvault)
@@ -191,7 +194,7 @@ Downloading/unpacking Logbook==0.3 (from gmvault)
   Running setup.py egg_info for package Logbook
 
 Downloading/unpacking IMAPClient==0.8.1 (from gmvault)
-  Downloading IMAPClient-0.8.1.zip (107Kb): 107Kb downloaded
+  Downloading IMAPClient-0.9.zip (107Kb): 107Kb downloaded
   Running setup.py egg_info for package IMAPClient
     Downloading http://pypi.python.org/packages/source/d/distribute/distribute-0.6.24.tar.gz
     Extracting in /tmp/tmp2kCczm
@@ -212,7 +215,7 @@ Installing collected packages: gdata, gmvault, IMAPClient, Logbook
   Running setup.py install for gmvault
     changing mode of build/scripts-2.7/gmvault from 644 to 755
 
-    changing mode of /tmp/gmvault-1.0-beta/bin/gmvault to 755
+    changing mode of /tmp/gmvault-1.7-beta/bin/gmvault to 755
   Running setup.py install for IMAPClient
 
     no previously-included directories found matching 'doc/doctrees'
@@ -232,12 +235,12 @@ $
     <p>The Source distribution is a standard python distribution installation. It is very similar to the installation from Pypi and working on all platforms. </br>
      It is also recommended to use Gmvault within a virtualenv (see <a href="http://pypi.python.org/pypi/virtualenv">here</a> for info). Untar the downloaded source distribution and run:
     
-    <pre>$> cd gmvault-1.5-beta
+    <pre>$> cd gmvault-1.7-beta
 $> ~/virtualenv-test/bin/python setup.py install
 PATH = ./src/gmv/gmv_cmd.py
 
-1.5-beta
-Gmvault version = 1.5-beta
+1.7-beta
+Gmvault version = 1.7-beta
 
 running install
 running bdist_egg
@@ -257,8 +260,8 @@ copying ./etc/scripts/gmvault -> build/scripts-2.7
 ...
 Installing gmvault script to /Users/xxxx/virtualenv-test/bin
 
-Installed /Users/xxxx/virtualenv-test/lib/python2.7/site-packages/gmvault-1.5_beta-py2.7.egg
-Processing dependencies for gmvault==1.5-beta
+Installed /Users/xxxx/virtualenv-test/lib/python2.7/site-packages/gmvault-1.7_beta-py2.7.egg
+Processing dependencies for gmvault==1.7-beta
 Searching for gdata==2.0.17
 Reading http://pypi.python.org/simple/gdata/
 Reading http://code.google.com/p/gdata-python-client/
@@ -269,29 +272,14 @@ Running gdata-2.0.17/setup.py -q bdist_egg --dist-dir /var/folders/w3/kzry2_2537
 zip_safe flag not set; analyzing archive contents...
 Adding gdata 2.0.17 to easy-install.pth file
 ...
-Finished processing dependencies for gmvault==1.5-beta
+Finished processing dependencies for gmvault==1.6-beta
 >$ </pre>
     <p>Please report any problems using <a href="report_pb.html">"Report a problem"</a> page.</p>
-    <div class="page-header"> <a name="quickstart"></a>
-     <h1>Quick Start</h1>
+    <div class="page-header"> <a name=""></a>
+     <h1>Further Steps</h1>
     </div>
-     <p>Once you have installed Gmvault (see <a href="#install">Install</a>), you can start using it in 2 minutes. </br>
-      Go to the bin directory of your distribution and simply type:</p>
-     <pre>$>cd GMVAULTHOME/bin
-$>./gmvault sync foo.bar@gmail.com</pre>
-     <p>You will have to authenticate yourself the first time you use Gmvault for a particular account. Just follow the instruction given on screen. </br>
-      After that Gmvault will automatically authenticate itself using the credentials stored in $HOME/.gmvault (or %HOME%/.gmvault for Windows). </br>
-      Once authenticated, Gmvault will start to backup your complete gmail account by default into $HOME/gmvault-db or %HOME%/gmvault-db. </br>
-      To restore your emails into an account use the following command:</p>
-     <pre>$>./gmvault restore MYNEWfoo.bar@gmail.com</pre>
-     By default, Gmvault will restore the emails from $HOME/gmvault-db or %HOME%/gmvault-db into the given account. Use the -d or --db-dir to point to another local email repository. </br>
-     It is recommended to have one local email repository per account but with the option -m , --multiple-db-owner you can backup multiple Gmail accounts in one repository. </br>
-     You might have to enter into an authentication phase if it is a new account for gmvault. Gmvault will store all credentials into $HOME/.gmvault (or %HOME%/.gmvault for Windows) and you can always go this directory and delete them if you wish. </br>
-     If you wish to daily backup you email box please use the following command:
-     <pre>$>./gmvault sync -t quick foo.bar@gmail.com</pre>
-     <p> That command will try to update the given local repository with the last 2 months of emails. Only new emails contents will be downloaded so it should only take few minutes. </br>
-      For more information regarding the different Gmvault options, please refer to the <a href="./in_depth.html">In Depth</a> part of the documentation. </p>
-   </div>
+     <p>Once you have installed Gmvault (see <a href="#install">Install</a>), please go to <a href="gmail_setup.html">Gmail Setup</a> to configure Gmail to working optimally with Gmvault.
+     </br>You can alternatively go to <a href="./gmail_setup.html#quickstart">Quick Start</a> to start using Gmvault in 2 mins.
   
    <!-- Footer ================================================== -->
    <footer class="footer">
