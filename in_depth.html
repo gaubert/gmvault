@@ -69,18 +69,21 @@
        <a name="indepth"></a><h1>In Depth</h1>
         <p></br>Gmvault is a user friendly command-line tool that setup most of the necessary defaults to quickly sync (backup) your gmail account or restore it to a gmail account.
         </br>It should be self-explanatory. Use gmvault -h to see the different options and how the tool works.</br>
-        <pre>$./gmvault -h
+        <pre>./gmvault 
 
-usage: gmvault [-h] [-v] {restore,sync} ...
+gmvault: error: too few arguments
+
+usage: gmvault [-h] [-v] {sync,restore,check} ...
 
 optional arguments:
-  -h, --help      show this help message and exit
-  -v, --version   show program's version number and exit
+  -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
 
 subcommands:
-  {restore,sync}  valid subcommands.
-    sync          synchronize with a given gmail account.
-    restore       restore gmvault-db to a given email account.
+  {sync,restore,check}  valid subcommands.
+    sync                synchronize with a given gmail account.
+    restore             restore gmvault-db to a given email account.
+    check               Check and clean the disk database.
 
 Examples:
 
@@ -88,10 +91,10 @@ a) Get help for each of the individual commands
 
 #> gmvault sync -h
 #> gmvault restore --help
-
+#> gmvault check -h
 
 </pre>
-        </br>Gmvault is a command-oriented tool and every Gmvault call needs to contain a subcommand (sync or restore).
+        </br>Gmvault is a command-oriented tool and every Gmvault call needs to contain a subcommand (sync, restore and check).
         </br>You will first need to setup the credential (token or password) for the different gmail accounts you want to use prior to syncing or restoring them with Gmvault.
         </br>This will allow Gmvault to automatically connect to the accounts you want to work with.
         </p>
@@ -125,7 +128,7 @@ Press ENTER to open the browser. Once you've granted access you can switch back 
 		<h5>You should see this once you have granted access to Gmvault.</h5>
 		<img src="./assets/img/xoauth-auth-access-granted.png" alt="">
    </div>
-   <p>Once you have granted access to Gmvault, press one more time ENTER to let Gmvault finish its work.</p>
+   <p>Once you have granted access to Gmvault, press one more time <strong>ENTER</strong> to let Gmvault finish its work.</p>
    <p><pre>You should now see the web page on your browser now.
 If you don't, you can manually open:
 
