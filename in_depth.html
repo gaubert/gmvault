@@ -36,37 +36,65 @@
 
   <body data-spy="scroll" data-target=".subnav" data-offset="50">
 
-    <!-- Navbar
+<!-- Navbar
     ================================================== -->
-    <div class="navbar navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>
-          <a class="brand" href="./index.html">Gmvault</a>
-          <div class="nav-collapse">
-			<ul class="nav">
-			 <li class=""> <a href="./index.html"><i class="icon-home icon-small"></i>Overview</a> </li>
-			 <li class=""> <a href="./install.html"><i class="icon-book icon-small"></i>Install</a> </li>
-             <li class=""> <a href="./install.html#quickstart"><i class="icon-time icon-small"></i>Quick Start</a> </li>
-			 <li class=""> <a href="./report_pb.html"><i class="icon-exclamation-sign icon-small"></i>Report a problem</a> </li>
-			 <li class="divider-vertical"></li>
-			 <li class=""> <a href="./support.html"><i class="icon-heart icon-small"></i>Support</a> </li>
-			 <li class=""> <a href="./download.html"><i class="icon-download icon-small"></i>Download</a> </li>
-			</ul>
-			<ul class="nav">
-			  <li><a href="mailto:guillaume.aubert@gmail.com"><i class="icon-envelope"></i> Me</a></li>
-			</ul>
-          </div>
-        </div>
-      </div>
-    </div>
+<div class="navbar navbar-fixed-top">
+ <div class="navbar-inner">
+  <div class="container"> <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </a> <a class="brand" href="./index.html">Gmvault</a>
+   <div class="nav-collapse">
+    <ul class="nav">
+     <li class=""> <a href="./index.html"><i class="icon-home icon-small"></i>Overview</a> </li>
+     <li class="dropdown" id="install-menu">
+       <a class="dropdown-toggle" data-toggle="dropdown" href="#install-menu">
+         Install
+         <b class="caret"></b>
+       </a>
+       <ul class="dropdown-menu">
+         <li class=""><a href="./install.html#install">Install</a></li>
+         <li class=""> <a href="./install.html#win_install">Windows Installation</a> </li>
+         <li class=""> <a href="./install.html#mac_install">Mac OSX Installation</a> </li>
+         <li class=""> <a href="./install.html#lin_install">Linux Installation</a> </li>
+         <li class=""> <a href="./install.html#py_install">Python Installation</a> </li>
+         <li class="divider"></li>
+         <li class=""> <a href="./gmail_setup.html">Gmail Setup</a> </li>
+         <li class=""> <a href="./gmail_setup.html#quickstart">Quick Start</a> </li>
+         <li class=""> <a href="./in_depth.html">In Depth</a> </li>
+       </ul>
+     </li>
+     <li class=""> <a href="./gmail_setup.html"><i class="icon-time icon-small"></i>Gmail Setup</a> </li>
+     <li class=""> <a href="./gmail_setup.html#quickstart"><i class="icon-time icon-small"></i>Quick Start</a> </li>
+     <li class="active dropdown" id="in_depth-menu">
+       <a class="dropdown-toggle" data-toggle="dropdown" href="#in_depth-menu">
+         <i class="icon-cogs icon-small"></i>In Depth
+         <b class="caret"></b>
+       </a>
+       <ul class="dropdown-menu">
+         <li class=""><a href="./in_depth.html#indepth">In Depth</a></li>
+         <li class=""> <a href="./in_depth.html#authentication">Authentication</a> </li>
+         <li class=""> <a href="./in_depth.html#backup">Backup your account</a> </li>
+         <li class=""> <a href="./in_depth.html#restore">Restore your account</a> </li>
+         <li class=""> <a href="#py_install">Python Installation</a> </li>
+         <li class="divider"></li>
+         <li class=""> <a href="./gmail_setup.html">Gmail Setup</a> </li>
+         <li class=""> <a href="./gmail_setup.html#quickstart">Quick Start</a> </li>
+         <li class=""> <a href="./in_depth.html">In Depth</a> </li>
+       </ul>
+     </li>
+     <li class=""> <a href="./report_pb.html"><i class="icon-exclamation-sign icon-small"></i>Problems</a> </li>
+     <li class="divider-vertical"></li>
+     <li class=""> <a href="./support.html"><i class="icon-heart icon-small"></i>Support</a> </li>
+     <li class=""> <a href="./download.html"><i class="icon-download icon-small"></i>Download</a> </li>
+    <ul class="nav">
+      <li><a href="mailto:guillaume.aubert@gmail.com"><i class="icon-envelope"></i> Me</a></li>
+    </ul>
+    </ul>
+   </div>
+  </div>
+ </div>
+</div> <!-- End Navbar -->
 
     <div class="container-fluid">
-       <a name="indepth"></a><h1>In Depth</h1>
+       <a id="indepth" name="indepth"></a><h1>In Depth</h1>
         <p></br>Gmvault is a user friendly command-line tool that setup most of the necessary defaults to quickly sync (backup) your gmail account or restore it to a gmail account.
         </br>It should be self-explanatory. Use gmvault -h to see the different options and how the tool works.</br>
         <pre>./gmvault 
@@ -98,7 +126,7 @@ a) Get help for each of the individual commands
         </br>You will first need to setup the credential (token or password) for the different gmail accounts you want to use prior to syncing or restoring them with Gmvault.
         </br>This will allow Gmvault to automatically connect to the accounts you want to work with.
         </p>
-        <h3>Authentication</h3>
+        <h2><a id="authentication" name="authentication"></a>Authentication</h2>
         <p></br>
            To authenticate yourself and authorize Gmvault accessing your Gmail account, Gmvault allows users to use a Gmail XOAuth token or your Gmail login password.</br>
            The <strong>XOAuth</strong> authentication is the recommended way to access your account. This method is activated by default. </br>
@@ -140,7 +168,10 @@ Below is a screenshot of a complete authentication session on Windows.</p>
 		<h5>Grant access to Gmvault.</h5>
 		<img src="./assets/img/full-access-granted-screenshot.png" alt="">
    </div>
-<p>After that authentication session Gmvault will automatically use the XOAuth token stored under $HOME/.gmvault or %HOME% (c:\users\MYUSER) for all session with the MYUSER user.</br></p>
+<p>After that authentication session Gmvault will automatically use the XOAuth token stored under $HOME/.gmvault or %HOME% (c:\users\MYUSER) for all session with the MYUSER user.
+</br>You can renew a saved oauth token with the option <strong>--renew-oauth-tok</strong>. You will again go through the Gmail OAuth authentication procedure.</p>
+
+    
     <h4>Authentication with gmail password</h4>
 		<p></br>If you do not want to use the Gmail XOAuth token (not recommended), you can always use Gmvault with your password.
 		</br>In that case, you will have to interactively enter your password at the beginning of the Gmvault session.
@@ -191,7 +222,7 @@ Process email num 1 (imap_id:2) from 2005-10.
 Process email num 2 (imap_id:3) from 2005-10.
 Process email num 3 (imap_id:5) from 2005-10.
 ...</pre></p>
-<h3>Making a backup of your Gmail account</h3>
+<h2><a id="backup" name="backup"></a>Making a backup of your Gmail account</h2>
 </br>
 <p>The sync command of Gmvault allow users to backup the Gmail account of their choice.
 </br>use <strong>gmvault sync -h</strong> to get explanations regarding all options. Examples are also provided after the options details.
@@ -309,7 +340,7 @@ The full synchronisation scans your complete email box and store locally on disk
 </br>The quick synchronisation goes up to two month backward in time and update your local on disk email repository to reflect the addition and deletion of emails as well the labels modifications.
 </br>The custom synchronisation allows to provide a custom imap or gmail request if you only wish to backup a subset of your emails.
 </p>
-<h3>Restoring your Gmail account</h3>
+<h2><a id="restore" name="restore"></a>Restoring your Gmail account</h2>
 </br>
 <p>You can use the restore command to recreate your gmail account in case of problems. Like the sync command the restore command provides 2 types of restore with <strong>-t, --type</strong> full or quick.
 The full restore will try to restore completly the local email repository into the given email account while the quick restore will only restore the last 2 months of emails. Restore only upload new emails onto your given gmail account and also update the associated information such as labels but never delete an email from inbox. 
