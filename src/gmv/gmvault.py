@@ -803,159 +803,161 @@ class GMVaulter(object):
            backup the chat messages
         """
         LOG.debug("Before selection")
-        self.src.find_and_select_chats_folder()
+        chat_dir = self.src.find_and_select_chats_folder()
         LOG.debug("Selection is finished")
 
-        imap_ids = self.src.search({ 'type': 'imap', 'req': 'ALL' })
-        
-        # check if there is a restart
-        if restart:
-            LOG.critical("Restart mode activated. Need to find information in Gmail, be patient ...")
-            imap_ids = self.get_gmails_ids_left_to_sync(self.OP_CHAT_SYNC, imap_ids)
-        
-        total_nb_chats_to_process = len(imap_ids) # total number of emails to get
-        
-        LOG.critical("%d chat messages to be fetched." % (total_nb_chats_to_process))
-        
-        nb_chats_processed = 0
-
-        try:
-            #loop over all ids, get email store email
-            for the_id in imap_ids:
-                try:
-                    
-                    gid = None
-                    
-                    LOG.debug("\nProcess imap chat id %s" % ( the_id ))
-                    
-                    #get everything but data
-                    new_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA )
-                    
-                    if new_data.get(the_id, None):
+        if chat_dir:
+            imap_ids = self.src.search({ 'type': 'imap', 'req': 'ALL' })
+            
+            # check if there is a restart
+            if restart:
+                LOG.critical("Restart mode activated. Need to find information in Gmail, be patient ...")
+                imap_ids = self.get_gmails_ids_left_to_sync(self.OP_CHAT_SYNC, imap_ids)
+            
+            total_nb_chats_to_process = len(imap_ids) # total number of emails to get
+            
+            LOG.critical("%d chat messages to be fetched." % (total_nb_chats_to_process))
+            
+            nb_chats_processed = 0
+    
+            try:
+                #loop over all ids, get email store email
+                for the_id in imap_ids:
+                    try:
                         
-                        gid = new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
+                        gid = None
                         
-                        the_dir      = self.gstorer.get_sub_chats_dir()
+                        LOG.debug("\nProcess imap chat id %s" % ( the_id ))
                         
-                        LOG.critical("Process chat num %d (imap_id:%s) into %s." % (nb_chats_processed, the_id, the_dir))
-                    
-                        #pass the dir and the ID
-                        curr_metadata = GMVaulter.check_email_on_disk( self.gstorer , \
-                                                                       new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID], \
-                                                                       the_dir)
+                        #get everything but data
+                        new_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA )
                         
-                        #if on disk check that the data is not different
-                        if curr_metadata:
+                        if new_data.get(the_id, None):
                             
-                            if self._metadata_needs_update(curr_metadata, new_data[the_id], chat_metadata = True):
+                            gid = new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
+                            
+                            the_dir      = self.gstorer.get_sub_chats_dir()
+                            
+                            LOG.critical("Process chat num %d (imap_id:%s) into %s." % (nb_chats_processed, the_id, the_dir))
+                        
+                            #pass the dir and the ID
+                            curr_metadata = GMVaulter.check_email_on_disk( self.gstorer , \
+                                                                           new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID], \
+                                                                           the_dir)
+                            
+                            #if on disk check that the data is not different
+                            if curr_metadata:
                                 
-                                LOG.debug("Chat with imap id %s and gmail id %s has changed. Updated it." % (the_id, gid))
+                                if self._metadata_needs_update(curr_metadata, new_data[the_id], chat_metadata = True):
+                                    
+                                    LOG.debug("Chat with imap id %s and gmail id %s has changed. Updated it." % (the_id, gid))
+                                    
+                                    #restore everything at the moment
+                                    gid  = self.gstorer.bury_chat_metadata(new_data[the_id], local_dir = the_dir)
+                                    
+                                    #update local index id gid => index per directory to be thought out
+                                else:
+                                    LOG.debug("The metadata for chat %s already exists and is identical to the one on GMail." % (gid))
+                            else:  
                                 
-                                #restore everything at the moment
-                                gid  = self.gstorer.bury_chat_metadata(new_data[the_id], local_dir = the_dir)
+                                #get the data
+                                email_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_DATA_ONLY )
+                                
+                                new_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY] = email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
+                                
+                                # store data on disk within year month dir 
+                                gid  = self.gstorer.bury_chat(new_data[the_id], local_dir = the_dir, compress = compress)
                                 
                                 #update local index id gid => index per directory to be thought out
-                            else:
-                                LOG.debug("The metadata for chat %s already exists and is identical to the one on GMail." % (gid))
-                        else:  
+                                LOG.debug("Create and store chat with imap id %s, gmail id %s." % (the_id, gid))   
                             
-                            #get the data
-                            email_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_DATA_ONLY )
-                            
-                            new_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY] = email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
-                            
-                            # store data on disk within year month dir 
-                            gid  = self.gstorer.bury_chat(new_data[the_id], local_dir = the_dir, compress = compress)
-                            
-                            #update local index id gid => index per directory to be thought out
-                            LOG.debug("Create and store chat with imap id %s, gmail id %s." % (the_id, gid))   
+                        else:
+                            # case when gmail IMAP server returns OK without any data whatsoever
+                            # eg. imap uid 142221L ignore it
+                            self.error_report['empty'].append((the_id, None))
                         
-                    else:
-                        # case when gmail IMAP server returns OK without any data whatsoever
-                        # eg. imap uid 142221L ignore it
-                        self.error_report['empty'].append((the_id, None))
-                    
-                    nb_chats_processed += 1
-                    
-                    #indicate every 50 messages the number of messages left to process
-                    left_emails = (total_nb_chats_to_process - nb_chats_processed)
-                    
-                    if (nb_chats_processed % 50) == 0 and (left_emails > 0):
-                        elapsed = self.timer.elapsed() #elapsed time in seconds
-                        LOG.critical("\n== Processed %d emails in %s. %d left to be stored (time estimate %s).==\n" % \
-                                     (nb_chats_processed,  self.timer.seconds_to_human_time(elapsed), \
-                                      left_emails, \
-                                      self.timer.estimate_time_left(nb_chats_processed, elapsed, left_emails)))
-                    
-                    # save id every 10 restored emails
-                    if (nb_chats_processed % 10) == 0:
-                        if gid:
-                            self.save_lastid(self.OP_CHAT_SYNC, gid)
-                    
-                except imaplib.IMAP4.abort, _:
-                    # imap abort error 
-                    # ignore it 
-                    # will have to do something with these ignored messages
-                    LOG.critical("Error while fetching message with imap id %s." % (the_id))
-                    LOG.critical("\n=== Exception traceback ===\n")
-                    LOG.critical(gmvault_utils.get_exception_traceback())
-                    LOG.critical("=== End of Exception traceback ===\n")
-                    try:
-                        #try to get the gmail_id
-                        curr = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID) 
-                    except Exception, _: #pylint:disable-msg=W0703
-                        curr = None
-                        LOG.critical("Error when trying to get gmail id for message with imap id %s." % (the_id))
-                        LOG.critical("Disconnect, wait for 20 sec then reconnect.")
-                        self.src.disconnect()
-                        #could not fetch the gm_id so disconnect and sleep
-                        #sleep 10 sec
-                        time.sleep(10)
-                        LOG.critical("Reconnecting ...")
-                        self.src.connect()
+                        nb_chats_processed += 1
                         
-                    if curr:
-                        gmail_id = curr[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
-                    else:
-                        gmail_id = None
+                        #indicate every 50 messages the number of messages left to process
+                        left_emails = (total_nb_chats_to_process - nb_chats_processed)
                         
-                    #add ignored id
-                    self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
-                    
-                    LOG.critical("Forced to ignore message with imap id %s, (gmail id %s)." % (the_id, (gmail_id if gmail_id else "cannot be read")))
-                    
-                except imaplib.IMAP4.error, error:
-                    # check if this is a cannot be fetched error 
-                    # I do not like to do string guessing within an exception but I do not have any choice here
-                    LOG.critical("Error while fetching message with imap id %s." % (the_id))
-                    LOG.critical("\n=== Exception traceback ===\n")
-                    LOG.critical(gmvault_utils.get_exception_traceback())
-                    LOG.critical("=== End of Exception traceback ===\n")
-                     
-                    #quarantine emails that have raised an abort error
-                    if str(error).find("'Some messages could not be FETCHed (Failure)'") >= 0:
+                        if (nb_chats_processed % 50) == 0 and (left_emails > 0):
+                            elapsed = self.timer.elapsed() #elapsed time in seconds
+                            LOG.critical("\n== Processed %d emails in %s. %d left to be stored (time estimate %s).==\n" % \
+                                         (nb_chats_processed,  self.timer.seconds_to_human_time(elapsed), \
+                                          left_emails, \
+                                          self.timer.estimate_time_left(nb_chats_processed, elapsed, left_emails)))
+                        
+                        # save id every 10 restored emails
+                        if (nb_chats_processed % 10) == 0:
+                            if gid:
+                                self.save_lastid(self.OP_CHAT_SYNC, gid)
+                        
+                    except imaplib.IMAP4.abort, _:
+                        # imap abort error 
+                        # ignore it 
+                        # will have to do something with these ignored messages
+                        LOG.critical("Error while fetching message with imap id %s." % (the_id))
+                        LOG.critical("\n=== Exception traceback ===\n")
+                        LOG.critical(gmvault_utils.get_exception_traceback())
+                        LOG.critical("=== End of Exception traceback ===\n")
                         try:
                             #try to get the gmail_id
-                            LOG.critical("One more attempt. Trying to fetch the Gmail ID for %s" % (the_id) )
                             curr = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID) 
                         except Exception, _: #pylint:disable-msg=W0703
                             curr = None
-                        
+                            LOG.critical("Error when trying to get gmail id for message with imap id %s." % (the_id))
+                            LOG.critical("Disconnect, wait for 20 sec then reconnect.")
+                            self.src.disconnect()
+                            #could not fetch the gm_id so disconnect and sleep
+                            #sleep 10 sec
+                            time.sleep(10)
+                            LOG.critical("Reconnecting ...")
+                            self.src.connect()
+                            
                         if curr:
                             gmail_id = curr[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
                         else:
                             gmail_id = None
-                        
+                            
                         #add ignored id
                         self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
                         
-                        LOG.critical("Ignore message with imap id %s, (gmail id %s)" % (the_id, (gmail_id if gmail_id else "cannot be read")))
-                    
-                    else:
-                        raise error #rethrow error
-        finally:
-            self.src.select_all_mail_folder() #always reselect all mail folder
-        
+                        LOG.critical("Forced to ignore message with imap id %s, (gmail id %s)." % (the_id, (gmail_id if gmail_id else "cannot be read")))
+                        
+                    except imaplib.IMAP4.error, error:
+                        # check if this is a cannot be fetched error 
+                        # I do not like to do string guessing within an exception but I do not have any choice here
+                        LOG.critical("Error while fetching message with imap id %s." % (the_id))
+                        LOG.critical("\n=== Exception traceback ===\n")
+                        LOG.critical(gmvault_utils.get_exception_traceback())
+                        LOG.critical("=== End of Exception traceback ===\n")
+                         
+                        #quarantine emails that have raised an abort error
+                        if str(error).find("'Some messages could not be FETCHed (Failure)'") >= 0:
+                            try:
+                                #try to get the gmail_id
+                                LOG.critical("One more attempt. Trying to fetch the Gmail ID for %s" % (the_id) )
+                                curr = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID) 
+                            except Exception, _: #pylint:disable-msg=W0703
+                                curr = None
+                            
+                            if curr:
+                                gmail_id = curr[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
+                            else:
+                                gmail_id = None
+                            
+                            #add ignored id
+                            self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
+                            
+                            LOG.critical("Ignore message with imap id %s, (gmail id %s)" % (the_id, (gmail_id if gmail_id else "cannot be read")))
+                        
+                        else:
+                            raise error #rethrow error
+            finally:
+                self.src.select_all_mail_folder() #always reselect all mail folder
+        else:
+            imap_ids = []    
         return imap_ids
     
     

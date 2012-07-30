@@ -318,14 +318,20 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 return the_dir
 
         #Error did not find Chats dir
-        raise Exception("Cannot find global 'Chats' folder ! Check whether 'Show in IMAP for 'Chats' is enabled in Gmail (Go to Settings->Labels->All Mail)")    
+        val = gmvault_utils.get_conf_defaults().getboolean("General","errors_if_chat_not_visible", False)
+        
+        if gmvault_utils.get_conf_defaults().getboolean("General","errors_if_chat_not_visible", False):
+            raise Exception("Cannot find global 'Chats' folder ! Check whether 'Show in IMAP for 'Chats' is enabled in Gmail (Go to Settings->Labels->All Mail)") 
+        else:
+            LOG.critical("Cannot find 'Chats' folder on Gmail Server. If you wish to backup your chats, look at the documentation to see how to configure your Gmail account.\n")
+        return None
 
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def select_all_mail_folder(self):
-       """
-          Select ALL Mail folder
-       """
-       self.server.select_folder(self._all_mail_folder, readonly = self.readonly_folder)
+        """
+            Select ALL Mail folder
+        """
+        self.server.select_folder(self._all_mail_folder, readonly = self.readonly_folder)
     
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def get_all_folders(self): 
