@@ -236,7 +236,7 @@ Process email num 3 (imap_id:5) from 2005-10.
 
 usage: gmvault sync [-h] [-t TYPE] [-d DB_DIR] [-o] [-p] [--renew-oauth-tok]
                     [--renew-passwd] [--store-passwd] [-r REQ] [-g REQ]
-                    [--resume] [--emails-only] [--chats-only] [-e] [-z VAL]
+                    [--resume] [--emails-only] [--chats-only] [-e] [-c VAL]
                     [-m] [--no-compression] [--server HOSTNAME] [--port PORT]
                     [--debug]
                     email
@@ -246,7 +246,8 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -t TYPE, --type TYPE  type of synchronisation: full|quick|custom. (default:
+  -t TYPE, -type TYPE, --type TYPE
+                        type of synchronisation: full|quick|custom. (default:
                         full)
   -d DB_DIR, --db-dir DB_DIR
                         Database root directory. (default: $HOME/gmvault-db)
@@ -270,7 +271,7 @@ optional arguments:
   --emails-only         Only sync emails.
   --chats-only          Only sync chats.
   -e, --encrypt         encrypt stored email messages in the database.
-  -z VAL, --db-cleaning VAL
+  -c VAL, --check-db VAL
                         Enable/disable the removal from the gmvault db of the
                         emails that have been deleted from the given gmail
                         account. VAL = yes or no.
