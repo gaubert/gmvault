@@ -578,13 +578,18 @@ class GmailStorer(object): #pylint:disable=R0902
         
         return metadata
     
-    def delete_emails(self, emails_info):
+    def delete_emails(self, emails_info, msg_type):
         """
            Delete all emails and metadata with ids
         """
+        if msg_type == 'email':
+            db_dir = self._db_dir
+        else:
+            db_dir = self._chats_dir
+        
         for (a_id, date_dir) in emails_info:
             
-            the_dir = '%s/%s' % (self._db_dir, date_dir)
+            the_dir = '%s/%s' % (db_dir, date_dir)
             
             data_p      = self.DATA_FNAME % (the_dir, a_id)
             comp_data_p = '%s.gz' % (data_p)
@@ -1163,18 +1168,19 @@ class GMVaulter(object):
         return self.error_report
 
     
-    def _delete_sync(self, imap_ids, db_gmail_ids, db_gmail_ids_info):
+    def _delete_sync(self, imap_ids, db_gmail_ids, db_gmail_ids_info, msg_type):
         """
            Delete emails from the database if necessary
            imap_ids      : all remote imap_ids to check
-           delete_dry_run: True to simulate everything but the deletion
+           db_gmail_ids_info : info read from metadata
+           msg_type : email or chat
         """
         
         # optimize nb of items
         nb_items = self.NB_GRP_OF_ITEMS if len(imap_ids) >= self.NB_GRP_OF_ITEMS else len(imap_ids)
         
-        LOG.critical("Call Gmail to check the stored emails against the Gmail emails ids and see which ones have been deleted.\n\n"\
-                     "Might take few minutes ...\n") 
+        LOG.critical("Call Gmail to check the stored %ss against the Gmail %ss ids and see which ones have been deleted.\n\n"\
+                     "Might take few minutes ...\n" % (msg_type, msg_type)) 
          
         #calculate the list elements to delete
         #query nb_items items in one query to minimise number of imap queries
@@ -1194,10 +1200,10 @@ class GMVaulter(object):
             if len(db_gmail_ids) == 0:
                 break
         
-        LOG.critical("Will delete %s email(s) from gmvault db.\n" % (len(db_gmail_ids)) )
+        LOG.critical("Will delete %s %s(s) from gmvault db.\n" % (len(db_gmail_ids), msg_type) )
         for gm_id in db_gmail_ids:
             LOG.critical("gm_id %s not in the Gmail server. Delete it" % (gm_id))
-            self.gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
+            self.gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])], msg_type)
         
     def get_gmails_ids_left_to_sync(self, op_type, imap_ids):
         """
@@ -1274,7 +1280,7 @@ class GMVaulter(object):
             LOG.debug("Got %s emails imap_id(s) from the Gmail Server." % (len(imap_ids)))
             
             #delete supress emails from DB since last sync
-            self._delete_sync(imap_ids, db_gmail_ids, db_gmail_ids_info)
+            self._delete_sync(imap_ids, db_gmail_ids, db_gmail_ids_info, 'email')
             
             # get all chats ids
             try:
@@ -1290,7 +1296,7 @@ class GMVaulter(object):
                     LOG.debug("Got %s chat imap_ids" % (len(chat_ids)))
             
                     #delete supress emails from DB since last sync
-                    self._delete_sync(chat_ids, db_chat_ids, db_gmail_ids_info)
+                    self._delete_sync(chat_ids, db_chat_ids, db_gmail_ids_info , 'chat')
                 else:
                     LOG.critical("Chats IMAP Directory not visible on Gmail. Ignore deletion of chats.")
                 

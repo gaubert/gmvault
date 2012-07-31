@@ -138,7 +138,7 @@ class GMVaultLauncher(object):
         sync_parser.add_argument('email', \
                                  action='store', default='empty_$_email', help='email to sync with.')
         # sync typ
-        sync_parser.add_argument('-t', '--type', \
+        sync_parser.add_argument('-t', '-type', '--type', \
                                  action='store', dest='type', \
                                  default='full', help='type of synchronisation: full|quick|custom. (default: full)')
         
@@ -198,7 +198,7 @@ class GMVaultLauncher(object):
                                  help="encrypt stored email messages in the database.",\
                                  action='store_true',dest="encrypt", default=False)
         
-        sync_parser.add_argument("-z", "--db-cleaning", metavar = "VAL", \
+        sync_parser.add_argument("-c", "--check-db", metavar = "VAL", \
                           help="Enable/disable the removal from the gmvault db of the emails "\
                                "that have been deleted from the given gmail account. VAL = yes or no.",\
                           dest="db_cleaning", default=None)
@@ -293,7 +293,7 @@ class GMVaultLauncher(object):
         
         # check_db command
         check_parser = subparsers.add_parser('check', \
-                                            help='Check and clean the disk database.')
+                                            help='Check and clean the gmvault-db disk database.')
 
         #email argument
         check_parser.add_argument('email', \
