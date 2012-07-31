@@ -36,7 +36,7 @@ from compiler.ast import With
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
-GMVAULT_VERSION="1.7-alpha"
+GMVAULT_VERSION="1.7-beta"
 
 class memoized(object):
     """Decorator that caches a function's return value each time it is called.
@@ -495,7 +495,7 @@ errors_if_chat_not_visible=False
 
 #Do not touch any parameters below as it could force an overwrite of this file
 [VERSION]
-conf_version=1.7-alpha
+conf_version=1.7-beta
 
 #set environment variables for the program locally
 #they will be read only once the conf file has been loaded

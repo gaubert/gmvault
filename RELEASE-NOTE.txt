@@ -2,7 +2,7 @@ Release Notes for the different versions:
 
 -------------------------------
 -------------------------------
-Version Gmvault-v1.7-alpha:
+Version Gmvault-v1.7-beta:
 -------------------------------
 -------------------------------
 Date: 19.07.2012
