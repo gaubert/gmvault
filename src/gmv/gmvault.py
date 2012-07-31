@@ -1281,15 +1281,18 @@ class GMVaulter(object):
                 
                 db_gmail_ids_info = self.gstorer.get_all_chats_gmail_ids()
                 
-                self.src.find_and_select_chats_folder()
+                chat_dir = self.src.find_and_select_chats_folder()
 
-                chat_ids = self.src.search(imap_utils.GIMAPFetcher.IMAP_ALL)
-                db_chat_ids = set(db_gmail_ids_info.keys())
+                if chat_dir:
+                    chat_ids = self.src.search(imap_utils.GIMAPFetcher.IMAP_ALL)
+                    db_chat_ids = set(db_gmail_ids_info.keys())
                 
-                LOG.debug("Got %s chat imap_ids" % (len(chat_ids)))
+                    LOG.debug("Got %s chat imap_ids" % (len(chat_ids)))
             
-                #delete supress emails from DB since last sync
-                self._delete_sync(chat_ids, db_chat_ids, db_gmail_ids_info)
+                    #delete supress emails from DB since last sync
+                    self._delete_sync(chat_ids, db_chat_ids, db_gmail_ids_info)
+                else:
+                    LOG.critical("Chats IMAP Directory not visible on Gmail. Ignore deletion of chats.")
                 
             finally:
                 self.src.select_all_mail_folder()
