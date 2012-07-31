@@ -32,6 +32,7 @@ import random
 
 import log_utils 
 import conf.conf_helper
+from compiler.ast import With
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
@@ -503,6 +504,50 @@ conf_version=1.7-alpha
 
 """
 
+#VERSION DETECTION PATTERN
+VERSION_PATTERN  = '\s*conf_version=\s*(?P<version>\S*)\s*'
+#VERSION_PATTERN  = '\s*conf_version=\S*'
+VERSION_RE  = re.compile(VERSION_PATTERN)
+
+#list of version conf to not overwrite with the next
+VERSIONS_TO_PRESERVE = [ '1.7-beta' ]
+
+def _get_version_from_conf(home_conf_file):
+    """
+       Check if the config file need to be replaced because it comes from an older version
+    """
+    #check version
+    ver = None
+    with open(home_conf_file) as curr_fd:
+        for line in curr_fd:
+            line = line.strip()
+            matched = VERSION_RE.match(line)
+            if matched:
+                ver =matched.group('version')
+                return ver.strip()
+    
+    return ver
+
+def _create_default_conf_file(home_conf_file):
+    """
+       Write on disk the default file
+    """
+    LOG.critical("Create defaults in %s. Please touch this file only if you know what to do." % (home_conf_file))
+    try:
+        fd = open(home_conf_file, "w+")
+        fd.write(DEFAULT_CONF_FILE)
+        fd.close()
+        return home_conf_file
+    except Exception, err:
+        #catch all error and let run gmvault with defaults if needed
+        LOG.critical("Ignore Error when trying to create conf file for defaults in %s:\n%s.\n" % (get_home_dir_path(), err) )
+        LOG.debug("=== Exception traceback ===")
+        LOG.debug(get_exception_traceback())
+        LOG.debug("=== End of Exception traceback ===\n")
+        #return default file instead
+        return         
+
+@memoized
 def get_conf_filepath():
     """
        If default file is not present, generate it from scratch.
@@ -511,19 +556,12 @@ def get_conf_filepath():
     home_conf_file = "%s/%s" % (get_home_dir_path(), CONF_FILE)
     
     if not os.path.exists(home_conf_file):
-        LOG.critical("Create defaults in %s. Please touch this file only if you know what to do." % (home_conf_file))
-        try:
-            fd = open(home_conf_file, "w+")
-            fd.write(DEFAULT_CONF_FILE)
-            fd.close()
-        except Exception, err:
-            #catch all error and let run gmvault with defaults if needed
-            LOG.critical("Ignore Error when trying to create conf file for defaults in %s:\n%s.\n" % (get_home_dir_path(), err) )
-            LOG.debug("=== Exception traceback ===")
-            LOG.debug(get_exception_traceback())
-            LOG.debug("=== End of Exception traceback ===\n")
-            #return default file instead
-            return
+        return _create_default_conf_file(home_conf_file)
+    else:
+        # check if the conf file needs to be replaced
+        version = _get_version_from_conf(home_conf_file)
+        if version not in VERSIONS_TO_PRESERVE:
+            return _create_default_conf_file(home_conf_file)    
     
     return home_conf_file
 
