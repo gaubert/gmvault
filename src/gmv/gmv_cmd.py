@@ -73,18 +73,24 @@ b) Quick daily synchronisation (only the last 2 months are scanned)
 
 #> gmvault sync --type quick foo.bar@gmail.com
 
-c) Custom synchronisation with an IMAP request for advance users
+c) Resume Full synchronisation from where it failed to not go through your mailbox again
+
+#> gmvault sync foo.bar@gmail.com --resume
+
+d) Encrypt stored emails to save them safely anywhere
+
+#> gmvault sync foo.bar@gmail.com --encrypt
+
+d) Custom synchronisation with an IMAP request for advance users
 
 #> gmvault sync --type custom --imap-req "Since 1-Nov-2011 Before 10-Nov-2011" foo.bar@gmail.com
 
-d) Custom synchronisation with an Gmail request for advance users.
+e) Custom synchronisation with an Gmail request for advance users.
    Get all emails with label work and sent by foo.
 
 #> gmvault sync --type custom --gmail-req "in:work from:foo" foo.bar@gmail.com
 
-e) Resume Full synchronisation  from where it failed to not go through your mailbox again
 
-#> gmvault sync foo.bar@gmail.com --resume
 
 
 
