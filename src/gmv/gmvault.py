@@ -803,7 +803,7 @@ class GMVaulter(object):
         #try to save db_owner in the list of owners
         self.gstorer.store_db_owner(self.login)
     
-    def _sync_chats(self, compress, restart):
+    def _sync_chats(self, imap_req, compress, restart):
         """
            backup the chat messages
         """
@@ -812,7 +812,8 @@ class GMVaulter(object):
         LOG.debug("Selection is finished")
 
         if chat_dir:
-            imap_ids = self.src.search({ 'type': 'imap', 'req': 'ALL' })
+            #imap_ids = self.src.search({ 'type': 'imap', 'req': 'ALL' })
+            imap_ids = self.src.search(imap_req)
             
             # check if there is a restart
             if restart:
