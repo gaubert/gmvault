@@ -1204,7 +1204,6 @@ class GMVaulter(object):
         for gm_id in db_gmail_ids:
             LOG.critical("gm_id %s not in the Gmail server. Delete it." % (gm_id))
             self.gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])], msg_type)
-        LOG.critical("\n")
         
     def get_gmails_ids_left_to_sync(self, op_type, imap_ids):
         """
@@ -1218,7 +1217,6 @@ class GMVaulter(object):
             raise Exception("Bad Operation (%s) in save_last_id. This should not happen, send the error to the software developers." % (op_type))
         
         
-        #filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)
         filepath = '%s/%s_%s' % (self.gstorer.get_info_dir(), self.login, filename)
         
         if not os.path.exists(filepath):
