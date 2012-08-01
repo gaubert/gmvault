@@ -1202,8 +1202,9 @@ class GMVaulter(object):
         
         LOG.critical("Will delete %s %s(s) from gmvault db.\n" % (len(db_gmail_ids), msg_type) )
         for gm_id in db_gmail_ids:
-            LOG.critical("gm_id %s not in the Gmail server. Delete it" % (gm_id))
+            LOG.critical("gm_id %s not in the Gmail server. Delete it." % (gm_id))
             self.gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])], msg_type)
+        LOG.critical("\n")
         
     def get_gmails_ids_left_to_sync(self, op_type, imap_ids):
         """
