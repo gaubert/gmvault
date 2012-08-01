@@ -595,11 +595,11 @@ class GMVaultLauncher(object):
             # pass an imap request. Assume that the user know what to do here
             LOG.critical("Perform custom synchronisation with %s request: %s.\n" % (args['request']['type'], args['request']['req']))
             
-            LOG.critical("Deactivate chats syncing and database cleaning when performing a custom synchronisation.\n" )
+            #LOG.critical("Deactivate chats syncing and database cleaning when performing a custom synchronisation.\n" )
             #deactivate everything
-            args['emails_only'] = True
-            args['chats_only']  = False
-            args['db-cleaning'] = False
+            #args['emails_only'] = True
+            #args['chats_only']  = False
+            #args['db-cleaning'] = False
             
             syncer.sync(args['request'], compress_on_disk = args['compression'], db_cleaning = args['db-cleaning'], \
                         ownership_checking = args['ownership_control'], restart = args['restart'], \
