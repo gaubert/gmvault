@@ -1153,7 +1153,7 @@ class GMVaulter(object):
         if not emails_only:
             # backup chats
             LOG.critical("Start chats synchronization.\n")
-            self._sync_chats(compress = compress_on_disk, restart = restart)
+            self._sync_chats(imap_req, compress = compress_on_disk, restart = restart)
         else:
             LOG.critical("\nSkip chats synchronization.\n")
         
