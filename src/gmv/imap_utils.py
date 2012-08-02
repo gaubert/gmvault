@@ -437,7 +437,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         #get existing directories (or label parts)
         # get in lower case because Gmail labels are case insensitive
-        listed_folders = set([ directory.lower() for (_, _, directory) in self.server.list_folders() ])
+        #listed_folders = set([ directory.lower() for (_, _, directory) in self.server.list_folders() ])
+        listed_folders = set([ directory.lower() for (_, _, directory) in self.get_all_folders() ])
         existing_folders = listed_folders.union(existing_folders)
             
         for lab in labels:
