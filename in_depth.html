@@ -55,13 +55,12 @@
          <li class=""> <a href="./install.html#mac_install">Mac OSX Installation</a> </li>
          <li class=""> <a href="./install.html#lin_install">Linux Installation</a> </li>
          <li class=""> <a href="./install.html#py_install">Python Installation</a> </li>
-         <li class="divider"></li>
          <li class=""> <a href="./gmail_setup.html">Gmail Setup</a> </li>
+         <li class="divider"></li>
          <li class=""> <a href="./gmail_setup.html#quickstart">Quick Start</a> </li>
          <li class=""> <a href="./in_depth.html">In Depth</a> </li>
        </ul>
      </li>
-     <li class=""> <a href="./gmail_setup.html"><i class="icon-time icon-small"></i>Gmail Setup</a> </li>
      <li class=""> <a href="./gmail_setup.html#quickstart"><i class="icon-time icon-small"></i>Quick Start</a> </li>
      <li class="active dropdown" id="in_depth-menu">
        <a class="dropdown-toggle" data-toggle="dropdown" href="#in_depth-menu">
@@ -73,11 +72,6 @@
          <li class=""> <a href="./in_depth.html#authentication">Authentication</a> </li>
          <li class=""> <a href="./in_depth.html#backup">Backup your account</a> </li>
          <li class=""> <a href="./in_depth.html#restore">Restore your account</a> </li>
-         <li class=""> <a href="#py_install">Python Installation</a> </li>
-         <li class="divider"></li>
-         <li class=""> <a href="./gmail_setup.html">Gmail Setup</a> </li>
-         <li class=""> <a href="./gmail_setup.html#quickstart">Quick Start</a> </li>
-         <li class=""> <a href="./in_depth.html">In Depth</a> </li>
        </ul>
      </li>
      <li class=""> <a href="./report_pb.html"><i class="icon-exclamation-sign icon-small"></i>Problems</a> </li>
@@ -172,7 +166,7 @@ Below is a screenshot of a complete authentication session on Windows.</p>
 		<h5>Grant access to Gmvault.</h5>
 		<img src="./assets/img/full-access-granted-screenshot.png" alt="">
    </div>
-<p></br>After that authentication session Gmvault will automatically use the XOAuth token stored under $HOME/.gmvault or %HOME% (c:\users\MYUSER) for all session with the MYUSER user.
+<p></br>After that authentication session, Gmvault will automatically use the XOAuth token stored under $HOME/.gmvault or %HOME% (c:\users\MYUSER) for all session with the MYUSER user.
 </br>You can renew a saved oauth token with the option <strong>--renew-oauth-tok</strong>. You will again go through the Gmail OAuth authentication procedure.</p>
 
     
@@ -229,10 +223,9 @@ Process email num 3 (imap_id:5) from 2005-10.
 <div class="page-header">
 <h2><a id="backup" name="backup"></a>Backup your Gmail Account with sync</h2>
 </div>
-</br>
 <p>The sync command of Gmvault allow users to backup the Gmail account of their choice.</p>
 <h4>Sync options</h4>
-<p></br>use <strong>gmvault sync -h</strong> to get explanations regarding all options. Examples are also provided after the options details.
+<p>Use <strong>gmvault sync -h</strong> to get explanations regarding all options. Examples are also provided after the options details.
 </br><pre>$./gmvault sync -h
 
 usage: gmvault sync [-h] [-t TYPE] [-d DB_DIR] [-o] [-p] [--renew-oauth-tok]
@@ -271,7 +264,7 @@ optional arguments:
   --emails-only         Only sync emails.
   --chats-only          Only sync chats.
   -e, --encrypt         encrypt stored email messages in the database.
-  -z VAL, --db-cleaning VAL
+  -c VAL, --check-db VAL
                         Enable/disable the removal from the gmvault db of the
                         emails that have been deleted from the given gmail
                         account. VAL = yes or no.
@@ -379,7 +372,6 @@ Process email num 50 (imap_id:58) from 2004-10.
 Process email num 51 (imap_id:59) from 2004-10.
 ...
 </pre>
-</br>
 <h3>The Gmvault-db</h3>
 Gmvault lists all the emails that are backed up on disk.
 </br>Your emails are stored in an email database created by default in $HOME/.gmvault-db.
@@ -417,8 +409,13 @@ Exception: The email database /Users/myuser/gmvault-db is already associated wit
 </pre>
 <h4>Bonding a GMvault-db with multiple accounts</h4>
 <p>If you wish to backup multiple Gmail accounts in one email database, you can use the <strong>-m</strong> or <strong>--multiple-db-owner</strong> to force it.
-Note that in that case, Gmvault <strong>will stop deleting emails that have been deleted from</strong> the Gmail server.
+Note that in that case, Gmvault <strong>will stop deleting emails that have been deleted from</strong> the Gmail server.</p>
+<h4>Gmvault-db Cleaning phase</h4>
+<p>By default Gmvault will try to delete from the Gmvault-db, all the emails and chats that have been deleted from your Gmail Inbox.
+It is also possible to disable the Gmvault-db cleaning phase in order to speed-up the syncing operation for example when your quicking syncing your mailbox with Gmvault. 
 </p>
+<pre>
+</pre>
 <h3>3 kinds of synchronisation</h3>
 Gmvault provides 3 modes of synchronisations with <strong>-t, -type, --type</strong> full, quick or custom.
 The full synchronisation scans your complete email/chat box and store locally emails/chats on disk if they do not exist already. Gmvault uses the full synchronisation type by default. 
@@ -479,6 +476,12 @@ Gmvault support the IMAP requesting language (see <a href="">here</a>) or the de
 Gmvault will resume the sync operation close to the last email it was saving. This option is very convenient because it is not uncommon in a full sync to have Gmail closing the connection.
 </p>
 <pre>$>./gmvault sync foo.bar@gmail.com --encrypt
+</pre>
+<h3>Syncing separately your emails or chats</h3>
+<p>
+The options <strong>--emails-only</strong> and <strong>--chats-only</strong> can be used to sync separately your emails or your chats. 
+</p>
+<pre>$>./gmvault sync foo.bar@gmail.com --chats-only 
 </pre>
 <div class="page-header">
 <h2><a id="restore" name="restore"></a>Restoring your Gmail account</h2>

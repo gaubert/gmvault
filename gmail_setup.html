@@ -36,7 +36,7 @@
 
   <body data-spy="scroll" data-target=".subnav" data-offset="50">
 
-   <!-- Navbar
+<!-- Navbar
     ================================================== -->
 <div class="navbar navbar-fixed-top">
  <div class="navbar-inner">
@@ -44,27 +44,37 @@
    <div class="nav-collapse">
     <ul class="nav">
      <li class=""> <a href="./index.html"><i class="icon-home icon-small"></i>Overview</a> </li>
-     <li class="active dropdown" id="install-menu">
+     <li class="dropdown" id="install-menu">
        <a class="dropdown-toggle" data-toggle="dropdown" href="#install-menu">
          Install
          <b class="caret"></b>
        </a>
        <ul class="dropdown-menu">
          <li class=""><a href="./install.html#install">Install</a></li>
-         <li class=""> <a href="./install.html##win_install">Windows Installation</a> </li>
-         <li class=""> <a href="./install.html##mac_install">Mac OSX Installation</a> </li>
-         <li class=""> <a href="./install.html##lin_install">Linux Installation</a> </li>
-         <li class=""> <a href="./install.html##py_install">Python Installation</a> </li>
-         <li class="divider"></li>
+         <li class=""> <a href="./install.html#win_install">Windows Installation</a> </li>
+         <li class=""> <a href="./install.html#mac_install">Mac OSX Installation</a> </li>
+         <li class=""> <a href="./install.html#lin_install">Linux Installation</a> </li>
+         <li class=""> <a href="./install.html#py_install">Python Installation</a> </li>
          <li class=""> <a href="./gmail_setup.html">Gmail Setup</a> </li>
+         <li class="divider"></li>
          <li class=""> <a href="./gmail_setup.html#quickstart">Quick Start</a> </li>
          <li class=""> <a href="./in_depth.html">In Depth</a> </li>
        </ul>
      </li>
-     <li class=""> <a href="./gmail_setup.html"><i class="icon-time icon-small"></i>Gmail Setup</a> </li>
-     <li class=""> <a href="./gmail_setup.html#quickstart"><i class="icon-time icon-small"></i>Quick Start</a> </li>
-     <li class=""> <a href="./in_depth.html"><i class="icon-cogs icon-small"></i>In Depth</a> </li>
-     <li class=""> <a href="./report_pb.html"><i class="icon-exclamation-sign icon-small"></i>Report a problem</a> </li>
+     <li class="active"> <a href="./gmail_setup.html#quickstart"><i class="icon-time icon-small"></i>Quick Start</a> </li>
+     <li class="dropdown" id="in_depth-menu">
+       <a class="dropdown-toggle" data-toggle="dropdown" href="#in_depth-menu">
+         <i class="icon-cogs icon-small"></i>In Depth
+         <b class="caret"></b>
+       </a>
+       <ul class="dropdown-menu">
+         <li class=""><a href="./in_depth.html#indepth">In Depth</a></li>
+         <li class=""> <a href="./in_depth.html#authentication">Authentication</a> </li>
+         <li class=""> <a href="./in_depth.html#backup">Backup your account</a> </li>
+         <li class=""> <a href="./in_depth.html#restore">Restore your account</a> </li>
+       </ul>
+     </li>
+     <li class=""> <a href="./report_pb.html"><i class="icon-exclamation-sign icon-small"></i>Problems</a> </li>
      <li class="divider-vertical"></li>
      <li class=""> <a href="./support.html"><i class="icon-heart icon-small"></i>Support</a> </li>
      <li class=""> <a href="./download.html"><i class="icon-download icon-small"></i>Download</a> </li>
