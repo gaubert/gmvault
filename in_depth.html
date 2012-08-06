@@ -375,9 +375,8 @@ Process email num 51 (imap_id:59) from 2004-10.
 <h3>The Gmvault-db</h3>
 Gmvault lists all the emails that are backed up on disk.
 </br>Your emails are stored in an email database created by default in $HOME/.gmvault-db.
-The Gmvault-db email database is "simply put", a set of directories containing all emails in EML format (which is text).
-</br>By default, the emails are compressed (use <strong>--no-compression</strong> to save them in clear) and encrypted if you have chosen this option (<strong>-e, --encrypt</strong>).
-</br>Use the option <strong>-d</strong> or <strong>--db-dir</strong> to choose where the email database is going to be created.
+The Gmvault-db email database is "simply put", a set of directories containing all emails in EML format (which is text). To have your Gmvault-db in another location, use the option <strong>-d</strong> or <strong>--db-dir</strong>.
+</br>By default, emails are compressed (use <strong>--no-compression</strong> to save them in clear). You can also encrypt your emails using the option (<strong>-e, --encrypt</strong>).
 </br>
 <h4>Gmvault-db bonding with Gmail accounts</h4>
 When you create a Gmvault-db, it is automatically <strong>bonded</strong> to the email account you would like to backup.
@@ -407,7 +406,7 @@ Exception: The email database /Users/myuser/gmvault-db is already associated wit
 
 === End of Exception traceback ===
 </pre>
-<h4>Bonding a GMvault-db with multiple accounts</h4>
+<h4>Bonding a Gmvault-db with multiple accounts</h4>
 <p>If you wish to backup multiple Gmail accounts in one email database, you can use the <strong>-m</strong> or <strong>--multiple-db-owner</strong> to force it.
 Note that in that case, Gmvault <strong>will stop deleting emails that have been deleted from</strong> the Gmail server.</p>
 <h4>Gmvault-db Cleaning phase</h4>
@@ -466,7 +465,7 @@ Gmvault support the IMAP requesting language (see <a href="">here</a>) or the de
 <pre>#> gmvault sync --type custom --gmail-req 'in:inbox from:foo' 'foo.bar@gmail.com'</pre>
 </p>
 <h3>Encrypt your emails</h3>
-<p>Emails can be encrypted with the option <strong>-e --encrypt</strong>. With that option, the Blowfish encryption is used to crypt your emails and chats and the first you activate it, a secret key is randomly generated and stored in $HOME/.gmvault/secret_token.
+<p>Emails can be encrypted with the option <strong>-e --encrypt</strong>. With that option, the Blowfish encryption is used to crypt your emails and chats and the first time you activate it, a secret key is randomly generated and stored in $HOME/.gmvault/token.sec.
 </br>Keep great care of the secret key as if you loose or delete it your stored emails won't be readable anymore !!!
 </p>
 <pre>$>./gmvault sync foo.bar@gmail.com --encrypt
