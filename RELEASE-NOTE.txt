@@ -5,20 +5,19 @@ Release Notes for the different versions:
 Version Gmvault-v1.7-beta:
 -------------------------------
 -------------------------------
-Date: 19.07.2012
+Date: 14.08.2012
 
 New Features:
 -------------------
-- GTalk chat logs are now backed up when Chats label can be accessed via IMAP. 
-- GTalk chats can be restored in a different account in label gmvault-chats as Chats in read-only.
-- Option to Clean the Gmvault db on disk is now by default activated. Gmvault-db will now reflect your GMail account and emails that have been trashed from there will be deleted from the Gmvault-db.
-  Use option --db-cleaning no to deactivate it. 
-  Beware if you have a Gmvault db containg emails from multiple accounts: You will have to resync in quick mode with --db-cleaning no with both accounts to no have part of it deleted.
+- GTalk chat logs are now backed up when the Chats label can be accessed via IMAP.
+- GTalk chats can be restored in any accounts in the label gmvault-chats as the official Gmail Chats label in read-only.
+- Add the check command for cleaning your Gmvault db. With check Gmvault-db will reflect your Gmail account and emails that have been trashed on Gmail will be deleted from the Gmvault-db.
+- The check option used to keep in sync your disk Gmvault-db with your Gmail account is now by default activated in the sync mode. Use option --check-db no to deactivate it. 
+  Beware if you have a Gmvault db containg emails from multiple accounts: You will have to resync in quick mode with --db-cleaning no with both accounts to no have part of it  deleted.
 - Add options --chats-only and --emails-only to synchronise only emails or chats.
-- Add check command for only cleaning your Gmvault db.
 - Create default configuration file $HOME/.gmvault/gmvault_defaults.conf in order to make some options customisable.
 - Change quick sync and restore time to 7 days. It can be configured in $HOME/.gmvault/gmvault_defaults.conf.
-- The default dir $HOME/.gmvault can now be moved with the ENV variable GMVAULT_DIR. [Github features #57]
+- The default dir $HOME/.gmvault can now be moved with the ENV variable GMVAULT_DIR. [Github features #57].
 
 Bug Fixes:
 ----------
