@@ -30,8 +30,10 @@ Bug Fixes:
 
 Web site Activity:
 ------------------
-- None
-
+- Create Google Group Gmvault-Users
+- Add a Gmail Setup part
+- Create a contact page
+- Extend the In Depth page
 
 Shoutouts to: 
 -------------
@@ -40,7 +42,7 @@ Special shoutouts to the following githubbers that help me in raising issues, te
 
 Also Special thanks to:
 
-Github id: ....
+Github id: @jarsac, @mdwheaton, @halu, 
 
 -------------------------------
 -------------------------------
