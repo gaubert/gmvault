@@ -11,17 +11,17 @@ New Features:
 -------------------
 - GTalk chat logs are now backed up when the Chats label can be accessed via IMAP.
 - GTalk chats can be restored in any accounts in the label gmvault-chats as the official Gmail Chats label in read-only.
-- Add the check command for cleaning your Gmvault db. With check Gmvault-db will reflect your Gmail account and emails that have been trashed on Gmail will be deleted from the Gmvault-db.
-- The check option used to keep in sync your disk Gmvault-db with your Gmail account is now by default activated in the sync mode. Use option --check-db no to deactivate it. 
+- Add the check command for cleaning your Gmvault db. With check, Gmvault-db will reflect your Gmail account and emails that have been trashed on Gmail will be deleted from the Gmvault-db.
+- The check option used to keep in sync the Gmvault-db with your Gmail account is now by default activated in the sync mode. Use option "--check-db" no to deactivate it. 
   Beware if you have a Gmvault db containg emails from multiple accounts: You will have to resync in quick mode with --db-cleaning no with both accounts to no have part of it  deleted.
 - Add options --chats-only and --emails-only to synchronise only emails or chats.
 - Create default configuration file $HOME/.gmvault/gmvault_defaults.conf in order to make some options customisable.
-- Change quick sync and restore time to 7 days. It can be configured in $HOME/.gmvault/gmvault_defaults.conf.
+- Change quick sync time to 7 days and restore time to one month to speed-up the quick modes. It can be configured in $HOME/.gmvault/gmvault_defaults.conf.
 - The default dir $HOME/.gmvault can now be moved with the ENV variable GMVAULT_DIR. [Github features #57].
 
 Bug Fixes:
 ----------
-- Stability dramatically improved. Memory Consumption bug in socket and imap_lib layer fixed. [Github issue #42, #54, #45]
+- Memory Consumption bug in socket and imap_lib layer fixed. [Github issue #42, #54, #45]
 - Stability dramatically improved. Cpu infinite Consumption bug fixed in ssl layer. [Github issue #51, #45]
 - When Restored unread messages are now always marked as unread in Gmail. A bug was preventing them to be restored as unread in some cases.
 - Restore emails in chronologic order. Before they were restored in filesystem listing order.
@@ -40,9 +40,16 @@ Shoutouts to:
 
 Special shoutouts to the following githubbers that help me in raising issues, testing intermediate version and help me improving Gmvault.
 
-Also Special thanks to:
+Github id: @jarsac, @mdwheaton, @halu, @bommy, @3formit, @manuelmeurer, @Najihel, @kristofferRi, @laserson, @rouge8, @dmd, @burkemw3 
 
-Github id: @jarsac, @mdwheaton, @halu, 
+Also shoutouts to all the users that sent me support emails and raised issues by emails.
+
+Gmvault Pantheon:
+-----------------
+
+A million time thank you for the benevolent donors that are forever in the Gmvault Pantheon and All of Fame for their gesture.
+
+Daniel Brass, Fabien Dubois, Stijn Jonker, ADEMARIO ARAUJO JR, Matt Burke, Kraut Computing, Wolfgang Schwaiger, Joanne Kaye, Bernardino Santos.
 
 -------------------------------
 -------------------------------
