@@ -474,7 +474,7 @@ Gmvault support the IMAP requesting language (see <a href="">here</a>) or the de
 <p>If the backup operation had to be stopped or was stopped, it is possible to resume it with the <strong>--resume --restart</strong>option.
 Gmvault will resume the sync operation close to the last email it was saving. This option is very convenient because it is not uncommon in a full sync to have Gmail closing the connection.
 </p>
-<pre>$>./gmvault sync foo.bar@gmail.com --encrypt
+<pre>$>./gmvault sync foo.bar@gmail.com --resume
 </pre>
 <h3>Syncing separately your emails or chats</h3>
 <p>
@@ -488,7 +488,8 @@ The options <strong>--emails-only</strong> and <strong>--chats-only</strong> can
 </br>
 <p>You can use the restore command to recreate your gmail account in case of problems. Like the sync command the restore command provides 2 types of restore with <strong>-t, --type</strong> full or quick.
 The full restore will try to restore completly the local email repository into the given email account while the quick restore will only restore the last 2 months of emails. Restore only upload new emails onto your given gmail account and also update the associated information such as labels but never delete an email from inbox. 
-</br><pre>a) Complete restore of your gmail account (backed up in ~/gmvault-db) into anewfoo.bar@gmail.com
+</br></p>
+<pre>a) Complete restore of your gmail account (backed up in ~/gmvault-db) into anewfoo.bar@gmail.com
 
 $> ./gmvault restore -d ~/gmvault-db anewfoo.bar@gmail.com
 
@@ -496,6 +497,11 @@ b) Quick restore (restore only the last 2 months to make regular updates) of you
 
 $> ./gmvault restore --type quick -d ~/gmvault-db foo.bar@gmail.com
 </pre>
+<p>Note that if you have thousands of emails, the restore operation can take more than a day !!! In general on standard internet connections, the upload way is a tenth of the download one and Google also tend to throttle the connection in that way. It is also possible to have the Gmail Server closing and ending the connection after multiple hours. In that case, you can use the <strong>--resume</strong> to restart the restore operations close to where it failed (up to 10 emails before the failure). 
+<pre>
+$>./gmvault restore mynewfoo.bar@gmail.com --resume
+</pre>
+<p>Encrypted emails will be automatically deciphered by Gmvault if it can access the secret key used to encode them.
 </br>If it also possible to apply a given label to the current update you are performing:
 <pre>$>./gmvault restore --label "20120422-gmvault-restore" -d ~/gmvault-db anewfoo.bar@gmail.com</pre>
 This will apply "20120422-gmvault-restore" to all restored emails.
