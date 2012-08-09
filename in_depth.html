@@ -469,18 +469,109 @@ Gmvault support the IMAP requesting language (see <a href="">here</a>) or the de
 </br>Keep great care of the secret key as if you loose or delete it your stored emails won't be readable anymore !!!
 </p>
 <pre>$>./gmvault sync foo.bar@gmail.com --encrypt
+
+Use gmvault-db located in /home/gmv/gmvault-db.
+
+Activate Gmvault db cleaning.
+Authentication performed with Gmail XOAuth token.
+
+Get XOAuth credential from /home/gmv/.gmvault/foo.bar@gmail.com.oauth.
+
+Successfully read oauth credentials.
+
+Connect to Gmail server.
+
+Encryption activated. All emails will be encrypted before to be stored.
+Please take care of the encryption key stored in (/home/gmv/gmvault-db/.info/.storage_key.sec) or all your stored emails will become unreadable.
+Start emails synchronization.
+
+39061 emails to be fetched.
+Process email num 0 (imap_id:1) from 2004-10.
+Process email num 1 (imap_id:2) from 2004-10.
+Process email num 2 (imap_id:3) from 2004-10.
+Process email num 3 (imap_id:5) from 2004-10.
+Process email num 4 (imap_id:6) from 2004-10.
+Process email num 5 (imap_id:7) from 2004-10.
+...
 </pre>
 <h3>Resuming your backup operation</h3>
 <p>If the backup operation had to be stopped or was stopped, it is possible to resume it with the <strong>--resume --restart</strong>option.
 Gmvault will resume the sync operation close to the last email it was saving. This option is very convenient because it is not uncommon in a full sync to have Gmail closing the connection.
 </p>
 <pre>$>./gmvault sync foo.bar@gmail.com --resume
+
+Use gmvault-db located in /home/gmv/gmvault-db.
+
+Activate Gmvault db cleaning.
+Authentication performed with Gmail XOAuth token.
+
+Get XOAuth credential from /home/gmv/.gmvault/foo.bar@gmail.com.oauth.
+
+Successfully read oauth credentials.
+
+Connect to Gmail server.
+
+Start emails synchronization.
+
+Restart mode activated for emails. Need to find information in Gmail, be patient ...
+Restart from gmail id 1150277043649143517 (imap id 24).
+39042 emails to be fetched.
+Process email num 0 (imap_id:24) from 2007-05.
+Process email num 1 (imap_id:25) from 2007-05.
+....
 </pre>
 <h3>Syncing separately your emails or chats</h3>
 <p>
 The options <strong>--emails-only</strong> and <strong>--chats-only</strong> can be used to sync separately your emails or your chats. 
 </p>
 <pre>$>./gmvault sync foo.bar@gmail.com --chats-only 
+
+Use gmvault-db located in /home/gmv/gmvault-db.
+
+Activate Gmvault db cleaning.
+Authentication performed with Gmail XOAuth token.
+
+Get XOAuth credential from /home/gmv/.gmvault/foo.bar@gmail.com.oauth.
+
+Successfully read oauth credentials.
+
+Connect to Gmail server.
+
+Skip emails synchronization.
+
+Start chats synchronization.
+
+160 chat messages to be fetched.
+Process chat num 0 (imap_id:52) into chats/subchats-1.
+Process chat num 1 (imap_id:78) into chats/subchats-1.
+Process chat num 2 (imap_id:79) into chats/subchats-1.
+Process chat num 6 (imap_id:237) into chats/subchats-1.
+...
+Process chat num 158 (imap_id:975) into chats/subchats-1.
+Process chat num 159 (imap_id:979) into chats/subchats-1.
+Look for emails/chats that are in the Gmvault db but not in Gmail servers anymore.
+
+Read all gmail ids from the Gmvault db. It might take a bit of time ...
+
+Found 10661 email(s) in the Gmvault db.
+
+Call Gmail to check the stored emails against the Gmail emails ids and see which ones have been deleted.
+
+Might take few minutes ...
+
+Will delete 0 email(s) from gmvault db.
+
+Call Gmail to check the stored chats against the Gmail chats ids and see which ones have been deleted.
+
+Might take few minutes ...
+
+Will delete 0 chat(s) from gmvault db.
+
+
+Deletion checkup done in 7s.
+Synchronisation operation performed in 1m 7s.
+
+...
 </pre>
 <div class="page-header">
 <h2><a id="restore" name="restore"></a>Restoring your Gmail account</h2>
@@ -493,13 +584,81 @@ The full restore will try to restore completly the local email repository into t
 
 $> ./gmvault restore -d ~/gmvault-db anewfoo.bar@gmail.com
 
-b) Quick restore (restore only the last 2 months to make regular updates) of your gmail account into anewfoo.bar@gmail.com
+Use gmvault-db located in /home/gmv/gmvault-db.
 
-$> ./gmvault restore --type quick -d ~/gmvault-db foo.bar@gmail.com
+Authentication performed with Gmail XOAuth token.
+
+Get XOAuth credential from /home/gmv/.gmvault/anewfoo.bar@gmail.com.oauth.
+
+Successfully read oauth credentials.
+
+Connect to Gmail server.
+
+Start emails restoration.
+
+Restore emails in gmail account anewfoo.bar@gmail.com. 
+Read email info from /home/gmv/gmvault-db gmvault-db.
+Total number of elements to restore 10661.
+Got all emails id left to restore. Still 10661 emails to do.
+
+Restore email with id 1150164015313936029.
+Restore email with id 1150164486926497027.
+Restore email with id 1150164511015697866.
+...
 </pre>
-<p>Note that if you have thousands of emails, the restore operation can take more than a day !!! In general on standard internet connections, the upload way is a tenth of the download one and Google also tend to throttle the connection in that way. It is also possible to have the Gmail Server closing and ending the connection after multiple hours. In that case, you can use the <strong>--resume</strong> to restart the restore operations close to where it failed (up to 10 emails before the failure). 
+<pre>
+b) Quick restore (restore only the last month to make regular updates) of your gmail account into anewfoo.bar@gmail.com
+
+$> ./gmvault restore --type quick -d ~/gmvault-db anewfoo.bar@gmail.com
+
+Use gmvault-db located in /home/gmv/gmvault-db.
+
+Authentication performed with Gmail XOAuth token.
+
+Get XOAuth credential from /home/gmv/.gmvault/anewfoo.bar@gmail.com.oauth.
+
+Successfully read oauth credentials.
+
+Connect to Gmail server.
+
+Start emails restoration.
+
+Quick mode activated. Will only restore all emails since 2012-07.
+
+Restore emails in gmail account gsync.mtester@gmail.com.
+Read email info from /home/gmv/gmvault-db gmvault-db.
+Total number of elements to restore 220.
+Got all emails id left to restore. Still 220 emails to do.
+
+Restore email with id 1150187895023141719.
+Restore email with id 1150203908444884403.
+...
+</pre>
+<p>Note that if you have ten thousands of emails, the restore operation can take more than a day even with a good Internet connection !!! In general on standard internet connections, the upload way is a tenth of the download one and Google also tend to throttle the connection in that way. It is also possible to have the Gmail Server closing and ending the connection after multiple hours. In that case, you can use the <strong>--resume</strong> to restart the restore operations close to where it failed (up to 10 emails before the failure). 
 <pre>
 $>./gmvault restore mynewfoo.bar@gmail.com --resume
+
+Use gmvault-db located in /home/gmv/gmvault-db.
+
+Authentication performed with Gmail XOAuth token.
+
+Get XOAuth credential from /home/gmv/.gmvault/anewfoo.bar@gmail.com.oauth.
+
+Successfully read oauth credentials.
+
+Connect to Gmail server.
+
+Start emails restoration.
+
+Restore emails in gmail account gsync.mtester@gmail.com.
+Read email info from /home/gmv/gmvault-db gmvault-db.
+Total number of elements to restore 10660.
+Restart from gmail id 1150187728613013818.
+Got all emails id left to restore. Still 10650 emails to do.
+
+Restore email with id 1150187895023141719.
+Restore email with id 1150203908444884403.
+...
 </pre>
 <p>Encrypted emails will be automatically deciphered by Gmvault if it can access the secret key used to encode them.
 </br>If it also possible to apply a given label to the current update you are performing:
