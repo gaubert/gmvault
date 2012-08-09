@@ -147,8 +147,8 @@ a[name] {
    <ul>
     <li class="icon-plus">GTalk chat logs are now backed up when the Chats label can be accessed via IMAP.</li>
     <li class="icon-plus">GTalk chats can be restored in any accounts in the label gmvault-chats as the official Gmail Chats label in read-only.</li>
-    <li class="icon-plus">Add the check command for cleaning your Gmvault db. With check Gmvault-db will reflect your Gmail account and emails that have been trashed on Gmail will be deleted from the Gmvault-db.</li>
-    <li class="icon-plus">The check option used to keep in sync your disk Gmvault-db with your Gmail account is now by default activated in the sync mode. Use option --check-db no to deactivate it.
+    <li class="icon-plus">Add the check command for cleaning your Gmvault db. With check, Gmvault-db will reflect your Gmail account and emails that have been trashed on Gmail will be deleted from the Gmvault-db.</li>
+    <li class="icon-plus">The check option used to keep in sync the Gmvault-db with your Gmail account is now by default activated in the sync mode. Use option --check-db no to deactivate it.
        </br>Beware if you have a Gmvault db containg emails from multiple accounts: You will have to resync in quick mode with --db-cleaning no with both accounts to no have part of it deleted.
     </li>
   <li class="icon-plus">Add options --chats-only and --emails-only to synchronise only emails or chats.</li>
@@ -159,7 +159,7 @@ a[name] {
     </ul>
    <h4>Bug Fixes:</h4>
    <ul>
-    <li class="icon-minus">Stability dramatically improved. Memory Consumption bug in socket and imap_lib layer fixed. [Github issue #42, #54, #45]</li>
+    <li class="icon-minus">Memory Consumption bug in socket and imap_lib layer fixed. [Github issue #42, #54, #45]</li>
     <li class="icon-minus">Stability dramatically improved. Cpu infinite Consumption bug fixed in ssl layer. [Github issue #51, #45]</li>
     <li class="icon-minus">When Restored, unread messages are now always marked as unread in Gmail. A bug was preventing them to be restored as unread in some cases.</li>
     <li class="icon-minus">Restore emails in chronologic order. Before they were restored in filesystem listing order.</li>
@@ -167,13 +167,19 @@ a[name] {
     <li class="icon-minus">Handle NULL character in emails that was preventing them from being restored. The emails are now moved to the quarantine area.</li>
    </ul>
    <h3>Shout-outs </h3>
-   <p><strong>Thank you all for the supporting Gmvault on Twitter, Github and other social media.</strong> </br>
+   <p><strong>Thank you all for supporting Gmvault on Twitter, Github and other social media.</strong> </br>
     Please keep <strong>buzzing about Gmvault</strong> and let me know if you discover an issue (go <a href="./report_pb.html">here</a> to report the issue). </br>
     </br>
     Below is a special thank you for all poeple that reported problems, asked for features and helped me testing intermediate versions:</p>
    <i class="icon-github-sign"></i> <strong>Github id</strong>:
-   <pre>@ahmadalfy, @halu, @jpoa, @beemshake, @MarkSte, @codebox, @vrenna, @hrafnkell, @mysz, @kseistrup, @dennisse, @ratson, @kristofferR, @laserson, @jlongton, @lfpippa, @krzyk, @ndbroadbent, @ebner</pre>
-   </br>
+   <pre>@jarsac, @mdwheaton, @halu, @bommy, @3formit, @manuelmeurer, @Najihel, @kristofferRi, @laserson, @rouge8, @dmd, @burkemw3</pre>
+   <p>Also shoutouts to all the users that sent me support emails and raised issues by emails.</p>
+
+<h4>Gmvault Pantheon</h4>
+<p>A million time thank you for the benevolent donors that are forever in the Gmvault Pantheon and All of Fame for their gesture.</br>
+</p>
+<pre>Daniel Brass, Fabien Dubois, Stijn Jonker, ADEMARIO ARAUJO JR, Matt Burke, Kraut Computing, Wolfgang Schwaiger, Joanne Kaye, Bernardino Santos</pre>
+<strong>Keep supporting Open Source projects to make the world better !</strong>
    <div class="page-header">
     <h2>Gmvault v1.6-beta</h2>
    </div>
@@ -273,7 +279,7 @@ a[name] {
     <li class="icon-minus">Fix issue preventing Gmvault to work on a Mac OS X intel 32 bit plateform. It now work on 64 and 32 bits Mac OS X intels. [Github issue #25, #39]</li>
    </ul>
    <h3>Shout-outs </h3>
-   <p><strong>Thank you all for the supporting Gmvault on Twitter, Github and other social media.</strong> </br>
+   <p><strong>Thank you all for supporting Gmvault on Twitter, Github and other social media.</strong> </br>
     Please keep <strong>buzzing about Gmvault</strong> and let me know if you discover an issue (go <a href="./report_pb.html">here</a> to report the issue). </br>
     </br>
     Below is a special thank you for all poeple that reported problems, asked for features and helped me testing intermediate versions:</p>
