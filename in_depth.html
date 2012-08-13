@@ -126,8 +126,9 @@ a) Get help for each of the individual commands
 <div class="page-header">
 <h2><a id="authentication" name="authentication"></a>Authentication</h2>
 </div>
-        <p></br>
-           To authenticate yourself and authorize Gmvault accessing your Gmail account, Gmvault allows users to use a Gmail XOAuth token or your Gmail login password.</br>
+        <p>
+           <strong>Update 12.08.2012:</strong> Google has introduced a 2-step authentication scheme recently. If you have enabled this method, you can still use the OAuth token authentication scheme without any problems. The only requirement is to be on a "verified computer" to generate an OAuth token. If you wish to use the password authentication, you will have to generate an applicationi-specific password for Gmvault. 
+          </br></br>To authenticate yourself and authorize Gmvault accessing your Gmail account, Gmvault allows users to use a Gmail XOAuth token or your Gmail login password.</br>
            The <strong>XOAuth</strong> authentication is the recommended way to access your account. This method is activated by default. </br>
            After the first authentication for a given account, the XOAuth token is stored in $HOME/.gmvault or %HOME% (c:\users\MYUSER) and will be used for consequent authentications.</br>
            The following example uses an XOAuth token for accessing a gmail account. If the token has not been created for the used Gmail account, Gmvault will automatically try to create one with your help.</br>
@@ -224,9 +225,9 @@ Process email num 3 (imap_id:5) from 2005-10.
 <div class="page-header">
 <h2><a id="backup" name="backup"></a>Backup your Gmail Account with sync</h2>
 </div>
-<p>The sync command of Gmvault allow users to backup the Gmail account of their choice.</p>
+<p>The sync command of Gmvault allows users to backup the Gmail account of their choice.</p>
 <h4>Sync options</h4>
-<p>Use <strong>gmvault sync -h</strong> to get explanations regarding all options. Examples are also provided after the options details.
+<p>Use <strong>gmvault sync -h</strong> to get explanations regarding all the options. Examples are also provided after the options details.
 </br><pre>$./gmvault sync -h
 
 usage: gmvault sync [-h] [-t TYPE] [-d DB_DIR] [-o] [-p] [--renew-oauth-tok]
@@ -280,12 +281,12 @@ optional arguments:
 </pre>
 </p>
 <h3>Different phases of a backup operation</h3>
-<p>A backup operation is organised in 4 phase:
+<p>A backup operation is organised in 4 phases:
 <ul class="">
-   <li class="">Initialisation phase: During this phase, the connection to the Gmail Server, the user authentication and Gmvault-db loading happen.</li>
-   <li class="">Email Backup phase: During this phase the Gmail server will be requested and only new emails will be saved and stored on disk.</li>
-   <li class="">Chat Backup phase: This phase is similar to the previous one and will save new Gmail Talk chat messages if the chat message can be seen on IMAP.</li>
-   <li class="">Cleaning phase: During this phase, the Gmvault database will be checked and all emails and chats that have been deleted from the GMail account will be suppressed from the Gmvault-db.</li>
+   <li class=""><strong>Initialisation phase:</strong> During this phase, the connection to the Gmail Server, the user authentication and Gmvault-db loading happen.</li>
+   <li class=""><strong>Email Backup phase:</strong> During this phase the Gmail server will be requested and only new emails will be saved and stored on disk.</li>
+   <li class=""><strong>Chat Backup phase:</strong> This phase is similar to the previous one and will save new Gmail Talk chat messages if the chat message can be seen on IMAP.</li>
+   <li class=""><strong>Cleaning phase:</strong> During this phase, the Gmvault database will be checked and all emails and chats that have been deleted from the GMail account will be suppressed from the Gmvault-db.</li>
 </ul>
 </p>
 
