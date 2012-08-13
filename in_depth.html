@@ -384,7 +384,7 @@ The Gmvault-db email database is "simply put", a set of directories containing a
 <h4>Gmvault-db bonding with Gmail accounts</h4>
 When you create a Gmvault-db, it is automatically <strong>bonded</strong> to the email account you would like to backup.
 </br>If you try to backup a Gmail account with an email database bonded with another email, Gmvault exits in error.
-<pre>./gmvault sync foo.bar@gmail.com
+<pre>$./gmvault sync foo.bar@gmail.com
 
 Use gmvault-db located in /Users/myuser/gmvault-db.
 
@@ -416,9 +416,52 @@ Note that in that case, Gmvault <strong>will stop deleting emails that have been
 <p>By default Gmvault will try to delete from the Gmvault-db, all the emails and chats that have been deleted from your Gmail Inbox.
 It is also possible to disable the Gmvault-db cleaning phase in order to speed-up the syncing operation for example when your quicking syncing your mailbox with Gmvault. 
 </p>
-<pre>
+<pre>$./gmvault sync foo.bar@gmail.com
+
+Use gmvault-db located in /Users/myuser/gmvault-db.
+
+Activate Gmvault db cleaning.
+Authentication performed with Gmail XOAuth token.
+
+Get XOAuth credential from /Users/myuser/.gmvault/foo.bar@gmail.com.oauth.
+
+Successfully read oauth credentials.
+
+Connect to Gmail server.
+
+Quikc sync mode. Check for new emails since 03-Aug-2012.
+Start emails synchronization.
+
+118 emails to be fetched.
+Process email num 0 (imap_id:157864) from 2012-08.
+Process email num 1 (imap_id:157866) from 2012-08.
+Process email num 2 (imap_id:157869) from 2012-08.
+...
+2 chat messages to be fetched.
+Process chat num 0 (imap_id:980) into chats/subchats-1.
+Process chat num 1 (imap_id:981) into chats/subchats-1.
+Look for emails/chats that are in the Gmvault db but not in Gmail servers anymore.
+
+Read all gmail ids from the Gmvault db. It might take a bit of time ...
+
+Found 10778 email(s) in the Gmvault db.
+
+Call Gmail to check the stored emails against the Gmail emails ids and see which ones have been deleted.
+
+Might take few minutes ...
+
+Will delete 0 email(s) from gmvault db.
+
+Call Gmail to check the stored chats against the Gmail chats ids and see which ones have been deleted.
+
+Might take few minutes ...
+
+Will delete 0 chat(s) from gmvault db.
+
+Deletion checkup done in 31s.
+Synchronisation operation performed in 1m 42s.
 </pre>
-<h3>3 kinds of synchronisation</h3>
+<h3>Three synchronisation modes</h3>
 Gmvault provides 3 modes of synchronisations with <strong>-t, -type, --type</strong> full, quick or custom.
 The full synchronisation scans your complete email/chat box and store locally emails/chats on disk if they do not exist already. Gmvault uses the full synchronisation type by default. 
 <h4>Quick sync mode</h4>
@@ -427,9 +470,7 @@ The quick type is used to daily backup your email account automatically (with a 
 </br>You can increase or reduce the number of days to check by changing the value of the property <strong>quick_days</strong> in the configuration file $HOME/.gmvault/gmvault_defaults.conf (%HOME%/.gmvault/gmvault_defaults.conf for windows). This could allow having a faster syncing phase of example. 
 </br>See below a quick sync. 
 <pre>$>./gmvault sync foo.bar@gmail.com -t quick
-
 ...
-
 Successfully read oauth credentials.
 
 Connect to Gmail server.
@@ -462,10 +503,84 @@ Synchronisation operation performed in 42s.
 </pre>
 <h4>Custom sync mode</h4>
 The final type of synchronisation is the custom synchronisation which allows to provide a custom imap or gmail request to only backup a subset of your chats/emails.
-Gmvault support the IMAP requesting language (see <a href="">here</a>) or the dedicated Gmail requesting used to perform search requests (for more info see <a href="">here</a>.)
-<pre>.#> gmvault sync --type custom --imap-req 'Since 1-Nov-2011 Before 10-Nov-2011' 'foo.bar@gmail.com'</pre>
+Gmvault support the IMAP requesting language (see <a href="http://tools.ietf.org/html/rfc3501">rfc3501</a>) or the dedicated Gmail requesting used to perform search requests (for more info see <a href="https://developers.google.com/google-apps/gmail/imap_extensions#extension_of_the_search_command_x-gm-raw">gmail imap extension</a>).
+<pre>$> gmvault sync --type custom --imap-req 'Since 1-Nov-2011 Before 10-Nov-2011' 'foo.bar@gmail.com' -c no
+
+Use gmvault-db located in /home/gmv/gmvault-db.
+
+Disable deletion of emails that are in Gmvault db and not anymore in Gmail.
+Authentication performed with Gmail XOAuth token.
+
+Get XOAuth credential from /home/gmv/.gmvault/foo.bar@gmail.com.oauth.
+
+Successfully read oauth credentials.
+
+Connect to Gmail server.
+
+Perform custom synchronisation with imap request: Since 1-Nov-2011 Before 10-Nov-2011.
+
+Start emails synchronization.
+
+5 emails to be fetched.
+Process email num 0 (imap_id:136823) from 2011-11.
+Process email num 1 (imap_id:136913) from 2011-11.
+Process email num 2 (imap_id:137006) from 2011-11.
+Process email num 3 (imap_id:137059) from 2011-11.
+Process email num 4 (imap_id:137092) from 2011-11.
+Start chats synchronization.
+
+2 chat messages to be fetched.
+Process chat num 0 (imap_id:881) into chats/subchats-1.
+Process chat num 1 (imap_id:882) into chats/subchats-1.
+Synchronisation operation performed in 4s.
+
+
+================================================================
+Number of reconnections: 0.
+Number of emails quarantined: 0.
+Number of emails that could not be fetched: 0.
+Number of emails that were returned empty by gmail: 0
+================================================================
+</pre>
 </br>
-<pre>#> gmvault sync --type custom --gmail-req 'in:inbox from:foo' 'foo.bar@gmail.com'</pre>
+<pre>$> gmvault sync --type custom --gmail-req 'in:work from:foo.bar@mycompany.com' 'foo.bar@gmail.com' -c no
+
+Use gmvault-db located in /home/gmv/gmvault-db.
+
+Disable deletion of emails that are in Gmvault db and not anymore in Gmail.
+Authentication performed with Gmail XOAuth token.
+
+Get XOAuth credential from /home/gmv/.gmvault/foo.bar@gmail.com.oauth.
+
+Successfully read oauth credentials.
+
+Connect to Gmail server.
+
+Perform custom synchronisation with gmail request: in:work from:foo.bar@mycompany.com.
+
+Start emails synchronization.
+
+60 emails to be fetched.
+Process email num 0 (imap_id:107292) from 2010-06.
+Process email num 1 (imap_id:107307) from 2010-06.
+Process email num 2 (imap_id:109572) from 2010-07.
+Process email num 3 (imap_id:109978) from 2010-07.
+...
+Process email num 58 (imap_id:156832) from 2012-07.
+Process email num 59 (imap_id:158415) from 2012-08.
+Start chats synchronization.
+
+0 chat messages to be fetched.
+Synchronisation operation performed in 39s.
+
+
+================================================================
+Number of reconnections: 0.
+Number of emails quarantined: 0.
+Number of emails that could not be fetched: 0.
+Number of emails that were returned empty by gmail: 0
+================================================================
+</pre>
 </p>
 <h3>Encrypt your emails</h3>
 <p>Emails can be encrypted with the option <strong>-e --encrypt</strong>. With that option, the Blowfish encryption is used to crypt your emails and chats and the first time you activate it, a secret key is randomly generated and stored in $HOME/.gmvault/token.sec.
@@ -498,7 +613,7 @@ Process email num 5 (imap_id:7) from 2004-10.
 ...
 </pre>
 <h3>Resuming your backup operation</h3>
-<p>If the backup operation had to be stopped or was stopped, it is possible to resume it with the <strong>--resume --restart</strong>option.
+<p>If the backup operation had to be stopped or was stopped, it is possible to resume it with the <strong>--resume --restart</strong> option.
 Gmvault will resume the sync operation close to the last email it was saving. This option is very convenient because it is not uncommon in a full sync to have Gmail closing the connection.
 </p>
 <pre>$>./gmvault sync foo.bar@gmail.com --resume
@@ -525,7 +640,7 @@ Process email num 1 (imap_id:25) from 2007-05.
 </pre>
 <h3>Syncing separately your emails or chats</h3>
 <p>
-The options <strong>--emails-only</strong> and <strong>--chats-only</strong> can be used to sync separately your emails or your chats. 
+ The options <strong>--emails-only</strong> and <strong>--chats-only</strong> can be used to sync separately your emails or your chats. It can also be used to avoid synchronizing your emails when you just want to get your chats for example. 
 </p>
 <pre>$>./gmvault sync foo.bar@gmail.com --chats-only 
 
@@ -583,8 +698,8 @@ Synchronisation operation performed in 1m 7s.
 <p>You can use the restore command to recreate your gmail account in case of problems. Like the sync command the restore command provides 2 types of restore with <strong>-t, --type</strong> full or quick.
 The full restore will try to restore completly the local email repository into the given email account while the quick restore will only restore the last 2 months of emails. Restore only upload new emails onto your given gmail account and also update the associated information such as labels but never delete an email from inbox. 
 </br></p>
-<pre>a) Complete restore of your gmail account (backed up in ~/gmvault-db) into anewfoo.bar@gmail.com
-
+<h5>Complete Restore</h5>
+<pre>
 $> ./gmvault restore -d ~/gmvault-db anewfoo.bar@gmail.com
 
 Use gmvault-db located in /home/gmv/gmvault-db.
@@ -609,9 +724,9 @@ Restore email with id 1150164486926497027.
 Restore email with id 1150164511015697866.
 ...
 </pre>
+<h5>Quick restore</h5>
+<p>A Quick restore will restore only the last month of your emails to make regular incremental updates of your gmail mirror account.</p>
 <pre>
-b) Quick restore (restore only the last month to make regular updates) of your gmail account into anewfoo.bar@gmail.com
-
 $> ./gmvault restore --type quick -d ~/gmvault-db anewfoo.bar@gmail.com
 
 Use gmvault-db located in /home/gmv/gmvault-db.
