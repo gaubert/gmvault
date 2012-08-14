@@ -5,43 +5,49 @@
 <title>Gmvault: gmail backup</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="backup and restore your gmail account">
-<meta name="author" content="zoobert">
+<meta name="author" content="guillaume aubert">
 
 <!-- Le styles -->
-<link href="assets/css/bootstrap.css" rel="stylesheet">
+<link href="./assets/css/bootstrap.css" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/font-awesome.css">
 <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
 <link href="assets/css/docs.css" rel="stylesheet">
 <link href="assets/js/google-code-prettify/prettify.css" rel="stylesheet">
+<style>
+body { /*padding-top: 60px;*/ /* was adding Gmvault and pushing it 60px to make the container go all the way to the bottom of the topbar */ }
+/* to properly fix the positionning of internal reference when name id used*/
+      a[name] {
+	position:relative;
+	top:-40px;
+	visibility:collapsed;
+}
+</style>
+<link href="./assets/css/bootstrap-responsive.css" rel="stylesheet">
 
 <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
 <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
- 
-    <!-- Le fav and touch icons -->
-    <link rel="shortcut icon" href="assets/ico/gmv-favicon.ico">
-    <!--<link rel="apple-touch-icon-precomposed" sizes="114x114" href="assets/ico/apple-touch-icon-114-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/ico/apple-touch-icon-72-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" href="assets/ico/apple-touch-icon-57-precomposed.png">-->
 
-    <script type="text/javascript">
-		/* <![CDATA[ */
-			(function() {
-				var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
-				s.type = 'text/javascript';
-				s.async = true;
-				s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
-				t.parentNode.insertBefore(s, t);
-			})();
-		/* ]]> */
-    </script>
-  </head>
+<!-- Le fav and touch icons -->
+<link rel="shortcut icon" href="./assets/ico/gmv-favicon.ico">
+<script type="text/javascript">
+	/* <![CDATA[ */
+		(function() {
+			var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
+			s.type = 'text/javascript';
+			s.async = true;
+			s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
+			t.parentNode.insertBefore(s, t);
+		})();
+	/* ]]> */
+</script>
+</head>
 
 <body data-spy="scroll" data-target=".subnav" data-offset="50">
 
-<!-- Navbar   ================================================== -->
-
+<!-- Navbar
+    ================================================== -->
 <div class="navbar navbar-fixed-top">
  <div class="navbar-inner">
   <div class="container"> <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </a> <a class="brand" href="./index.html">Gmvault</a>
@@ -50,66 +56,56 @@
      <li class=""> <a href="./index.html"><i class="icon-home icon-small"></i>Overview</a> </li>
      <li class=""> <a href="./install.html"><i class="icon-book icon-small"></i>Documentation</a> </li>
      <li class=""> <a href="./report_pb.html"><i class="icon-exclamation-sign icon-small"></i>Problems</a> </li>
-     <li class="active"> <a href="./support.html"><i class="icon-heart icon-small"></i>Support</a> </li>
+     <li class=""> <a href="./support.html"><i class="icon-heart icon-small"></i>Support</a> </li>
      <li class=""> <a href="./download.html"><i class="icon-download icon-small"></i>Download</a> </li>
-    </ul>
     <ul class="nav">
       <li class="divider-vertical"></li>
-      <li><a href="./contact.html"><i class="icon-envelope"></i>Contact</a></li>
+      <li class="active"><a href="./contact.html"><i class="icon-envelope"></i>Contact</a></li>
       <li><a href="http://geekomotion.posterous.com"><i class="icon-file"></i>Blog</a></li>
+    </ul>
     </ul>
    </div>
   </div>
  </div>
 </div>
-<div class="container"> 
- 
- <!-- Masthead
-================================================== --> 
- 
-<header class="masthead"> 
-  <div class="row">
-    <div class="span12">
-     <div class="row">
-      <div class="span8">
-		  <h1 style="font-size: 50px; text-align: left;">A big thank you !</h1>
-		  <h1 style="font-size: 50px; text-align: left;">Merci beaucoup !</h1>
-		  <h1 style="font-size: 50px; text-align: left;">Doumo arigatou gozaimasu !</h1>
-		  <h1 style="font-size: 50px; text-align: left;">Muchas gracias !</h1>
-		  <h1 style="font-size: 50px; text-align: left;">Muito obrigado !</h1>
-		  <h1 style="font-size: 50px; text-align: left;">Vielen dank !</h1>
-		  <h1 style="font-size: 50px; text-align: left;">Grazie mille !</h1>
-		  <h1 style="font-size: 50px; text-align: left;">Fei chang gan xie !</h1>
-	  </div>
-      <div class="span4"></br></br></br><img src="./assets/img/gmvault-icon-512-edges.png" class="logo"/></div>
-      <!--<div class="span4"></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br><img src="./assets/img/gmvault-icon-512-edges.png" class="logo"/></div>-->
-    </div> <!-- row-fuild -->
+<div class="container-fluid">
+ <div class="row-fluid">
+  <div class="span12">
+   <div class="page-header">
+     <h1>Something to say !</h1>
+   </div>      
+   <p>Want to suggest/report something, looking for some help or want to send some love. Please contact the Gmvault developer. Can't wait to here from you:</p>
+   <p style="font-size: 14px;"><a href="http://twitter.com/zoobert" target="_blank"><i class="icon-twitter-sign"> @zoobert</i></a> on Twitter,
+   </br><a href="mailto:guillaume.aubert@gmail.com"><i class="icon-envelope"> Gmvault</i></a> via email,
+   </br><a href="https://github.com/gaubert/gmvault/issues"><i class="icon-github-sign"> Post a message</i></a> on the Gmvault <strong>Github</strong> Repository.
+   </p>
+   <div class="page-header">
+     <h3>Gmvault-Users Forum: You are not alone</h3>
    </div>
-  </div> <!-- row-fuild -->
- </header>
- </div>
-</div><!-- /container -->
-
+   <p>You can also consult or join the <a href="https://groups.google.com/forum/?fromgroups#!forum/gmvault-users">Gmvault-Users forum</a> to find some help or learn new tips and tricks regarding Gmvault.
+   On this group, you will also learn about the new Gmvault releases.</br> Click<a href="./join_google_group.html"> here</a> to join the Gmvault-Users forum. 
+   </p>
+  </div> <!-- span -->
+ </div> <!-- row-fluid -->
+</div> <!-- container-fluid -->
+<!-- /container --> 
 
 <!-- Le javascript
     ================================================== --> 
 <!-- Placed at the end of the document so the pages load faster --> 
-<script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script> 
-<script src="assets/js/jquery.js"></script> 
-<script src="assets/js/google-code-prettify/prettify.js"></script> 
-<script src="assets/js/bootstrap-transition.js"></script> 
-<script src="assets/js/bootstrap-alert.js"></script> 
-<script src="assets/js/bootstrap-modal.js"></script> 
-<script src="assets/js/bootstrap-dropdown.js"></script> 
-<script src="assets/js/bootstrap-scrollspy.js"></script> 
-<script src="assets/js/bootstrap-tab.js"></script> 
-<script src="assets/js/bootstrap-tooltip.js"></script> 
-<script src="assets/js/bootstrap-popover.js"></script> 
-<script src="assets/js/bootstrap-button.js"></script> 
-<script src="assets/js/bootstrap-collapse.js"></script> 
-<script src="assets/js/bootstrap-carousel.js"></script> 
-<script src="assets/js/bootstrap-typeahead.js"></script> 
-<script src="assets/js/application.js"></script> 
+<script src="./assets/js/jquery.js"></script> 
+<script src="./assets/js/bootstrap-transition.js"></script> 
+<script src="./assets/js/bootstrap-alert.js"></script> 
+<script src="./assets/js/bootstrap-modal.js"></script> 
+<script src="./assets/js/bootstrap-dropdown.js"></script> 
+<script src="./assets/js/bootstrap-scrollspy.js"></script> 
+<script src="./assets/js/bootstrap-tab.js"></script> 
+<script src="./assets/js/bootstrap-tooltip.js"></script> 
+<script src="./assets/js/bootstrap-popover.js"></script> 
+<script src="./assets/js/bootstrap-button.js"></script> 
+<script src="./assets/js/bootstrap-collapse.js"></script> 
+<script src="./assets/js/bootstrap-carousel.js"></script> 
+<script src="./assets/js/bootstrap-typeahead.js"></script> 
 
 <!-- analytics with stathat --> 
 <img src="http://api.stathat.com/c?ukey=NjM3IHOkfz0i1DliotgKSxKEqGc~&key=uEWjLRysHJgQFmszTFzGKCBLRkFk&count=1" style="display:none;" width="1" height="1"/> 
