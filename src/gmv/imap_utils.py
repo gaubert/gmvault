@@ -214,6 +214,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         self.go_to_all_folder       = True
         self.total_nb_reconns       = 0
         self.printed_chat_error_msg = False #true when the chat error message has been printed already
+        
+        self._in_chat_dir = False #use in case of reconnect and when being in chat mode
     
     def connect(self, go_to_all_folder = True):
         """
@@ -245,11 +247,14 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         #find the all mail folder
         self.find_all_mail_folder()
         
+        if self._in_chat_dir:
+            self.find_and_select_chats_folder()
+            LOG.debug("in chats folder\n")
         # set to GMAIL_ALL dir by default and in readonly
-        if go_to_all_folder:
+        elif go_to_all_folder:
             self.server.select_folder(self._all_mail_folder, readonly = self.readonly_folder)
             LOG.debug("[All Mail] folder = %s\n" % (self._all_mail_folder))
-        
+         
         #enable compression
         self.enable_compression()
             
@@ -316,11 +321,10 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 LOG.debug("Chat folder = %s\n" % (the_dir))
                 #select it in read only mode
                 self.server.select_folder(the_dir, True)
+                self._in_chat_dir = True
                 return the_dir
 
-        #Error did not find Chats dir
-        val = gmvault_utils.get_conf_defaults().getboolean("General","errors_if_chat_not_visible", False)
-        
+        #Error did not find Chats dir 
         if gmvault_utils.get_conf_defaults().getboolean("General","errors_if_chat_not_visible", False):
             raise Exception("Cannot find global 'Chats' folder ! Check whether 'Show in IMAP for 'Chats' is enabled in Gmail (Go to Settings->Labels->All Mail)") 
         else:
@@ -335,6 +339,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             Select ALL Mail folder
         """
         self.server.select_folder(self._all_mail_folder, readonly = self.readonly_folder)
+        self._in_chat_dir = False
     
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def get_all_folders(self): 

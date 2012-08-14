@@ -807,6 +807,8 @@ class GMVaulter(object):
         """
            backup the chat messages
         """
+        exception_not_launched = True
+        
         LOG.debug("Before selection")
         chat_dir = self.src.find_and_select_chats_folder()
         LOG.debug("Selection is finished")
@@ -882,7 +884,7 @@ class GMVaulter(object):
                             # eg. imap uid 142221L ignore it
                             self.error_report['empty'].append((the_id, None))
                         
-                        nb_chats_processed += 1
+                        nb_chats_processed += 1    
                         
                         #indicate every 50 messages the number of messages left to process
                         left_emails = (total_nb_chats_to_process - nb_chats_processed)
@@ -1287,13 +1289,15 @@ class GMVaulter(object):
                 
                 db_gmail_ids_info = self.gstorer.get_all_chats_gmail_ids()
                 
+                LOG.critical("Found %s chat(s) in the Gmvault db.\n" % (len(db_gmail_ids_info)) )
+                
                 chat_dir = self.src.find_and_select_chats_folder()
 
                 if chat_dir:
                     chat_ids = self.src.search(imap_utils.GIMAPFetcher.IMAP_ALL)
                     db_chat_ids = set(db_gmail_ids_info.keys())
                 
-                    LOG.debug("Got %s chat imap_ids" % (len(chat_ids)))
+                    LOG.debug("Got %s chat imap_ids from the Gmail Server." % (len(chat_ids)))
             
                     #delete supress emails from DB since last sync
                     self._delete_sync(chat_ids, db_chat_ids, db_gmail_ids_info , 'chat')
