@@ -466,7 +466,7 @@ Gmvault provides 3 modes of synchronisations with <strong>-t, -type, --type</str
 The full synchronisation scans your complete email/chat box and store locally emails/chats on disk if they do not exist already. Gmvault uses the full synchronisation type by default. 
 <h4>Quick sync mode</h4>
 The quick type is used to daily backup your email account automatically (with a cron job for example) and it updates the local email repository with the latest additions.
-</br>The quick synchronisation goes up to 7 days backward in time and update your local on disk email repository to reflect the addition and deletion of emails/chats as well the labels modifications.
+</br>The quick synchronisation goes up to 7 days backward in time and update your local email repository to reflect the addition and deletion of emails/chats as well their labels and flags modifications.
 </br>You can increase or reduce the number of days to check by changing the value of the property <strong>quick_days</strong> in the configuration file $HOME/.gmvault/gmvault_defaults.conf (%HOME%/.gmvault/gmvault_defaults.conf for windows). This could allow having a faster syncing phase of example. 
 </br>See below a quick sync. 
 <pre>$>./gmvault sync foo.bar@gmail.com -t quick
