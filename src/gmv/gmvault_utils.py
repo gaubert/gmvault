@@ -36,7 +36,7 @@ from compiler.ast import With
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
-GMVAULT_VERSION="1.7-beta"
+GMVAULT_VERSION="1.7.w1-beta"
 
 class memoized(object):
     """Decorator that caches a function's return value each time it is called.
