@@ -1,4 +1,13 @@
 Release Notes for the different versions:
+-------------------------------
+-------------------------------
+Version Gmvault-v1.7.w1-beta:
+-------------------------------
+-------------------------------
+Date: 19.08.2012
+
+Bug fix for the windows version: add the scrollbars back on the gmvault-shell windows.
+For the rest of the release details please check v1.7-beta
 
 -------------------------------
 -------------------------------
