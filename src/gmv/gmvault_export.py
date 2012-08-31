@@ -16,6 +16,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+# TODO
+# Allow syncing, aka resumability after a partial or complete export
+# Test other OSes that might not like colon in Maildir filenames
+# Use hard-links to save space?
+
 import os
 import re
 import mailbox
@@ -51,6 +56,7 @@ class GMVaultExporter(object):
     def export_ids(self, kind, ids, default_folder, use_labels):
         timer = Timer()
         timer.start()
+        LOG.critical("Start %s export" % (kind,))
         done = 0
 
         for a_id in ids:
@@ -69,6 +75,8 @@ class GMVaultExporter(object):
                 LOG.critical("== Exported %d %s in %s, %d left (time estimate %s) ==" % \
                     (done, kind, timer.seconds_to_human_time(elapsed), \
                      left, timer.estimate_time_left(done, elapsed, left)))
+
+        LOG.critical("Export complete in %s" % (timer.elapsed_human_time(),))
 
 
 class Mailbox(object):

@@ -547,8 +547,6 @@ class GMVaultLauncher(object):
     
     @classmethod
     def _export(cls, args):
-        # TODO: Encryption, hard-links,
-        # resumable/syncable, colon, trash/spam, timestamps
         types = { 'maildir': gmvault_export.Maildir,
             'mbox': gmvault_export.MBox }
         output = types[args['type']](args['output'])
