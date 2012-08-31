@@ -117,7 +117,7 @@ class GMVaultLauncher(object):
     SYNC_TYPES    = ['full', 'quick', 'custom']
     RESTORE_TYPES = ['full', 'quick']
     CHECK_TYPES   = ['full']
-    EXPORT_TYPES   = ['maildir']
+    EXPORT_TYPES   = ['maildir', 'mbox']
     
     DEFAULT_GMVAULT_DB = "%s/gmvault-db" % (os.getenv("HOME", "."))
     
@@ -348,7 +348,7 @@ class GMVaultLauncher(object):
 
         export_parser.add_argument('-t', '-type', '--type', \
                           action='store', dest='type', \
-                          default='maildir', help='type of export: maildir. (default: maildir)')
+                          default='maildir', help='type of export: maildir, mbox. (default: maildir)')
 
         export_parser.add_argument("--debug", \
                        action='store_true', help="Activate debugging info",\
@@ -547,9 +547,13 @@ class GMVaultLauncher(object):
     
     @classmethod
     def _export(cls, args):
-        # TODO: Encryption, other output formats, hard-links,
-        # resumable/syncable, colon, trash/spam
-        gmvault_export.GMVaultExporter(args['db-dir'], args['output']).export()
+        # TODO: Encryption, hard-links,
+        # resumable/syncable, colon, trash/spam, timestamps
+        types = { 'maildir': gmvault_export.Maildir,
+            'mbox': gmvault_export.MBox }
+        output = types[args['type']](args['output'])
+        gmvault_export.GMVaultExporter(args['db-dir'], output).export()
+        output.close()
 
     @classmethod
     def _restore(cls, args, credential):

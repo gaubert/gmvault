@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+import os
 import re
 import mailbox
 
@@ -37,9 +38,9 @@ class GMVaultExporter(object):
     GM_SEEN = '\\Seen'
     GM_FLAGGED = '\\Flagged'
 
-    def __init__(self, db_dir, output):
+    def __init__(self, db_dir, mailbox):
         self.storer = GmailStorer(db_dir)
-        self.mailbox = Mailbox(output)
+        self.mailbox = mailbox
 
     def export(self):
         self.export_ids('emails', self.storer.get_all_existing_gmail_ids(), \
@@ -71,6 +72,12 @@ class GMVaultExporter(object):
 
 
 class Mailbox(object):
+    def add(self, msg, folder, flags):
+        raise NotImplementedError('implement in subclass')
+    def close():
+        pass
+
+class Maildir(Mailbox):
     SEPARATOR = '.'
 
     def __init__(self, path, esc = '\\', sep_esc = "*'"):
@@ -111,4 +118,41 @@ class Mailbox(object):
         if mmsg.get_subdir() == 'cur' and GMVaultExporter.GM_FLAGGED in flags:
             mmsg.add_flag('F')
 
+        self.subdir(folder).add(mmsg)
+
+class MBox(Mailbox):
+    def __init__(self, folder):
+        self.folder = folder
+        self.open = dict()
+
+    def close(self):
+        for k, m in self.open.items():
+            m.close()
+
+    def subdir(self, label):
+        label = re.sub(r'^\\', '', label)
+
+        segments = label.split(GMVaultExporter.GM_SEP)
+        segments = [s for s in segments if s != '..'] # safety first!
+        fname = segments.pop()
+
+        # Use .sbd folders a la Thunderbird, to allow nested folders
+        segments = [s + '.sbd' for s in segments]
+        mdir = os.path.join(self.folder, *segments)
+        if not os.path.exists(mdir):
+            os.makedirs(mdir)
+
+        path = os.path.normpath(os.path.join(mdir, fname))
+        if path in self.open:
+            return self.open[path]
+        mb = mailbox.mbox(path)
+        self.open[path] = mb
+        return mb
+
+    def add(self, msg, folder, flags):
+        mmsg = mailbox.mboxMessage(msg)
+        if GMVaultExporter.GM_SEEN in flags:
+            mmsg.add_flag('R')
+        if GMVaultExporter.GM_FLAGGED in flags:
+            mmsg.add_flag('F')
         self.subdir(folder).add(mmsg)
