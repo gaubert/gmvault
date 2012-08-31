@@ -22,16 +22,14 @@ import datetime
 import os
 import signal
 import traceback
-import mailbox
-import re
 
 import argparse
 import log_utils
 import imaplib
 import gmvault_utils
+import gmvault_export
 import gmvault
 
-from imap_utils import GIMAPFetcher
 from cmdline_utils  import CmdLineParser
 from credential_utils import CredentialHelper
 
@@ -549,44 +547,9 @@ class GMVaultLauncher(object):
     
     @classmethod
     def _export(cls, args):
-        # TODO: Encryption, chats, starred, other output formats, hard-links,
-        # time remaining, inbox
-
-        def mb_label(label):
-            """
-            Make a label's name valid for maildir format
-                - No leading double-backslash
-                - Percent-escape illegal characters
-                - Use dot as directory separator
-            """
-            r = re.sub(r'^\\', '', label)
-            for c in '%.~':
-                r = r.replace(c, '%%%02X' % (ord(c),))
-            return r.replace('/', '.')
-
-        STATUS_INTERVAL = 200
-        SEEN_FLAG = '\\Seen'
-        mb = mailbox.Maildir(args['output'])
-
-        storer = gmvault.GmailStorer(args['db-dir'])
-        ids = storer.get_all_existing_gmail_ids()
-        nb_processed = 0
-        for a_id in ids:
-            meta, data = storer.unbury_email(a_id)
-            msg = mailbox.MaildirMessage(data)
-            if SEEN_FLAG in meta[storer.FLAGS_K]:
-                msg.set_subdir('cur')
-                msg.set_flags('S')
-
-            labels = meta[storer.LABELS_K] + [GIMAPFetcher.GENERIC_GMAIL_ALL]
-            for label in labels:
-                label = mb_label(label)
-                mb.add_folder(label).add(msg)
-
-            nb_processed += 1
-            if nb_processed % STATUS_INTERVAL == 0:
-                LOG.critical("== Exported %d emails, %d left ==" % \
-                    (nb_processed, len(ids) - nb_processed))
+        # TODO: Encryption, other output formats, hard-links,
+        # resumable/syncable, colon, trash/spam
+        gmvault_export.GMVaultExporter(args['db-dir'], args['output']).export()
 
     @classmethod
     def _restore(cls, args, credential):
