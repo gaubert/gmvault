@@ -22,6 +22,8 @@ import datetime
 import os
 import signal
 import traceback
+import mailbox
+import re
 
 import argparse
 import log_utils
@@ -29,6 +31,7 @@ import imaplib
 import gmvault_utils
 import gmvault
 
+from imap_utils import GIMAPFetcher
 from cmdline_utils  import CmdLineParser
 from credential_utils import CredentialHelper
 
@@ -116,6 +119,7 @@ class GMVaultLauncher(object):
     SYNC_TYPES    = ['full', 'quick', 'custom']
     RESTORE_TYPES = ['full', 'quick']
     CHECK_TYPES   = ['full']
+    EXPORT_TYPES   = ['maildir']
     
     DEFAULT_GMVAULT_DB = "%s/gmvault-db" % (os.getenv("HOME", "."))
     
@@ -333,6 +337,27 @@ class GMVaultLauncher(object):
         
         check_parser.set_defaults(verb='check')
         
+        # export command
+        export_parser = subparsers.add_parser('export', \
+                                            help='Export the gmvault-db database to another format.')
+
+        export_parser.add_argument('output', \
+                                 action='store', help='destination to export to.')
+
+        export_parser.add_argument("-d", "--db-dir", \
+                                 action='store', help="Database root directory. (default: ./gmvault-db)",\
+                                 dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
+
+        export_parser.add_argument('-t', '-type', '--type', \
+                          action='store', dest='type', \
+                          default='maildir', help='type of export: maildir. (default: maildir)')
+
+        export_parser.add_argument("--debug", \
+                       action='store_true', help="Activate debugging info",\
+                       dest="debug", default=False)
+
+        export_parser.set_defaults(verb='export')
+
         return parser
       
     @classmethod
@@ -490,6 +515,15 @@ class GMVaultLauncher(object):
             # parse common arguments for sync and restore
             self._parse_common_args(options, parser, parsed_args, self.CHECK_TYPES)
     
+        elif parsed_args.get('command', '') == 'export':
+            parsed_args['db-dir'] = options.db_dir
+            parsed_args['output'] = options.output
+            if options.type.lower() in self.EXPORT_TYPES:
+                parsed_args['type'] = options.type.lower()
+            else:
+                parser.error('Unknown type for command export. The type should be one of %s' % self.EXPORT_TYPES)
+            parsed_args['debug'] = options.debug
+
         elif parsed_args.get('command', '') == 'config':
             pass
     
@@ -513,6 +547,47 @@ class GMVaultLauncher(object):
         LOG.debug("clean_imap_or_gm_request. processed request = %s\n" % (request))
         return request
     
+    @classmethod
+    def _export(cls, args):
+        # TODO: Encryption, chats, starred, other output formats, hard-links,
+        # time remaining, inbox
+
+        def mb_label(label):
+            """
+            Make a label's name valid for maildir format
+                - No leading double-backslash
+                - Percent-escape illegal characters
+                - Use dot as directory separator
+            """
+            r = re.sub(r'^\\', '', label)
+            for c in '%.~':
+                r = r.replace(c, '%%%02X' % (ord(c),))
+            return r.replace('/', '.')
+
+        STATUS_INTERVAL = 200
+        SEEN_FLAG = '\\Seen'
+        mb = mailbox.Maildir(args['output'])
+
+        storer = gmvault.GmailStorer(args['db-dir'])
+        ids = storer.get_all_existing_gmail_ids()
+        nb_processed = 0
+        for a_id in ids:
+            meta, data = storer.unbury_email(a_id)
+            msg = mailbox.MaildirMessage(data)
+            if SEEN_FLAG in meta[storer.FLAGS_K]:
+                msg.set_subdir('cur')
+                msg.set_flags('S')
+
+            labels = meta[storer.LABELS_K] + [GIMAPFetcher.GENERIC_GMAIL_ALL]
+            for label in labels:
+                label = mb_label(label)
+                mb.add_folder(label).add(msg)
+
+            nb_processed += 1
+            if nb_processed % STATUS_INTERVAL == 0:
+                LOG.critical("== Exported %d emails, %d left ==" % \
+                    (nb_processed, len(ids) - nb_processed))
+
     @classmethod
     def _restore(cls, args, credential):
         """
@@ -634,7 +709,8 @@ class GMVaultLauncher(object):
         
         try:
             
-            credential = CredentialHelper.get_credential(args)
+            if args.get('command') not in ('export'):
+                credential = CredentialHelper.get_credential(args)
             
             if args.get('command', '') == 'sync':
                 
@@ -648,6 +724,10 @@ class GMVaultLauncher(object):
                 
                 self._check_db(args, credential)
                 
+            elif args.get('command', '') == 'export':
+
+                self._export(args)
+
             elif args.get('command', '') == 'config':
                 
                 LOG.critical("Configure something. TBD.\n")
