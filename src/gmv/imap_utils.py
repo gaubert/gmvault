@@ -160,9 +160,14 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     IMAP Class reading the information
     '''
     GMAIL_EXTENSION     = 'X-GM-EXT-1'  # GMAIL capability
-    GMAIL_ALL           = '[Gmail]/All Mail' #GMAIL All Mail mailbox
+    GMAIL_ALL           = u'[Gmail]/All Mail' #GMAIL All Mail mailbox
+    GMAIL_CHATS         = u'[Gmail]/Chats' # unlocalised Chats
+    
     GENERIC_GMAIL_ALL   = u'\\AllMail' # unlocalised GMAIL ALL
-    GENERIC_GMAIL_CHATS = u'[Gmail]/Chats' # unlocalised Chats
+    GENERIC_GMAIL_CHATS = u'\\Chats'   # unlocalised Chats
+    
+    FOLDER_NAMES        = ['ALLMAIL', 'CHATS']
+    
     GMAIL_ID            = 'X-GM-MSGID' #GMAIL ID attribute
     GMAIL_THREAD_ID     = 'X-GM-THRID'
     GMAIL_LABELS        = 'X-GM-LABELS'
@@ -209,14 +214,17 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         self.ssl                    = True
         self.use_uid                = True
         self.readonly_folder        = readonly_folder
-        self._all_mail_folder       = None
+        
+        self.localized_folders      = {}
+        
+        # memoize the current folder (All Mail or Chats) for reconnection management
+        self._current_folder        = None
+        
         self.server                 = None
         self.go_to_all_folder       = True
         self.total_nb_reconns       = 0
         self.printed_chat_error_msg = False #true when the chat error message has been printed already
         
-        self._in_chat_dir = False #use in case of reconnect and when being in chat mode
-    
     def connect(self, go_to_all_folder = True):
         """
            connect to the IMAP server
@@ -236,25 +244,25 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         else:
             raise Exception("Unknown authentication method %s. Please use xoauth or passwd authentication " % (self.credential['type']))
             
-        #set connected to True to hanlde reconnection in case of failure
+        #set connected to True to handle reconnection in case of failure
         self.once_connected = True
         
         # check gmailness
         self.check_gmailness()
-        
-        self._all_mail_folder = None
-        
-        #find the all mail folder
-        self.find_all_mail_folder()
-        
-        if self._in_chat_dir:
-            self.find_and_select_chats_folder()
-            LOG.debug("in chats folder\n")
-        # set to GMAIL_ALL dir by default and in readonly
-        elif go_to_all_folder:
-            self.server.select_folder(self._all_mail_folder, readonly = self.readonly_folder)
-            LOG.debug("[All Mail] folder = %s\n" % (self._all_mail_folder))
          
+        #find the all mail folder and chats folder
+        if not self.localized_folders['ALLMAIL']:
+            self.find_all_mail_folder()
+        
+        if not self.localized_folders['CHATS']:
+            self.find_chats_folder()
+            
+        if go_to_all_folder:
+            self._current_folder = self._all_mail_folder
+            
+        LOG.debug("Go to %s" % (self._current_folder))
+        self.select_folder(self._current_folder, readonly = self.readonly_folder) # go to current folder
+        
         #enable compression
         self.enable_compression()
             
@@ -289,7 +297,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            depending on your account the all mail folder can be named 
            [GMAIL]/ALL Mail or [GoogleMail]/All Mail.
            Find and set the right one
-        """
+        """      
         #use xlist because of localized dir names
         folders = self.server.xlist_folders()
         
@@ -298,32 +306,31 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             #non localised GMAIL_ALL
             if GIMAPFetcher.GENERIC_GMAIL_ALL in flags:
                     #it could be a localized Dir name
-                    self._all_mail_folder = the_dir
-                    break
+                    self.localized_folders['ALLMAIL'] = the_dir
+                    return self.localized_folders['ALLMAIL']
         
         if not self._all_mail_folder:
             #Error
             raise Exception("Cannot find global 'All Mail' folder (maybe localized and translated into your language) ! Check whether 'Show in IMAP for 'All Mail' is enabled in Gmail (Go to Settings->Labels->All Mail)")
         
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
-    def find_and_select_chats_folder(self):
+    def find_chats_folder(self):
         """
-           depending on your account the all mail folder can be named 
-           [GMAIL]/Chats or [GoogleMail]/Chats.
+           depending on your account the chats folder can be named 
+           [GMAIL]/Chats or [GoogleMail]/Chats, [GMAIL]/tous les chats ...
            Find and set the right one
         """
         #use xlist because of localized dir names
         folders = self.server.xlist_folders()
         
-        for (_, _, the_dir) in folders:
-            #non localised GMAIL_CHATS
-            if GIMAPFetcher.GENERIC_GMAIL_CHATS in the_dir:
-                LOG.debug("Chat folder = %s\n" % (the_dir))
-                #select it in read only mode
-                self.server.select_folder(the_dir, True)
-                self._in_chat_dir = True
-                return the_dir
-
+        the_dir = None
+        for (flags, _, the_dir) in folders:
+            #non localised GMAIL_ALL
+            if GIMAPFetcher.GENERIC_GMAIL_CHATS in flags:
+                    #it could be a localized Dir name
+                    self.localized_folders['CHATS'] = the_dir
+                    return self.localized_folders['CHATS']
+        
         #Error did not find Chats dir 
         if gmvault_utils.get_conf_defaults().getboolean("General","errors_if_chat_not_visible", False):
             raise Exception("Cannot find global 'Chats' folder ! Check whether 'Show in IMAP for 'Chats' is enabled in Gmail (Go to Settings->Labels->All Mail)") 
@@ -332,17 +339,28 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 LOG.critical("Cannot find 'Chats' folder on Gmail Server. If you wish to backup your chats, look at the documentation to see how to configure your Gmail account.\n")
                 self.printed_chat_error_msg= True
         return None
-
-    @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
-    def select_all_mail_folder(self):
-        """
-            Select ALL Mail folder
-        """
-        self.server.select_folder(self._all_mail_folder, readonly = self.readonly_folder)
-        self._in_chat_dir = False
     
+    @retry(3,1,2)  # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
+    def select_folder(self, a_folder_name, use_predef_names = True):
+        """
+           Select one of the existing folder
+        """
+        if use_predef_names:
+            if a_folder_name not in self.FOLDER_NAMES:
+                raise Exception("%s is not a predefined folder names. Please use one" % (a_folder_name) )
+            
+            if self._current_folder != self.localized_folders[a_folder_name]:
+                self.server.select_folder(self.localized_folders[a_folder_name], readonly = self.readonly_folder)
+                self._current_folder = self.localized_folders[a_folder_name]
+            
+        elif self._current_folder != a_folder_name:
+            self.server.select_folder(a_folder_name, readonly = self.readonly_folder)
+            self._current_folder = a_folder_name
+        
+        return self._current_folder
+        
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
-    def get_all_folders(self): 
+    def list_all_folders(self): 
         """
            Return all folders mainly for debuging purposes
         """

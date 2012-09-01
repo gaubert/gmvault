@@ -645,7 +645,7 @@ class GMVaulter(object):
         # create source and try to connect
         self.src = imap_utils.GIMAPFetcher(host, port, login, credential, readonly_folder = read_only_access)
         
-        self.src.connect()
+        self.src.connect(go_to_all_folder = True)
         
         self.use_encryption = use_encryption
         
@@ -810,7 +810,7 @@ class GMVaulter(object):
         exception_not_launched = True
         
         LOG.debug("Before selection")
-        chat_dir = self.src.find_and_select_chats_folder()
+        chat_dir = self.src.select_folder('CHATS')
         LOG.debug("Selection is finished")
 
         if chat_dir:
@@ -975,6 +975,10 @@ class GMVaulter(object):
            - create and update emails in db
            
         """
+        
+        #select all mail folder using the constant name defined in GIMAPFetcher
+        self.src.select_folder('ALLMAIL')
+        
         # get all imap ids in All Mail
         imap_ids = self.src.search(imap_req)
         
