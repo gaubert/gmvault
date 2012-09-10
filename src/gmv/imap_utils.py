@@ -92,7 +92,8 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
             try:
                 LOG.critical("Reconnecting to the from Gmail Server.")
                 
-                the_self.connect()
+                #reconnect to the current folder
+                the_self.connect(go_to_all_folder = False)
                 
                 return 
             
