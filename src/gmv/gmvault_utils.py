@@ -493,9 +493,12 @@ quick_days=10
 limit_per_chat_dir=2000
 errors_if_chat_not_visible=False
 
+[Localisation]
+chat_folder='gmv_demo'
+
 #Do not touch any parameters below as it could force an overwrite of this file
 [VERSION]
-conf_version=1.7-beta
+conf_version=1.7.2-beta
 
 #set environment variables for the program locally
 #they will be read only once the conf file has been loaded
@@ -510,7 +513,7 @@ VERSION_PATTERN  = '\s*conf_version=\s*(?P<version>\S*)\s*'
 VERSION_RE  = re.compile(VERSION_PATTERN)
 
 #list of version conf to not overwrite with the next
-VERSIONS_TO_PRESERVE = [ '1.7-beta' ]
+VERSIONS_TO_PRESERVE = [ '1.7.2-beta' ]
 
 def _get_version_from_conf(home_conf_file):
     """
