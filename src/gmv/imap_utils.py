@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
     Gmvault: a tool to backup and restore your gmail account.
     Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
@@ -164,7 +165,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     GMAIL_ALL           = u'[Gmail]/All Mail' #GMAIL All Mail mailbox
     
     GENERIC_GMAIL_ALL   = u'\\AllMail' # unlocalised GMAIL ALL
-    GENERIC_GMAIL_CHATS = [u'[Gmail]/Chats', u'[Gmail]/Tous les chats']   # unlocalised Chats names
+    GENERIC_GMAIL_CHATS = [u'[Gmail]/Chats', u'[Gmail]/Tous les chats', u'[Gmail]/Чаты']   # unlocalised Chats names
     FOLDER_NAMES        = ['ALLMAIL', 'CHATS']
     
     GMAIL_ID            = 'X-GM-MSGID' #GMAIL ID attribute

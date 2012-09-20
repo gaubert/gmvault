@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
     Gmvault: a tool to backup and restore your gmail account.
     Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
@@ -18,18 +19,9 @@
 
 # unit tests part
 import unittest
-import struct_parser
 from struct_parser import Compiler, CompilerError
 
-
-
-
-def tests():
-    suite = unittest.TestLoader().loadTestsFromModule(struct_parser)
-    unittest.TextTestRunner(verbosity=2).run(suite)
-
-
-class TestListParser(unittest.TestCase):
+class TestParser(unittest.TestCase):
     
     
     def setUp(self):
@@ -78,7 +70,7 @@ class TestListParser(unittest.TestCase):
         
         self.assertEqual(the_result, ['a','b'])
     
-    def test_list_without_bracket_ztest_2(self):
+    def test_list_without_bracket_test_2(self):
         """ list without bracket test with a list inside """
         the_string = " 'a', b, ['a thing', 2]"
                 
@@ -98,7 +90,19 @@ class TestListParser(unittest.TestCase):
             compiler.compile_list(the_string)
         except CompilerError, err:
             self.assertEqual(err.message, 'Expression "  a ]" cannot be converted as a list.')
-      
+    
+    def test_list_unicode_val(self):
+        """ list unicode val """
+        the_string = "[ u'[Gmail]/Чаты', 'z' ]"
+        
+        compiler = Compiler()
+        
+        compiler.compile_list(the_string)
+        
+        the_result = compiler.compile_list(the_string)
+        
+        self.assertEqual(the_result, [ u'[Gmail]/Чаты', 'z' ])
+        
     def test_special_character_in_string(self):
         """ simple list without bracket test """
         
@@ -187,6 +191,10 @@ class TestListParser(unittest.TestCase):
         
         self.assertEqual(the_result, ['a',1,'b',{2:3,4:[1,'hello', 'no quotes', [1,2,3,{1:2,3:4}]]} ])
         
+def tests():
+    #suite = unittest.TestLoader().loadTestsFromModule(struct_parser)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestParser)
+    unittest.TextTestRunner(verbosity=2).run(suite)
         
         
 if __name__ == '__main__':

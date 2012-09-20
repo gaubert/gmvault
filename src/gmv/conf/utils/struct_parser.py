@@ -417,8 +417,15 @@ class Compiler(object):
         
         while the_token.type not in ('OP', 'ENDMARKER'):
             if the_token.type == 'STRING':  
-                # the value contains the quote or double quotes so remove them always
-                dummy = the_token.value[1:-1]
+                #check if the string is unicode
+                if len(the_token.value) >= 3 and the_token.value[:2] == "u'":
+                    #unicode string
+                    dummy = unicode(the_token.value[2:-1], 'utf_8')
+                    
+                else:
+                    #ascii string
+                    # the value contains the quote or double quotes so remove them always
+                    dummy = the_token.value[1:-1]
                     
             elif the_token.type == 'NAME':
                 # intepret all non quoted names as a string

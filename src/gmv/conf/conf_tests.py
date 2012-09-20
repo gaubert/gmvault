@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
     Gmvault: a tool to backup and restore your gmail account.
     Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
@@ -21,13 +22,6 @@ import unittest
 import sys
 import os
 import gmv.conf.conf_helper
-
-
-
-
-def tests():
-    suite = unittest.TestLoader().loadTestsFromModule(gmv.conf.conf_tests)
-    unittest.TextTestRunner(verbosity=2).run(suite)
 
 
 class TestConf(unittest.TestCase):
@@ -238,6 +232,13 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(the_list,['a', 1, 3])
     
+    def test_value_as_unicodeList(self):
+        """ Value as List """
+        
+        the_list = self.conf.getlist('GroupTestValueStruct','unicode_list')
+        
+        self.assertEqual(the_list,[ u'[Gmail]/Чаты', 'z' , 1 ])
+    
     def test_value_as_dict(self):
         """Dict as Value """
         
@@ -325,6 +326,11 @@ class TestResource(unittest.TestCase):
         r = gmv.conf.conf_helper.Resource(CliArgument=None,EnvVariable="MYENVVAR")
   
         self.assertEqual(r.getValueAsFloat()+1,5.345)
+        
+def tests():
+    #suite = unittest.TestLoader().loadTestsFromModule(gmv.conf.conf_tests)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestConf)
+    unittest.TextTestRunner(verbosity=2).run(suite)
  
         
 if __name__ == '__main__':
