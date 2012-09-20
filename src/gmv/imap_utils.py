@@ -227,6 +227,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         self.printed_folder_error_msg = { 'ALLMAIL' : False, 'CHATS': False }#True when CHATS or other folder error msg has been already printed
         
         #update GENERIC_GMAIL_CHATS. Should be done at the class level
+        l = gmvault_utils.get_conf_defaults().get_list('Localisation', 'chat_folder', [])
         self.GENERIC_GMAIL_CHATS.extend(gmvault_utils.get_conf_defaults().get_list('Localisation', 'chat_folder', []))
         
     def connect(self, go_to_all_folder = True):

@@ -494,7 +494,7 @@ limit_per_chat_dir=2000
 errors_if_chat_not_visible=False
 
 [Localisation]
-chat_folder='gmv_demo'
+chat_folder=['gmv_demo']
 
 #Do not touch any parameters below as it could force an overwrite of this file
 [VERSION]
