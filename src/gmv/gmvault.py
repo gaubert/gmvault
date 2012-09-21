@@ -603,7 +603,7 @@ class GmailStorer(object): #pylint:disable=R0902
             elif os.path.exists(comp_data_p):
                 os.remove(comp_data_p)
             elif os.path.exists(cryp_comp_data_p):
-                os.remove(comp_data_p)   
+                os.remove(cryp_comp_data_p)   
             
             if os.path.exists(metadata_p):
                 os.remove(metadata_p)
