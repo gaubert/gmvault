@@ -116,6 +116,29 @@ def get_exception_traceback():
     traceback.print_exception(exception_type, exception_value, exception_traceback, file = the_file)
     return the_file.getvalue()
 
+class BatchFetcher(object):
+    """
+       Fetch IMAP data in batch 
+    """
+    def __init__(self, src, imap_ids, default_batch_size):
+        """
+           constructor
+        """
+        self.src                = src
+        self.imap_ids           = imap_ids
+        self.default_batch_size = default_batch_size
+        
+        self._tofetch = list(imap_ids)
+        
+    def next(self, batch_size):
+        """
+        """
+        
+        curr_batch, self._tofetch = curr_batch[:step], todo[step:]
+        new_data = self.src.fetch(want, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA )
+                    rem_data = step
+        
+
 class Timer(object):
     """
        Timer Class to mesure time.

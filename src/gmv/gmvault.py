@@ -991,22 +991,19 @@ class GMVaulter(object):
         
         nb_emails_processed = 0
         
-        step = 30
+        step     = 100
         new_data = {}
         rem_data = 0
-        todo = list(imap_ids)
+        todo     = list(imap_ids)
         
-        for the_id in imap_ids:
-            
+        for the_id in imap_ids:    
             try:
-                
                 gid = None
                 
                 LOG.debug("\nProcess imap id %s" % ( the_id ))
                 
                 #get everything but data
                 #new_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA )
-                
                 rem_data -= 1
                 if rem_data <= 0:
                 #if the_id not in new_data:
@@ -1014,6 +1011,8 @@ class GMVaulter(object):
                     new_data = self.src.fetch(want, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA )
                     rem_data = step
                 
+                #create batch fetcher. The batch fetcher is as follow 
+                #BatchFetcher(connection,list of imap ids, default number of elem to fetch
                 if new_data.get(the_id, None):
                     
                     gid = new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
