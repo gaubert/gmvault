@@ -992,7 +992,7 @@ class GMVaulter(object):
         nb_emails_processed = 0
         
         step = 30
-        new_data = None
+        new_data = {}
         rem_data = 0
         todo = list(imap_ids)
         
@@ -1009,6 +1009,7 @@ class GMVaulter(object):
                 
                 rem_data -= 1
                 if rem_data <= 0:
+                #if the_id not in new_data:
                     want, todo = todo[:step], todo[step:]
                     new_data = self.src.fetch(want, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA )
                     rem_data = step
