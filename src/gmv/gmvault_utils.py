@@ -116,52 +116,7 @@ def get_exception_traceback():
     traceback.print_exception(exception_type, exception_value, exception_traceback, file = the_file)
     return the_file.getvalue()
 
-class BatchFetcher(object):
-    """
-       Fetch IMAP data in batch 
-    """
-    def __init__(self, src, imap_ids, imap_request, default_batch_size):
-        """
-           constructor
-        """
-        self.src                = src
-        self.imap_ids           = imap_ids
-        self.default_batch_size = default_batch_size
-        self.imap_request       = imap_request
-        
-        self._total_to_fetch    = list(imap_ids) #used in case of
-        
-        self._to_treat          = list(imap_ids)
-        
-        self._cache             = None
-        self._cache_ids         = None
-        self._nb_ids            = 0        
-        
-    def next_batch(self, batch_size):
-        """
-        """
-        if not self._cache:
-            want, self._to_treat = self._to_treat[:batch_size], self._to_treat[batch_size:]
-            
-            self._cache = self.src.fetch(want, self.imap_request)
-            
-            self._cached_ids = set(want)
-            self._nb_ids     = len(self._cached_ids)
-              
-    def pop(self, imap_id):
-        """
-           pop values until  
-        """ 
-        if self._nb_ids <= 0:
-            self.next_batch(self.default_batch_size) #get next batch
-            if self._nb_ids == 0:
-                raise Exception("No more elements")
-               
-        if imap_id in self._cached_ids:
-            self._cached_ids.discard(imap_id)
-            return self._cache[imap_id]
-        else:
-            return None
+
              
 
 class Timer(object):

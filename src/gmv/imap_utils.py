@@ -580,3 +580,165 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            fetch an email with it gmailID
         """
         pass
+    
+    
+
+class IMAPBatchFetcher(object):
+    """
+       Fetch IMAP data in batch 
+    """
+    def __init__(self, src, imap_ids, error_report, request, default_batch_size = 100):
+        """
+           constructor
+        """
+        self.src                = src
+        self.imap_ids           = imap_ids
+        self.def_batch_size     = default_batch_size
+        self.request            = request
+        self.error_report       = error_report  
+        
+        self.to_fetch           = list(imap_ids)
+    
+    def individual_fetch(self, imap_ids):
+        """
+           Find the imap_id creating the issue
+           return the data related to the imap_ids
+        """
+        new_data = {}
+        for the_id in imap_ids:    
+            try:
+                
+                single_data = self.src.fetch(the_id, self.request)
+                new_data.update(single_data)
+                
+            except imaplib.IMAP4.abort, _:
+                    # imap abort error 
+                    # ignore it 
+                    # will have to do something with these ignored messages
+                    LOG.critical("Error while fetching message with imap id %s." % (the_id))
+                    LOG.critical("\n=== Exception traceback ===\n")
+                    LOG.critical(gmvault_utils.get_exception_traceback())
+                    LOG.critical("=== End of Exception traceback ===\n")
+                    try:
+                        #try to get the gmail_id
+                        curr = self.src.fetch(the_id, GIMAPFetcher.GET_GMAIL_ID) 
+                    except Exception, _: #pylint:disable-msg=W0703
+                        curr = None
+                        LOG.critical("Error when trying to get gmail id for message with imap id %s." % (the_id))
+                        LOG.critical("Disconnect, wait for 20 sec then reconnect.")
+                        self.src.disconnect()
+                        #could not fetch the gm_id so disconnect and sleep
+                        #sleep 20 sec
+                        time.sleep(20)
+                        LOG.critical("Reconnecting ...")
+                        self.src.connect()
+                        
+                    if curr:
+                        gmail_id = curr[the_id][GIMAPFetcher.GMAIL_ID]
+                    else:
+                        gmail_id = None
+                        
+                    #add ignored id
+                    self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
+                    
+                    LOG.critical("Forced to ignore message with imap id %s, (gmail id %s)." % (the_id, (gmail_id if gmail_id else "cannot be read")))
+                    
+            except imaplib.IMAP4.error, error:
+                # check if this is a cannot be fetched error 
+                # I do not like to do string guessing within an exception but I do not have any choice here
+                LOG.critical("Error while fetching message with imap id %s." % (the_id))
+                LOG.critical("\n=== Exception traceback ===\n")
+                LOG.critical(gmvault_utils.get_exception_traceback())
+                LOG.critical("=== End of Exception traceback ===\n")
+                 
+                #quarantine emails that have raised an abort error
+                if str(error).find("'Some messages could not be FETCHed (Failure)'") >= 0:
+                    try:
+                        #try to get the gmail_id
+                        LOG.critical("One more attempt. Trying to fetch the Gmail ID for %s" % (the_id) )
+                        curr = self.src.fetch(the_id, GIMAPFetcher.GET_GMAIL_ID) 
+                    except Exception, _: #pylint:disable-msg=W0703
+                        curr = None
+                    
+                    if curr:
+                        gmail_id = curr[the_id][GIMAPFetcher.GMAIL_ID]
+                    else:
+                        gmail_id = None
+                    
+                    #add ignored id
+                    self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
+                    
+                    LOG.critical("Ignore message with imap id %s, (gmail id %s)" % (the_id, (gmail_id if gmail_id else "cannot be read")))
+                
+                else:
+                    raise error #rethrow error
+        
+        
+        
+        return new_data
+        
+    
+    def next(self):
+        """
+            Return the next batch of elements
+        """
+        new_data = {}
+        batch = self.to_fetch[:self.def_batch_size]
+        
+        if len(batch) <= 0:
+            return None
+        
+        try:
+        
+            new_data = self.src.fetch(batch, self.request)
+            
+            self.to_fetch = self.to_fetch[self.def_batch_size:]
+            
+            return new_data
+
+        except imaplib.IMAP4.error, _:
+            new_data = self.individual_fetch(batch) 
+    
+        return new_data
+    
+    def reset(self):
+        """
+           Restart from the beginning
+        """
+        self.to_fetch = self.imap_ids
+            
+        
+    def next_batch(self, batch_size):
+        """
+          next():
+           to_fetch = imap_ids[:step]   
+           try:
+               new_data = self.src.fetch(to_fetch,request)
+               
+               return new_data
+           except Error:
+              #if can do something on the error
+              new_data = self.individual_fetch(to_fetch)
+              return new_data
+        
+        
+        individual_fetch(to_fetch):
+            new_data = {}
+            
+            for id in to_fetch:
+                try:
+                   dummy = self.src.fetch(id, request)
+                   new_data.update(dummy)
+                except Error:
+                    #try to get the id and flag it in error report
+            
+            return new_data
+        """
+        if not self._cache:
+            want, self._to_treat = self._to_treat[:batch_size], self._to_treat[batch_size:]
+            
+            self._cache = self.src.fetch(want, self.imap_request)
+            
+            self._cached_ids = set(want)
+            self._nb_ids     = len(self._cached_ids)
+              
