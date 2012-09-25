@@ -584,6 +584,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
 def handle_imap_error(the_exception, the_id, error_report, src):
     """
       function to handle IMAPError in gmvault
+      type = chat or email
     """    
     if isinstance(the_exception, imaplib.IMAP4.abort):
         # imap abort error 
@@ -617,34 +618,34 @@ def handle_imap_error(the_exception, the_id, error_report, src):
         
         LOG.critical("Forced to ignore message with imap id %s, (gmail id %s)." % (the_id, (gmail_id if gmail_id else "cannot be read")))
     elif isinstance(the_exception, imaplib.IMAP4.error):
-                # check if this is a cannot be fetched error 
-                # I do not like to do string guessing within an exception but I do not have any choice here
-                LOG.critical("Error while fetching message with imap id %s." % (the_id))
-                LOG.critical("\n=== Exception traceback ===\n")
-                LOG.critical(gmvault_utils.get_exception_traceback())
-                LOG.critical("=== End of Exception traceback ===\n")
-                 
-                #quarantine emails that have raised an abort error
-                if str(the_exception).find("'Some messages could not be FETCHed (Failure)'") >= 0:
-                    try:
-                        #try to get the gmail_id
-                        LOG.critical("One more attempt. Trying to fetch the Gmail ID for %s" % (the_id) )
-                        curr = src.fetch(the_id, GIMAPFetcher.GET_GMAIL_ID) 
-                    except Exception, _: #pylint:disable-msg=W0703
-                        curr = None
-                    
-                    if curr:
-                        gmail_id = curr[the_id][GIMAPFetcher.GMAIL_ID]
-                    else:
-                        gmail_id = None
-                    
-                    #add ignored id
-                    error_report['cannot_be_fetched'].append((the_id, gmail_id))
-                    
-                    LOG.critical("Ignore message with imap id %s, (gmail id %s)" % (the_id, (gmail_id if gmail_id else "cannot be read")))
-                
-                else:
-                    raise the_exception #rethrow error
+        # check if this is a cannot be fetched error 
+        # I do not like to do string guessing within an exception but I do not have any choice here
+        LOG.critical("Error while fetching message with imap id %s." % (the_id))
+        LOG.critical("\n=== Exception traceback ===\n")
+        LOG.critical(gmvault_utils.get_exception_traceback())
+        LOG.critical("=== End of Exception traceback ===\n")
+         
+        #quarantine emails that have raised an abort error
+        if str(the_exception).find("'Some messages could not be FETCHed (Failure)'") >= 0:
+            try:
+                #try to get the gmail_id
+                LOG.critical("One more attempt. Trying to fetch the Gmail ID for %s" % (the_id) )
+                curr = src.fetch(the_id, GIMAPFetcher.GET_GMAIL_ID) 
+            except Exception, _: #pylint:disable-msg=W0703
+                curr = None
+            
+            if curr:
+                gmail_id = curr[the_id][GIMAPFetcher.GMAIL_ID]
+            else:
+                gmail_id = None
+            
+            #add ignored id
+            error_report['cannot_be_fetched'].append((the_id, gmail_id))
+            
+            LOG.critical("Ignore message with imap id %s, (gmail id %s)" % (the_id, (gmail_id if gmail_id else "cannot be read")))
+        
+        else:
+            raise the_exception #rethrow error
     else:
         raise the_exception    
 
@@ -709,40 +710,4 @@ class IMAPBatchFetcher(object):
         """
            Restart from the beginning
         """
-        self.to_fetch = self.imap_ids
-            
-        
-    def next_batch(self, batch_size):
-        """
-          next():
-           to_fetch = imap_ids[:step]   
-           try:
-               new_data = self.src.fetch(to_fetch,request)
-               
-               return new_data
-           except Error:
-              #if can do something on the error
-              new_data = self.individual_fetch(to_fetch)
-              return new_data
-        
-        
-        individual_fetch(to_fetch):
-            new_data = {}
-            
-            for id in to_fetch:
-                try:
-                   dummy = self.src.fetch(id, request)
-                   new_data.update(dummy)
-                except Error:
-                    #try to get the id and flag it in error report
-            
-            return new_data
-        """
-        if not self._cache:
-            want, self._to_treat = self._to_treat[:batch_size], self._to_treat[batch_size:]
-            
-            self._cache = self.src.fetch(want, self.imap_request)
-            
-            self._cached_ids = set(want)
-            self._nb_ids     = len(self._cached_ids)
-              
+        self.to_fetch = self.imap_ids              
