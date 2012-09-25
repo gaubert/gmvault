@@ -581,7 +581,72 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
         pass
     
-    
+def handle_imap_error(the_exception, the_id, error_report, src):
+    """
+      function to handle IMAPError in gmvault
+    """    
+    if isinstance(the_exception, imaplib.IMAP4.abort, _):
+        # imap abort error 
+        # ignore it 
+        # will have to do something with these ignored messages
+        LOG.critical("Error while fetching message with imap id %s." % (the_id))
+        LOG.critical("\n=== Exception traceback ===\n")
+        LOG.critical(gmvault_utils.get_exception_traceback())
+        LOG.critical("=== End of Exception traceback ===\n")
+        try:
+            #try to get the gmail_id
+            curr = src.fetch(the_id, GIMAPFetcher.GET_GMAIL_ID) 
+        except Exception, _: #pylint:disable-msg=W0703
+            curr = None
+            LOG.critical("Error when trying to get gmail id for message with imap id %s." % (the_id))
+            LOG.critical("Disconnect, wait for 20 sec then reconnect.")
+            src.disconnect()
+            #could not fetch the gm_id so disconnect and sleep
+            #sleep 20 sec
+            time.sleep(20)
+            LOG.critical("Reconnecting ...")
+            src.connect()
+            
+        if curr:
+            gmail_id = curr[the_id][GIMAPFetcher.GMAIL_ID]
+        else:
+            gmail_id = None
+            
+        #add ignored id
+        self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
+        
+        LOG.critical("Forced to ignore message with imap id %s, (gmail id %s)." % (the_id, (gmail_id if gmail_id else "cannot be read")))
+    elif isinstance(the_exception, imaplib.IMAP4.error):
+                # check if this is a cannot be fetched error 
+                # I do not like to do string guessing within an exception but I do not have any choice here
+                LOG.critical("Error while fetching message with imap id %s." % (the_id))
+                LOG.critical("\n=== Exception traceback ===\n")
+                LOG.critical(gmvault_utils.get_exception_traceback())
+                LOG.critical("=== End of Exception traceback ===\n")
+                 
+                #quarantine emails that have raised an abort error
+                if str(the_exception).find("'Some messages could not be FETCHed (Failure)'") >= 0:
+                    try:
+                        #try to get the gmail_id
+                        LOG.critical("One more attempt. Trying to fetch the Gmail ID for %s" % (the_id) )
+                        curr = src.fetch(the_id, GIMAPFetcher.GET_GMAIL_ID) 
+                    except Exception, _: #pylint:disable-msg=W0703
+                        curr = None
+                    
+                    if curr:
+                        gmail_id = curr[the_id][GIMAPFetcher.GMAIL_ID]
+                    else:
+                        gmail_id = None
+                    
+                    #add ignored id
+                    self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
+                    
+                    LOG.critical("Ignore message with imap id %s, (gmail id %s)" % (the_id, (gmail_id if gmail_id else "cannot be read")))
+                
+                else:
+                    raise the_exception #rethrow error
+    else:
+        raise the_exception    
 
 class IMAPBatchFetcher(object):
     """
@@ -611,70 +676,9 @@ class IMAPBatchFetcher(object):
                 single_data = self.src.fetch(the_id, self.request)
                 new_data.update(single_data)
                 
-            except imaplib.IMAP4.abort, _:
-                    # imap abort error 
-                    # ignore it 
-                    # will have to do something with these ignored messages
-                    LOG.critical("Error while fetching message with imap id %s." % (the_id))
-                    LOG.critical("\n=== Exception traceback ===\n")
-                    LOG.critical(gmvault_utils.get_exception_traceback())
-                    LOG.critical("=== End of Exception traceback ===\n")
-                    try:
-                        #try to get the gmail_id
-                        curr = self.src.fetch(the_id, GIMAPFetcher.GET_GMAIL_ID) 
-                    except Exception, _: #pylint:disable-msg=W0703
-                        curr = None
-                        LOG.critical("Error when trying to get gmail id for message with imap id %s." % (the_id))
-                        LOG.critical("Disconnect, wait for 20 sec then reconnect.")
-                        self.src.disconnect()
-                        #could not fetch the gm_id so disconnect and sleep
-                        #sleep 20 sec
-                        time.sleep(20)
-                        LOG.critical("Reconnecting ...")
-                        self.src.connect()
-                        
-                    if curr:
-                        gmail_id = curr[the_id][GIMAPFetcher.GMAIL_ID]
-                    else:
-                        gmail_id = None
-                        
-                    #add ignored id
-                    self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
-                    
-                    LOG.critical("Forced to ignore message with imap id %s, (gmail id %s)." % (the_id, (gmail_id if gmail_id else "cannot be read")))
-                    
-            except imaplib.IMAP4.error, error:
-                # check if this is a cannot be fetched error 
-                # I do not like to do string guessing within an exception but I do not have any choice here
-                LOG.critical("Error while fetching message with imap id %s." % (the_id))
-                LOG.critical("\n=== Exception traceback ===\n")
-                LOG.critical(gmvault_utils.get_exception_traceback())
-                LOG.critical("=== End of Exception traceback ===\n")
-                 
-                #quarantine emails that have raised an abort error
-                if str(error).find("'Some messages could not be FETCHed (Failure)'") >= 0:
-                    try:
-                        #try to get the gmail_id
-                        LOG.critical("One more attempt. Trying to fetch the Gmail ID for %s" % (the_id) )
-                        curr = self.src.fetch(the_id, GIMAPFetcher.GET_GMAIL_ID) 
-                    except Exception, _: #pylint:disable-msg=W0703
-                        curr = None
-                    
-                    if curr:
-                        gmail_id = curr[the_id][GIMAPFetcher.GMAIL_ID]
-                    else:
-                        gmail_id = None
-                    
-                    #add ignored id
-                    self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
-                    
-                    LOG.critical("Ignore message with imap id %s, (gmail id %s)" % (the_id, (gmail_id if gmail_id else "cannot be read")))
-                
-                else:
-                    raise error #rethrow error
-        
-        
-        
+            except Exception, error:
+                    handle_imap_error(error, the_id, self.error_report, self.src) #do everything in this handler
+
         return new_data
         
     

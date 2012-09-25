@@ -1202,19 +1202,20 @@ class GMVaulter(object):
                     else:
                         LOG.debug("On disk metadata for %s is up to date." % (gid))
                 else:  
-                    
-                    #get the data
-                    LOG.debug("Get Data for %s." % (gid))
-                    email_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_DATA_ONLY )
-                    
-                    new_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY] = email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
-                    
-                    # store data on disk within year month dir 
-                    gid  = self.gstorer.bury_email(new_data[the_id], local_dir = the_dir, compress = compress)
-                    
-                    #update local index id gid => index per directory to be thought out
-                    LOG.debug("Create and store email with imap id %s, gmail id %s." % (the_id, gid))   
-                    
+                    try:
+                        #get the data
+                        LOG.debug("Get Data for %s." % (gid))
+                        email_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_DATA_ONLY )
+                        
+                        new_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY] = email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
+                        
+                        # store data on disk within year month dir 
+                        gid  = self.gstorer.bury_email(new_data[the_id], local_dir = the_dir, compress = compress)
+                        
+                        #update local index id gid => index per directory to be thought out
+                        LOG.debug("Create and store email with imap id %s, gmail id %s." % (the_id, gid))   
+                    except Exception, error:
+                        imap_utils.handle_imap_error(error, the_id, self.error_report, self.src) #do everything in this handler    
                 
                 nb_emails_processed += 1
                 
