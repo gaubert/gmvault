@@ -585,7 +585,7 @@ def handle_imap_error(the_exception, the_id, error_report, src):
     """
       function to handle IMAPError in gmvault
     """    
-    if isinstance(the_exception, imaplib.IMAP4.abort, _):
+    if isinstance(the_exception, imaplib.IMAP4.abort):
         # imap abort error 
         # ignore it 
         # will have to do something with these ignored messages
@@ -613,7 +613,7 @@ def handle_imap_error(the_exception, the_id, error_report, src):
             gmail_id = None
             
         #add ignored id
-        self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
+        error_report['cannot_be_fetched'].append((the_id, gmail_id))
         
         LOG.critical("Forced to ignore message with imap id %s, (gmail id %s)." % (the_id, (gmail_id if gmail_id else "cannot be read")))
     elif isinstance(the_exception, imaplib.IMAP4.error):
@@ -639,7 +639,7 @@ def handle_imap_error(the_exception, the_id, error_report, src):
                         gmail_id = None
                     
                     #add ignored id
-                    self.error_report['cannot_be_fetched'].append((the_id, gmail_id))
+                    error_report['cannot_be_fetched'].append((the_id, gmail_id))
                     
                     LOG.critical("Ignore message with imap id %s, (gmail id %s)" % (the_id, (gmail_id if gmail_id else "cannot be read")))
                 
