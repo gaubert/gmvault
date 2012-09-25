@@ -20,7 +20,6 @@ import gzip
 import re
 import os
 import itertools
-import imaplib
 import fnmatch
 import shutil
 

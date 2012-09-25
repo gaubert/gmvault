@@ -495,6 +495,7 @@ quick_days=10
 [General]
 limit_per_chat_dir=2000
 errors_if_chat_not_visible=False
+nb_messages_per_batch=500
 
 [Localisation]
 chat_folder=['gmv_demo']
