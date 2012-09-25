@@ -1164,7 +1164,7 @@ class GMVaulter(object):
         nb_emails_processed = 0
         
         to_fetch = set(imap_ids)
-        fetcher = imap_utils.IMAPBatchFetcher(self.src, imap_ids, self.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, default_batch_size = 200)
+        fetcher = imap_utils.IMAPBatchFetcher(self.src, imap_ids, self.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, default_batch_size = 500)
         
         #will need a proper iterator
         new_data = fetcher.next()
