@@ -1163,12 +1163,11 @@ class GMVaulter(object):
         
         nb_emails_processed = 0
         
-        fetcher = imap_utils.IMAPBatchFetcher(self.src, imap_ids, self.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, default_batch_size = 10)
+        to_fetch = set(imap_ids)
+        fetcher = imap_utils.IMAPBatchFetcher(self.src, imap_ids, self.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, default_batch_size = 300)
         
         #will need a proper iterator
-        
         new_data = fetcher.next()
-        to_fetch = set(imap_ids)
         #LAST Thing to do remove all found ids from imap_ids and if ids left add missing in report
         
         while new_data:
@@ -1233,7 +1232,10 @@ class GMVaulter(object):
                     if gid:
                         self.save_lastid(self.OP_EMAIL_SYNC, gid)
                 
-            to_fetch -= new_data.keys() #remove all found keys from to_fetch set
+            to_fetch -= set(new_data.keys()) #remove all found keys from to_fetch set
+
+            #get next batch
+            new_data = fetcher.next()
         
         for the_id in to_fetch:
             # case when gmail IMAP server returns OK without any data whatsoever
