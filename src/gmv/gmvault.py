@@ -1164,7 +1164,7 @@ class GMVaulter(object):
         nb_emails_processed = 0
         
         to_fetch = set(imap_ids)
-        fetcher = imap_utils.IMAPBatchFetcher(self.src, imap_ids, self.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, default_batch_size = 300)
+        fetcher = imap_utils.IMAPBatchFetcher(self.src, imap_ids, self.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, default_batch_size = 200)
         
         #will need a proper iterator
         new_data = fetcher.next()
@@ -1204,6 +1204,7 @@ class GMVaulter(object):
                 else:  
                     
                     #get the data
+                    LOG.debug("Get Data for %s." % (gid))
                     email_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_DATA_ONLY )
                     
                     new_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY] = email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
@@ -1240,6 +1241,7 @@ class GMVaulter(object):
         for the_id in to_fetch:
             # case when gmail IMAP server returns OK without any data whatsoever
             # eg. imap uid 142221L ignore it
+            LOG.info("Could not process imap with id %s. Ignore it\n")
             self.error_report['empty'].append((the_id, None))
         
         return imap_ids
