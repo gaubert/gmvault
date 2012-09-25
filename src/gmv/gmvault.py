@@ -1233,14 +1233,13 @@ class GMVaulter(object):
                     if gid:
                         self.save_lastid(self.OP_EMAIL_SYNC, gid)
                 
-                to_fetch.discard(the_id)
+            to_fetch -= new_data.keys() #remove all found keys from to_fetch set
         
-        #check if id left in imap_ids
-        # case when gmail IMAP server returns OK without any data whatsoever
-        # eg. imap uid 142221L ignore it
-        #self.error_report['empty'].append((the_id, None))
+        for the_id in to_fetch:
+            # case when gmail IMAP server returns OK without any data whatsoever
+            # eg. imap uid 142221L ignore it
+            self.error_report['empty'].append((the_id, None))
         
-                    
         return imap_ids
     
     def sync(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL, compress_on_disk = True, db_cleaning = False, ownership_checking = True, \
