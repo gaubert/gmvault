@@ -848,6 +848,8 @@ class GMVaulter(object):
         """
         self.timer.start() #start restoring
         
+        self.src.select_folder('ALLMAIL') #insure that Gmvault is in ALLMAIL
+        
         if not chats_only:
             # backup emails
             LOG.critical("Start emails restoration.\n")
@@ -993,15 +995,12 @@ class GMVaulter(object):
         """
         LOG.critical("Restore chats in gmail account %s." % (self.login) ) 
                 
-        #crack email database
-        gstorer = gmvault_db.GmailStorer(self.db_root_dir, self.use_encryption)
-        
         LOG.critical("Read chats info from %s gmvault-db." % (self.db_root_dir))
         
         #for the restore (save last_restored_id in .gmvault/last_restored_id
         
         #get gmail_ids from db
-        db_gmail_ids_info = gstorer.get_all_chats_gmail_ids()
+        db_gmail_ids_info = self.gstorer.get_all_chats_gmail_ids()
         
         LOG.critical("Total number of chats to restore %s." % (len(db_gmail_ids_info.keys())))
         
@@ -1020,12 +1019,12 @@ class GMVaulter(object):
             
             LOG.critical("Restore chat with id %s." % (gm_id))
             
-            email_meta, email_data = gstorer.unbury_email(gm_id)
+            email_meta, email_data = self.gstorer.unbury_email(gm_id)
             
             LOG.debug("Unburied chat with id %s." % (gm_id))
             
             #labels for this email => real_labels U extra_labels
-            labels = set(email_meta[gstorer.LABELS_K])
+            labels = set(email_meta[self.gstorer.LABELS_K])
             labels = labels.union(extra_labels)
             
             # get list of labels to create 
@@ -1039,8 +1038,8 @@ class GMVaulter(object):
             try:
                 #restore email
                 self.src.push_email(email_data, \
-                                    email_meta[gstorer.FLAGS_K] , \
-                                    email_meta[gstorer.INT_DATE_K], \
+                                    email_meta[self.gstorer.FLAGS_K] , \
+                                    email_meta[self.gstorer.INT_DATE_K], \
                                     labels)
                 
                 LOG.debug("Pushed chat with id %s." % (gm_id))
@@ -1066,7 +1065,7 @@ class GMVaulter(object):
                 if str(abort).find("=> Gmvault ssl socket error: EOF") >= 0:
                     LOG.critical("Quarantine email with gm id %s from %s. "\
                                  "GMAIL IMAP cannot restore it: err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(abort)))
-                    gstorer.quarantine_email(gm_id)
+                    self.gstorer.quarantine_email(gm_id)
                     self.error_report['emails_in_quarantine'].append(gm_id)
                     LOG.critical("Disconnecting and reconnecting to restart cleanly.")
                     self.src.reconnect() #reconnect
@@ -1083,7 +1082,7 @@ class GMVaulter(object):
                 if str(err) == "APPEND command error: BAD ['Invalid Arguments: Unable to parse message']":
                     LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
                                  " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(err)))
-                    gstorer.quarantine_email(gm_id)
+                    self.gstorer.quarantine_email(gm_id)
                     self.error_report['emails_in_quarantine'].append(gm_id) 
                 else:
                     raise err
@@ -1094,7 +1093,7 @@ class GMVaulter(object):
                 if p_err.quarantined():
                     LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
                                  " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(p_err)))
-                    gstorer.quarantine_email(gm_id)
+                    self.gstorer.quarantine_email(gm_id)
                     self.error_report['emails_in_quarantine'].append(gm_id) 
                 else:
                     raise p_err          
@@ -1113,13 +1112,10 @@ class GMVaulter(object):
         """
         LOG.critical("Restore emails in gmail account %s." % (self.login) ) 
         
-        #crack email database
-        gstorer = gmvault_db.GmailStorer(self.db_root_dir, self.use_encryption)
-        
         LOG.critical("Read email info from %s gmvault-db." % (self.db_root_dir))
         
         #get gmail_ids from db
-        db_gmail_ids_info = gstorer.get_all_existing_gmail_ids(pivot_dir)
+        db_gmail_ids_info = self.gstorer.get_all_existing_gmail_ids(pivot_dir)
         
         LOG.critical("Total number of elements to restore %s." % (len(db_gmail_ids_info.keys())))
         
@@ -1139,12 +1135,12 @@ class GMVaulter(object):
             
             LOG.critical("Restore email with id %s." % (gm_id))
             
-            email_meta, email_data = gstorer.unbury_email(gm_id)
+            email_meta, email_data = self.gstorer.unbury_email(gm_id)
             
             LOG.debug("Unburied email with id %s." % (gm_id))
             
             #labels for this email => real_labels U extra_labels
-            labels = set(email_meta[gstorer.LABELS_K])
+            labels = set(email_meta[self.gstorer.LABELS_K])
             labels = labels.union(extra_labels)
             
             # get list of labels to create 
@@ -1158,8 +1154,8 @@ class GMVaulter(object):
             try:
                 #restore email
                 self.src.push_email(email_data, \
-                                    email_meta[gstorer.FLAGS_K] , \
-                                    email_meta[gstorer.INT_DATE_K], \
+                                    email_meta[self.gstorer.FLAGS_K] , \
+                                    email_meta[self.gstorer.INT_DATE_K], \
                                     labels)
                 
                 LOG.debug("Pushed email with id %s." % (gm_id))
@@ -1186,7 +1182,7 @@ class GMVaulter(object):
                 if str(abort).find("=> Gmvault ssl socket error: EOF") >= 0:
                     LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
                                  " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(abort)))
-                    gstorer.quarantine_email(gm_id)
+                    self.gstorer.quarantine_email(gm_id)
                     self.error_report['emails_in_quarantine'].append(gm_id)
                     LOG.critical("Disconnecting and reconnecting to restart cleanly.")
                     self.src.reconnect() #reconnect
@@ -1203,7 +1199,7 @@ class GMVaulter(object):
                 if str(err) == "APPEND command error: BAD ['Invalid Arguments: Unable to parse message']":
                     LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
                                  " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(err)))
-                    gstorer.quarantine_email(gm_id)
+                    self.gstorer.quarantine_email(gm_id)
                     self.error_report['emails_in_quarantine'].append(gm_id) 
                 else:
                     raise err
