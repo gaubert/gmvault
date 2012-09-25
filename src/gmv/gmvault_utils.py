@@ -32,7 +32,6 @@ import random
 
 import log_utils 
 import conf.conf_helper
-from compiler.ast import With
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
@@ -189,6 +188,9 @@ class Timer(object):
               (suffixes[3], 60 * 60),
               (suffixes[4], 60),
               (suffixes[5], 1)]
+        
+        if seconds < 1: #less than a second case
+            return "less than a second"
         
         # for each time piece, grab the value and remaining seconds, and add it to
         # the time string

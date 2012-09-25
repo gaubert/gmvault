@@ -363,6 +363,9 @@ class GMVaulter(object):
         """
         chat_dir = None
         
+        timer = gmvault_utils.Timer() #start local timer for chat
+        timer.start()
+        
         LOG.debug("Before selection")
         if self.src.is_visible('CHATS'):
             chat_dir = self.src.select_folder('CHATS')
@@ -446,11 +449,11 @@ class GMVaulter(object):
                     left_emails = (total_nb_chats_to_process - nb_chats_processed)
                     
                     if (nb_chats_processed % 50) == 0 and (left_emails > 0):
-                        elapsed = self.timer.elapsed() #elapsed time in seconds
+                        elapsed = timer.elapsed() #elapsed time in seconds
                         LOG.critical("\n== Processed %d emails in %s. %d left to be stored (time estimate %s).==\n" % \
-                                     (nb_chats_processed,  self.timer.seconds_to_human_time(elapsed), \
+                                     (nb_chats_processed,  timer.seconds_to_human_time(elapsed), \
                                       left_emails, \
-                                      self.timer.estimate_time_left(nb_chats_processed, elapsed, left_emails)))
+                                      timer.estimate_time_left(nb_chats_processed, elapsed, left_emails)))
                     
                     # save id every 10 restored emails
                     if (nb_chats_processed % 10) == 0:
@@ -461,9 +464,17 @@ class GMVaulter(object):
 
                 #get next batch
                 new_data = fetcher.next()
+                
+                for the_id in to_fetch:
+                    # case when gmail IMAP server returns OK without any data whatsoever
+                    # eg. imap uid 142221L ignore it
+                    LOG.info("Could not process chat with id %s. Ignore it\n")
+                    self.error_report['empty_chats'].append((the_id, None))
 
         else:
             imap_ids = []    
+        
+        LOG.critical("\nChats synchronisation operation performed in %s.\n" % (timer.seconds_to_human_time(timer.elapsed())))
         return imap_ids
 
     
@@ -472,7 +483,10 @@ class GMVaulter(object):
            First part of the double pass strategy: 
            - create and update emails in db
            
-        """       
+        """    
+        timer = gmvault_utils.Timer()
+        timer.start()
+           
         #select all mail folder using the constant name defined in GIMAPFetcher
         self.src.select_folder('ALLMAIL')
         
@@ -551,11 +565,11 @@ class GMVaulter(object):
                 left_emails = (total_nb_emails_to_process - nb_emails_processed)
                 
                 if (nb_emails_processed % 50) == 0 and (left_emails > 0):
-                    elapsed = self.timer.elapsed() #elapsed time in seconds
+                    elapsed = timer.elapsed() #elapsed time in seconds
                     LOG.critical("\n== Processed %d emails in %s. %d left to be stored (time estimate %s).==\n" % \
                                  (nb_emails_processed,  \
-                                  self.timer.seconds_to_human_time(elapsed), left_emails, \
-                                  self.timer.estimate_time_left(nb_emails_processed, elapsed, left_emails)))
+                                  timer.seconds_to_human_time(elapsed), left_emails, \
+                                  timer.estimate_time_left(nb_emails_processed, elapsed, left_emails)))
                 
                 # save id every 10 restored emails
                 if (nb_emails_processed % 10) == 0:
@@ -572,6 +586,8 @@ class GMVaulter(object):
             # eg. imap uid 142221L ignore it
             LOG.info("Could not process imap with id %s. Ignore it\n")
             self.error_report['empty'].append((the_id, None))
+        
+        LOG.critical("\nEmails synchronisation operation performed in %s.\n" % (timer.seconds_to_human_time(timer.elapsed())))
         
         return imap_ids
     
