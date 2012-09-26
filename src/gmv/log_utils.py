@@ -45,7 +45,6 @@ class LoggerFactory(object):
     '''
        My Logger Factory
     '''
-    
     @classmethod
     def get_logger(cls, name):
         """
@@ -104,9 +103,9 @@ class LoggerFactory(object):
         """
            Setup a handler for communicating with the user and still log everything in a logfile
         """
-        null_handler      = logbook.NullHandler()
+        null_handler = logbook.NullHandler()
         
-        out_handler       = StdoutHandler(format_string='{record.message}', level = console_level , bubble = False)
+        out_handler  = StdoutHandler(format_string='{record.message}', level = console_level , bubble = False)
         
         # first stack null handler to not have anything else logged 
         null_handler.push_application()
@@ -117,12 +116,6 @@ class LoggerFactory(object):
         # add file Handler
         if activate_log_file:
             
-            file_handler      = logbook.FileHandler(file_path, mode='w', format_string='[{record.time:%Y-%m-%d %H:%M}]:{record.level_name}:{record.channel}:{record.message}', level = log_file_level, bubble = True)
+            file_handler = logbook.FileHandler(file_path, mode='w', format_string='[{record.time:%Y-%m-%d %H:%M}]:{record.level_name}:{record.channel}:{record.message}', level = log_file_level, bubble = True)
             
             file_handler.push_application() 
-
-        
-        
-        
-        
-        
