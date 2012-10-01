@@ -690,14 +690,14 @@ def init_logging():
        init logging infrastructure
     """       
     #setup application logs: one handler for stdout and one for a log file
-    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=False, file_path="./gmvault.log") 
+    log_utils.LoggerFactory.setup_cli_app_handler(log_utils.STANDALONE, activate_log_file=False, file_path="./gmvault.log") 
     
 def activate_debug_mode():
     """
        Activate debugging logging
     """
     LOG.critical("Debugging logs are going to be saved in file %s/gmvault.log.\n" % os.getenv("HOME","."))
-    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'DEBUG', file_path="%s/gmvault.log" % os.getenv("HOME","."))
+    log_utils.LoggerFactory.setup_cli_app_handler(log_utils.STANDALONE, activate_log_file=True, console_level= 'DEBUG', file_path="%s/gmvault.log" % os.getenv("HOME","."))
 
 def sigusr1_handler(signum, frame): #pylint:disable=W0613
     """

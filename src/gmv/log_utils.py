@@ -20,6 +20,9 @@ import os
 
 import logbook
 
+#different types of LoggerFactory
+STANDALONE = "STANDALONE"
+
 
 class StdoutHandler(logbook.StreamHandler):
     """A handler that writes to what is currently at stdout. At the first
@@ -41,65 +44,12 @@ point to the old one.
 #default log file
 DEFAULT_LOG = "%s/gmvault.log" % (os.getenv("HOME", "."))
 
-class LoggerFactory(object):
-    '''
-       My Logger Factory
-    '''
-    @classmethod
-    def get_logger(cls, name):
-        """
-          Simply return a logger
-        """
-        return logbook.Logger(name)
+class LogbookLoggerFactory(object):
     
+    def __init__(self):
+        pass
     
-    @classmethod
-    def setup_simple_stderr_handler(cls):
-        """
-           Push a stderr handler logging only the message (no timestamp)
-        """
-        
-        null_handler = logbook.NullHandler()
-        
-        handler      = logbook.StderrHandler(format_string='{record.message}', level = 2, bubble = False)
-         
-        # first stack null handler to not have anything else logged 
-        null_handler.push_application()
-        # add Stderr Handler
-        handler.push_application() 
-    
-    @classmethod
-    def setup_simple_stdout_handler(cls):
-        """
-           Push a stderr handler logging only the message (no timestamp)
-        """
-        
-        null_handler = logbook.NullHandler()
-        
-        handler      = StdoutHandler(format_string='{record.message}', level = 2, bubble = False)
-         
-        # first stack null handler to not have anything else logged 
-        null_handler.push_application()
-        # add Stderr Handler
-        handler.push_application() 
-    
-    @classmethod
-    def setup_simple_file_handler(cls, file_path):
-        """
-           Push a file handler logging only the message (no timestamp)
-        """
-        
-        null_handler = logbook.NullHandler()
-        
-        handler      = logbook.FileHandler(file_path, format_string='{record.message}', level = 2, bubble = False)
-         
-        # first stack null handler to not have anything else logged 
-        null_handler.push_application()
-        # add Stderr Handler
-        handler.push_application() 
-        
-    @classmethod
-    def setup_cli_app_handler(cls, activate_log_file=False, console_level= 'CRITICAL', file_path=DEFAULT_LOG, log_file_level = 'DEBUG'):
+    def setup_cli_app_handler(self, activate_log_file=False, console_level= 'CRITICAL', file_path=DEFAULT_LOG, log_file_level = 'DEBUG'):
         """
            Setup a handler for communicating with the user and still log everything in a logfile
         """
@@ -118,4 +68,114 @@ class LoggerFactory(object):
             
             file_handler = logbook.FileHandler(file_path, mode='w', format_string='[{record.time:%Y-%m-%d %H:%M}]:{record.level_name}:{record.channel}:{record.message}', level = log_file_level, bubble = True)
             
-            file_handler.push_application() 
+            file_handler.push_application()
+    
+    def setup_simple_file_handler(self, type, file_path):
+        """
+           Push a file handler logging only the message (no timestamp)
+        """
+        null_handler = logbook.NullHandler()
+        
+        handler      = logbook.FileHandler(file_path, format_string='{record.message}', level = 2, bubble = False)
+         
+        # first stack null handler to not have anything else logged 
+        null_handler.push_application()
+        # add Stderr Handler
+        handler.push_application() 
+    
+    def setup_simple_stdout_handler(self):
+        """
+           Push a stderr handler logging only the message (no timestamp)
+        """
+        
+        null_handler = logbook.NullHandler()
+        
+        handler      = StdoutHandler(format_string='{record.message}', level = 2, bubble = False)
+         
+        # first stack null handler to not have anything else logged 
+        null_handler.push_application()
+        # add Stderr Handler
+        handler.push_application() 
+    
+    def setup_simple_stderr_handler(self):
+        """
+           Push a stderr handler logging only the message (no timestamp)
+        """
+        
+        null_handler = logbook.NullHandler()
+        
+        handler      = logbook.StderrHandler(format_string='{record.message}', level = 2, bubble = False)
+         
+        # first stack null handler to not have anything else logged 
+        null_handler.push_application()
+        # add Stderr Handler
+        handler.push_application() 
+    
+    def get_logger(self, name):
+        """
+           Return a logbook logger
+        """
+        return logbook.Logger(name)
+
+class LoggerFactory(object):
+    '''
+       My Logger Factory
+    '''
+    _factory = LogbookLoggerFactory()
+    _created = False
+    
+    @classmethod
+    def get_factory(cls, type):
+        """
+           Get logger factory
+        """
+        
+        if cls._created:
+            return cls._factory
+        
+        if type == STANDALONE:
+            cls._factory = LogbookLoggerFactory()
+            cls._created = True
+        else:
+            raise Exception("LoggerFactory type %s is unknown." % (type))
+        
+        return cls._factory
+    
+    @classmethod
+    def get_logger(cls, name):
+        """
+          Simply return a logger
+        """
+        return cls._factory.get_logger(name)
+    
+    
+    @classmethod
+    def setup_simple_stderr_handler(cls, type):
+        """
+           Push a stderr handler logging only the message (no timestamp)
+        """
+        cls.get_factory(type).setup_simple_stderr_handler()
+    
+    @classmethod
+    def setup_simple_stdout_handler(cls, type):
+        """
+           Push a stderr handler logging only the message (no timestamp)
+        """
+        cls.get_factory(type).setup_simple_stdout_handler()
+        
+    @classmethod
+    def setup_simple_file_handler(cls, type, file_path):
+        """
+           Push a file handler logging only the message (no timestamp)
+        """
+        cls.get_factory(type).setup_simple_file_handler(file_path)
+        
+    @classmethod
+    def setup_cli_app_handler(cls, type, activate_log_file=False, console_level= 'CRITICAL', file_path=DEFAULT_LOG, log_file_level = 'DEBUG'):
+        """
+           init logging engine
+        """
+        cls.get_factory(type).setup_cli_app_handler(activate_log_file=False, \
+                                                    console_level= 'CRITICAL', \
+                                                    file_path=DEFAULT_LOG, log_file_level = 'DEBUG')
+        
