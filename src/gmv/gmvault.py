@@ -1210,7 +1210,7 @@ class GMVaulter(object):
                 if p_err.quarantined():
                     LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
                                  " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(p_err)))
-                    gstorer.quarantine_email(gm_id)
+                    self.gstorer.quarantine_email(gm_id)
                     self.error_report['emails_in_quarantine'].append(gm_id) 
                 else:
                     raise p_err          
