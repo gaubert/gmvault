@@ -725,10 +725,10 @@ def setup_default_conf():
 def bootstrap_run():
     """ temporary bootstrap """
     
+    init_logging()
+    
     #force argv[0] to gmvault
     sys.argv[0] = "gmvault"
-    
-    init_logging()
     
     LOG.critical("")
     
