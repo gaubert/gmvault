@@ -165,7 +165,10 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     GMAIL_ALL           = u'[Gmail]/All Mail' #GMAIL All Mail mailbox
     
     GENERIC_GMAIL_ALL   = u'\\AllMail' # unlocalised GMAIL ALL
-    GENERIC_GMAIL_CHATS = [u'[Gmail]/Chats', u'[Gmail]/Tous les chats', u'[Gmail]/Чаты']   # unlocalised Chats names
+    GENERIC_GMAIL_CHATS = [u'[Gmail]/Chats', u'[Google Mail]/Chats', u'[Gmail]/Chat', u'[Google Mail]/Chat',\
+                           u'[Google Mail]/Tous les chats', u'[Gmail]/Tous les chats',\
+                           u'[Gmail]/Чаты', u'[Google Mail]/Чаты']   # unlocalised Chats names
+    
     FOLDER_NAMES        = ['ALLMAIL', 'CHATS']
     
     GMAIL_ID            = 'X-GM-MSGID' #GMAIL ID attribute
@@ -327,6 +330,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
         #use xlist because of localized dir names
         folders = self.server.xlist_folders()
+        
+        LOG.critical("Folders = %s\n" % (folders))
         
         the_dir = None
         for (_, _, the_dir) in folders:
