@@ -366,6 +366,10 @@ def datetime2e(a_date):
     """
     return calendar.timegm(a_date.timetuple())
 
+def contains_any(string, char_set):
+    """Check whether 'string' contains ANY of the chars in 'set'"""
+    return 1 in [c in string for c in char_set]
+
 def makedirs(aPath):
     """ my own version of makedir """
     

@@ -437,7 +437,9 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         if a_labels and len(a_labels) > 0:
             labels_str = '('
             for label in a_labels:
-                if label.find(' ') >=0 :
+                if gmvault_utils.contains_any(label, ' "'):
+                    label = label.replace('"', '\\"') #replace quote with escaped quotes
+                #if label.find(' ') >=0 :
                     labels_str += '\"%s\" ' % (label)
                 else:
                     labels_str += '%s ' % (label)
@@ -500,7 +502,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                         if self.server.create_folder(directory) != 'Success':
                             raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
                         else:
-                            LOG.debug("============== ####### Created Labels %s." % (directory))
+                            LOG.debug("============== ####### Created Labels (%s)." % (directory))
                     except imaplib.IMAP4.error, error:
                         #log error in log file if it exists
                         LOG.debug(gmvault_utils.get_exception_traceback())
@@ -566,7 +568,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         if labels_str:  
             #has labels so update email  
-            LOG.debug("Before to store")
+            LOG.debug("Before to store labels %s" % (labels_str))
             ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
             
             

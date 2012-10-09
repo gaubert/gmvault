@@ -1123,6 +1123,7 @@ class GMVaulter(object):
             db_gmail_ids_info = self.get_gmails_ids_left_to_restore(self.OP_EMAIL_RESTORE, db_gmail_ids_info)
         
         total_nb_emails_to_restore = len(db_gmail_ids_info)
+        
         LOG.critical("Got all emails id left to restore. Still %s emails to do.\n" % (total_nb_emails_to_restore) )
         
         existing_labels = set() #set of existing labels to not call create_gmail_labels all the time
