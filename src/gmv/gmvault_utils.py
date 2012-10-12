@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
     Gmvault: a tool to backup and restore your gmail account.
     Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
@@ -365,6 +366,10 @@ def datetime2e(a_date):
     """
     return calendar.timegm(a_date.timetuple())
 
+def contains_any(string, char_set):
+    """Check whether 'string' contains ANY of the chars in 'set'"""
+    return 1 in [c in string for c in char_set]
+
 def makedirs(aPath):
     """ my own version of makedir """
     
@@ -500,7 +505,8 @@ errors_if_chat_not_visible=False
 nb_messages_per_batch=500
 
 [Localisation]
-chat_folder=['gmv_demo']
+#example with Russian
+chat_folder=[ u'[Google Mail]/Чаты', u'[GMail]/Чаты' ]
 
 #Do not touch any parameters below as it could force an overwrite of this file
 [VERSION]

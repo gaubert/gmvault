@@ -175,7 +175,7 @@ class LoggerFactory(object):
         """
            init logging engine
         """
-        cls.get_factory(type).setup_cli_app_handler(activate_log_file=False, \
-                                                    console_level= 'CRITICAL', \
-                                                    file_path=DEFAULT_LOG, log_file_level = 'DEBUG')
+        cls.get_factory(type).setup_cli_app_handler(activate_log_file, \
+                                                    console_level, \
+                                                    file_path, log_file_level)
         

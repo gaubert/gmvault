@@ -165,7 +165,10 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     GMAIL_ALL           = u'[Gmail]/All Mail' #GMAIL All Mail mailbox
     
     GENERIC_GMAIL_ALL   = u'\\AllMail' # unlocalised GMAIL ALL
-    GENERIC_GMAIL_CHATS = [u'[Gmail]/Chats', u'[Gmail]/Tous les chats', u'[Gmail]/Чаты']   # unlocalised Chats names
+    GENERIC_GMAIL_CHATS = [u'[Gmail]/Chats', u'[Google Mail]/Chats', u'[Gmail]/Chat', u'[Google Mail]/Chat',\
+                           u'[Google Mail]/Tous les chats', u'[Gmail]/Tous les chats',\
+                           u'[Gmail]/Чаты', u'[Google Mail]/Чаты']   # unlocalised Chats names
+    
     FOLDER_NAMES        = ['ALLMAIL', 'CHATS']
     
     GMAIL_ID            = 'X-GM-MSGID' #GMAIL ID attribute
@@ -328,6 +331,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         #use xlist because of localized dir names
         folders = self.server.xlist_folders()
         
+        LOG.debug("Folders = %s\n" % (folders))
+        
         the_dir = None
         for (_, _, the_dir) in folders:
             #look for GMAIL Chats
@@ -432,7 +437,9 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         if a_labels and len(a_labels) > 0:
             labels_str = '('
             for label in a_labels:
-                if label.find(' ') >=0 :
+                if gmvault_utils.contains_any(label, ' "'):
+                    label = label.replace('"', '\\"') #replace quote with escaped quotes
+                #if label.find(' ') >=0 :
                     labels_str += '\"%s\" ' % (label)
                 else:
                     labels_str += '%s ' % (label)
@@ -495,7 +502,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                         if self.server.create_folder(directory) != 'Success':
                             raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
                         else:
-                            LOG.debug("============== ####### Created Labels %s." % (directory))
+                            LOG.debug("============== ####### Created Labels (%s)." % (directory))
                     except imaplib.IMAP4.error, error:
                         #log error in log file if it exists
                         LOG.debug(gmvault_utils.get_exception_traceback())
@@ -561,7 +568,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         if labels_str:  
             #has labels so update email  
-            LOG.debug("Before to store")
+            LOG.debug("Before to store labels %s" % (labels_str))
             ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
             
             
