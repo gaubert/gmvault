@@ -51,26 +51,44 @@ def delete_db_dir(a_db_dir):
     gmvault_utils.delete_all_under(a_db_dir, delete_top_dir = True)
 
 
-class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
+class TestGMVaultValidation(unittest.TestCase): #pylint:disable-msg=R0904
     """
-       Current Main test class
+       Validation Tests
     """
 
     def __init__(self, stuff):
         """ constructor """
-        super(TestGMVault, self).__init__(stuff)
+        super(TestGMVaultValidation, self).__init__(stuff)
         
         self.login  = None
         self.passwd = None
         
         self.gmvault_login  = None
         self.gmvault_passwd = None 
+        
+        self.default_dir = "/tmp/gmvault-tests"
     
     def setUp(self): #pylint:disable-msg=C0103
         self.login, self.passwd = read_password_file('/homespace/gaubert/.ssh/passwd')
         
-        self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
+        self.gmvault_test_login, self.gmvault_test_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
                 
+    def test_help_msg_spawned_by_def(self):
+        """
+           spawn python gmv_runner account > help_msg_spawned.txt
+           check that res is 0 or 1
+        """
+        
+   
+    def test_backup_10_emails(self):
+        """
+           backup 10 emails and check that they are backed
+           => spawn a process with the options
+           => python gmv_runner.py sync account > checkfile
+        """
+        
+    
+    
     def test_restore_on_gmail(self):
         """
            clean db disk
