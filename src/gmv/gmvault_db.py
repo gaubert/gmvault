@@ -538,7 +538,7 @@ class GmailStorer(object): #pylint:disable=R0902
         
     def unbury_email(self, a_id):
         """
-           Restore email info from info stored on disk
+           Restore the complete email info from info stored on disk
            Return a tuple (meta, data)
         """
         the_dir = self.get_directory_from_id(a_id)
@@ -556,6 +556,26 @@ class GmailStorer(object): #pylint:disable=R0902
         
         return (self.unbury_metadata(a_id, the_dir), data)
     
+    def unbury_data(self, a_id, a_id_dir = None):
+        """
+           Get the only the email content from the DB
+        """
+        if not a_id_dir:
+            a_id_dir = self.get_directory_from_id(a_id)
+            
+        data_fd = self._get_data_file_from_id(a_id_dir, a_id)
+        
+        if self.email_encrypted(data_fd.name):
+            LOG.debug("Restore encrypted email %s" % (a_id))
+            # need to be done for every encryption
+            cipher = self.get_encryption_cipher()
+            cipher.initCTR()
+            data = cipher.decryptCTR(data_fd.read())
+        else:
+            data = data_fd.read()
+            
+        return data    
+        
     def unbury_metadata(self, a_id, a_id_dir = None):
         """
            Get metadata info from DB
