@@ -107,6 +107,9 @@ class Map(object):
     def remove(self, key, value):
         del self._dict[key]
     
+    def keys(self):
+        return self._dict.keys()
+    
     def dict(self):
         """ Allows access to internal dictionary, if necessary. Caution: multimaps 
         will break if keys are not associated with proper container."""

@@ -271,8 +271,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         t = gmvault_utils.Timer()
         t.start()
         # '[Gmail]/Sent Mail'
-        self.server.select_folder(self.current_folder, readonly = self.readonly_folder) # go to current folder
-        #self.server.select_folder(u'[Google Mail]/Drafts', readonly = self.readonly_folder) # go to current folder
+        #self.server.select_folder(self.current_folder, readonly = self.readonly_folder) # go to current folder
+        self.server.select_folder(u'[Google Mail]/Drafts', readonly = self.readonly_folder) # go to current folder
         LOG.debug("select folder = %s s.\n" % (t.elapsed_ms()))
         
         #enable compression
@@ -522,36 +522,32 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         #return all existing folders
         return existing_folders
     
-    def apply_labels_with(self, imap_ids, labels):
+    def apply_labels_to(self, imap_ids, labels):
         """
            apply one labels to x emails
         """
         # go to All Mail folder
-        self.server.select_folder(u'[Google Mail]/All Mail', readonly = self.readonly_folder)
-        
-        labels_str = self._build_labels_str(labels)
+        LOG.debug("Applying labels %s" % (labels))
         
         t = gmvault_utils.Timer()
-        
+        t.start()
+        labels_str = self._build_labels_str(labels)
+    
         if labels_str:  
             #has labels so update email  
             t.start()
             LOG.debug("Before to store labels %s" % (labels_str))
-             # go to current folder
-            LOG.debug("Changing folders. elapsed %s s\n" % (t.elapsed_ms()))
-            t.start()
-            ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
+            id_list = ",".join(map(str, imap_ids))
+            ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS', labels_str)
             #ret_code = self.server._store('+X-GM-LABELS', [result_uid],labels_str)
             LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" % (labels_str, t.elapsed_ms(),ret_code, data))
             
-            LOG.debug("Stored Labels %s in gm_id %s" % (labels_str, result_uid))
+            LOG.debug("Stored Labels %s for gm_ids %s" % (labels_str, imap_ids))
 
-            self.server.select_folder(u'[Google Mail]/Drafts', readonly = self.readonly_folder) # go to current folder
-        
             # check if it is ok otherwise exception
             if ret_code != 'OK':
-                raise PushEmailError("Cannot add Labels %s to email with uid %d. Error:%s" % (labels_str, result_uid, data))
-        
+                raise PushEmailError("Cannot add Labels %s to emails with uids %d. Error:%s" % (labels_str, imap_ids, data))
+       
     def delete_gmail_labels(self, labels, force_delete = False):
         """
            Delete passed labels. Beware experimental and labels must be ordered
