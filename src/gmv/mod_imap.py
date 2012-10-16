@@ -110,6 +110,8 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
             
             self.sock   = socket.create_connection((host, port), self.SOCK_TIMEOUT) #add so_timeout  
 
+            #self.sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1) #try to set TCP NO DELAY to increase performances
+
             self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
             
             # This is the last correction added to avoid memory fragmentation in imaplib
@@ -264,7 +266,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903
 
         flags_list = seq_to_parenlist(flags)
 
-        typ, data = self._imap.append(self._encode_folder_name(folder),
+        typ, data = self._imap.append(self._encode_folder_name(folder) if folder else None,
                                       flags_list, time_val, msg)
         self._checkok('append', typ, data)
 

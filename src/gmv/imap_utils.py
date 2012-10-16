@@ -268,7 +268,12 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             self.current_folder = self.localized_folders['ALLMAIL']['loc_dir']
             
         LOG.debug("Go to %s" % (self.current_folder))
-        self.server.select_folder(self.current_folder, readonly = self.readonly_folder) # go to current folder
+        t = gmvault_utils.Timer()
+        t.start()
+        # '[Gmail]/Sent Mail'
+        #self.server.select_folder(self.current_folder, readonly = self.readonly_folder) # go to current folder
+        self.server.select_folder(u'[Google Mail]/Drafts', readonly = self.readonly_folder) # go to current folder
+        LOG.debug("select folder = %s s.\n" % (t.elapsed_ms()))
         
         #enable compression
         self.enable_compression()
@@ -548,10 +553,13 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         if self.login == 'guillaume.aubert@gmail.com':
             raise Exception("Cannot push to this account")
     
+        t = gmvault_utils.Timer()
+        t.start()
         LOG.debug("Before to Append email contents")
-        res = self.server.append(self.current_folder, a_body, a_flags, a_internal_time)
+        #res = self.server.append(self.current_folder, a_body, a_flags, a_internal_time)
+        res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
     
-        LOG.debug("Appended data with flags %s and internal time %s" % (a_flags, a_internal_time))
+        LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" % (a_flags, a_internal_time, t.elapsed_ms(), res))
         
         # check res otherwise Exception
         if '(Success)' not in res:
@@ -560,6 +568,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         match = GIMAPFetcher.APPENDUID_RE.match(res)
         if match:
             result_uid = int(match.group(1))
+            LOG.debug("result_uid = %s" %(result_uid))
         else:
             # do not quarantine it because it seems to be done by Google Mail to forbid data uploading.
             raise PushEmailError("No email id returned by IMAP APPEND command. Quarantine this email.", quarantined = True)
@@ -568,11 +577,18 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         if labels_str:  
             #has labels so update email  
+            t.start()
             LOG.debug("Before to store labels %s" % (labels_str))
+            self.server.select_folder(u'[Google Mail]/All Mail', readonly = self.readonly_folder) # go to current folder
+            LOG.debug("Changing folders. elapsed %s s\n" % (t.elapsed_ms()))
+            t.start()
             ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
-            
+            #ret_code = self.server._store('+X-GM-LABELS', [result_uid],labels_str)
+            LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" % (labels_str, t.elapsed_ms(),ret_code, data))
             
             LOG.debug("Stored Labels %s in gm_id %s" % (labels_str, result_uid))
+
+            self.server.select_folder(u'[Google Mail]/Drafts', readonly = self.readonly_folder) # go to current folder
         
             # check if it is ok otherwise exception
             if ret_code != 'OK':
