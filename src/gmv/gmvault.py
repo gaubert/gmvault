@@ -133,6 +133,18 @@ class IMAPBatchFetcher(object):
         return new_data
         
     
+    def __iter__(self):
+        """
+           Iterator method
+        """
+        return self
+        
+    def __next(self)__:
+        """
+           Support for Python v3
+        """
+        return self.next()
+    
     def next(self):
         """
             Return the next batch of elements
@@ -141,7 +153,7 @@ class IMAPBatchFetcher(object):
         batch = self.to_fetch[:self.def_batch_size]
         
         if len(batch) <= 0:
-            return None
+            raise StopIteration
         
         try:
         
@@ -392,9 +404,9 @@ class GMVaulter(object):
                                        default_batch_size = gmvault_utils.get_conf_defaults().getint("General","nb_messages_per_batch",500))
         
             #will need a proper iterator
-            new_data = fetcher.next()
+            #new_data = fetcher.next()
         
-            while new_data:
+            for new_data in fetcher:
                 for the_id in new_data:        
                     gid = None
                     
@@ -463,7 +475,7 @@ class GMVaulter(object):
                 to_fetch -= set(new_data.keys()) #remove all found keys from to_fetch set
 
                 #get next batch
-                new_data = fetcher.next()
+                #new_data = fetcher.next()
                 
                 for the_id in to_fetch:
                     # case when gmail IMAP server returns OK without any data whatsoever
@@ -509,10 +521,10 @@ class GMVaulter(object):
                                    default_batch_size = gmvault_utils.get_conf_defaults().getint("General","nb_messages_per_batch",500))
         
         #will need a proper iterator
-        new_data = fetcher.next()
+        #new_data = fetcher.next()
         #LAST Thing to do remove all found ids from imap_ids and if ids left add missing in report
         
-        while new_data:
+        for new_data in fetcher:
             for the_id in new_data: 
                 
                 LOG.debug("\nProcess imap id %s" % ( the_id ))
@@ -579,7 +591,7 @@ class GMVaulter(object):
             to_fetch -= set(new_data.keys()) #remove all found keys from to_fetch set
 
             #get next batch
-            new_data = fetcher.next()
+            #new_data = fetcher.next()
         
         for the_id in to_fetch:
             # case when gmail IMAP server returns OK without any data whatsoever
