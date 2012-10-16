@@ -1223,8 +1223,7 @@ class GMVaulter(object):
             
         return self.error_report
             
-            
-   def new_restore_emails(self, pivot_dir = None, extra_labels = [], restart = False):
+    def new_restore_emails(self, pivot_dir = None, extra_labels = [], restart = False):
         """
            restore emails in a gmail account using batching to group restore
            If you are not in "All Mail" Folder, it is extremely fast to push emails.
@@ -1249,23 +1248,41 @@ class GMVaulter(object):
         
         LOG.critical("Got all emails id left to restore. Still %s emails to do.\n" % (total_nb_emails_to_restore) )
         
-        existing_labels = set() #set of existing labels to not call create_gmail_labels all the time
-        nb_emails_restored = 0 #to count nb of emails restored
+        existing_labels     = set() #set of existing labels to not call create_gmail_labels all the time
+        nb_emails_restored  = 0  #to count nb of emails restored
+        labels_to_associate = collections_utils.SetMultimap()
         
         timer = gmvault_utils.Timer() # local timer for restore emails
         timer.start()
         
         nb_items = 50
-        for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items):
-            
+        for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
             # unbury the metadata for all these emails
-            for gm_id in group_imap_ids:
-                
-                email_meta = self.gstorer.unbury_metadata(gm_id)
+            for gm_id in group_imap_ids:    
+                email_meta, email_data = self.gstorer.unbury_email(gm_id)
                 
                 #labels for this email => real_labels U extra_labels
                 labels = set(email_meta[self.gstorer.LABELS_K])
                 labels = labels.union(extra_labels)
+                
+                # add in the labels_to_create struct
+                for label in labels:
+                    labels_to_associate[label] = gm_id
+            
+                # get list of labels to create 
+                labels_to_create = [ label for label in labels if label not in existing_labels]
+                
+                # push data in gmail account and get uids
+                self.src.push_data(email_data, \
+                                    email_meta[self.gstorer.FLAGS_K] , \
+                                    email_meta[self.gstorer.INT_DATE_K] )                        
+            
+            #create the non existing labels
+            if len(labels_to_create) > 0:
+                LOG.debug("Labels creation tentative for email with id %s." % (gm_id))
+                existing_labels = self.src.create_gmail_labels(labels_to_create, existing_labels)
+            
+            # associate labels with emails
                 
         
         for gm_id in db_gmail_ids_info:

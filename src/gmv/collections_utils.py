@@ -15,11 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import collections
 
 ## {{{ http://code.activestate.com/recipes/576669/ (r18)
-from collections import MutableMapping
-
-class OrderedDict(dict, MutableMapping):
+class OrderedDict(dict, collections.MutableMapping):
 
     # Methods with direct access to underlying attributes
 
@@ -64,12 +63,12 @@ class OrderedDict(dict, MutableMapping):
 
     # Methods with indirect access via the above methods
 
-    setdefault = MutableMapping.setdefault
-    update = MutableMapping.update
-    pop = MutableMapping.pop
-    keys = MutableMapping.keys
-    values = MutableMapping.values
-    items = MutableMapping.items
+    setdefault = collections.MutableMapping.setdefault
+    update     = collections.MutableMapping.update
+    pop        = collections.MutableMapping.pop
+    keys       = collections.MutableMapping.keys
+    values     = collections.MutableMapping.values
+    items      = collections.MutableMapping.items
 
     def __repr__(self):
         pairs = ', '.join(map('%r: %r'.__mod__, self.items()))
@@ -85,10 +84,6 @@ class OrderedDict(dict, MutableMapping):
             d[key] = value
         return d
 ## end of http://code.activestate.com/recipes/576669/ }}}
-
-import collections
-import sets
-
 class Map(object):
     """ Map wraps a dictionary. It is essentially an abstract class from which
     specific multimaps are subclassed. """
@@ -131,7 +126,7 @@ class ListMultimap(Map):
 class SetMultimap(Map):
     """ SetMultimap is based on sets and prevents multiple instances of same value. """
     def __init__(self):
-        self._dict = collections.defaultdict(sets.Set)
+        self._dict = collections.defaultdict(set)
         
     def __setitem__(self, key, value):
         self._dict[key].add(value)

@@ -521,8 +521,37 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         #return all existing folders
         return existing_folders
-                    
     
+    def apply_labels_with(self, imap_ids, labels):
+        """
+           apply one labels to x emails
+        """
+        # go to All Mail folder
+        self.server.select_folder(u'[Google Mail]/All Mail', readonly = self.readonly_folder)
+        
+        labels_str = self._build_labels_str(labels)
+        
+        t = gmvault_utils.Timer()
+        
+        if labels_str:  
+            #has labels so update email  
+            t.start()
+            LOG.debug("Before to store labels %s" % (labels_str))
+             # go to current folder
+            LOG.debug("Changing folders. elapsed %s s\n" % (t.elapsed_ms()))
+            t.start()
+            ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
+            #ret_code = self.server._store('+X-GM-LABELS', [result_uid],labels_str)
+            LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" % (labels_str, t.elapsed_ms(),ret_code, data))
+            
+            LOG.debug("Stored Labels %s in gm_id %s" % (labels_str, result_uid))
+
+            self.server.select_folder(u'[Google Mail]/Drafts', readonly = self.readonly_folder) # go to current folder
+        
+            # check if it is ok otherwise exception
+            if ret_code != 'OK':
+                raise PushEmailError("Cannot add Labels %s to email with uid %d. Error:%s" % (labels_str, result_uid, data))
+        
     def delete_gmail_labels(self, labels, force_delete = False):
         """
            Delete passed labels. Beware experimental and labels must be ordered
@@ -542,7 +571,37 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                         self.server.delete_folder(directory)
                     except imaplib.IMAP4.error, _:
                         LOG.debug(gmvault_utils.get_exception_traceback())
-                    
+                        
+    @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec    
+    def push_data(self, a_body, a_flags, a_internal_time):
+        """
+           Push the data
+        """  
+        # protection against myself
+        if self.login == 'guillaume.aubert@gmail.com':
+            raise Exception("Cannot push to this account")
+        
+        t = gmvault_utils.Timer()
+        t.start()
+        LOG.debug("Before to Append email contents")
+        #res = self.server.append(self.current_folder, a_body, a_flags, a_internal_time)
+        res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
+    
+        LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" % (a_flags, a_internal_time, t.elapsed_ms(), res))
+        
+        # check res otherwise Exception
+        if '(Success)' not in res:
+            raise PushEmailError("GIMAPFetcher cannot restore email in %s account." %(self.login))
+        
+        match = GIMAPFetcher.APPENDUID_RE.match(res)
+        if match:
+            result_uid = int(match.group(1))
+            LOG.debug("result_uid = %s" %(result_uid))
+        else:
+            # do not quarantine it because it seems to be done by Google Mail to forbid data uploading.
+            raise PushEmailError("No email id returned by IMAP APPEND command. Quarantine this email.", quarantined = True)
+        
+        return result_uid          
          
     @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec
     def push_email(self, a_body, a_flags, a_internal_time, a_labels):
@@ -595,9 +654,3 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 raise PushEmailError("Cannot add Labels %s to email with uid %d. Error:%s" % (labels_str, result_uid, data))
         
         return result_uid
-    
-    def fetch_with_gmid(self, a_gm_id):
-        """
-           fetch an email with it gmailID
-        """
-        pass
