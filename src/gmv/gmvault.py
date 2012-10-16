@@ -139,7 +139,7 @@ class IMAPBatchFetcher(object):
         """
         return self
         
-    def __next(self)__:
+    def __next__(self):
         """
            Support for Python v3
         """
