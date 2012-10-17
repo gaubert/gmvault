@@ -170,7 +170,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                            u'[Google Mail]/Tous les chats', u'[Gmail]/Tous les chats',\
                            u'[Gmail]/Чаты', u'[Google Mail]/Чаты']   # unlocalised Chats names
     
-    FOLDER_NAMES        = ['ALLMAIL', 'CHATS']
+    FOLDER_NAMES        = ['ALLMAIL', 'CHATS', 'DRAFTS']
     
     GMAIL_ID            = 'X-GM-MSGID' #GMAIL ID attribute
     GMAIL_THREAD_ID     = 'X-GM-THRID'

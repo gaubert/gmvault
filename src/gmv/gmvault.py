@@ -31,7 +31,52 @@ import gmvault_db
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault')
 
-def handle_imap_error(the_exception, the_id, error_report, src):
+def handle_restore_imap_error(the_exception, gm_id, db_gmail_ids_info, gmvaulter):
+    """
+       function to handle restore IMAPError in restore functions 
+    """
+    if isinstance(the_exception, imaplib.IMAP4.abort):
+        # if this is a Gmvault SSL Socket error quarantine the email and continue the restore
+        if str(the_exception).find("=> Gmvault ssl socket error: EOF") >= 0:
+            LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
+                         " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(the_exception)))
+            gmvaulter.gstorer.quarantine_email(gm_id)
+            gmvaulter.error_report['emails_in_quarantine'].append(gm_id)
+            LOG.critical("Disconnecting and reconnecting to restart cleanly.")
+            gmvaulter.src.reconnect() #reconnect
+        else:
+            raise the_exception
+        
+    elif isinstance(the_exception, imaplib.IMAP4.error): 
+        LOG.error("Catched IMAP Error %s" % (str(the_exception)))
+        LOG.exception(the_exception)
+        
+        #When the email cannot be read from Database because it was empty when returned by gmail imap
+        #quarantine it.
+        if str(the_exception) == "APPEND command error: BAD ['Invalid Arguments: Unable to parse message']":
+            LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
+                         " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(the_exception)))
+            gmvaulter.gstorer.quarantine_email(gm_id)
+            gmvaulter.error_report['emails_in_quarantine'].append(gm_id) 
+        else:
+            raise the_exception
+    elif isinstance(the_exception, imap_utils.PushEmailError):
+        LOG.error("Catch the following exception %s" % (str(the_exception)))
+        LOG.exception(the_exception)
+        
+        if the_exception.quarantined():
+            LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
+                         " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(the_exception)))
+            gmvaulter.gstorer.quarantine_email(gm_id)
+            gmvaulter.error_report['emails_in_quarantine'].append(gm_id) 
+        else:
+            raise the_exception          
+    else:
+        LOG.error("Catch the following exception %s" % (str(the_exception)))
+        LOG.exception(the_exception)
+        raise the_exception
+
+def handle_sync_imap_error(the_exception, the_id, error_report, src):
     """
       function to handle IMAPError in gmvault
       type = chat or email
@@ -128,7 +173,7 @@ class IMAPBatchFetcher(object):
                 new_data.update(single_data)
                 
             except Exception, error:
-                    handle_imap_error(error, the_id, self.error_report, self.src) #do everything in this handler
+                    handle_sync_imap_error(error, the_id, self.error_report, self.src) #do everything in this handler
 
         return new_data
         
@@ -199,7 +244,7 @@ class GMVaulter(object):
         # create source and try to connect
         self.src = imap_utils.GIMAPFetcher(host, port, login, credential, readonly_folder = read_only_access)
         
-        self.src.connect(go_to_all_folder = True)
+        self.src.connect()
         
         LOG.debug("Connected")
         
