@@ -1254,10 +1254,14 @@ class GMVaulter(object):
         nb_emails_restored  = 0  #to count nb of emails restored
         labels_to_apply = collections_utils.SetMultimap()
         
+        # go to DRAFTS folder because if you are in ALL MAIL when uploading emails it is very slow
+        self.src.select_folder('DRAFTS')
+        
         timer = gmvault_utils.Timer() # local timer for restore emails
         timer.start()
         
         nb_items = 50 
+        
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
             # unbury the metadata for all these emails
             for gm_id in group_imap_ids:    
@@ -1274,13 +1278,14 @@ class GMVaulter(object):
                 
                 # add in the labels_to_create struct
                 for label in labels:
-                    if label == "0":
-                        LOG.debug("STOOOOOP")
                     LOG.debug("label = %s\n" % (label))
                     labels_to_apply[str(label)] = imap_id
             
                 # get list of labels to create 
                 labels_to_create = [ label for label in labels if label not in existing_labels]                  
+
+                LOG.debug("Pushed email body with id %s." % (gm_id))
+
             
             #create the non existing labels
             if len(labels_to_create) > 0:
@@ -1288,14 +1293,28 @@ class GMVaulter(object):
                 existing_labels = self.src.create_gmail_labels(labels_to_create, existing_labels)
             
             # associate labels with emails
+            LOG.debug("Applying labels to the current batch of %d emails" % (nb_items))
             try:
-                self.src.select_folder('ALLMAIL', use_predef_names = True)
+                self.src.select_folder('ALLMAIL')
                 for label in labels_to_apply.keys():
                     self.src.apply_labels_to(labels_to_apply[label], [label])    
             finally:
-                self.src.select_folder(u'[Google Mail]/Drafts', use_predef_names = False)
+                self.src.select_folder('DRAFTS')
+            
+            nb_emails_restored += nb_items
+                
+            #indicate every 10 messages the number of messages left to process
+            left_emails = (total_nb_emails_to_restore - nb_emails_restored)
+            
+            if (nb_emails_restored % 50) == 0 and (left_emails > 0): 
+                elapsed = timer.elapsed() #elapsed time in seconds
+                LOG.critical("\n== Processed %d emails in %s. %d left to be restored "\
+                             "(time estimate %s).==\n" % \
+                             (nb_emails_restored, timer.seconds_to_human_time(elapsed), \
+                              left_emails, timer.estimate_time_left(nb_emails_restored, elapsed, left_emails)))
+            
+            # save id every 50 restored emails
+            # add the last treated gm_id
+            self.save_lastid(self.OP_EMAIL_RESTORE, group_imap_ids[-1])
             
         return self.error_report 
-            
-        
-    
