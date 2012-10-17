@@ -848,7 +848,7 @@ class GMVaulter(object):
         """
         self.timer.start() #start restoring
         
-        self.src.select_folder('ALLMAIL') #insure that Gmvault is in ALLMAIL
+        #self.src.select_folder('ALLMAIL') #insure that Gmvault is in ALLMAIL
         
         if not chats_only:
             # backup emails
@@ -1255,7 +1255,7 @@ class GMVaulter(object):
         timer = gmvault_utils.Timer() # local timer for restore emails
         timer.start()
         
-        nb_items = 3
+        nb_items = 50 
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
             # unbury the metadata for all these emails
             for gm_id in group_imap_ids:    
@@ -1287,7 +1287,7 @@ class GMVaulter(object):
             
             # associate labels with emails
             try:
-                self.src.select_folder(u'[Google Mail]/All Mail', use_predef_names = False)
+                self.src.select_folder('ALLMAIL', use_predef_names = True)
                 for label in labels_to_apply.keys():
                     self.src.apply_labels_to(labels_to_apply[label], [label])    
             finally:

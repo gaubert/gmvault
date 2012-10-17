@@ -267,17 +267,17 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         if go_to_all_folder:
             self.current_folder = self.localized_folders['ALLMAIL']['loc_dir']
             
-        LOG.debug("Go to %s" % (self.current_folder))
         t = gmvault_utils.Timer()
         t.start()
         # '[Gmail]/Sent Mail'
-        #self.server.select_folder(self.current_folder, readonly = self.readonly_folder) # go to current folder
-        self.server.select_folder(u'[Google Mail]/Drafts', readonly = self.readonly_folder) # go to current folder
-        self.current_folder = u'[Google Mail]/Drafts'    
+        self.current_folder = u'[Google Mail]/Drafts' #temporary set THIS folder for tests purposes   
+        LOG.debug("Go to %s" % (self.current_folder))
+        self.server.select_folder(self.current_folder, readonly = self.readonly_folder) # go to current folder
         LOG.debug("select folder = %s s.\n" % (t.elapsed_ms()))
         
         #enable compression
         self.enable_compression()
+        LOG.debug("After Enabling compression")
             
     def disconnect(self):
         """
@@ -539,7 +539,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             t.start()
             LOG.debug("Before to store labels %s" % (labels_str))
             id_list = ",".join(map(str, imap_ids))
-            ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS', labels_str)
+            ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', labels_str)
             #ret_code = self.server._store('+X-GM-LABELS', [result_uid],labels_str)
             LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" % (labels_str, t.elapsed_ms(),ret_code, data))
             
