@@ -219,7 +219,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         self.readonly_folder        = readonly_folder
         
         self.localized_folders      = { 'ALLMAIL': { 'loc_dir' : None, 'friendly_name' : 'allmail'}, 
-                                        'CHATS'  : { 'loc_dir' : None, 'friendly_name' : 'chats'} }
+                                        'CHATS'  : { 'loc_dir' : None, 'friendly_name' : 'chats'}, 
+                                        'DRAFTS'  :{ 'loc_dir' : None, 'friendly_name' : 'drafts'} }
         
         # memoize the current folder (All Mail or Chats) for reconnection management
         self.current_folder        = None
@@ -227,7 +228,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         self.server                 = None
         self.go_to_all_folder       = True
         self.total_nb_reconns       = 0
-        self.printed_folder_error_msg = { 'ALLMAIL' : False, 'CHATS': False }#True when CHATS or other folder error msg has been already printed
+        self.printed_folder_error_msg = { 'ALLMAIL' : False, 'CHATS': False , 'DRAFTS':False }#True when CHATS or other folder error msg has been already printed
         
         #update GENERIC_GMAIL_CHATS. Should be done at the class level
         self.GENERIC_GMAIL_CHATS.extend(gmvault_utils.get_conf_defaults().get_list('Localisation', 'chat_folder', []))
@@ -303,6 +304,29 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            Try to enable the compression
         """
         self.server.enable_compression()
+        
+    @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
+    def find_folder_names(self):
+        """
+           depending on your account the all mail folder can be named 
+           [GMAIL]/ALL Mail or [GoogleMail]/All Mail.
+           Find and set the right one
+        """      
+        #use xlist because of localized dir names
+        folders = self.server.xlist_folders()
+        
+        the_dir = None
+        for (flags, _, the_dir) in folders:
+            #non localised GMAIL_ALL
+            if GIMAPFetcher.GENERIC_GMAIL_ALL in flags:
+                    #it could be a localized Dir name
+                    self.localized_folders['ALLMAIL']['loc_dir'] = the_dir
+                    return the_dir
+        
+        if not self.localized_folders['ALLMAIL']['loc_dir']:
+            #Error
+            raise Exception("Cannot find global 'All Mail' folder (maybe localized and translated into your language) ! Check whether 'Show in IMAP for 'All Mail' is enabled in Gmail (Go to Settings->Labels->All Mail)")
+        
     
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def find_all_mail_folder(self):
