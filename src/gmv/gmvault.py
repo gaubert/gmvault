@@ -201,6 +201,8 @@ class GMVaulter(object):
         
         self.src.connect(go_to_all_folder = True)
         
+        LOG.debug("Connected")
+        
         self.use_encryption = use_encryption
         
         #to report gmail imap problems
