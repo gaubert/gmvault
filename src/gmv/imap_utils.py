@@ -273,6 +273,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         # '[Gmail]/Sent Mail'
         #self.server.select_folder(self.current_folder, readonly = self.readonly_folder) # go to current folder
         self.server.select_folder(u'[Google Mail]/Drafts', readonly = self.readonly_folder) # go to current folder
+        self.current_folder = u'[Google Mail]/Drafts'    
         LOG.debug("select folder = %s s.\n" % (t.elapsed_ms()))
         
         #enable compression
