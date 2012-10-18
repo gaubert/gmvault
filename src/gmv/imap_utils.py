@@ -94,7 +94,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
                 LOG.critical("Reconnecting to the from Gmail Server.")
                 
                 #reconnect to the current folder
-                the_self.connect(go_to_all_folder = False)
+                the_self.connect(go_to_current_folder = True )
                 
                 return 
             
@@ -234,7 +234,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         #update GENERIC_GMAIL_CHATS. Should be done at the class level
         self.GENERIC_GMAIL_CHATS.extend(gmvault_utils.get_conf_defaults().get_list('Localisation', 'chat_folder', []))
         
-    def connect(self):
+    def connect(self, go_to_current_folder = False):
         """
            connect to the IMAP server
         """
@@ -261,6 +261,9 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
          
         # find allmail chats and drafts folders
         self.find_folder_names()
+
+        if go_to_current_folder and self.current_folder:
+            self.server.select_folder(self.current_folder, readonly = self.readonly_folder)
             
         #enable compression
         self.enable_compression()

@@ -1312,6 +1312,7 @@ class GMVaulter(object):
             for gm_id in group_imap_ids:    
                 email_meta, email_data = self.gstorer.unbury_email(gm_id)
                 
+                LOG.info("Pushing email body with id %s." % (gm_id))
                 # push data in gmail account and get uids
                 imap_id = self.src.push_data(email_data, \
                                     email_meta[self.gstorer.FLAGS_K] , \
@@ -1329,7 +1330,7 @@ class GMVaulter(object):
                 # get list of labels to create 
                 labels_to_create = [ label for label in labels if label not in existing_labels]                  
 
-                LOG.debug("Pushed email body with id %s." % (gm_id))
+                #LOG.debug("Pushed email body with id %s." % (gm_id))
 
             
             #create the non existing labels
