@@ -1317,6 +1317,7 @@ class GMVaulter(object):
                 email_meta, email_data = self.gstorer.unbury_email(gm_id)
                 
                 LOG.info("Pushing email body with id %s." % (gm_id))
+                LOG.info("Subject = %s." % (email_meta[self.gstorer.SUBJECT_K]))
                 try:
                     # push data in gmail account and get uids
                     imap_id = self.src.push_data(email_data, \

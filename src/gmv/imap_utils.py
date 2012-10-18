@@ -514,6 +514,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         # get in lower case because Gmail labels are case insensitive
         listed_folders = set([ directory.lower() for (_, _, directory) in self.list_all_folders() ])
         existing_folders = listed_folders.union(existing_folders)
+
+        LOG.debug("Labels to create: [%s]" % (labels))
             
         for lab in labels:
            
