@@ -542,6 +542,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         #return all existing folders
         return existing_folders
     
+    
+    @retry(3,1,2)
     def apply_labels_to(self, imap_ids, labels):
         """
            apply one labels to x emails

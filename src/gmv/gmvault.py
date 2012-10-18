@@ -488,7 +488,7 @@ class GMVaulter(object):
                             #update local index id gid => index per directory to be thought out
                             LOG.debug("Create and store chat with imap id %s, gmail id %s." % (the_id, gid))   
                         except Exception, error:
-                            handle_imap_error(error, the_id, self.error_report, self.src) #do everything in this handler    
+                            handle_sync_imap_error(error, the_id, self.error_report, self.src) #do everything in this handler    
                 
                     nb_chats_processed += 1    
                     
@@ -604,7 +604,7 @@ class GMVaulter(object):
                         #update local index id gid => index per directory to be thought out
                         LOG.debug("Create and store email with imap id %s, gmail id %s." % (the_id, gid))   
                     except Exception, error:
-                        handle_imap_error(error, the_id, self.error_report, self.src) #do everything in this handler    
+                        handle_sync_imap_error(error, the_id, self.error_report, self.src) #do everything in this handler    
                 
                 nb_emails_processed += 1
                 
@@ -1297,7 +1297,7 @@ class GMVaulter(object):
         
         existing_labels     = set() #set of existing labels to not call create_gmail_labels all the time
         nb_emails_restored  = 0  #to count nb of emails restored
-        labels_to_apply = collections_utils.SetMultimap()
+        labels_to_apply     = collections_utils.SetMultimap()
         
         # go to DRAFTS folder because if you are in ALL MAIL when uploading emails it is very slow
         self.src.select_folder('DRAFTS')
@@ -1308,6 +1308,10 @@ class GMVaulter(object):
         nb_items = 50 
         
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
+           
+            labels_to_create    = set() #create label set
+            labels_to_create.update(extra_labels) # add extra labels to applied to all emails
+            
             # unbury the metadata for all these emails
             for gm_id in group_imap_ids:    
                 email_meta, email_data = self.gstorer.unbury_email(gm_id)
@@ -1321,35 +1325,31 @@ class GMVaulter(object):
                 
                     #labels for this email => real_labels U extra_labels
                     labels = set(email_meta[self.gstorer.LABELS_K])
-                    labels = labels.union(extra_labels)
-                
+                    
                     # add in the labels_to_create struct
                     for label in labels:
                         LOG.debug("label = %s\n" % (label))
                         labels_to_apply[str(label)] = imap_id
             
-                    # get list of labels to create 
-                    labels_to_create = [ label for label in labels if label not in existing_labels]                  
+                    # get list of labels to create (do a union with labels to create)
+                    labels_to_create.update([ label for label in labels if label not in existing_labels])                  
+                
                 except Exception, err:
                     handle_restore_imap_error(err, gm_id, db_gmail_ids_info, self)
 
-                #LOG.debug("Pushed email body with id %s." % (gm_id))
-
-            
-            #create the non existing labels
+            #create the non existing labels and update existing labels
             if len(labels_to_create) > 0:
                 LOG.debug("Labels creation tentative for email with id %s." % (gm_id))
                 existing_labels = self.src.create_gmail_labels(labels_to_create, existing_labels)
-                labels_to_create = []
-            
+                
             # associate labels with emails
             LOG.debug("Applying labels to the current batch of %d emails" % (nb_items))
             try:
-                self.src.select_folder('ALLMAIL')
+                self.src.select_folder('ALLMAIL') #go to ALL MAIL to make STORE usable
                 for label in labels_to_apply.keys():
                     self.src.apply_labels_to(labels_to_apply[label], [label])    
             finally:
-                self.src.select_folder('DRAFTS')
+                self.src.select_folder('DRAFTS') # go back to an empty DIR (Drafts) to be fast
                 labels_to_apply = collections_utils.SetMultimap() #reset label to apply
             
             nb_emails_restored += nb_items
