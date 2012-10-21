@@ -503,6 +503,8 @@ quick_days=10
 limit_per_chat_dir=2000
 errors_if_chat_not_visible=False
 nb_messages_per_batch=500
+nb_messages_per_restore_batch=80
+restore_default_location=DRAFTS
 
 [Localisation]
 #example with Russian

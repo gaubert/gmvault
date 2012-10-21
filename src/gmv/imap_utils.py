@@ -562,15 +562,19 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             t.start()
             LOG.debug("Before to store labels %s" % (labels_str))
             id_list = ",".join(map(str, imap_ids))
+            #+X-GM-LABELS.SILENT to have not returned data
             ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', labels_str)
             #ret_code = self.server._store('+X-GM-LABELS', [result_uid],labels_str)
             LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" % (labels_str, t.elapsed_ms(),ret_code, data))
-            
-            LOG.debug("Stored Labels %s for gm_ids %s" % (labels_str, imap_ids))
 
             # check if it is ok otherwise exception
             if ret_code != 'OK':
-                raise PushEmailError("Cannot add Labels %s to emails with uids %d. Error:%s" % (labels_str, imap_ids, data))
+                # Try again to code the error message (do not use .SILENT)
+                ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS', labels_str)
+                if ret_code != 'OK':
+                    raise PushEmailError("Cannot add Labels %s to emails with uids %d. Error:%s" % (labels_str, imap_ids, data))
+            else:
+                LOG.debug("Stored Labels %s for gm_ids %s" % (labels_str, imap_ids))
        
     def delete_gmail_labels(self, labels, force_delete = False):
         """

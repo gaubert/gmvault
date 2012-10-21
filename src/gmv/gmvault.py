@@ -1300,24 +1300,27 @@ class GMVaulter(object):
         labels_to_apply     = collections_utils.SetMultimap()
         
         # go to DRAFTS folder because if you are in ALL MAIL when uploading emails it is very slow
-        self.src.select_folder('DRAFTS')
+        folder_def_location = gmvault_utils.get_conf_defaults().get("General","restore_default_location", "DRAFTS")
+        self.src.select_folder(folder_def_location)
         
         timer = gmvault_utils.Timer() # local timer for restore emails
         timer.start()
         
-        nb_items = 50 
+        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 80) 
         
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
            
             labels_to_create    = set() #create label set
             labels_to_create.update(extra_labels) # add extra labels to applied to all emails
             
+            LOG.critical("Pushing the email content of the current batch of %d emails.\n" % (nb_items))
+            
             # unbury the metadata for all these emails
             for gm_id in group_imap_ids:    
                 email_meta, email_data = self.gstorer.unbury_email(gm_id)
                 
-                LOG.info("Pushing email body with id %s." % (gm_id))
-                LOG.info("Subject = %s." % (email_meta[self.gstorer.SUBJECT_K]))
+                LOG.critical("Pushing email body with id %s." % (gm_id))
+                LOG.debug("Subject = %s." % (email_meta[self.gstorer.SUBJECT_K]))
                 try:
                     # push data in gmail account and get uids
                     imap_id = self.src.push_data(email_data, \
@@ -1344,13 +1347,26 @@ class GMVaulter(object):
                 existing_labels = self.src.create_gmail_labels(labels_to_create, existing_labels)
                 
             # associate labels with emails
-            LOG.debug("Applying labels to the current batch of %d emails" % (nb_items))
+            LOG.critical("Applying labels to the current batch of %d emails" % (nb_items))
             try:
+                LOG.debug("Changing directory. Going into ALLMAIL")
                 self.src.select_folder('ALLMAIL') #go to ALL MAIL to make STORE usable
                 for label in labels_to_apply.keys():
-                    self.src.apply_labels_to(labels_to_apply[label], [label])    
+                    self.src.apply_labels_to(labels_to_apply[label], [label]) 
+            except Exception, err:
+                LOG.error("Problem when applying labels %s to the following ids: %s" %(label, labels_to_apply[label]), err)
+                if isinstance(err, imaplib.IMAP4.abort) and str(err).find("=> Gmvault ssl socket error: EOF") >= 0:
+                    # if this is a Gmvault SSL Socket error quarantine the email and continue the restore
+                    LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
+                         " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(err)))
+                    self.gstorer.quarantine_email(gm_id)
+                    self.error_report['emails_in_quarantine'].append(gm_id)
+                    LOG.critical("Disconnecting and reconnecting to restart cleanly.")
+                    self.src.reconnect() #reconnect
+                else:
+                    raise err
             finally:
-                self.src.select_folder('DRAFTS') # go back to an empty DIR (Drafts) to be fast
+                self.src.select_folder(folder_def_location) # go back to an empty DIR (Drafts) to be fast
                 labels_to_apply = collections_utils.SetMultimap() #reset label to apply
             
             nb_emails_restored += nb_items
@@ -1358,7 +1374,7 @@ class GMVaulter(object):
             #indicate every 10 messages the number of messages left to process
             left_emails = (total_nb_emails_to_restore - nb_emails_restored)
             
-            if (nb_emails_restored % 50) == 0 and (left_emails > 0): 
+            if (left_emails > 0): 
                 elapsed = timer.elapsed() #elapsed time in seconds
                 LOG.critical("\n== Processed %d emails in %s. %d left to be restored "\
                              "(time estimate %s).==\n" % \
