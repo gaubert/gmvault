@@ -1036,7 +1036,7 @@ class GMVaulter(object):
             
         return self.error_report 
         
-    def restore_chats(self, extra_labels = [], restart = False): #pylint:disable=W0102
+    def old_restore_chats(self, extra_labels = [], restart = False): #pylint:disable=W0102
         """
            restore chats
         """
@@ -1151,125 +1151,121 @@ class GMVaulter(object):
             
             
         return self.error_report
-        
-        
-    def old_restore_emails(self, pivot_dir = None, extra_labels = [], restart = False):
+    
+    
+    def restore_chats(self, extra_labels = [], restart = False): #pylint:disable=W0102
         """
-           restore emails in a gmail account
+           restore chats
         """
-        LOG.critical("Restore emails in gmail account %s." % (self.login) ) 
+        LOG.critical("Restore chats in gmail account %s." % (self.login) ) 
+                
+        LOG.critical("Read chats info from %s gmvault-db." % (self.db_root_dir))
         
-        LOG.critical("Read email info from %s gmvault-db." % (self.db_root_dir))
+        #for the restore (save last_restored_id in .gmvault/last_restored_id
         
         #get gmail_ids from db
-        db_gmail_ids_info = self.gstorer.get_all_existing_gmail_ids(pivot_dir)
+        db_gmail_ids_info = self.gstorer.get_all_chats_gmail_ids()
         
-        LOG.critical("Total number of elements to restore %s." % (len(db_gmail_ids_info.keys())))
+        LOG.critical("Total number of chats to restore %s." % (len(db_gmail_ids_info.keys())))
         
         if restart:
-            db_gmail_ids_info = self.get_gmails_ids_left_to_restore(self.OP_EMAIL_RESTORE, db_gmail_ids_info)
+            db_gmail_ids_info = self.get_gmails_ids_left_to_restore(self.OP_CHAT_RESTORE, db_gmail_ids_info)
         
         total_nb_emails_to_restore = len(db_gmail_ids_info)
+        LOG.critical("Got all chats id left to restore. Still %s chats to do.\n" % (total_nb_emails_to_restore) )
         
-        LOG.critical("Got all emails id left to restore. Still %s emails to do.\n" % (total_nb_emails_to_restore) )
+        existing_labels     = set() #set of existing labels to not call create_gmail_labels all the time
+        nb_emails_restored  = 0  #to count nb of emails restored
+        labels_to_apply     = collections_utils.SetMultimap()
         
-        existing_labels = set() #set of existing labels to not call create_gmail_labels all the time
-        nb_emails_restored = 0 #to count nb of emails restored
+        # go to DRAFTS folder because if you are in ALL MAIL when uploading emails it is very slow
+        folder_def_location = gmvault_utils.get_conf_defaults().get("General","restore_default_location", "DRAFTS")
+        self.src.select_folder(folder_def_location)
         
         timer = gmvault_utils.Timer() # local timer for restore emails
         timer.start()
         
-        for gm_id in db_gmail_ids_info:
+        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 80) 
+        
+        for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
+           
+            labels_to_create    = set() #create label set
+            labels_to_create.update(extra_labels) # add extra labels to applied to all emails
             
-            LOG.critical("Restore email with id %s." % (gm_id))
+            LOG.critical("Pushing the chats content of the current batch of %d emails.\n" % (nb_items))
             
-            email_meta, email_data = self.gstorer.unbury_email(gm_id)
-            
-            LOG.debug("Unburied email with id %s." % (gm_id))
-            
-            #labels for this email => real_labels U extra_labels
-            labels = set(email_meta[self.gstorer.LABELS_K])
-            labels = labels.union(extra_labels)
-            
-            # get list of labels to create 
-            labels_to_create = [ label for label in labels if label not in existing_labels]
-            
-            #create the non existing labels
-            if len(labels_to_create) > 0:
-                LOG.debug("Labels creation tentative for email with id %s." % (gm_id))
-                existing_labels = self.src.create_gmail_labels(labels_to_create, existing_labels)
-            
-            try:
-                #restore email
-                self.src.push_email(email_data, \
+            # unbury the metadata for all these emails
+            for gm_id in group_imap_ids:    
+                email_meta, email_data = self.gstorer.unbury_email(gm_id)
+                
+                LOG.critical("Pushing chat content with id %s." % (gm_id))
+                LOG.debug("Subject = %s." % (email_meta[self.gstorer.SUBJECT_K]))
+                try:
+                    # push data in gmail account and get uids
+                    imap_id = self.src.push_data(email_data, \
                                     email_meta[self.gstorer.FLAGS_K] , \
-                                    email_meta[self.gstorer.INT_DATE_K], \
-                                    labels)
+                                    email_meta[self.gstorer.INT_DATE_K] )      
                 
-                LOG.debug("Pushed email with id %s." % (gm_id))
-                
-                nb_emails_restored += 1
-                
-                #indicate every 10 messages the number of messages left to process
-                left_emails = (total_nb_emails_to_restore - nb_emails_restored)
-                
-                if (nb_emails_restored % 50) == 0 and (left_emails > 0): 
-                    elapsed = timer.elapsed() #elapsed time in seconds
-                    LOG.critical("\n== Processed %d emails in %s. %d left to be restored "\
-                                 "(time estimate %s).==\n" % \
-                                 (nb_emails_restored, timer.seconds_to_human_time(elapsed), \
-                                  left_emails, timer.estimate_time_left(nb_emails_restored, elapsed, left_emails)))
-                
-                # save id every 20 restored emails
-                if (nb_emails_restored % 10) == 0:
-                    self.save_lastid(self.OP_EMAIL_RESTORE, gm_id)
+                    #labels for this email => real_labels U extra_labels
+                    labels = set(email_meta[self.gstorer.LABELS_K])
                     
-            except imaplib.IMAP4.abort, abort:
+                    # add in the labels_to_create struct
+                    for label in labels:
+                        LOG.debug("label = %s\n" % (label))
+                        labels_to_apply[str(label)] = imap_id
+            
+                    # get list of labels to create (do a union with labels to create)
+                    labels_to_create.update([ label for label in labels if label not in existing_labels])                  
                 
-                # if this is a Gmvault SSL Socket error quarantine the email and continue the restore
-                if str(abort).find("=> Gmvault ssl socket error: EOF") >= 0:
+                except Exception, err:
+                    handle_restore_imap_error(err, gm_id, db_gmail_ids_info, self)
+
+            #create the non existing labels and update existing labels
+            if len(labels_to_create) > 0:
+                LOG.debug("Labels creation tentative for chat with id %s." % (gm_id))
+                existing_labels = self.src.create_gmail_labels(labels_to_create, existing_labels)
+                
+            # associate labels with emails
+            LOG.critical("Applying labels to the current batch of %d emails" % (nb_items))
+            try:
+                LOG.debug("Changing directory. Going into ALLMAIL")
+                self.src.select_folder('ALLMAIL') #go to ALL MAIL to make STORE usable
+                for label in labels_to_apply.keys():
+                    self.src.apply_labels_to(labels_to_apply[label], [label]) 
+            except Exception, err:
+                LOG.error("Problem when applying labels %s to the following ids: %s" %(label, labels_to_apply[label]), err)
+                if isinstance(err, imaplib.IMAP4.abort) and str(err).find("=> Gmvault ssl socket error: EOF") >= 0:
+                    # if this is a Gmvault SSL Socket error quarantine the email and continue the restore
                     LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
-                                 " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(abort)))
+                         " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(err)))
                     self.gstorer.quarantine_email(gm_id)
                     self.error_report['emails_in_quarantine'].append(gm_id)
                     LOG.critical("Disconnecting and reconnecting to restart cleanly.")
                     self.src.reconnect() #reconnect
                 else:
-                    raise abort
-        
-            except imaplib.IMAP4.error, err:
-                
-                LOG.error("Catched IMAP Error %s" % (str(err)))
-                LOG.exception(err)
-                
-                #When the email cannot be read from Database because it was empty when returned by gmail imap
-                #quarantine it.
-                if str(err) == "APPEND command error: BAD ['Invalid Arguments: Unable to parse message']":
-                    LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
-                                 " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(err)))
-                    self.gstorer.quarantine_email(gm_id)
-                    self.error_report['emails_in_quarantine'].append(gm_id) 
-                else:
                     raise err
-            except imap_utils.PushEmailError, p_err:
-                LOG.error("Catch the following exception %s" % (str(p_err)))
-                LOG.exception(p_err)
+            finally:
+                self.src.select_folder(folder_def_location) # go back to an empty DIR (Drafts) to be fast
+                labels_to_apply = collections_utils.SetMultimap() #reset label to apply
+            
+            nb_emails_restored += nb_items
                 
-                if p_err.quarantined():
-                    LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
-                                 " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(p_err)))
-                    self.gstorer.quarantine_email(gm_id)
-                    self.error_report['emails_in_quarantine'].append(gm_id) 
-                else:
-                    raise p_err          
-            except Exception, err:
-                LOG.error("Catch the following exception %s" % (str(err)))
-                LOG.exception(err)
-                raise err
+            #indicate every 10 messages the number of messages left to process
+            left_emails = (total_nb_emails_to_restore - nb_emails_restored)
             
+            if (left_emails > 0): 
+                elapsed = timer.elapsed() #elapsed time in seconds
+                LOG.critical("\n== Processed %d chats in %s. %d left to be restored "\
+                             "(time estimate %s).==\n" % \
+                             (nb_emails_restored, timer.seconds_to_human_time(elapsed), \
+                              left_emails, timer.estimate_time_left(nb_emails_restored, elapsed, left_emails)))
             
-        return self.error_report
+            # save id every 50 restored emails
+            # add the last treated gm_id
+            self.save_lastid(self.OP_EMAIL_RESTORE, group_imap_ids[-1])
             
+        return self.error_report 
+                    
     def restore_emails(self, pivot_dir = None, extra_labels = [], restart = False):
         """
            restore emails in a gmail account using batching to group restore
