@@ -78,7 +78,7 @@ class TestGMVaultValidation(unittest.TestCase): #pylint:disable-msg=R0904
            spawn python gmv_runner account > help_msg_spawned.txt
            check that res is 0 or 1
         """
-        
+        pass
    
     def test_backup_10_emails(self):
         """
@@ -86,10 +86,16 @@ class TestGMVaultValidation(unittest.TestCase): #pylint:disable-msg=R0904
            => spawn a process with the options
            => python gmv_runner.py sync account > checkfile
         """
-        
+        pass
+    
+    def test_restore_and_check(self):
+        """
+           Restore emails, retrieve them and compare with originals
+        """
+        db_dir = "/tmp/the_dir"
     
     
-    def test_restore_on_gmail(self):
+    def ztest_restore_on_gmail(self):
         """
            clean db disk
            sync with gmail for few emails
@@ -113,25 +119,7 @@ class TestGMVaultValidation(unittest.TestCase): #pylint:disable-msg=R0904
         restorer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.gmvault_login, gs_credential, read_only_access = False)
         restorer.restore()
             
-        print("Done \n")
-        
-    def ztest_restore_labels(self):
-        """
-           test all kind of labels that can be restored
-        """
-        
-        db_dir = '/tmp/gmail_bk'
-        
-        #clean db dir
-        delete_db_dir(db_dir)
-        
-        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, self.passwd)
-        
-        #syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
-        syncer.sync(imap_req = "Since 1-Nov-2011 Before 3-Nov-2011")
-        
-        syncer.sync_with_gmail_acc('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd, ["The Beginning", "EUMETSAT", "Very Important", "\\Important", "\\Starred","The End"])
-        
+        print("Done \n")    
         
         
         
@@ -140,7 +128,7 @@ def tests():
     """
        main test function
     """
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestGMVault)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestGMVaultValidation)
     unittest.TextTestRunner(verbosity=2).run(suite)
  
 if __name__ == '__main__':

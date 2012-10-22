@@ -176,7 +176,9 @@ class IMAPBatchFetcher(object):
                     handle_sync_imap_error(error, the_id, self.error_report, self.src) #do everything in this handler
 
         return new_data
-        
+   
+    def __iter__(self):
+        return self     
     
     def next(self):
         """
@@ -435,13 +437,11 @@ class GMVaulter(object):
             nb_chats_processed = 0
             
             to_fetch = set(imap_ids)
-            fetcher = IMAPBatchFetcher(self.src, imap_ids, self.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
+            batch_fetcher = IMAPBatchFetcher(self.src, imap_ids, self.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
                                        default_batch_size = gmvault_utils.get_conf_defaults().getint("General","nb_messages_per_batch",500))
         
-            #will need a proper iterator
-            new_data = fetcher.next()
         
-            while new_data:
+            for new_data in batch_fetcher:
                 for the_id in new_data:        
                     gid = None
                     
@@ -508,9 +508,6 @@ class GMVaulter(object):
                             self.save_lastid(self.OP_CHAT_SYNC, gid)
                     
                 to_fetch -= set(new_data.keys()) #remove all found keys from to_fetch set
-
-                #get next batch
-                new_data = fetcher.next()
                 
                 for the_id in to_fetch:
                     # case when gmail IMAP server returns OK without any data whatsoever
@@ -552,16 +549,12 @@ class GMVaulter(object):
         nb_emails_processed = 0
         
         to_fetch = set(imap_ids)
-        fetcher = IMAPBatchFetcher(self.src, imap_ids, self.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
+        batch_fetcher = IMAPBatchFetcher(self.src, imap_ids, self.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
                                    default_batch_size = gmvault_utils.get_conf_defaults().getint("General","nb_messages_per_batch",500))
         
-        #will need a proper iterator
-        new_data = fetcher.next()
         #LAST Thing to do remove all found ids from imap_ids and if ids left add missing in report
-        
-        while new_data:
-            for the_id in new_data: 
-                
+        for new_data in batch_fetcher:            
+            for the_id in new_data:
                 LOG.debug("\nProcess imap id %s" % ( the_id ))
                     
                 gid = new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
@@ -624,10 +617,7 @@ class GMVaulter(object):
                         self.save_lastid(self.OP_EMAIL_SYNC, gid)
                 
             to_fetch -= set(new_data.keys()) #remove all found keys from to_fetch set
-
-            #get next batch
-            new_data = fetcher.next()
-        
+                
         for the_id in to_fetch:
             # case when gmail IMAP server returns OK without any data whatsoever
             # eg. imap uid 142221L ignore it
