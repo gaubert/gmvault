@@ -1188,6 +1188,10 @@ class GMVaulter(object):
         nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 80) 
         
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
+
+            last_id = group_imap_ids[-1] #will be used to save the last id
+            #remove all None elements from group_imap_ids
+            group_imap_ids = itertools.ifilter(lambda x: x != None, group_imap_ids)
            
             labels_to_create    = set() #create label set
             labels_to_create.update(extra_labels) # add extra labels to applied to all emails
@@ -1260,9 +1264,9 @@ class GMVaulter(object):
                              (nb_emails_restored, timer.seconds_to_human_time(elapsed), \
                               left_emails, timer.estimate_time_left(nb_emails_restored, elapsed, left_emails)))
             
-            # save id every 50 restored emails
+            # save id every nb_items restored emails
             # add the last treated gm_id
-            self.save_lastid(self.OP_EMAIL_RESTORE, group_imap_ids[-1])
+            self.save_lastid(self.OP_EMAIL_RESTORE, last_id)
             
         return self.error_report 
                     
