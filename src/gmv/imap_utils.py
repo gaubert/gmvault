@@ -443,7 +443,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
         return self.server.search(a_criteria)
     
-    @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec
+    @retry(3,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec
     def fetch(self, a_ids, a_attributes):
         """
            Return all attributes associated to each message
