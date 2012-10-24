@@ -1395,6 +1395,6 @@ class GMVaulter(object):
             
             # save id every 50 restored emails
             # add the last treated gm_id
-            self.save_lastid(self.OP_EMAIL_RESTORE, group_imap_ids[-1])
+            self.save_lastid(self.OP_EMAIL_RESTORE, last_id)
             
         return self.error_report 
