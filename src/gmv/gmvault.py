@@ -1193,7 +1193,7 @@ class GMVaulter(object):
         timer = gmvault_utils.Timer() # local timer for restore emails
         timer.start()
         
-        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 80) 
+        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 100) 
         
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
 
@@ -1314,7 +1314,7 @@ class GMVaulter(object):
         timer = gmvault_utils.Timer() # local timer for restore emails
         timer.start()
         
-        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 80) 
+        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 100) 
         
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
             
@@ -1362,7 +1362,10 @@ class GMVaulter(object):
             LOG.critical("Applying labels to the current batch of %d emails" % (nb_items))
             try:
                 LOG.debug("Changing directory. Going into ALLMAIL")
+                t = gmvault_utils.Timer()
+                t.start()
                 self.src.select_folder('ALLMAIL') #go to ALL MAIL to make STORE usable
+                LOG.debug("Changed dir. Operation time = %s ms" % (t.elapsed_ms()))
                 for label in labels_to_apply.keys():
                     self.src.apply_labels_to(labels_to_apply[label], [label]) 
             except Exception, err:
