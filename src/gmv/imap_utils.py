@@ -387,6 +387,15 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
           
         return False
+
+    def get_folder_name(self, a_folder_name):
+        
+        if a_folder_name not in self.FOLDER_NAMES:
+            raise Exception("%s is not a predefined folder names. Please use one" % (a_folder_name) )
+            
+        folder = self.localized_folders.get(a_folder_name, {'loc_dir' : 'GMVNONAME'})['loc_dir']
+
+        return folder
            
     @retry(3,1,2)  # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def select_folder(self, a_folder_name, use_predef_names = True):
@@ -599,7 +608,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                         LOG.debug(gmvault_utils.get_exception_traceback())
                         
     @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec    
-    def push_data(self, a_body, a_flags, a_internal_time):
+    def push_data(self, a_folder, a_body, a_flags, a_internal_time):
         """
            Push the data
         """  
@@ -610,7 +619,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         t = gmvault_utils.Timer()
         t.start()
         LOG.debug("Before to Append email contents")
-        res = self.server.append(self.current_folder, a_body, a_flags, a_internal_time)
+        res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
         #res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
     
         LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" % (a_flags, a_internal_time, t.elapsed_ms(), res))

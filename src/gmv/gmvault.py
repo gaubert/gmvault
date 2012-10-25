@@ -1185,6 +1185,9 @@ class GMVaulter(object):
         existing_labels     = set() #set of existing labels to not call create_gmail_labels all the time
         nb_emails_restored  = 0  #to count nb of emails restored
         labels_to_apply     = collections_utils.SetMultimap()
+
+        #get all mail folder name
+        all_mail_name = self.src.get_folder_name("ALLMAIL")
         
         # go to DRAFTS folder because if you are in ALL MAIL when uploading emails it is very slow
         folder_def_location = gmvault_utils.get_conf_defaults().get("General","restore_default_location", "DRAFTS")
@@ -1214,7 +1217,7 @@ class GMVaulter(object):
                 LOG.debug("Subject = %s." % (email_meta[self.gstorer.SUBJECT_K]))
                 try:
                     # push data in gmail account and get uids
-                    imap_id = self.src.push_data(email_data, \
+                    imap_id = self.src.push_data(all_mail_name, email_data, \
                                     email_meta[self.gstorer.FLAGS_K] , \
                                     email_meta[self.gstorer.INT_DATE_K] )      
                 
@@ -1306,6 +1309,9 @@ class GMVaulter(object):
         existing_labels     = set() #set of existing labels to not call create_gmail_labels all the time
         nb_emails_restored  = 0  #to count nb of emails restored
         labels_to_apply     = collections_utils.SetMultimap()
+
+        #get all mail folder name
+        all_mail_name = self.src.get_folder_name("ALLMAIL")
         
         # go to DRAFTS folder because if you are in ALL MAIL when uploading emails it is very slow
         folder_def_location = gmvault_utils.get_conf_defaults().get("General","restore_default_location", "DRAFTS")
@@ -1314,7 +1320,7 @@ class GMVaulter(object):
         timer = gmvault_utils.Timer() # local timer for restore emails
         timer.start()
         
-        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 100) 
+        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 5) 
         
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
             
@@ -1335,7 +1341,7 @@ class GMVaulter(object):
                 LOG.debug("Subject = %s." % (email_meta[self.gstorer.SUBJECT_K]))
                 try:
                     # push data in gmail account and get uids
-                    imap_id = self.src.push_data(email_data, \
+                    imap_id = self.src.push_data(all_mail_name, email_data, \
                                     email_meta[self.gstorer.FLAGS_K] , \
                                     email_meta[self.gstorer.INT_DATE_K] )      
                 
