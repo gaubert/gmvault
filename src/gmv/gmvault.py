@@ -1320,7 +1320,7 @@ class GMVaulter(object):
         timer = gmvault_utils.Timer() # local timer for restore emails
         timer.start()
         
-        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 5) 
+        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 100) 
         
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
             
