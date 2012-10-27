@@ -1407,3 +1407,56 @@ class GMVaulter(object):
             self.save_lastid(self.OP_EMAIL_RESTORE, last_id)
             
         return self.error_report 
+
+import threading
+
+class LabelJob(object):
+    def __init__(self, priority, labels_to_create):
+        self.priority    = priority
+        self.labels      = labels_to_create
+        return
+    
+    def type(self):
+        return "LABELJOB"
+    
+    def __cmp__(self, other):
+        return cmp(self.priority, other.priority)
+
+class StopJob(object):
+    def __init__(self, priority):
+        self.priority    = priority
+        return
+    
+    def type(self):
+        return "STOPJOB"
+    
+    def __cmp__(self, other):
+        return cmp(self.priority, other.priority)
+    
+class LabellingThread(threading.Thread):
+
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs=None, verbose=None):
+        
+        threading.Thread.__init__(self, group=group, target=target, name=name,
+                                  verbose=verbose)
+        self.args    = args
+        self.kwargs  = kwargs
+        self.queue   = kwargs.get("queue", None)
+        self.last_id = kwargs.get("last_id", None)
+
+    def run(self):
+        
+        """
+           Listen to the queue
+           When job label, apply labels to emails and save last_id
+           If error quarantine it and continue (if 15 consecutive errors stop).
+        """
+        running = True
+        while running:
+            job =self.queue.get(block = True, timeout = None)
+            
+            if job.type == "LABELJOB":
+                pass
+        
+        return
