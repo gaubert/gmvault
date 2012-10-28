@@ -1283,7 +1283,7 @@ class GMVaulter(object):
             
         return self.error_report 
                     
-    def old_restore_emails(self, pivot_dir = None, extra_labels = [], restart = False):
+    def restore_emails(self, pivot_dir = None, extra_labels = [], restart = False):
         """
            restore emails in a gmail account using batching to group restore
            If you are not in "All Mail" Folder, it is extremely fast to push emails.
@@ -1410,7 +1410,7 @@ class GMVaulter(object):
             
         return self.error_report 
     
-    def restore_emails(self, pivot_dir = None, extra_labels = [], restart = False):
+    def new_restore_emails(self, pivot_dir = None, extra_labels = [], restart = False):
         """
            restore emails in a gmail account using batching to group restore
            If you are not in "All Mail" Folder, it is extremely fast to push emails.
@@ -1461,7 +1461,7 @@ class GMVaulter(object):
         folder_def_location = gmvault_utils.get_conf_defaults().get("General","restore_default_location", "DRAFTS")
         self.src.select_folder(folder_def_location)
         
-        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 10) 
+        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 100) 
         
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
             
@@ -1593,7 +1593,7 @@ class LabellingThread(threading.Thread):
                 self.nb_emails_restored += job.nb_items
                 
                 #indicate every 10 messages the number of messages left to process
-                left_emails = (total_nb_emails_to_restore - nb_emails_restored)
+                left_emails = (self.total_nb_emails_to_restore - self.nb_emails_restored)
             
                 if (left_emails > 0): 
                     elapsed = self.timer.elapsed() #elapsed time in seconds
