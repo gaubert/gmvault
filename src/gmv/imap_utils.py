@@ -234,6 +234,14 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         #update GENERIC_GMAIL_CHATS. Should be done at the class level
         self.GENERIC_GMAIL_CHATS.extend(gmvault_utils.get_conf_defaults().get_list('Localisation', 'chat_folder', []))
         
+    def spawn_connection(self):
+        """
+           spawn a connection with the same parameters
+        """
+        conn = GIMAPFetcher(self.host, self.port, self.login, self.credential, self.readonly_folder)
+        conn.connect()
+        return conn
+        
     def connect(self, go_to_current_folder = False):
         """
            connect to the IMAP server
