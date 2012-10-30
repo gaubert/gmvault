@@ -21,8 +21,7 @@ import datetime
 import os
 import itertools
 import imaplib
-import threading
-import Queue
+from multiprocessing import Process, Queue
 
 import log_utils
 
@@ -1322,7 +1321,7 @@ class GMVaulter(object):
         timer = gmvault_utils.Timer() # local timer for restore emails
         timer.start()
         
-        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 100) 
+        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 5) 
         
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
             
@@ -1410,7 +1409,7 @@ class GMVaulter(object):
             
         return self.error_report 
     
-    def new_restore_emails(self, pivot_dir = None, extra_labels = [], restart = False):
+    def old_restore_emails(self, pivot_dir = None, extra_labels = [], restart = False):
         """
            restore emails in a gmail account using batching to group restore
            If you are not in "All Mail" Folder, it is extremely fast to push emails.
@@ -1440,7 +1439,7 @@ class GMVaulter(object):
         labels_to_apply     = collections_utils.SetMultimap()
         
         new_conn  = self.src.spawn_connection()
-        job_queue = Queue.Queue()
+        job_queue = Queue()
         job_nb    = 1
         
         timer = gmvault_utils.Timer() # local timer for restore emails
@@ -1461,7 +1460,7 @@ class GMVaulter(object):
         folder_def_location = gmvault_utils.get_conf_defaults().get("General","restore_default_location", "DRAFTS")
         self.src.select_folder(folder_def_location)
         
-        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 100) 
+        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 10) 
         
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
             
@@ -1539,13 +1538,12 @@ class StopJob(object):
     def __cmp__(self, other):
         return cmp(self.priority, other.priority)
     
-class LabellingThread(threading.Thread):
+class LabellingThread(Process):
 
     def __init__(self, group=None, target=None, name=None,
                  args=(), kwargs=None, verbose=None):
         
-        threading.Thread.__init__(self, group=group, target=target, name=name,
-                                  verbose=verbose)
+        Process.__init__(self)
         self.args                       = args
         self.kwargs                     = kwargs
         self.queue                      = kwargs.get("queue", None)
@@ -1562,14 +1560,17 @@ class LabellingThread(threading.Thread):
            When job label, apply labels to emails and save last_id
            If error quarantine it and continue (if 15 consecutive errors stop).
         """
-        LOG.debug("Changing directory. Going into ALLMAIL")
+        LOG.debug("Labelling Thread. Changing directory. Going into ALLMAIL")
+        folder_def_location = gmvault_utils.get_conf_defaults().get("General","restore_default_location", "DRAFTS")
         t = gmvault_utils.Timer()
         t.start()
         self.src.select_folder('ALLMAIL') #go to ALL MAIL to make STORE usable
+        LOG.debug("Changed dir. Operation time = %s ms" % (t.elapsed_ms()))
         
         running = True
         while running:
             job =self.queue.get(block = True, timeout = None)
+            
             
             LOG.critical("==== (LabellingThread) ====. Received job %s ====" % (job.name))
             
@@ -1581,13 +1582,17 @@ class LabellingThread(threading.Thread):
                 #LOG.critical("Applying labels to the current batch of %d emails" % (job.nb_items))
                 try:
                     
-                    LOG.debug("Changed dir. Operation time = %s ms" % (t.elapsed_ms()))
+                    #for i in range(1,10):
+                    #   LOG.critical("Hello")
+                    #   #time.sleep(1)
                     for label in labels_to_apply.keys():
+                        LOG.critical("Apply %s to %s" % (label, labels_to_apply[label]))
                         self.src.apply_labels_to(labels_to_apply[label], [label]) 
                 except Exception, err:
                     LOG.error("Problem when applying labels %s to the following ids: %s" %(label, labels_to_apply[label]), err)
                 finally:
-                    self.queue.task_done()
+                    #self.queue.task_done()
+                    pass
                 
                 #to be moved
                 self.nb_emails_restored += job.nb_items
@@ -1610,5 +1615,6 @@ class LabellingThread(threading.Thread):
                 self.queue.task_done()
                 running = False
             
+            #self.src.select_folder(folder_def_location)
             LOG.critical("==== (LabellingThread) ====. End of job %s ====" % (job.name))
         
