@@ -642,8 +642,18 @@ class Conf(object):
         """Return the int value of the option.
         Default value is 0, None value can't be used as default value"""
         return self._get(section, int, option, default, fail_if_missing)
+    
+    def get_int(self, section, option, default=0, fail_if_missing=False):
+        """Return the int value of the option.
+        Default value is 0, None value can't be used as default value"""
+        return self._get(section, int, option, default, fail_if_missing)
 
     def getfloat(self, section, option, default=0, fail_if_missing=False):
+        """Return the float value of the option. 
+        Default value is 0, None value can't be used as default value"""
+        return self._get(section, float, option, default, fail_if_missing)
+    
+    def get_float(self, section, option, default=0, fail_if_missing=False):
         """Return the float value of the option. 
         Default value is 0, None value can't be used as default value"""
         return self._get(section, float, option, default, fail_if_missing)
@@ -652,6 +662,13 @@ class Conf(object):
                        '0': False, 'no': False, 'false': False, 'off': False}
 
     def getboolean(self, section, option, default=False, fail_if_missing=False):
+         
+        v = self.get(section, option, default, fail_if_missing)
+        if v.lower() not in self._boolean_states:
+            raise ValueError, 'Not a boolean: %s' % v
+        return self._boolean_states[v.lower()]
+    
+    def get_boolean(self, section, option, default=False, fail_if_missing=False):
          
         v = self.get(section, option, default, fail_if_missing)
         if v.lower() not in self._boolean_states:

@@ -94,7 +94,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
                 LOG.critical("Reconnecting to the from Gmail Server.")
                 
                 #reconnect to the current folder
-                the_self.connect(go_to_all_folder = False)
+                the_self.connect(go_to_current_folder = True )
                 
                 return 
             
@@ -165,11 +165,12 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     GMAIL_ALL           = u'[Gmail]/All Mail' #GMAIL All Mail mailbox
     
     GENERIC_GMAIL_ALL   = u'\\AllMail' # unlocalised GMAIL ALL
+    GENERIC_DRAFTS      = u'\\Drafts' # unlocalised DRAFTS
     GENERIC_GMAIL_CHATS = [u'[Gmail]/Chats', u'[Google Mail]/Chats', u'[Gmail]/Chat', u'[Google Mail]/Chat',\
                            u'[Google Mail]/Tous les chats', u'[Gmail]/Tous les chats',\
                            u'[Gmail]/Чаты', u'[Google Mail]/Чаты']   # unlocalised Chats names
     
-    FOLDER_NAMES        = ['ALLMAIL', 'CHATS']
+    FOLDER_NAMES        = ['ALLMAIL', 'CHATS', 'DRAFTS']
     
     GMAIL_ID            = 'X-GM-MSGID' #GMAIL ID attribute
     GMAIL_THREAD_ID     = 'X-GM-THRID'
@@ -219,7 +220,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         self.readonly_folder        = readonly_folder
         
         self.localized_folders      = { 'ALLMAIL': { 'loc_dir' : None, 'friendly_name' : 'allmail'}, 
-                                        'CHATS'  : { 'loc_dir' : None, 'friendly_name' : 'chats'} }
+                                        'CHATS'  : { 'loc_dir' : None, 'friendly_name' : 'chats'}, 
+                                        'DRAFTS'  :{ 'loc_dir' : None, 'friendly_name' : 'drafts'} }
         
         # memoize the current folder (All Mail or Chats) for reconnection management
         self.current_folder        = None
@@ -227,12 +229,20 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         self.server                 = None
         self.go_to_all_folder       = True
         self.total_nb_reconns       = 0
-        self.printed_folder_error_msg = { 'ALLMAIL' : False, 'CHATS': False }#True when CHATS or other folder error msg has been already printed
+        self.printed_folder_error_msg = { 'ALLMAIL' : False, 'CHATS': False , 'DRAFTS':False }#True when CHATS or other folder error msg has been already printed
         
         #update GENERIC_GMAIL_CHATS. Should be done at the class level
         self.GENERIC_GMAIL_CHATS.extend(gmvault_utils.get_conf_defaults().get_list('Localisation', 'chat_folder', []))
         
-    def connect(self, go_to_all_folder = True):
+    def spawn_connection(self):
+        """
+           spawn a connection with the same parameters
+        """
+        conn = GIMAPFetcher(self.host, self.port, self.login, self.credential, self.readonly_folder)
+        conn.connect()
+        return conn
+        
+    def connect(self, go_to_current_folder = False):
         """
            connect to the IMAP server
         """
@@ -257,24 +267,12 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         # check gmailness
         self.check_gmailness()
          
-        #find the all mail folder and chats folder
-        if not self.localized_folders['ALLMAIL']['loc_dir']:
-            self.find_all_mail_folder()
-        
-        if not self.localized_folders['CHATS']['loc_dir']:
-            self.find_chats_folder()
+        # find allmail chats and drafts folders
+        self.find_folder_names()
+
+        if go_to_current_folder and self.current_folder:
+            self.server.select_folder(self.current_folder, readonly = self.readonly_folder)
             
-        if go_to_all_folder:
-            self.current_folder = self.localized_folders['ALLMAIL']['loc_dir']
-            
-        t = gmvault_utils.Timer()
-        t.start()
-        # '[Gmail]/Sent Mail'
-        self.current_folder = u'[Google Mail]/Drafts' #temporary set THIS folder for tests purposes   
-        LOG.debug("Go to %s" % (self.current_folder))
-        self.server.select_folder(self.current_folder, readonly = self.readonly_folder) # go to current folder
-        LOG.debug("select folder = %s s.\n" % (t.elapsed_ms()))
-        
         #enable compression
         self.enable_compression()
         LOG.debug("After Enabling compression")
@@ -303,6 +301,35 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            Try to enable the compression
         """
         self.server.enable_compression()
+        
+    @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
+    def find_folder_names(self):
+        """
+           depending on your account the all mail folder can be named 
+           [GMAIL]/ALL Mail or [GoogleMail]/All Mail.
+           Find and set the right one
+        """      
+        #use xlist because of localized dir names
+        folders = self.server.xlist_folders()
+        
+        the_dir = None
+        for (flags, _, the_dir) in folders:
+            #non localised GMAIL_ALL
+            if GIMAPFetcher.GENERIC_GMAIL_ALL in flags:
+                #it could be a localized Dir name
+                self.localized_folders['ALLMAIL']['loc_dir'] = the_dir
+            elif the_dir in GIMAPFetcher.GENERIC_GMAIL_CHATS :
+                #it could be a localized Dir name
+                self.localized_folders['CHATS']['loc_dir'] = the_dir
+            elif GIMAPFetcher.GENERIC_DRAFTS in flags:
+                self.localized_folders['DRAFTS']['loc_dir'] = the_dir
+                
+        if not self.localized_folders['ALLMAIL']['loc_dir']: # all mail error
+            raise Exception("Cannot find global 'All Mail' folder (maybe localized and translated into your language) ! Check whether 'Show in IMAP for 'All Mail' is enabled in Gmail (Go to Settings->Labels->All Mail)")
+        elif not self.localized_folders['CHATS']['loc_dir'] and gmvault_utils.get_conf_defaults().getboolean("General","errors_if_chat_not_visible", False):
+            raise Exception("Cannot find global 'Chats' folder ! Check whether 'Show in IMAP for 'Chats' is enabled in Gmail (Go to Settings->Labels->All Mail)") 
+        elif not self.localized_folders['DRAFTS']['loc_dir']:
+            raise Exception("Cannot find global 'Drafts' folder.")
     
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def find_all_mail_folder(self):
@@ -368,6 +395,15 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
           
         return False
+
+    def get_folder_name(self, a_folder_name):
+        
+        if a_folder_name not in self.FOLDER_NAMES:
+            raise Exception("%s is not a predefined folder names. Please use one" % (a_folder_name) )
+            
+        folder = self.localized_folders.get(a_folder_name, {'loc_dir' : 'GMVNONAME'})['loc_dir']
+
+        return folder
            
     @retry(3,1,2)  # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def select_folder(self, a_folder_name, use_predef_names = True):
@@ -424,7 +460,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         """
         return self.server.search(a_criteria)
     
-    @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec
+    @retry(3,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec
     def fetch(self, a_ids, a_attributes):
         """
            Return all attributes associated to each message
@@ -495,6 +531,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         # get in lower case because Gmail labels are case insensitive
         listed_folders = set([ directory.lower() for (_, _, directory) in self.list_all_folders() ])
         existing_folders = listed_folders.union(existing_folders)
+
+        LOG.debug("Labels to create: [%s]" % (labels))
             
         for lab in labels:
            
@@ -523,6 +561,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         #return all existing folders
         return existing_folders
     
+    
+    @retry(3,1,2)
     def apply_labels_to(self, imap_ids, labels):
         """
            apply one labels to x emails
@@ -539,15 +579,21 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             t.start()
             LOG.debug("Before to store labels %s" % (labels_str))
             id_list = ",".join(map(str, imap_ids))
+            #+X-GM-LABELS.SILENT to have not returned data
             ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', labels_str)
-            #ret_code = self.server._store('+X-GM-LABELS', [result_uid],labels_str)
+
+            #LOG.debug("COPYING to label:[%s]" % (labels[0])) 
+            #ret_code, data = self.server._imap.uid('COPY', id_list, labels[0])
             LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" % (labels_str, t.elapsed_ms(),ret_code, data))
-            
-            LOG.debug("Stored Labels %s for gm_ids %s" % (labels_str, imap_ids))
 
             # check if it is ok otherwise exception
             if ret_code != 'OK':
-                raise PushEmailError("Cannot add Labels %s to emails with uids %d. Error:%s" % (labels_str, imap_ids, data))
+                # Try again to code the error message (do not use .SILENT)
+                ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS', labels_str)
+                if ret_code != 'OK':
+                    raise PushEmailError("Cannot add Labels %s to emails with uids %d. Error:%s" % (labels_str, imap_ids, data))
+            else:
+                LOG.debug("Stored Labels %s for gm_ids %s" % (labels_str, imap_ids))
        
     def delete_gmail_labels(self, labels, force_delete = False):
         """
@@ -570,7 +616,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                         LOG.debug(gmvault_utils.get_exception_traceback())
                         
     @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec    
-    def push_data(self, a_body, a_flags, a_internal_time):
+    def push_data(self, a_folder, a_body, a_flags, a_internal_time):
         """
            Push the data
         """  
@@ -581,8 +627,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         t = gmvault_utils.Timer()
         t.start()
         LOG.debug("Before to Append email contents")
-        #res = self.server.append(self.current_folder, a_body, a_flags, a_internal_time)
-        res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
+        res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
+        #res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
     
         LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" % (a_flags, a_internal_time, t.elapsed_ms(), res))
         
