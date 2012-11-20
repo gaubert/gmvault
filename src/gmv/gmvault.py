@@ -1321,7 +1321,7 @@ class GMVaulter(object):
         timer = gmvault_utils.Timer() # local timer for restore emails
         timer.start()
         
-        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 5) 
+        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 80) 
         
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
             
@@ -1351,8 +1351,9 @@ class GMVaulter(object):
                     
                     # add in the labels_to_create struct
                     for label in labels:
-                        LOG.debug("label = %s\n" % (label))
-                        labels_to_apply[str(label)] = imap_id
+                        if label != "\\Starred":
+                        	LOG.debug("label = %s\n" % (label))
+                        	labels_to_apply[str(label)] = imap_id
             
                     # get list of labels to create (do a union with labels to create)
                     labels_to_create.update([ label for label in labels if label not in existing_labels])                  
@@ -1460,7 +1461,7 @@ class GMVaulter(object):
         folder_def_location = gmvault_utils.get_conf_defaults().get("General","restore_default_location", "DRAFTS")
         self.src.select_folder(folder_def_location)
         
-        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 10) 
+        nb_items = gmvault_utils.get_conf_defaults().get_int("General","nb_messages_per_restore_batch", 80) 
         
         for group_imap_ids in itertools.izip_longest(fillvalue=None, *[iter(db_gmail_ids_info)]*nb_items): 
             
