@@ -90,6 +90,28 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gimap.connect()
         
         gimap.erase_mailbox()
+
+		# test restore
+        test_db_dir = "/tmp/gmvault-tests"
+        
+        restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, self.test_login, credential, \
+                                     read_only_access = False)
+        
+        restorer.restore() #restore all emails from this essential-db
+        
+        #need to check that all labels are there for emails in essential
+        gmail_ids = restorer.gstorer.get_all_existing_gmail_ids()
+        
+        for gm_id in gmail_ids:
+            #get disk_metadata
+            disk_metadata   = restorer.gstorer.unbury_metadata(gm_id)
+            
+            # get online_metadata 
+            online_metadata = restorer.src.fetch(gm_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA) 
+            
+            #compare metadata
+            for key in disk_metadata:
+                self.assertEquals(disk_metadata[key], online_metadata[key])
         
     def ztest_restore_10_emails(self):
         """
