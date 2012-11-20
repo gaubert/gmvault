@@ -625,6 +625,30 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             raise Exception("Error cannot activate erase_mailbox with %s" % (self.login))
 
         LOG.info("Erase mailbox for account %s." % (self.login))
+
+        LOG.info("Delete folders")
+
+        #delete folders
+        folders = self.server.xlist_folders()
+
+        LOG.debug("Folders = %s.\n" %(folders))
+
+        trash_folder_name = None
+
+        for (flags, _, the_dir) in folders:
+           if (u'\\Starred' in flags) or (u'\\Spam' in flags) or (u'\\Sent' in flags) \
+              or (u'\\Important' in flags) or (the_dir == u'[Google Mail]/Chats') \
+              or (the_dir == u'[Google Mail]') or (u'\\Trash' in flags) or \
+              (u'\\Inbox' in flags) or (GIMAPFetcher.GENERIC_GMAIL_ALL in flags) or \
+              (GIMAPFetcher.GENERIC_DRAFTS in flags) or (GIMAPFetcher.GENERIC_GMAIL_CHATS in flags):
+              LOG.info("Ignore folder %s" % (the_dir))           
+
+              if (u'\\Trash' in flags): #keep trash folder name
+                 trash_folder_name = the_dir
+           else:
+              LOG.info("Delete folder %s" % (the_dir))
+              self.server.delete_folder(the_dir)
+        
         
         self.select_folder('ALLMAIL')
 
@@ -632,24 +656,40 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         #self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', '\\Trash')
         #self.server.add_gmail_labels(self, messages, labels)
 
-        LOG.info("Apply labels.")
+        LOG.info("Move emails to Trash.")
         
         # get all imap ids in ALLMAIL
         imap_ids = self.search(GIMAPFetcher.IMAP_ALL)
+
+        #flag all message as deleted
+        #print(self.server.delete_messages(imap_ids))
 
         if len(imap_ids) > 0:
            self.apply_labels_to(imap_ids, ['\\Trash'])
 
            LOG.info("Got all imap_ids flagged to Trash : %s." % (imap_ids))
 
-           LOG.info("Expunge them.")
         
-           self.server.expunge()
         else:
            LOG.info("No messages to erase.")
+
+        LOG.info("Delete emails from Trash.")
+
+        if trash_folder_name == None:
+           raise Exception("No trash folder ???")
+
+        self.select_folder(trash_folder_name, False)
         
-        
-                        
+        # get all imap ids in ALLMAIL
+        imap_ids = self.search(GIMAPFetcher.IMAP_ALL)
+
+        if len(imap_ids) > 0:
+            res = self.server.delete_messages(imap_ids)
+            LOG.debug("Delete messages result = %s" % (res))
+
+        LOG.info("Expunge everything.")
+        self.server.expunge()
+
     @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec    
     def push_data(self, a_folder, a_body, a_flags, a_internal_time):
         """
