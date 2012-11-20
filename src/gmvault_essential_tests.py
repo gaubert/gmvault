@@ -79,8 +79,9 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
            Test connect error (connect to a wrong port). Too long to check
         """
+        credential    = { 'type' : 'passwd', 'value': self.test_passwd }
 
-        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.test_login, self.test_passwd)
+        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.test_login, credential, readonly_folder = False)
 
         print("self.test_login = %s" % (self.test_login))
 
@@ -88,7 +89,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
         gimap.connect()
         
-        #gimap.erase_mailbox()
+        gimap.erase_mailbox()
         
     def ztest_restore_10_emails(self):
         """

@@ -623,13 +623,30 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         if self.login == "guillaume.aubert@gmail.com":
             raise Exception("Error cannot activate erase_mailbox with %s" % (self.login))
+
+        LOG.info("Erase mailbox for account %s." % (self.login))
         
         self.select_folder('ALLMAIL')
+
+        #self.server.store("1:*",'+X-GM-LABELS', '\\Trash')
+        #self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', '\\Trash')
+        #self.server.add_gmail_labels(self, messages, labels)
+
+        LOG.info("Apply labels.")
         
-        # get all imap ids in All Mail
+        # get all imap ids in ALLMAIL
         imap_ids = self.search(GIMAPFetcher.IMAP_ALL)
+
+        if len(imap_ids) > 0:
+           self.apply_labels_to(imap_ids, ['\\Trash'])
+
+           LOG.info("Got all imap_ids flagged to Trash : %s." % (imap_ids))
+
+           LOG.info("Expunge them.")
         
-        self.delete_messages(imap_ids)
+           self.server.expunge()
+        else:
+           LOG.info("No messages to erase.")
         
         
                         
