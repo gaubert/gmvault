@@ -65,10 +65,15 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.test_passwd = None 
     
     def setUp(self): #pylint:disable-msg=C0103
-        self.login, self.passwd = read_password_file('/homespace/gaubert/.ssh/passwd')
-        
+        print("IN SETUP")
         self.test_login, self.test_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
-        
+
+    def assert_login_is_protected(self):
+       """
+          Insure that the login is not my personnal mailbox
+       """
+       if self.test_login != 'gsync.mtester@gmail.com':
+          raise Exception("Beware login should be gsync.mtester@gmail.com and it is %s" % (self.test_login)) 
     
     def test_gmvault_clean(self):
         """
@@ -76,10 +81,14 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
 
         gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.test_login, self.test_passwd)
-        
+
+        print("self.test_login = %s" % (self.test_login))
+
+        self.assert_login_is_protected()
+
         gimap.connect()
         
-        gimap.erase_mailbox()
+        #gimap.erase_mailbox()
         
     def ztest_restore_10_emails(self):
         """
