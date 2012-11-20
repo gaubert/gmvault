@@ -614,6 +614,24 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                         self.server.delete_folder(directory)
                     except imaplib.IMAP4.error, _:
                         LOG.debug(gmvault_utils.get_exception_traceback())
+    
+    
+    def erase_mailbox(self):
+        """
+           This is for testing purpose and cannot be used with my own mailbox
+        """
+        
+        if self.login == "guillaume.aubert@gmail.com":
+            raise Exception("Error cannot activate erase_mailbox with %s" % (self.login))
+        
+        self.select_folder('ALLMAIL')
+        
+        # get all imap ids in All Mail
+        imap_ids = self.search(GIMAPFetcher.IMAP_ALL)
+        
+        self.delete_messages(imap_ids)
+        
+        
                         
     @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec    
     def push_data(self, a_folder, a_body, a_flags, a_internal_time):
