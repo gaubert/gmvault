@@ -165,24 +165,22 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
             if len(imap_ids) != 1:
                 self.fail("more than one imap_id (%s) retrieved for request %s" % (imap_ids, req))
+
+            imap_id = imap_ids[0]
             
             # get online_metadata 
-            online_metadata = restorer.src.fetch(imap_ids[0], imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA) 
+            online_metadata = restorer.src.fetch(imap_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA) 
 
-            header_fields = online_metadata['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]']
+            print("online_metadata = %s\n" % (online_metadata))
+            print("disk_metadata = %s\n" % (disk_metadata))
+
+            header_fields = online_metadata[imap_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]']
             
             subject, msgid = gmvault_db.GmailStorer.parse_header_fields(header_fields)
-        
-            print("online_metadata = %s\n" % (online_metadata))
-            
-            print("subject = %s, msgid = %s\n" % (subject, msgid))
 
-            print("disk_metadata = %s\n" % (disk_metadata))
-            
             #compare metadata
-            for key in disk_metadata:
-                print("Test for key = %s\n" % (key))
-                self.assertEquals(disk_metadata[key], online_metadata[key])
+            self.assertEquals(subject, disk_metadata.get('subject', None))
+            self.assertEquals(msgid, disk_metadata.get('msg_id', None))
         
     def ztest_restore_10_emails(self):
         """
