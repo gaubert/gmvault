@@ -106,23 +106,64 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                                      read_only_access = False)
         
         #restorer.restore() #restore all emails from this essential-db
+
+        # get all email data from gmvault-db
+        pivot_dir = None
+        gmail_ids  = restorer.gstorer.get_all_existing_gmail_ids(pivot_dir)
+
+        print("gmail_ids = %s\n" % (gmail_ids))
         
         #need to check that all labels are there for emails in essential
         restorer.src.select_folder('ALLMAIL')
 
-        imaps_ids = restorer.src.search('ALL')
+        #imaps_ids = restorer.src.search('ALL')
 
-        for imap_id in imap_ids:
+        for gm_id in gmail_ids:
 
             print("Fetching id %s with request %s" % (gm_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA))
             #get disk_metadata
             disk_metadata   = restorer.gstorer.unbury_metadata(gm_id)
+
+            print("disk metadata %s\n" % (disk_metadata))
+
+            date = disk_metadata['internal_date'].strftime("%d-%b-%Y")
+            subject = disk_metadata.get('subject', None)
+
+            req = "("
+            has_date = False
+
+            if date:
+               req += 'SENTON {date}'.format(date=date)
+               has_date = True
+
+            if subject:
+               if has_date: #add extra space if it has a date
+                  req += ' ' 
+               req += 'SUBJECT {subject}'.format(subject=subject)
+
+            req += ")"
+
+            print("Req = %s\n" % (req))
+
+            imap_ids = restorer.src.search({ 'type' : 'imap', 'req': req})
+
+            print("imap_ids = %s\n" % (imap_ids))
+
+            #result, data = mail.uid('search', None, '(SENTSINCE {date} HEADER Subject "My Subject" NOT FROM "yuji@grovemade.com")'.format(date=date))
+
+            if len(imap_ids) != 1:
+               self.fail("more than one imap_id (%s) retrieved for request %s" % (imap_ids, req))
             
             # get online_metadata 
-            online_metadata = restorer.src.fetch(gm_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA) 
+            online_metadata = restorer.src.fetch(imap_ids[0], imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA) 
+
+            print("online_metadata = %s\n" % (online_metadata))
+
+            print("disk_metadata = %s\n" % (disk_metadata))
             
             #compare metadata
             for key in disk_metadata:
+                print("Test for key = %s\n" % (key))
                 self.assertEquals(disk_metadata[key], online_metadata[key])
         
     def ztest_restore_10_emails(self):
