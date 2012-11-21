@@ -74,10 +74,10 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
        """
        if self.test_login != 'gsync.mtester@gmail.com':
           raise Exception("Beware login should be gsync.mtester@gmail.com and it is %s" % (self.test_login)) 
-    
-    def test_gmvault_clean(self):
+
+    def clean_mailbox(self):
         """
-           Test connect error (connect to a wrong port). Too long to check
+           Delete all emails, destroy all labels
         """
         credential    = { 'type' : 'passwd', 'value': self.test_passwd }
 
@@ -90,19 +90,31 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gimap.connect()
         
         gimap.erase_mailbox()
+    
+    def test_restore(self):
+        """
+           Test connect error (connect to a wrong port). Too long to check
+        """
+        credential    = { 'type' : 'passwd', 'value': self.test_passwd }
+
+        #self.clean_mailbox()
 
 		# test restore
-        test_db_dir = "/tmp/gmvault-tests"
+        test_db_dir = "/home/gmv/gmvault-essential-db"
         
         restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, self.test_login, credential, \
                                      read_only_access = False)
         
-        restorer.restore() #restore all emails from this essential-db
+        #restorer.restore() #restore all emails from this essential-db
         
         #need to check that all labels are there for emails in essential
-        gmail_ids = restorer.gstorer.get_all_existing_gmail_ids()
-        
-        for gm_id in gmail_ids:
+        restorer.src.select_folder('ALLMAIL')
+
+        imaps_ids = restorer.src.search('ALL')
+
+        for imap_id in imap_ids:
+
+            print("Fetching id %s with request %s" % (gm_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA))
             #get disk_metadata
             disk_metadata   = restorer.gstorer.unbury_metadata(gm_id)
             
