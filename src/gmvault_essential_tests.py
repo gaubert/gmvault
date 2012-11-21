@@ -23,6 +23,7 @@ import os
 import ssl
 import gmv.mod_imap as mod_imap
 import gmv.gmvault as gmvault
+import gmv.gmvault_db as gmvault_db
 import gmv.gmvault_utils as gmvault_utils
 import gmv.imap_utils as imap_utils
 
@@ -90,8 +91,19 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gimap.connect()
         
         gimap.erase_mailbox()
+        
+    def test_header_parser(self):
+        """
+        """
+        header_fields = "Subject: Your Executive Club Statement\r\nMessage-ID: <2280049.1107281375715.JavaMail.SYSTEM@aplaxw03>\r\n\r\n"
     
-    def test_restore(self):
+        header_fields = "Message-ID: <2280049.1107281375715.JavaMail.SYSTEM@aplaxw03>\r\nSubject: Your Executive Club Statement\r\n"
+    
+        subject, msgid = gmvault_db.GmailStorer.parse_header_fields(header_fields)
+        
+        print("Subject = %s, msgid = %s\n" % (subject, msgid))
+    
+    def ztest_restore(self):
         """
            Test connect error (connect to a wrong port). Too long to check
         """

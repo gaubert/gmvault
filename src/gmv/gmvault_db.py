@@ -54,7 +54,14 @@ class GmailStorer(object): #pylint:disable=R0902
     MSGID_K      = 'msg_id'
     
     HFIELDS_PATTERN = "[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>\s+[S,s][U,u][b,B][J,j][E,e][C,c][T,t]:\s+(?P<subject>.*)\s*"
+    
+    HF_MSGID_PATTERN = ".*\s*[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>"
+    HF_SUB_PATTERN = ".*\s*[S,s][U,u][b,B][J,j][E,e][C,c][T,t]:\s+(?P<subject>.*)\s*"
+    
     HFIELDS_RE      = re.compile(HFIELDS_PATTERN)
+    
+    HF_MSGID_RE     = re.compile(HF_MSGID_PATTERN)
+    HF_SUB_RE       = re.compile(HF_SUB_PATTERN)
     
     ENCRYPTED_PATTERN = "[\w+,\.]+crypt[\w,\.]*"
     ENCRYPTED_RE      = re.compile(ENCRYPTED_PATTERN)
@@ -245,11 +252,20 @@ class GmailStorer(object): #pylint:disable=R0902
         """
            extract subject and message ids from the given header fields 
         """
-        matched = GmailStorer.HFIELDS_RE.match(header_fields)
+        subject = None
+        msgid   = None
+        
+        # look for subject
+        matched = GmailStorer.HF_SUB_RE.match(header_fields)
         if matched:
-            return (matched.group('subject'), matched.group('msgid'))
-        else:
-            return None, None
+            subject = matched.group('subject')
+        
+        # look for a msg id
+        matched = GmailStorer.HF_MSGID_RE.match(header_fields)
+        if matched:
+            msgid = matched.group('msgid')
+        
+        return (subject, msgid)
     
     def get_all_chats_gmail_ids(self):
         """
