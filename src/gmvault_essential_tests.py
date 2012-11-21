@@ -92,7 +92,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         gimap.erase_mailbox()
         
-    def test_header_parser(self):
+    def ztest_header_parser(self):
         """
         """
         header_fields = "Subject: Your Executive Club Statement\r\nMessage-ID: <2280049.1107281375715.JavaMail.SYSTEM@aplaxw03>\r\n\r\n"
@@ -103,7 +103,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         print("Subject = %s, msgid = %s\n" % (subject, msgid))
     
-    def ztest_restore(self):
+    def test_restore(self):
         """
            Test connect error (connect to a wrong port). Too long to check
         """
@@ -145,13 +145,13 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             has_date = False
 
             if date:
-               req += 'SENTON {date}'.format(date=date)
-               has_date = True
+                req += 'SENTON {date}'.format(date=date)
+                has_date = True
 
             if subject:
-               if has_date: #add extra space if it has a date
-                  req += ' ' 
-               req += 'SUBJECT {subject}'.format(subject=subject)
+                if has_date: #add extra space if it has a date
+                    req += ' ' 
+                req += 'SUBJECT {subject}'.format(subject=subject)
 
             req += ")"
 
@@ -164,12 +164,18 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             #result, data = mail.uid('search', None, '(SENTSINCE {date} HEADER Subject "My Subject" NOT FROM "yuji@grovemade.com")'.format(date=date))
 
             if len(imap_ids) != 1:
-               self.fail("more than one imap_id (%s) retrieved for request %s" % (imap_ids, req))
+                self.fail("more than one imap_id (%s) retrieved for request %s" % (imap_ids, req))
             
             # get online_metadata 
             online_metadata = restorer.src.fetch(imap_ids[0], imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA) 
 
+            header_fields = online_metadata['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]']
+            
+            subject, msgid = gmvault_db.GmailStorer.parse_header_fields(header_fields)
+        
             print("online_metadata = %s\n" % (online_metadata))
+            
+            print("subject = %s, msgid = %s\n" % (subject, msgid))
 
             print("disk_metadata = %s\n" % (disk_metadata))
             
