@@ -109,7 +109,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
         credential    = { 'type' : 'passwd', 'value': self.test_passwd }
 
-        #self.clean_mailbox()
+        self.clean_mailbox()
 
 		# test restore
         test_db_dir = "/home/gmv/gmvault-essential-db"
@@ -117,7 +117,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, self.test_login, credential, \
                                      read_only_access = False)
         
-        #restorer.restore() #restore all emails from this essential-db
+        restorer.restore() #restore all emails from this essential-db
 
         # get all email data from gmvault-db
         pivot_dir = None
@@ -127,8 +127,6 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         #need to check that all labels are there for emails in essential
         restorer.src.select_folder('ALLMAIL')
-
-        #imaps_ids = restorer.src.search('ALL')
 
         for gm_id in gmail_ids:
 
