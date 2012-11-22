@@ -109,7 +109,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
         credential    = { 'type' : 'passwd', 'value': self.test_passwd }
 
-        self.clean_mailbox()
+        #self.clean_mailbox()
 
 		# test restore
         test_db_dir = "/home/gmv/gmvault-essential-db"
@@ -117,7 +117,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, self.test_login, credential, \
                                      read_only_access = False)
         
-        restorer.restore() #restore all emails from this essential-db
+        #restorer.restore() #restore all emails from this essential-db
 
         # get all email data from gmvault-db
         pivot_dir = None
@@ -136,21 +136,27 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
             print("disk metadata %s\n" % (disk_metadata))
 
-            date = disk_metadata['internal_date'].strftime("%d-%b-%Y")
+            date    = disk_metadata['internal_date'].strftime("%d-%b-%Y")
             subject = disk_metadata.get('subject', None)
+            msgid   = disk_metadata.get('msg_id', None)
 
             req = "("
-            has_date = False
+            has_something = False
 
             if date:
                 req += 'SENTON {date}'.format(date=date)
-                has_date = True
+                has_something = True
 
             if subject:
-                if has_date: #add extra space if it has a date
+                if has_something: #add extra space if it has a date
                     req += ' ' 
-                req += 'SUBJECT {subject}'.format(subject=subject)
+                req += 'SUBJECT "{subject}"'.format(subject=subject.strip())
 
+            if msgid:
+                if has_something: #add extra space if it has a date
+                    req += ' ' 
+                req += 'HEADER MESSAGE-ID {msgid}'.format(msgid=msgid.strip())
+                
             req += ")"
 
             print("Req = %s\n" % (req))
@@ -178,8 +184,26 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
             #compare metadata
             self.assertEquals(subject, disk_metadata.get('subject', None))
-            self.assertEquals(msgid, disk_metadata.get('msg_id', None))
-        
+            self.assertEquals(msgid,   disk_metadata.get('msg_id', None))
+            self.assertEquals(online_metadata[imap_id].get('INTERNALDATE', None),    disk_metadata.get('internal_date', None))
+
+            #check labels
+            disk_labels   = disk_metadata.get('labels', None)
+            online_labels = online_metadata[imap_id].get('X-GM-LABELS', None) 
+
+            if not disk_labels:
+               self.assertTrue(not online_labels)
+
+            self.assertEquals(len(disk_labels), len(online_labels))
+
+            for label in disk_labels:
+
+                if label.isdigit():
+                   #convert as int
+                   label = int(label)
+                if label not in online_labels:
+                   self.fail("label %s should be in online_labels %s as it is in disk_labels %s" % (label, online_labels, disk_labels))
+
     def ztest_restore_10_emails(self):
         """
            Restore 10 emails
