@@ -109,7 +109,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
         credential    = { 'type' : 'passwd', 'value': self.test_passwd }
 
-        #self.clean_mailbox()
+        self.clean_mailbox()
 
 		# test restore
         test_db_dir = "/home/gmv/gmvault-essential-db"
@@ -117,7 +117,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, self.test_login, credential, \
                                      read_only_access = False)
         
-        #restorer.restore() #restore all emails from this essential-db
+        restorer.restore() #restore all emails from this essential-db
 
         # get all email data from gmvault-db
         pivot_dir = None
@@ -203,6 +203,20 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                    label = int(label)
                 if label not in online_labels:
                    self.fail("label %s should be in online_labels %s as it is in disk_labels %s" % (label, online_labels, disk_labels))
+
+            # check flags
+            disk_flags   = disk_metadata.get('flags', None)
+            online_flags = online_metadata[imap_id].get('FLAGS', None) 
+
+            if not disk_flags:
+               self.assertTrue(not online_flags)
+
+            self.assertEquals(len(disk_flags), len(online_flags))
+
+            for flag in disk_flags:
+                if flag not in online_flags:
+                   self.fail("flag %s should be in online_flags %s as it is in disk_flags %s" % (flag, online_flags, disk_flags))
+            
 
     def ztest_restore_10_emails(self):
         """
