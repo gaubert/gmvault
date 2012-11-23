@@ -92,47 +92,29 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         gimap.erase_mailbox()
         
-    def ztest_header_parser(self):
+    def check_remote_mailbox_identical_to_local(self, gmvaulter):
         """
+           Check that the remote mailbox is identical to the local one.
+           Need a connected gmvaulter
         """
-        header_fields = "Subject: Your Executive Club Statement\r\nMessage-ID: <2280049.1107281375715.JavaMail.SYSTEM@aplaxw03>\r\n\r\n"
-    
-        header_fields = "Message-ID: <2280049.1107281375715.JavaMail.SYSTEM@aplaxw03>\r\nSubject: Your Executive Club Statement\r\n"
-    
-        subject, msgid = gmvault_db.GmailStorer.parse_header_fields(header_fields)
-        
-        print("Subject = %s, msgid = %s\n" % (subject, msgid))
-    
-    def test_restore(self):
-        """
-           Test connect error (connect to a wrong port). Too long to check
-        """
-        credential    = { 'type' : 'passwd', 'value': self.test_passwd }
-
-        self.clean_mailbox()
-
-		# test restore
-        test_db_dir = "/home/gmv/gmvault-essential-db"
-        
-        restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, self.test_login, credential, \
-                                     read_only_access = False)
-        
-        restorer.restore() #restore all emails from this essential-db
-
         # get all email data from gmvault-db
-        pivot_dir = None
-        gmail_ids  = restorer.gstorer.get_all_existing_gmail_ids(pivot_dir)
+        pivot_dir  = None
+        gmail_ids  = gmvaulter.gstorer.get_all_existing_gmail_ids(pivot_dir)
 
         print("gmail_ids = %s\n" % (gmail_ids))
         
         #need to check that all labels are there for emails in essential
-        restorer.src.select_folder('ALLMAIL')
+        gmvaulter.src.select_folder('ALLMAIL')
+        
+        # check the number of id on disk 
+        imap_ids = gmvaulter.src.search('ALL') #get everything
+        self.assertEquals(len(imap_ids), len(gmail_ids))
 
         for gm_id in gmail_ids:
 
             print("Fetching id %s with request %s" % (gm_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA))
             #get disk_metadata
-            disk_metadata   = restorer.gstorer.unbury_metadata(gm_id)
+            disk_metadata   = gmvaulter.gstorer.unbury_metadata(gm_id)
 
             print("disk metadata %s\n" % (disk_metadata))
 
@@ -161,7 +143,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
             print("Req = %s\n" % (req))
 
-            imap_ids = restorer.src.search({ 'type' : 'imap', 'req': req})
+            imap_ids = gmvaulter.src.search({ 'type' : 'imap', 'req': req})
 
             print("imap_ids = %s\n" % (imap_ids))
 
@@ -173,10 +155,11 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             imap_id = imap_ids[0]
             
             # get online_metadata 
-            online_metadata = restorer.src.fetch(imap_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA) 
+            online_metadata = gmvaulter.src.fetch(imap_id, \
+                                                  imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA) 
 
             print("online_metadata = %s\n" % (online_metadata))
-            print("disk_metadata = %s\n" % (disk_metadata))
+            print("disk_metadata = %s\n"   % (disk_metadata))
 
             header_fields = online_metadata[imap_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]']
             
@@ -191,91 +174,52 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             disk_labels   = disk_metadata.get('labels', None)
             online_labels = online_metadata[imap_id].get('X-GM-LABELS', None) 
 
-            if not disk_labels:
-               self.assertTrue(not online_labels)
+            if not disk_labels: #no disk_labels check that there are no online_labels
+                self.assertTrue(not online_labels)
 
             self.assertEquals(len(disk_labels), len(online_labels))
 
             for label in disk_labels:
 
-                if label.isdigit():
-                   #convert as int
-                   label = int(label)
+                if label.isdigit(): # to manage the case where the label is a digit
+                    #convert as int
+                    label = int(label)
                 if label not in online_labels:
-                   self.fail("label %s should be in online_labels %s as it is in disk_labels %s" % (label, online_labels, disk_labels))
+                    self.fail("label %s should be in online_labels %s as it is in disk_labels %s" % (label, online_labels, disk_labels))
 
             # check flags
             disk_flags   = disk_metadata.get('flags', None)
             online_flags = online_metadata[imap_id].get('FLAGS', None) 
 
-            if not disk_flags:
-               self.assertTrue(not online_flags)
+            if not disk_flags: #no disk flags
+                self.assertTrue(not online_flags)
 
             self.assertEquals(len(disk_flags), len(online_flags))
 
             for flag in disk_flags:
                 if flag not in online_flags:
-                   self.fail("flag %s should be in online_flags %s as it is in disk_flags %s" % (flag, online_flags, disk_flags))
-            
+                    self.fail("flag %s should be in online_flags %s as it is in disk_flags %s" % (flag, online_flags, disk_flags))        
 
-    def ztest_restore_10_emails(self):
+         
+    def test_restore(self):
         """
-           Restore 10 emails
+           Test connect error (connect to a wrong port). Too long to check
         """
-        gsource      = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
-        gdestination = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.gmvault_login, self.gmvault_passwd, \
-                                             readonly_folder = False)
-        
-        gsource.connect()
-        gdestination.connect()
-        
-        criteria = ['Before 1-Oct-2008']
-        #criteria = ['ALL']
-        ids = gsource.search(criteria)
-        
-        #get 30 emails
-        for index in range(9, 20):
-            
-            print("email nb %d\n" % (index))
-        
-            the_id = ids[index]
-             
-            source_email = gsource.fetch(the_id, gsource.GET_ALL_INFO)
-            
-            existing_labels = source_email[the_id][gsource.GMAIL_LABELS]
-            
-            # get labels
-            test_labels = []
-            for elem in existing_labels:
-                test_labels.append(elem)
-                
-            dest_id = gdestination.push_email(source_email[the_id][gsource.EMAIL_BODY], \
-                                               source_email[the_id][gsource.IMAP_FLAGS] , \
-                                               source_email[the_id][gsource.IMAP_INTERNALDATE], test_labels)
-            
-            #retrieve email from destination email account
-            dest_email = gdestination.fetch(dest_id, gsource.GET_ALL_INFO)
-            
-            #check that it has the same
-            # do the checkings
-            self.assertEquals(dest_email[dest_id][gsource.IMAP_FLAGS], source_email[the_id][gsource.IMAP_FLAGS])
-            self.assertEquals(dest_email[dest_id][gsource.EMAIL_BODY], source_email[the_id][gsource.EMAIL_BODY])
-            
-            dest_labels = []
-            for elem in dest_email[dest_id][gsource.GMAIL_LABELS]:
-                if not elem == '\\Important':
-                    dest_labels.append(elem)
-            
-            src_labels = []
-            for elem in source_email[the_id][gsource.GMAIL_LABELS]:
-                if not elem == '\\Important':
-                    src_labels.append(elem)
-            
-            self.assertEquals(dest_labels, src_labels)         
-   
-        
-        
+        credential    = { 'type' : 'passwd', 'value': self.test_passwd }
 
+        self.clean_mailbox()
+
+        # test restore
+        #test_db_dir = "/home/gmv/gmvault-essential-db"
+        test_db_dir = "/homespace/gaubert/gmvault-dbs/essential-dbs"
+        
+        restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, self.test_login, credential, \
+                                     read_only_access = False)
+        
+        restorer.restore() #restore all emails from this essential-db
+
+        self.check_remote_mailbox_identical_to_local(restorer)
+        
 def tests():
     """
        main test function
