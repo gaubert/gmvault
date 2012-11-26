@@ -70,11 +70,11 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.test_login, self.test_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
 
     def assert_login_is_protected(self):
-       """
+        """
           Insure that the login is not my personnal mailbox
-       """
-       if self.test_login != 'gsync.mtester@gmail.com':
-          raise Exception("Beware login should be gsync.mtester@gmail.com and it is %s" % (self.test_login)) 
+        """
+        if self.test_login != 'gsync.mtester@gmail.com':
+            raise Exception("Beware login should be gsync.mtester@gmail.com and it is %s" % (self.test_login)) 
 
     def clean_mailbox(self):
         """
@@ -108,7 +108,10 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         # check the number of id on disk 
         imap_ids = gmvaulter.src.search('ALL') #get everything
-        self.assertEquals(len(imap_ids), len(gmail_ids))
+        
+        self.assertEquals(len(imap_ids), \
+                          len(gmail_ids), \
+                          "Error. Should have the same number of emails: local nb of emails %d, remote nb of emails %d" % (gmail_ids, imap_ids))
 
         for gm_id in gmail_ids:
 
