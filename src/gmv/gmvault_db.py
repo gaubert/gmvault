@@ -610,7 +610,19 @@ class GmailStorer(object): #pylint:disable=R0902
         
         # force convertion of labels as string because IMAPClient
         # returns a num when the label is a number (ie. '00000')
-        metadata[self.LABELS_K] = [ str(elem) for elem in  metadata[self.LABELS_K] ]
+
+        new_labels = []
+
+        for label in  metadata[self.LABELS_K]:
+            if isinstance(label, (int, long, float, complex)):
+                label = str(label)
+
+            new_labels.append(label.encode('utf-8'))
+ 
+        metadata[self.LABELS_K] = new_labels
+
+        #force encoding in utf-8
+        #metadata[self.LABELS_K] = [ str(elem).encode('utf-8') for elem in  metadata[self.LABELS_K] ]
         
         return metadata
     
