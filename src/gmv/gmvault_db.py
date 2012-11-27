@@ -354,8 +354,8 @@ class GmailStorer(object): #pylint:disable=R0902
         
         # need to convert labels that are number as string
         # come from imap_lib when label is a number
-        labels = [ str(elem) for elem in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS] ]
-        
+        #labels = [ str(elem) for elem in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS] ]
+        labels = email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS]
         labels.extend(extra_labels) #add extra labels
         
         #create json structure for metadata
@@ -370,7 +370,7 @@ class GmailStorer(object): #pylint:disable=R0902
                      self.MSGID_K      : msgid
                    }
         
-        json.dump(meta_obj, meta_desc, ensure_ascii = False)
+        json.dump(meta_obj, meta_desc)
         
         meta_desc.flush()
         meta_desc.close()
@@ -429,7 +429,13 @@ class GmailStorer(object): #pylint:disable=R0902
         
         # need to convert labels that are number as string
         # come from imap_lib when label is a number
-        labels = [ str(elem) for elem in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS] ]
+        #labels = [ str(elem) for elem in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS] ]
+        labels = []
+        for label in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS]:
+            if isinstance(label, (int, long, float, complex)):
+                label = str(label)
+
+            labels.append(unicode(label))
         
         labels.extend(extra_labels) #add extra labels
         
@@ -446,7 +452,7 @@ class GmailStorer(object): #pylint:disable=R0902
         
         meta_desc = open(self.METADATA_FNAME % (the_dir, email_info[imap_utils.GIMAPFetcher.GMAIL_ID]), 'w')
         
-        json.dump(meta_obj, meta_desc, ensure_ascii = False)
+        json.dump(meta_obj, meta_desc)
         
         meta_desc.flush()
         meta_desc.close()
@@ -616,7 +622,7 @@ class GmailStorer(object): #pylint:disable=R0902
             if isinstance(label, (int, long, float, complex)):
                 label = str(label)
 
-            new_labels.append(label.encode('utf-8'))
+            new_labels.append(unicode(label))
  
         metadata[self.LABELS_K] = new_labels
 
