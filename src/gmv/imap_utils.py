@@ -532,7 +532,9 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         listed_folders = set([ directory.lower() for (_, _, directory) in self.list_all_folders() ])
         existing_folders = listed_folders.union(existing_folders)
 
-        LOG.debug("Labels to create: [%s]" % (labels))
+        labels.add(u"ЧаÑ")
+
+        #LOG.debug("Labels to create: [%s]" % (labels))
             
         for lab in labels:
            
@@ -543,6 +545,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 low_directory = directory.lower() #get lower case directory but store original label
                 if (low_directory not in existing_folders) and (low_directory not in self.GMAIL_SPECIAL_DIRS_LOWER):
                     try:
+                        print("type(directory) = %s" % (type(directory)))
                         if self.server.create_folder(directory) != 'Success':
                             raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
                         else:
@@ -557,7 +560,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                     
                     #add created folder in folders
                     existing_folders.add(low_directory)
-        
+
         #return all existing folders
         return existing_folders
     
