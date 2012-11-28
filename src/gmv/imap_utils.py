@@ -532,7 +532,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         listed_folders = set([ directory.lower() for (_, _, directory) in self.list_all_folders() ])
         existing_folders = listed_folders.union(existing_folders)
 
-        #LOG.debug("Labels to create: [%s]" % (labels))
+        LOG.debug("Labels to create: [%s]" % (labels))
             
         for lab in labels:
            
@@ -586,7 +586,6 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             #+X-GM-LABELS.SILENT to have not returned data
             ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', labels_str)
 
-            #LOG.debug("COPYING to label:[%s]" % (labels[0])) 
             #ret_code, data = self.server._imap.uid('COPY', id_list, labels[0])
             LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" % (labels_str, t.elapsed_ms(),ret_code, data))
 

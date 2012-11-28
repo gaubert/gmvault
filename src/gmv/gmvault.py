@@ -712,7 +712,6 @@ class GMVaulter(object):
             if None in group_imap_id: 
                 group_imap_id = [ im_id for im_id in group_imap_id if im_id != None ]
             
-            #LOG.debug("Interrogate Gmail Server for %s" % (str(group_imap_id)))
             data = self.src.fetch(group_imap_id, imap_utils.GIMAPFetcher.GET_GMAIL_ID)
             
             # syntax for 2.7 set comprehension { data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data }
@@ -1238,7 +1237,7 @@ class GMVaulter(object):
                     # add in the labels_to_create struct
                     for label in labels:
                         if label != "\\Starred":
-                            #LOG.debug("label = %s\n" % (label))
+                            LOG.debug("label = %s\n" % (label))
                             #labels_to_apply[str(label)] = imap_id
                             labels_to_apply[label] = imap_id
             
@@ -1264,7 +1263,7 @@ class GMVaulter(object):
                 for label in labels_to_apply.keys():
                     self.src.apply_labels_to(labels_to_apply[label], [label]) 
             except Exception, err:
-                #LOG.error("Problem when applying labels %s to the following ids: %s" %(label, labels_to_apply[label]), err)
+                LOG.error("Problem when applying labels %s to the following ids: %s" %(label, labels_to_apply[label]), err)
                 LOG.error("Problem when applying labels.", err)
                 if isinstance(err, imaplib.IMAP4.abort) and str(err).find("=> Gmvault ssl socket error: EOF") >= 0:
                     # if this is a Gmvault SSL Socket error quarantine the email and continue the restore

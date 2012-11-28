@@ -215,8 +215,6 @@ class CredentialHelper(object):
             cipher       = blowfish.Blowfish(cls.get_secret_key(cls.SECRET_FILEPATH % (gmvault_utils.get_home_dir_path())))
             cipher.initCTR()
             password     = cipher.decryptCTR(password)
-
-            #LOG.debug("password=[%s]" % (password))
         
         return password
     
@@ -321,8 +319,6 @@ class CredentialHelper(object):
                 #store newly created token
                 cls.store_oauth_credentials(args['email'], token, secret)
                
-            #LOG.debug("token=[%s], secret=[%s]" % (token, secret))
-            
             xoauth_req = generate_xoauth_req(token, secret, args['email'])
             
             LOG.critical("Successfully read oauth credentials.\n")

@@ -566,8 +566,6 @@ class GmailStorer(object): #pylint:disable=R0902
         """
         the_dir = self.get_directory_from_id(a_id)
 
-        #LOG.debug("unbury_email: Dir = %s, id = %s" % (the_dir, a_id))
-        
         data_fd = self._get_data_file_from_id(the_dir, a_id)
         
         if self.email_encrypted(data_fd.name):
