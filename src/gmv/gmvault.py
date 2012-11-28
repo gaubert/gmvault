@@ -570,15 +570,9 @@ class GMVaulter(object):
                     
                     LOG.critical("Process email num %d (imap_id:%s) from %s." % (nb_emails_processed, the_id, the_dir))
                     
-                    #transform labels that are encoded as utf7
-                    import imapclient.imap_utf7 as utf7
-                    new_labels = []
-                    for label in new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS]:
-                        if isinstance(label, (int, long, float, complex)):
-                            label = str(label)
-                        new_labels.append(utf7.decode(label))
-                    
-                    new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = new_labels
+                    #decode the labels that are received as utf7 => unicode
+
+                    new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = imap_utils.decode_labels(new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS])
                 
                     #pass the dir and the ID
                     curr_metadata = GMVaulter.check_email_on_disk( self.gstorer , \

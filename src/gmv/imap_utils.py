@@ -471,11 +471,10 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     @classmethod
     def _build_labels_str(cls, a_labels):
         """
-           Create IMAP label string from list of given labels
+           Create IMAP label string from list of given labels. 
+           Convert the labels to utf7
            a_labels: List of labels
         """
-        import imapclient.imap_utf7 as utf7
-        
         # add GMAIL LABELS
         labels_str = None
         if a_labels and len(a_labels) > 0:
@@ -483,10 +482,9 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
             for label in a_labels:
                 if gmvault_utils.contains_any(label, ' "'):
                     label = label.replace('"', '\\"') #replace quote with escaped quotes
-                #if label.find(' ') >=0 :
-                    labels_str += '\"%s\" ' % (utf7.encode(label))
+                    labels_str += '\"%s\" ' % (label)
                 else:
-                    labels_str += '%s ' % (utf7.encode(label))
+                    labels_str += '%s ' % (label)
             
             labels_str = '%s%s' % (labels_str[:-1],')')
         
@@ -534,8 +532,6 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         listed_folders = set([ directory.lower() for (_, _, directory) in self.list_all_folders() ])
         existing_folders = listed_folders.union(existing_folders)
 
-        labels.add(u"ЧаÑ")
-
         #LOG.debug("Labels to create: [%s]" % (labels))
             
         for lab in labels:
@@ -547,7 +543,6 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 low_directory = directory.lower() #get lower case directory but store original label
                 if (low_directory not in existing_folders) and (low_directory not in self.GMAIL_SPECIAL_DIRS_LOWER):
                     try:
-                        print("type(directory) = %s" % (type(directory)))
                         if self.server.create_folder(directory) != 'Success':
                             raise Exception("Cannot create label %s: the directory %s cannot be created." % (lab, directory))
                         else:
@@ -577,7 +572,11 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         
         t = gmvault_utils.Timer()
         t.start()
-        labels_str = self._build_labels_str(labels)
+
+        #utf7 the labels as they should be
+        labels = [ utf7_encode(label) for label in labels ]
+
+        labels_str = self._build_labels_str(labels) # create labels str
     
         if labels_str:  
             #has labels so update email  
@@ -777,3 +776,76 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 raise PushEmailError("Cannot add Labels %s to email with uid %d. Error:%s" % (labels_str, result_uid, data))
         
         return result_uid
+
+def decode_labels(labels):
+    """
+       Decode labels when they are received as utf7 entities or numbers
+    """
+    new_labels = []
+    for label in labels:
+        if isinstance(label, (int, long, float, complex)):
+            label = str(label) 
+        new_labels.append(utf7_decode(label))
+
+    return new_labels
+
+# utf7 conversion functions
+def utf7_encode(s):
+    if isinstance(s, str) and sum(n for n in (ord(c) for c in s) if n > 127):
+        raise ValueError("%r contains characters not valid in a str folder name. "
+                              "Convert to unicode first?" % s)
+
+    r = []
+    _in = []
+    for c in s:
+        if ord(c) in (range(0x20, 0x26) + range(0x27, 0x7f)):
+            if _in:
+                r.extend(['&', utf7_modified_base64(''.join(_in)), '-'])
+                del _in[:]
+            r.append(str(c))
+        elif c == '&':
+            if _in:
+                r.extend(['&', utf7_modified_base64(''.join(_in)), '-'])
+                del _in[:]
+            r.append('&-')
+        else:
+            _in.append(c)
+    if _in:
+        r.extend(['&', utf7_modified_base64(''.join(_in)), '-'])
+    return ''.join(r)
+
+
+def utf7_decode(s):
+    r = []
+    decode = []
+    for c in s:
+        if c == '&' and not decode:
+            decode.append('&')
+        elif c == '-' and decode:
+            if len(decode) == 1:
+                r.append('&')
+            else:
+                r.append(utf7_modified_unbase64(''.join(decode[1:])))
+            decode = []
+        elif decode:
+            decode.append(c)
+        else:
+            r.append(c)
+    if decode:
+        r.append(utf7_modified_unbase64(''.join(decode[1:])))
+    out = ''.join(r)
+
+    if not isinstance(out, unicode):
+        out = unicode(out, 'latin-1')
+    return out
+
+
+def utf7_modified_base64(s):
+    s_utf7 = s.encode('utf-7')
+    return s_utf7[1:-1].replace('/', ',')
+
+
+def utf7_modified_unbase64(s):
+    s_utf7 = '+' + s.replace(',', '/') + '-'
+    return s_utf7.decode('utf-7')
+

@@ -623,10 +623,6 @@ class GmailStorer(object): #pylint:disable=R0902
             if isinstance(label, (int, long, float, complex)):
                 label = str(label)
 
-<<<<<<< HEAD
-            #new_labels.append(label.encode('utf-8'))
-=======
->>>>>>> 9596d158d3e205f8f1e3e7ff4f2786ac0728877c
             new_labels.append(unicode(label))
  
         metadata[self.LABELS_K] = new_labels
