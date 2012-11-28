@@ -370,10 +370,6 @@ class GmailStorer(object): #pylint:disable=R0902
                      self.MSGID_K      : msgid
                    }
         
-<<<<<<< HEAD
-        #json.dump(meta_obj, meta_desc, ensure_ascii = False)
-=======
->>>>>>> 9596d158d3e205f8f1e3e7ff4f2786ac0728877c
         json.dump(meta_obj, meta_desc)
         
         meta_desc.flush()
