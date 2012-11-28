@@ -474,6 +474,8 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
            Create IMAP label string from list of given labels
            a_labels: List of labels
         """
+        import imapclient.imap_utf7 as utf7
+        
         # add GMAIL LABELS
         labels_str = None
         if a_labels and len(a_labels) > 0:
@@ -482,9 +484,9 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
                 if gmvault_utils.contains_any(label, ' "'):
                     label = label.replace('"', '\\"') #replace quote with escaped quotes
                 #if label.find(' ') >=0 :
-                    labels_str += '\"%s\" ' % (label)
+                    labels_str += '\"%s\" ' % (utf7.encode(label))
                 else:
-                    labels_str += '%s ' % (label)
+                    labels_str += '%s ' % (utf7.encode(label))
             
             labels_str = '%s%s' % (labels_str[:-1],')')
         
@@ -580,7 +582,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         if labels_str:  
             #has labels so update email  
             t.start()
-            LOG.debug("Before to store labels %s" % (labels_str))
+            #LOG.debug("Before to store labels %s" % (labels_str))
             id_list = ",".join(map(str, imap_ids))
             #+X-GM-LABELS.SILENT to have not returned data
             ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', labels_str)

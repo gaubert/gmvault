@@ -354,8 +354,8 @@ class GmailStorer(object): #pylint:disable=R0902
         
         # need to convert labels that are number as string
         # come from imap_lib when label is a number
-        labels = [ str(elem) for elem in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS] ]
-        
+        #labels = [ str(elem) for elem in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS] ]
+        labels = email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS]
         labels.extend(extra_labels) #add extra labels
         
         #create json structure for metadata
@@ -370,7 +370,10 @@ class GmailStorer(object): #pylint:disable=R0902
                      self.MSGID_K      : msgid
                    }
         
+<<<<<<< HEAD
         #json.dump(meta_obj, meta_desc, ensure_ascii = False)
+=======
+>>>>>>> 9596d158d3e205f8f1e3e7ff4f2786ac0728877c
         json.dump(meta_obj, meta_desc)
         
         meta_desc.flush()
@@ -430,7 +433,13 @@ class GmailStorer(object): #pylint:disable=R0902
         
         # need to convert labels that are number as string
         # come from imap_lib when label is a number
-        labels = [ str(elem) for elem in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS] ]
+        #labels = [ str(elem) for elem in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS] ]
+        labels = []
+        for label in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS]:
+            if isinstance(label, (int, long, float, complex)):
+                label = str(label)
+
+            labels.append(unicode(label))
         
         labels.extend(extra_labels) #add extra labels
         
@@ -447,7 +456,7 @@ class GmailStorer(object): #pylint:disable=R0902
         
         meta_desc = open(self.METADATA_FNAME % (the_dir, email_info[imap_utils.GIMAPFetcher.GMAIL_ID]), 'w')
         
-        json.dump(meta_obj, meta_desc, ensure_ascii = False)
+        json.dump(meta_obj, meta_desc)
         
         meta_desc.flush()
         meta_desc.close()
@@ -611,21 +620,26 @@ class GmailStorer(object): #pylint:disable=R0902
         metadata[self.INT_DATE_K] =  gmvault_utils.e2datetime(metadata[self.INT_DATE_K])
         
         # force convertion of labels as string because IMAPClient
-        # returns a num when the label is a number (ie. '00000')
-
+        # returns a num when the label is a number (ie. '00000') and handle utf-8
         new_labels = []
 
         for label in  metadata[self.LABELS_K]:
             if isinstance(label, (int, long, float, complex)):
                 label = str(label)
 
+<<<<<<< HEAD
             #new_labels.append(label.encode('utf-8'))
+=======
+>>>>>>> 9596d158d3e205f8f1e3e7ff4f2786ac0728877c
             new_labels.append(unicode(label))
  
         metadata[self.LABELS_K] = new_labels
 
         #force encoding in utf-8
-        #metadata[self.LABELS_K] = [ str(elem).encode('utf-8') for elem in  metadata[self.LABELS_K] ]
+        #metadata[self.LABELS_K] = [ str(elem).encode('utf-8') \
+		#                            if isinstance(label, (int, long, float, complex)) \
+		#							 else elem.encode('utf-8') \
+	    #							 for elem in  metadata[self.LABELS_K] ]
         
         return metadata
     
