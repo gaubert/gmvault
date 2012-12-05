@@ -625,12 +625,6 @@ class GmailStorer(object): #pylint:disable=R0902
  
         metadata[self.LABELS_K] = new_labels
 
-        #force encoding in utf-8
-        #metadata[self.LABELS_K] = [ str(elem).encode('utf-8') \
-		#                            if isinstance(label, (int, long, float, complex)) \
-		#							 else elem.encode('utf-8') \
-	    #							 for elem in  metadata[self.LABELS_K] ]
-        
         return metadata
     
     def delete_emails(self, emails_info, msg_type):

@@ -107,11 +107,11 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gmvaulter.src.select_folder('ALLMAIL')
         
         # check the number of id on disk 
-        imap_ids = gmvaulter.src.search('ALL') #get everything
+        imap_ids = gmvaulter.src.search({ 'type' : 'imap', 'req' : 'ALL'}) #get everything
         
         self.assertEquals(len(imap_ids), \
                           len(gmail_ids), \
-                          "Error. Should have the same number of emails: local nb of emails %d, remote nb of emails %d" % (gmail_ids, imap_ids))
+                          "Error. Should have the same number of emails: local nb of emails %d, remote nb of emails %d" % (len(gmail_ids), len(imap_ids)))
 
         for gm_id in gmail_ids:
 
@@ -175,7 +175,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
             #check labels
             disk_labels   = disk_metadata.get('labels', None)
-            online_labels = online_metadata[imap_id].get('X-GM-LABELS', None) 
+            online_labels = imap_utils.decode_labels(online_metadata[imap_id].get('X-GM-LABELS', None)) 
 
             if not disk_labels: #no disk_labels check that there are no online_labels
                 self.assertTrue(not online_labels)
@@ -183,10 +183,6 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             self.assertEquals(len(disk_labels), len(online_labels))
 
             for label in disk_labels:
-
-                if label.isdigit(): # to manage the case where the label is a digit
-                    #convert as int
-                    label = int(label)
                 if label not in online_labels:
                     self.fail("label %s should be in online_labels %s as it is in disk_labels %s" % (label, online_labels, disk_labels))
 
