@@ -21,6 +21,8 @@ import shutil
 import os
 
 import ssl
+import datetime
+import imapclient
 import gmv.mod_imap as mod_imap
 import gmv.gmvault as gmvault
 import gmv.gmvault_db as gmvault_db
@@ -91,6 +93,17 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gimap.connect()
         
         gimap.erase_mailbox()
+
+    def search_for_email(self, gmvaulter, req):
+        """
+           search for a particular email
+        """
+        #need to check that all labels are there for emails in essential
+        gmvaulter.src.select_folder('ALLMAIL')
+
+        imap_ids = gmvaulter.src.search({ 'type' : 'imap', 'req': req, 'charset': 'utf-8' })
+ 
+        print("imap_ids = %s\n" % (imap_ids))
         
     def check_remote_mailbox_identical_to_local(self, gmvaulter):
         """
@@ -121,21 +134,25 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
             print("disk metadata %s\n" % (disk_metadata))
 
-            date    = disk_metadata['internal_date'].strftime("%d-%b-%Y")
+            date    = disk_metadata['internal_date'].strftime('"%d %b %Y"')
             subject = disk_metadata.get('subject', None)
             msgid   = disk_metadata.get('msg_id', None)
 
             req = "("
             has_something = False
 
-            if date:
-                req += 'SENTON {date}'.format(date=date)
-                has_something = True
+            #if date:
+            #    req += 'HEADER DATE {date}'.format(date=date)
+            #    has_something = True
 
             if subject:
+                #split on ' when contained in subject to keep only the first part
+                subject = subject.split("'")[0]
+                subject = subject.split('"')[0]
                 if has_something: #add extra space if it has a date
                     req += ' ' 
-                req += 'SUBJECT "{subject}"'.format(subject=subject.strip())
+                req += 'SUBJECT "{subject}"'.format(subject=subject.strip().encode('utf-8'))
+                has_something = True
 
             if msgid:
                 if has_something: #add extra space if it has a date
@@ -146,11 +163,9 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
             print("Req = %s\n" % (req))
 
-            imap_ids = gmvaulter.src.search({ 'type' : 'imap', 'req': req})
+            imap_ids = gmvaulter.src.search({ 'type' : 'imap', 'req': req, 'charset': 'utf-8'})
 
             print("imap_ids = %s\n" % (imap_ids))
-
-            #result, data = mail.uid('search', None, '(SENTSINCE {date} HEADER Subject "My Subject" NOT FROM "yuji@grovemade.com")'.format(date=date))
 
             if len(imap_ids) != 1:
                 self.fail("more than one imap_id (%s) retrieved for request %s" % (imap_ids, req))
@@ -164,14 +179,26 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             print("online_metadata = %s\n" % (online_metadata))
             print("disk_metadata = %s\n"   % (disk_metadata))
 
-            header_fields = online_metadata[imap_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]']
+            header_fields = online_metadata[imap_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-Gmail-Received)]']
             
             subject, msgid = gmvault_db.GmailStorer.parse_header_fields(header_fields)
 
             #compare metadata
             self.assertEquals(subject, disk_metadata.get('subject', None))
             self.assertEquals(msgid,   disk_metadata.get('msg_id', None))
-            self.assertEquals(online_metadata[imap_id].get('INTERNALDATE', None),    disk_metadata.get('internal_date', None))
+
+            # check internal date it is plus or minus 1 hour
+            online_date   = online_metadata[imap_id].get('INTERNALDATE', None) 
+            disk_date     = disk_metadata.get('internal_date', None) 
+
+            if online_date != disk_date:
+               min_date = disk_date - datetime.timedelta(hours=1)
+               max_date = disk_date + datetime.timedelta(hours=1)
+
+               if min_date <= online_date <= max_date:
+                  print("online_date (%s) and disk_date (%s) differs but within one hour. This is OK (timezone pb) *****" % (online_date, disk_date))
+               else:
+                  self.fail("online_date (%s) and disk_date (%s) are different" % (online_date, disk_date))
 
             #check labels
             disk_labels   = disk_metadata.get('labels', None)
@@ -206,16 +233,34 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
         credential    = { 'type' : 'passwd', 'value': self.test_passwd }
 
-        self.clean_mailbox()
+        #self.clean_mailbox()
 
         # test restore
-        #test_db_dir = "/home/gmv/gmvault-essential-db"
-        test_db_dir = "/homespace/gaubert/gmvault-dbs/essential-dbs"
+        #test_db_dir = "/homespace/gaubert/gmvault-db"
+        #test_db_dir = "/homespace/gaubert/gmvault-dbs/essential-dbs"
+        test_db_dir = "/home/gmv/Dev/projects/gmvault-develop/src/test-db"
         
         restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, self.test_login, credential, \
                                      read_only_access = False)
+
+        #self.search_for_email(restorer, '(SENTON 12-Oct-2004 SUBJECT "White Water Homepage" HEADER MESSAGE-ID 416B8B1C.6090804@ecmwf.int)')
+        #self.search_for_email(restorer, '(HEADER DATE "12 Oct 2004" SUBJECT "White Water Homepage" HEADER MESSAGE-ID 416B8B1C.6090804@ecmwf.int)')
+        #self.search_for_email(restorer, '(SUBJECT "[Fwd: Sold, dispatch now. Baldur's Gate: Dark Alliance (GameCube)" HEADER MESSAGE-ID 417D0513.4000605@ecmwf.int)')
+
+        #str = '(SUBJECT "%s")' % ("[Fwd: Sold, dispatch now. Baldur")
+        #str = '(SUBJECT "[Fwd: Sold, dispatch now. Baldur\'s Gate: Dark Alliance (GameCube)" HEADER MESSAGE-ID 417D0513.4000605@ecmwf.int)'.encode('utf-8')
+        #str = '(SUBJECT "[Fwd: Sold, dispatch now. Baldur%s" HEADER MESSAGE-ID 417D0513.4000605@ecmwf.int)' % ("'s")
+        #str = str.encode('utf-8')
+        #print("Search = %s\n" % (str))
+
+        #str = '(SUBJECT "%s")' % u"[Fwd: Sold, dispatch now. Baldur's Gate: Dark Alliance (GameCube)".encode("utf-8")
+        #str = ['SUBJECT "%s"' % u"[Fwd: Sold, dispatch now. Baldur'".encode("utf-8")]
+        #quoted_str = imapclient.imapclient._quote_arg('SUBJECT "%s"' % "[Fwd: Sold, dispatch now. Baldur'")
+        #print("quoted_str = %s\n" % (quoted_str))
+        #str =  ['SUBJECT "%s"' % u"[Fwd: Sold, dispatch now. Baldur'".encode("utf-8")]
+        #self.search_for_email(restorer, quoted_str)
         
-        restorer.restore() #restore all emails from this essential-db
+        #restorer.restore() #restore all emails from this essential-db
 
         self.check_remote_mailbox_identical_to_local(restorer)
         

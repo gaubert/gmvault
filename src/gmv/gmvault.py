@@ -561,6 +561,7 @@ class GMVaulter(object):
         #LAST Thing to do remove all found ids from imap_ids and if ids left add missing in report
         for new_data in batch_fetcher:            
             for the_id in new_data:
+                #LOG.debug("new_data = %s\n" % (new_data))
                 if new_data.get(the_id, None):
                     LOG.debug("\nProcess imap id %s" % ( the_id ))
                         

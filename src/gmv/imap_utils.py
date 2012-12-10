@@ -187,9 +187,10 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     GMAIL_SPECIAL_DIRS_LOWER = ['\\inbox', '\\starred', '\\sent', '\\draft', '\\important']
     
     IMAP_BODY_PEEK     = 'BODY.PEEK[]' #get body without setting msg as seen
-    IMAP_HEADER_PEEK_FIELDS = 'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT)]' #get the body info without setting msg as seen
-    
-    IMAP_HEADER_FIELDS_KEY      = 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]' #key used to find these fields in the IMAP Response
+    #IMAP_HEADER_PEEK_FIELDS = 'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT)]' #get the body info without setting msg as seen
+    #IMAP_HEADER_FIELDS_KEY      = 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]' #key used to find these fields in the IMAP Response
+    IMAP_HEADER_PEEK_FIELDS = 'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]' #get the body info without setting msg as seen
+    IMAP_HEADER_FIELDS_KEY      = 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]' #key used to find these fields in the IMAP Response
     
     #GET_IM_UID_RE
     APPENDUID         = '^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'
@@ -705,6 +706,13 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
         t = gmvault_utils.Timer()
         t.start()
         LOG.debug("Before to Append email contents")
+        import sys 
+        import codecs
+        sys.stdout = codecs.getwriter('utf-8')(sys.__stdout__) 
+        msg = "a_folder = %s, a_flags = %s" % (a_folder.encode('utf-8'), a_flags)
+        #msg = "a_folder = %s" % (a_folder.encode('utf-8'))
+        msg = msg.encode('utf-8')
+        print(msg)
         res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
         #res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
     

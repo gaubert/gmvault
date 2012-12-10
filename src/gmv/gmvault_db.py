@@ -57,11 +57,13 @@ class GmailStorer(object): #pylint:disable=R0902
     
     HF_MSGID_PATTERN = ".*\s*[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>"
     HF_SUB_PATTERN = ".*\s*[S,s][U,u][b,B][J,j][E,e][C,c][T,t]:\s+(?P<subject>.*)\s*"
+    HF_XGMAIL_RECV_PATTERN = ".*\s*[X,x]-[G,g][M,m][A,a][I,i][L,l]-[R,r][E,e][C,c][E,e][I,i][V,v][E,e][D,d]:\s+(?P<received>.*)\s*"
     
     HFIELDS_RE      = re.compile(HFIELDS_PATTERN)
     
-    HF_MSGID_RE     = re.compile(HF_MSGID_PATTERN)
-    HF_SUB_RE       = re.compile(HF_SUB_PATTERN)
+    HF_MSGID_RE          = re.compile(HF_MSGID_PATTERN)
+    HF_SUB_RE            = re.compile(HF_SUB_PATTERN)
+    HF_XGMAIL_RECV_RE    = re.compile(HF_XGMAIL_RECV_PATTERN)
     
     ENCRYPTED_PATTERN = "[\w+,\.]+crypt[\w,\.]*"
     ENCRYPTED_RE      = re.compile(ENCRYPTED_PATTERN)
@@ -264,6 +266,11 @@ class GmailStorer(object): #pylint:disable=R0902
         matched = GmailStorer.HF_MSGID_RE.match(header_fields)
         if matched:
             msgid = matched.group('msgid')
+
+        # look for received xgmail id
+        matched = GmailStorer.HF_XGMAIL_RECV_RE.match(header_fields)
+        if matched:
+           x_gmail_recv = matched.group('received')
         
         return (subject, msgid)
     
@@ -350,7 +357,7 @@ class GmailStorer(object): #pylint:disable=R0902
         meta_desc = open(meta_path, 'w')
         
         # parse header fields to extract subject and msgid
-        subject, msgid = self.parse_header_fields(email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS_KEY])
+        subject, msgid, received = self.parse_header_fields(email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS_KEY])
         
         # need to convert labels that are number as string
         # come from imap_lib when label is a number
@@ -425,7 +432,7 @@ class GmailStorer(object): #pylint:disable=R0902
             data_desc.write(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
             
         # parse header fields to extract subject and msgid
-        subject, msgid = self.parse_header_fields(email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS_KEY])
+        subject, msgid, received = self.parse_header_fields(email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS_KEY])
         
         # need to convert labels that are number as string
         # come from imap_lib when label is a number
@@ -447,7 +454,8 @@ class GmailStorer(object): #pylint:disable=R0902
                      self.THREAD_IDS_K : email_info[imap_utils.GIMAPFetcher.GMAIL_THREAD_ID],
                      self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]),
                      self.SUBJECT_K    : subject,
-                     self.MSGID_K      : msgid
+                     self.MSGID_K      : msgid,
+                     "Received"        : received
                    }
         
         meta_desc = open(self.METADATA_FNAME % (the_dir, email_info[imap_utils.GIMAPFetcher.GMAIL_ID]), 'w')

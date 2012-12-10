@@ -220,7 +220,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903
            Perform a imap search or gmail search
         """
         if criteria.get('type','') == 'imap':
-            return super(MonkeyIMAPClient, self).search(criteria.get('req',''))
+            return super(MonkeyIMAPClient, self).search(criteria.get('req',''), criteria.get('charset', None))
         elif criteria.get('type','') == 'gmail':
             return self.gmail_search(criteria.get('req',''))
         else:
