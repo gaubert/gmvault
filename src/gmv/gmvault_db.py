@@ -259,17 +259,17 @@ class GmailStorer(object): #pylint:disable=R0902
         msgid   = None
         
         # look for subject
-        matched = GmailStorer.HF_SUB_RE.match(header_fields)
+        matched = GmailStorer.HF_SUB_RE.search(header_fields)
         if matched:
             subject = matched.group('subject')
         
         # look for a msg id
-        matched = GmailStorer.HF_MSGID_RE.match(header_fields)
+        matched = GmailStorer.HF_MSGID_RE.search(header_fields)
         if matched:
             msgid = matched.group('msgid')
 
         # look for received xgmail id
-        matched = GmailStorer.HF_XGMAIL_RECV_RE.match(header_fields)
+        matched = GmailStorer.HF_XGMAIL_RECV_RE.search(header_fields)
         if matched:
             x_gmail_recv = matched.group('received')
         
