@@ -55,9 +55,10 @@ class GmailStorer(object): #pylint:disable=R0902
     
     HFIELDS_PATTERN = "[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>\s+[S,s][U,u][b,B][J,j][E,e][C,c][T,t]:\s+(?P<subject>.*)\s*"
     
-    HF_MSGID_PATTERN = ".*\s*[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>"
-    HF_SUB_PATTERN = ".*\s*[S,s][U,u][b,B][J,j][E,e][C,c][T,t]:\s+(?P<subject>.*)\s*"
-    HF_XGMAIL_RECV_PATTERN = ".*\s*[X,x]-[G,g][M,m][A,a][I,i][L,l]-[R,r][E,e][C,c][E,e][I,i][V,v][E,e][D,d]:\s+(?P<received>.*)\s*"
+    HF_MSGID_PATTERN = "[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>"
+    HF_SUB_PATTERN = "[S,s][U,u][b,B][J,j][E,e][C,c][T,t]:\s+(?P<subject>.*)\s*"
+    
+    HF_XGMAIL_RECV_PATTERN = "[X,x]-[G,g][M,m][A,a][I,i][L,l]-[R,r][E,e][C,c][E,e][I,i][V,v][E,e][D,d]:\s+(?P<received>.*)\s*"
     
     HFIELDS_RE      = re.compile(HFIELDS_PATTERN)
     
@@ -270,9 +271,9 @@ class GmailStorer(object): #pylint:disable=R0902
         # look for received xgmail id
         matched = GmailStorer.HF_XGMAIL_RECV_RE.match(header_fields)
         if matched:
-           x_gmail_recv = matched.group('received')
+            x_gmail_recv = matched.group('received')
         
-        return (subject, msgid)
+        return (subject, msgid, x_gmail_recv)
     
     def get_all_chats_gmail_ids(self):
         """

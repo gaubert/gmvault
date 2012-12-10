@@ -226,7 +226,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         for root, dirs, files in os.walk('/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db/db'):
             print("root: %s, sub-dirs : %s, files = %s" % (root, dirs, files))
     
-    def test_get_subdir_info(self):
+    def ztest_get_subdir_info(self):
         """
            test get subdir info
         """

@@ -72,8 +72,36 @@ def data_to_test():
     
     print("type(metadata['labels'][1]) = %s" % (type(metadata['labels'][1])))  
     
-    print("metadata['labels'][1] = %s" % (metadata['labels'][1]))   
- 
+    print("metadata['labels'][1] = %s" % (metadata['labels'][1]))  
+    
+
+def header_regexpr_test():
+    """
+    
+    """ 
+    #the_str = 'X-Gmail-Received: cef1a177794b2b6282967d22bcc2b6f49447a70d\r\nMessage-ID: <8b230a7105082305316d9c1a54@mail.gmail.com>\r\nSubject: Hessian ssl\r\n\r\n'
+    the_str = 'Message-ID: <8b230a7105082305316d9c1a54@mail.gmail.com>\r\nX-Gmail-Received: cef1a177794b2b6282967d22bcc2b6f49447a70d\r\nSubject: Hessian ssl\r\n\r\n'
+    
+    
+    import gmv.gmvault_db as gmvault_db
+    
+    matched = gmvault_db.GmailStorer.HF_SUB_RE.search(the_str)
+    if matched:
+        subject = matched.group('subject')
+        print("subject matched = <%s>\n" % (subject))
+        
+    # look for a msg id
+    matched = gmvault_db.GmailStorer.HF_MSGID_RE.search(the_str)
+    if matched:
+        msgid = matched.group('msgid')
+        print("msgid matched = <%s>\n" % (msgid))
+
+    
+    matched = gmvault_db.GmailStorer.HF_XGMAIL_RECV_RE.search(the_str)
+    if matched:
+        received = matched.group('received').strip()
+        print("matched = <%s>\n" % (received))
 
 if __name__ == '__main__':
-    data_to_test()
+    header_regexpr_test()
+    #data_to_test()
