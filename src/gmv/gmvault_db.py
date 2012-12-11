@@ -452,6 +452,7 @@ class GmailStorer(object): #pylint:disable=R0902
                      self.THREAD_IDS_K : email_info[imap_utils.GIMAPFetcher.GMAIL_THREAD_ID],
                      self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]),
                      self.SUBJECT_K    : subject,
+                     self.MSGID_K      : msgid,
                      self.XGM_RECV_K   : received
                    }
         
