@@ -52,15 +52,11 @@ class GmailStorer(object): #pylint:disable=R0902
     FLAGS_K      = 'flags'
     SUBJECT_K    = 'subject'
     MSGID_K      = 'msg_id'
-    
-    HFIELDS_PATTERN = "[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>\s+[S,s][U,u][b,B][J,j][E,e][C,c][T,t]:\s+(?P<subject>.*)\s*"
-    
-    HF_MSGID_PATTERN = "[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>"
-    HF_SUB_PATTERN = "[S,s][U,u][b,B][J,j][E,e][C,c][T,t]:\s+(?P<subject>.*)\s*"
-    
+    XGM_RECV_K   = 'x_gmail_received'
+     
+    HF_MSGID_PATTERN       = "[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>"
+    HF_SUB_PATTERN         = "[S,s][U,u][b,B][J,j][E,e][C,c][T,t]:\s+(?P<subject>.*)\s*"
     HF_XGMAIL_RECV_PATTERN = "[X,x]-[G,g][M,m][A,a][I,i][L,l]-[R,r][E,e][C,c][E,e][I,i][V,v][E,e][D,d]:\s+(?P<received>.*)\s*"
-    
-    HFIELDS_RE      = re.compile(HFIELDS_PATTERN)
     
     HF_MSGID_RE          = re.compile(HF_MSGID_PATTERN)
     HF_SUB_RE            = re.compile(HF_SUB_PATTERN)
@@ -261,17 +257,17 @@ class GmailStorer(object): #pylint:disable=R0902
         # look for subject
         matched = GmailStorer.HF_SUB_RE.search(header_fields)
         if matched:
-            subject = matched.group('subject')
+            subject = matched.group('subject').strip()
         
         # look for a msg id
         matched = GmailStorer.HF_MSGID_RE.search(header_fields)
         if matched:
-            msgid = matched.group('msgid')
+            msgid = matched.group('msgid').strip()
 
         # look for received xgmail id
         matched = GmailStorer.HF_XGMAIL_RECV_RE.search(header_fields)
         if matched:
-            x_gmail_recv = matched.group('received')
+            x_gmail_recv = matched.group('received').strip()
         
         return (subject, msgid, x_gmail_recv)
     
@@ -375,7 +371,8 @@ class GmailStorer(object): #pylint:disable=R0902
                      self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]),
                      self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
                      self.SUBJECT_K    : subject,
-                     self.MSGID_K      : msgid
+                     self.MSGID_K      : msgid,
+                     self.XGM_RECV_K   : received
                    }
         
         json.dump(meta_obj, meta_desc)
@@ -455,8 +452,7 @@ class GmailStorer(object): #pylint:disable=R0902
                      self.THREAD_IDS_K : email_info[imap_utils.GIMAPFetcher.GMAIL_THREAD_ID],
                      self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]),
                      self.SUBJECT_K    : subject,
-                     self.MSGID_K      : msgid,
-                     "Received"        : received
+                     self.XGM_RECV_K   : received
                    }
         
         meta_desc = open(self.METADATA_FNAME % (the_dir, email_info[imap_utils.GIMAPFetcher.GMAIL_ID]), 'w')

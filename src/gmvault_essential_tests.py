@@ -134,9 +134,10 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
             print("disk metadata %s\n" % (disk_metadata))
 
-            date    = disk_metadata['internal_date'].strftime('"%d %b %Y"')
-            subject = disk_metadata.get('subject', None)
-            msgid   = disk_metadata.get('msg_id', None)
+            date     = disk_metadata['internal_date'].strftime('"%d %b %Y"')
+            subject  = disk_metadata.get('subject', None)
+            msgid    = disk_metadata.get('msg_id', None)
+            received = disk_metadata.get('x_gmail_received', None)
 
             req = "("
             has_something = False
@@ -158,7 +159,14 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                 if has_something: #add extra space if it has a date
                     req += ' ' 
                 req += 'HEADER MESSAGE-ID {msgid}'.format(msgid=msgid.strip())
-                
+                has_something = True
+            
+            if received:
+                if has_something:
+                    req += ' '
+                    req += 'HEADER X-GMAIL-RECEIVED {received}'.format(received=received.strip())
+                    has_something = True
+            
             req += ")"
 
             print("Req = %s\n" % (req))
@@ -192,13 +200,13 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             disk_date     = disk_metadata.get('internal_date', None) 
 
             if online_date != disk_date:
-               min_date = disk_date - datetime.timedelta(hours=1)
-               max_date = disk_date + datetime.timedelta(hours=1)
-
-               if min_date <= online_date <= max_date:
-                  print("online_date (%s) and disk_date (%s) differs but within one hour. This is OK (timezone pb) *****" % (online_date, disk_date))
-               else:
-                  self.fail("online_date (%s) and disk_date (%s) are different" % (online_date, disk_date))
+                min_date = disk_date - datetime.timedelta(hours=1)
+                max_date = disk_date + datetime.timedelta(hours=1)
+                
+                if min_date <= online_date <= max_date:
+                    print("online_date (%s) and disk_date (%s) differs but within one hour. This is OK (timezone pb) *****" % (online_date, disk_date))
+                else:
+                    self.fail("online_date (%s) and disk_date (%s) are different" % (online_date, disk_date))
 
             #check labels
             disk_labels   = disk_metadata.get('labels', None)
