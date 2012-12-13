@@ -35,22 +35,29 @@ point to the old one.
 """
 
     def __init__(self, level=logbook.base.NOTSET, format_string=None, a_filter = None, bubble=False): 
-        logbook.StreamHandler.__init__(self, logbook.base._missing, level, format_string,
-                               None, a_filter, bubble)
+        super(StdoutHandler, self).__init__(logbook.base._missing, level,\
+                                            format_string, None, a_filter, bubble )
 
     @property
     def stream(self):
+        """
+           Return the stream where to write
+        """
         return sys.stdout
 
 #default log file
 DEFAULT_LOG = "%s/gmvault.log" % (os.getenv("HOME", "."))
 
 class LogbookLoggerFactory(object):
+    """
+       Factory for creating the right logbook handler
+    """
     
     def __init__(self):
         pass
     
-    def setup_cli_app_handler(self, activate_log_file=False, console_level= 'CRITICAL', file_path=DEFAULT_LOG, log_file_level = 'DEBUG'):
+    def setup_cli_app_handler(self, activate_log_file=False, console_level= 'CRITICAL', \
+                              file_path=DEFAULT_LOG, log_file_level = 'DEBUG'):
         """
            Setup a handler for communicating with the user and still log everything in a logfile
         """
@@ -66,8 +73,9 @@ class LogbookLoggerFactory(object):
         
         # add file Handler
         if activate_log_file:
-            
-            file_handler = logbook.FileHandler(file_path, mode='w', format_string='[{record.time:%Y-%m-%d %H:%M}]:{record.level_name}:{record.channel}:{record.message}', level = log_file_level, bubble = True)
+            file_handler = logbook.FileHandler(file_path, mode='w', format_string=\
+                           '[{record.time:%Y-%m-%d %H:%M}]:{record.level_name}:{record.channel}:{record.message}',\
+                                                level = log_file_level, bubble = True)
             
             file_handler.push_application()
     
@@ -172,7 +180,9 @@ class LoggerFactory(object):
         cls.get_factory(type).setup_simple_file_handler(file_path)
         
     @classmethod
-    def setup_cli_app_handler(cls, type, activate_log_file=False, console_level= 'CRITICAL', file_path=DEFAULT_LOG, log_file_level = 'DEBUG'):
+    def setup_cli_app_handler(cls, type, activate_log_file=False, \
+                              console_level= 'CRITICAL', file_path=DEFAULT_LOG,\
+                               log_file_level = 'DEBUG'):
         """
            init logging engine
         """
