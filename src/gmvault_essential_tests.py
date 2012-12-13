@@ -242,7 +242,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
         credential    = { 'type' : 'passwd', 'value': self.test_passwd }
 
-        #self.clean_mailbox()
+        self.clean_mailbox()
 
         # test restore
         #test_db_dir = "/homespace/gaubert/gmvault-db"
@@ -253,7 +253,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, self.test_login, credential, \
                                      read_only_access = False)
         
-        #restorer.restore() #restore all emails from this essential-db
+        restorer.restore() #restore all emails from this essential-db
 
         self.check_remote_mailbox_identical_to_local(restorer)
         
