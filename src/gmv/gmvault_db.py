@@ -253,6 +253,7 @@ class GmailStorer(object): #pylint:disable=R0902
         """
         subject = None
         msgid   = None
+        x_gmail_recv = None
         
         # look for subject
         matched = GmailStorer.HF_SUB_RE.search(header_fields)
