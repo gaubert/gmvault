@@ -52,7 +52,7 @@ def delete_db_dir(a_db_dir):
     gmvault_utils.delete_all_under(a_db_dir, delete_top_dir = True)
 
 
-class TestGMVaultValidation(unittest.TestCase): #pylint:disable-msg=R0904
+class TestGMVaultValidation(unittest.TestCase): #pylint:disable=R0904
     """
        Validation Tests
     """
@@ -66,7 +66,7 @@ class TestGMVaultValidation(unittest.TestCase): #pylint:disable-msg=R0904
         
         self.default_dir = "/tmp/gmvault-tests"
     
-    def setUp(self): #pylint:disable-msg=C0103
+    def setUp(self): #pylint:disable=C0103
         self.test_login, self.test_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
                 
     def test_help_msg_spawned_by_def(self):

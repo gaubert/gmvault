@@ -105,8 +105,8 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
             #cascade error
             raise rec_error
     
-    def inner_retry(the_func): #pylint:disable-msg=C0111
-        def wrapper(*args, **kwargs): #pylint:disable-msg=C0111
+    def inner_retry(the_func): #pylint:disable=C0111
+        def wrapper(*args, **kwargs): #pylint:disable=C0111
             nb_tries = [0] # make it mutable in reconnect
             m_sleep_time = [a_sleep_time]  #make it mutable in reconnect
             while True:
@@ -157,7 +157,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
         #return wrapper
     return inner_retry
 
-class GIMAPFetcher(object): #pylint:disable-msg=R0902
+class GIMAPFetcher(object): #pylint:disable=R0902
     '''
     IMAP Class reading the information
     '''
@@ -207,7 +207,7 @@ class GIMAPFetcher(object): #pylint:disable-msg=R0902
     
     GET_GMAIL_ID_DATE = [ GMAIL_ID,  IMAP_INTERNALDATE]
 
-    def __init__(self, host, port, login, credential, readonly_folder = True): #pylint:disable-msg=R0913
+    def __init__(self, host, port, login, credential, readonly_folder = True): #pylint:disable=R0913
         '''
             Constructor
         '''

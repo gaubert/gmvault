@@ -22,12 +22,12 @@ import datetime
 import os
 import itertools
 import imaplib
-import log_utils
 
-import collections_utils
-import gmvault_utils
-import imap_utils
-import gmvault_db
+import gmv.log_utils as log_utils
+import gmv.collections_utils as collections_utils
+import gmv.gmvault_utils as gmvault_utils
+import gmv.imap_utils as imap_utils
+import gmv.gmvault_db as gmvault_db
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault')
 
@@ -111,7 +111,9 @@ def handle_sync_imap_error(the_exception, the_id, error_report, src):
         #add ignored id
         error_report['cannot_be_fetched'].append((the_id, gmail_id))
         
-        LOG.critical("Forced to ignore message with imap id %s, (gmail id %s)." % (the_id, (gmail_id if gmail_id else "cannot be read")))
+        LOG.critical("Forced to ignore message with imap id %s, (gmail id %s)." \
+                     % (the_id, (gmail_id if gmail_id else "cannot be read")))
+        
     elif isinstance(the_exception, imaplib.IMAP4.error):
         # check if this is a cannot be fetched error 
         # I do not like to do string guessing within an exception but I do not have any choice here
@@ -167,13 +169,11 @@ class IMAPBatchFetcher(object):
         """
         new_data = {}
         for the_id in imap_ids:    
-            try:
-                
+            try: 
                 single_data = self.src.fetch(the_id, self.request)
-                new_data.update(single_data)
-                
+                new_data.update(single_data)                
             except Exception, error:
-                    handle_sync_imap_error(error, the_id, self.error_report, self.src) #do everything in this handler
+                handle_sync_imap_error(error, the_id, self.error_report, self.src) #do everything in this handler
 
         return new_data
    
@@ -231,7 +231,8 @@ class GMVaulter(object):
                      }
     
     
-    def __init__(self, db_root_dir, host, port, login, credential, read_only_access = True, use_encryption = False): #pylint:disable-msg=R0913
+    def __init__(self, db_root_dir, host, port, login, \
+                 credential, read_only_access = True, use_encryption = False): #pylint:disable-msg=R0913
         """
            constructor
         """   
@@ -244,7 +245,8 @@ class GMVaulter(object):
         self.login = login
             
         # create source and try to connect
-        self.src = imap_utils.GIMAPFetcher(host, port, login, credential, readonly_folder = read_only_access)
+        self.src = imap_utils.GIMAPFetcher(host, port, login, credential, \
+                                           readonly_folder = read_only_access)
         
         self.src.connect()
         
@@ -280,7 +282,8 @@ class GMVaulter(object):
         the_str = "\n================================================================\n"\
               "Number of reconnections: %d.\nNumber of emails quarantined: %d.\n" \
               "Number of emails that could not be fetched: %d.\n" \
-              "Number of emails that were returned empty by gmail: %d\n================================================================" \
+              "Number of emails that were returned empty by gmail: %d\n"\
+              "================================================================" \
               % (self.error_report['reconnections'], \
                  len(self.error_report['emails_in_quarantine']), \
                  len(self.error_report['cannot_be_fetched']), \
@@ -439,8 +442,11 @@ class GMVaulter(object):
             nb_chats_processed = 0
             
             to_fetch = set(imap_ids)
-            batch_fetcher = IMAPBatchFetcher(self.src, imap_ids, self.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
-                                       default_batch_size = gmvault_utils.get_conf_defaults().getint("General","nb_messages_per_batch",500))
+            batch_fetcher = IMAPBatchFetcher(self.src, imap_ids, self.error_report, \
+                                             imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
+                                             default_batch_size = \
+                                             gmvault_utils.get_conf_defaults().getint("General", \
+                                             "nb_messages_per_batch", 500))
         
         
             for new_data in batch_fetcher:
@@ -483,7 +489,8 @@ class GMVaulter(object):
                                 #get the data
                                 email_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_DATA_ONLY )
                                 
-                                new_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY] = email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
+                                new_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY] = \
+                                email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
                                 
                                 # store data on disk within year month dir 
                                 gid  = self.gstorer.bury_chat(new_data[the_id], local_dir = the_dir, compress = compress)
@@ -491,7 +498,8 @@ class GMVaulter(object):
                                 #update local index id gid => index per directory to be thought out
                                 LOG.debug("Create and store chat with imap id %s, gmail id %s." % (the_id, gid))   
                             except Exception, error:
-                                handle_sync_imap_error(error, the_id, self.error_report, self.src) #do everything in this handler    
+                                #do everything in this handler 
+                                handle_sync_imap_error(error, the_id, self.error_report, self.src)    
                     
                         nb_chats_processed += 1    
                         
@@ -556,7 +564,8 @@ class GMVaulter(object):
         
         to_fetch = set(imap_ids)
         batch_fetcher = IMAPBatchFetcher(self.src, imap_ids, self.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
-                                   default_batch_size = gmvault_utils.get_conf_defaults().getint("General","nb_messages_per_batch",500))
+                                         default_batch_size = \
+                                         gmvault_utils.get_conf_defaults().getint("General","nb_messages_per_batch",500))
         
         #LAST Thing to do remove all found ids from imap_ids and if ids left add missing in report
         for new_data in batch_fetcher:            
@@ -573,7 +582,8 @@ class GMVaulter(object):
                     
                     #decode the labels that are received as utf7 => unicode
 
-                    new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = imap_utils.decode_labels(new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS])
+                    new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
+                    imap_utils.decode_labels(new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS])
                 
                     #pass the dir and the ID
                     curr_metadata = GMVaulter.check_email_on_disk( self.gstorer , \

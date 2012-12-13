@@ -20,21 +20,20 @@
 import argparse
 import sys
 
-
-
-import log_utils
+import gmv.log_utils as log_utils
 
 LOG = log_utils.LoggerFactory.get_logger('cmdline_utils')
 
-""" 
-   Comments regarding usability of the lib. 
-   By default you want to print the default in the help if you had them so the default formatter should print them
-   Also new lines are eaten in the epilogue strings. You would use an epilogue to show examples most of the time so you
-   want to have the possiblity to go to a new line. There should be a way to format the epilogue differently from  the rest  
+class CmdLineParser(argparse.ArgumentParser): #pylint: disable=R0904
+    """ 
+        Added service to OptionParser.
+       
+        Comments regarding usability of the lib. 
+        By default you want to print the default in the help if you had them so the default formatter should print them
+        Also new lines are eaten in the epilogue strings. You would use an epilogue to show examples most of the time so you
+        want to have the possiblity to go to a new line. There should be a way to format the epilogue differently from  the rest  
 
-"""
-class CmdLineParser(argparse.ArgumentParser): #pylint: disable-msg=R0904
-    """ Added service on OptionParser """ 
+    """ 
     
     BOOL_TRUE  = ['yes', 'true', '1']
     BOOL_FALSE = ['no', 'false', '0']
@@ -42,7 +41,7 @@ class CmdLineParser(argparse.ArgumentParser): #pylint: disable-msg=R0904
    
     def __init__(self, *args, **kwargs): 
         """ constructor """    
-        argparse.ArgumentParser.__init__(self, *args, **kwargs) #pylint: disable-msg=W0142
+        argparse.ArgumentParser.__init__(self, *args, **kwargs) #pylint: disable=W0142
    
         # I like my help option message better than the default... 
         #self.remove_option('-h') 
@@ -145,11 +144,12 @@ def test_command_parser():
     subparsers = parser.add_subparsers(help='commands')
     
     # A sync command
-    sync_parser = subparsers.add_parser('sync', formatter_class=argparse.ArgumentDefaultsHelpFormatter, help='synchronize with given gmail account')
+    sync_parser = subparsers.add_parser('sync', formatter_class=argparse.ArgumentDefaultsHelpFormatter, \
+                                        help='synchronize with given gmail account')
     #email argument can be optional so it should be an option
     sync_parser.add_argument('-l', '--email', action='store', dest='email', help='email to sync with')
     # sync typ
-    sync_parser.add_argument('-t','--type', action='store', default='full-sync', help='type of synchronisation')
+    sync_parser.add_argument('-t', '--type', action='store', default='full-sync', help='type of synchronisation')
     
     sync_parser.add_argument("-i", "--imap-server", metavar = "HOSTNAME", \
                           help="Gmail imap server hostname. (default: imap.gmail.com)",\
