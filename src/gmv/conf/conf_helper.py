@@ -29,9 +29,9 @@ class ResourceError(Exception):
         Base class for ressource exceptions 
     """
 
-    def __init__(self,aMsg):
+    def __init__(self, aMsg):
         
-        super(ResourceError,self).__init__(aMsg)
+        super(ResourceError, self).__init__(aMsg)
 
 class Resource(object):
     """
@@ -39,7 +39,7 @@ class Resource(object):
         It can be read first from the Command Line, then from the ENV as an env variable and finally from a conf file 
     """
     
-    def __init__(self,CliArgument=None,EnvVariable=None,ConfProperty=None): 
+    def __init__(self, CliArgument=None, EnvVariable=None, ConfProperty=None): 
         """ 
           Default Constructor.
           It is important to understand that there is precedence between the different ways to set the ressource:
@@ -55,15 +55,15 @@ class Resource(object):
         self._envVar   = EnvVariable.upper() if EnvVariable is not None else None
       
         if ConfProperty is not None:
-            (self._confGroup,self._confProperty) = ConfProperty
+            (self._confGroup, self._confProperty) = ConfProperty
         else:
             self._confGroup    = None
             self._confProperty = None
       
-    def setCliArgument(self,CliArgument):
+    def setCliArgument(self, CliArgument):
         self._cliArg = CliArgument.lower()
         
-    def setEnvVariable(self,EnvVariable):
+    def setEnvVariable(self, EnvVariable):
         self._envVar = EnvVariable
     
     def _get_srandardized_cli_argument(self,a_tostrip):
@@ -367,7 +367,9 @@ class Conf(object):
             
     
     def __init__(self, use_resource=True):
-        #TODO docstring ==> use resource ????
+        """
+           Constructor
+        """
         
         # create resource for the conf file
         self._conf_resource = Resource(Conf.CLINAME, Conf.ENVNAME)
