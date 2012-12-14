@@ -341,36 +341,3 @@ class CredentialHelper(object):
         xoauth_req = generate_xoauth_req(token, secret, email)
         
         return xoauth_req
-
-def test_xoauth():
-    """
-        algo:
-        get key and secret
-        if key and secret in conf take it
-        otherwise generate them with get_oauth_tok_sec
-        save secret once you have it (encrypt or not ?)
-        generate xoauth everytime your connect to imap
-        do not use atom to create the request (no need to get a fake dependency
-    """
-    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'CRITICAL', file_path="./gmvault.log") 
-    
-    token, secret = get_oauth_tok_sec('guillaume.aubert@gmail.com')
-    print('token = %s, secret = %s' % (token, secret) )
-    req = generate_xoauth_req(token, secret, 'guillaume.aubert@gmail.com')
-    
-    print(req)
-    
-def test_encryption():
-    """
-      quickly test encryption
-    """
-    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'CRITICAL', file_path="./gmvault.log") 
-    CredentialHelper.get_secret_key("/tmp/toto.txt")
-    
-    CredentialHelper.store_passwd("toto.titi@gmail.com", "toto")
-
-
-if __name__ == '__main__':
-    
-    test_encryption()
-  
