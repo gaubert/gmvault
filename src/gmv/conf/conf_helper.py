@@ -20,9 +20,8 @@ import sys
 import os
 import re
 
-                                      
 import gmv.conf.exceptions as exceptions
-import gmv.conf.utils.struct_parser as struct_parser
+import gmv.conf.utils.struct_parser as struct_parser                                      
 
 class ResourceError(Exception):
     """
@@ -39,45 +38,48 @@ class Resource(object):
         It can be read first from the Command Line, then from the ENV as an env variable and finally from a conf file 
     """
     
-    def __init__(self, CliArgument=None, EnvVariable=None, ConfProperty=None): 
+    def __init__(self, a_cli_argument=None, a_env_variable=None, a_conf_property=None): 
         """ 
           Default Constructor.
           It is important to understand that there is precedence between the different ways to set the ressource:
           - get from the command line if defined otherwise get from the Env variable if defined otherwise get from the conf file otherwise error
        
            Args:
-              CliArgument : The command line argument name
-              EnvVariable : The env variable name used for this ressource
-              ConfProperty: It should be a tuple containing two elements (group,property)
+              a_cli_argument : The command line argument name
+              a_env_variable : The env variable name used for this ressource
+              a_conf_property: It should be a tuple containing two elements (group,property)
         """
       
-        self._cli_arg   = CliArgument.lower() if CliArgument is not None else None
-        self._env_var   = EnvVariable.upper() if EnvVariable is not None else None
+        self._cli_arg   = a_cli_argument.lower() if a_cli_argument is not None else None
+        self._env_var   = a_env_variable.upper() if a_env_variable is not None else None
       
-        if ConfProperty is not None:
-            (self._conf_group, self._conf_property) = ConfProperty
+        if a_conf_property is not None:
+            (self._conf_group, self._conf_property) = a_conf_property
         else:
             self._conf_group    = None
             self._conf_property = None
       
-    def setCliArgument(self, CliArgument):
-        self._cli_arg = CliArgument.lower()
+    def set_cli_argument(self, a_cli_argument):
+        """cli_argument setter"""
+        self._cli_arg = a_cli_argument.lower()
         
-    def setEnvVariable(self, EnvVariable):
-        self._env_var = EnvVariable
+    def set_env_variable(self, a_env_variable):
+        """env_variable setter"""
+        self._env_var = a_env_variable
     
-    def _get_srandardized_cli_argument(self,a_tostrip):
+    @classmethod
+    def _get_srandardized_cli_argument(cls, a_tostrip):
         """
            remove -- or - from the command line argument and add a -- prefix to standardize the cli argument 
         """
-        s = a_tostrip
+        the_str = a_tostrip
         
-        while s.startswith('-'):
-            s = s[1:]
+        while the_str.startswith('-'):
+            the_str = the_str[1:]
         
-        return '--%s'%(s)
+        return '--%s' % (the_str)
     
-    def _getValueFromTheCommandLine(self):
+    def _get_value_from_the_command_line(self):
         """
           internal method for extracting the value from the command line.
           All command line agruments must be lower case (unix style).
@@ -92,11 +94,11 @@ class Resource(object):
             return None
         
 
-        s = self._get_srandardized_cli_argument(self._cli_arg)
+        the_s = Resource._get_srandardized_cli_argument(self._cli_arg)
     
         # look for cliArg in sys argv
         for arg in sys.argv:
-            if arg.lower() == s:
+            if arg.lower() == the_s:
                 i = sys.argv.index(arg)
                 #print "i = %d, val = %s\n"%(i,sys.argv[i])
                 if len(sys.argv) <= i:
@@ -108,7 +110,7 @@ class Resource(object):
                     return sys.argv[i+1]
             
 
-    def _getValueFromEnv(self):
+    def _get_value_from_env(self):
         """
           internal method for extracting the value from the env.
           All support ENV Variables should be in uppercase.
@@ -121,9 +123,9 @@ class Resource(object):
         if self._env_var == None:
             return None
      
-        return os.environ.get(self._env_var,None)
+        return os.environ.get(self._env_var, None)
       
-    def _getFromConf(self):
+    def _get_from_conf(self):
         """
            Try to read the info from the Configuration if possible
         """
@@ -134,7 +136,7 @@ class Resource(object):
         return None
           
         
-    def getValue(self,aRaiseException=True):
+    def get_value(self,a_raise_exception=True):
         """
            Return the value of the Resource as a string.
            - get from the command line if defined otherwise get from the Env variable if defined otherwise get from the conf file otherwise error
@@ -149,12 +151,12 @@ class Resource(object):
         """
        
         # get a value using precedence rule 1) command-line, 2) ENV, 3) Conf
-        val = self._getValueFromTheCommandLine()
+        val = self._get_value_from_the_command_line()
         if val is None:
-            val = self._getValueFromEnv()
+            val = self._get_value_from_env()
             if val is None:
-                val = self._getFromConf()
-                if (val is None) and aRaiseException:
+                val = self._get_from_conf()
+                if (val is None) and a_raise_exception:
                     
                     the_str = "Cannot find "
                     add_nor = 0
@@ -179,7 +181,8 @@ class Resource(object):
                         add_nor += 1
                         
                     if add_nor == 0:
-                        the_str += " any defined commandline argument, nor any env variable or Conf group and properties. They are all None, fatal error"
+                        the_str += " any defined commandline argument, nor any env variable or"\
+                                   " Conf group and properties. They are all None, fatal error"
                     else:
                         the_str += ". One of them should be defined"
                     
@@ -187,7 +190,7 @@ class Resource(object):
     
         return val
    
-    def _get(self,conv):
+    def _get(self, conv):
         """
            Private _get method used to convert to the right expected type (int,float or boolean).
            Strongly inspired by ConfigParser.py
@@ -198,9 +201,9 @@ class Resource(object):
            Raises:
               exception ValueError if conversion issue
         """
-        return conv(self.getValue())
+        return conv(self.get_value())
 
-    def getValueAsInt(self):
+    def get_value_as_int(self):
         """
            Return the value as an int
               
@@ -212,7 +215,7 @@ class Resource(object):
         """
         return self._get(int)
 
-    def getValueAsFloat(self):
+    def get_value_as_float(self):
         """
            Return the value as a float
               
@@ -227,7 +230,7 @@ class Resource(object):
     _boolean_states = {'1': True, 'yes': True, 'true': True, 'on': True,
                        '0': False, 'no': False, 'false': False, 'off': False}
 
-    def getValueAsBoolean(self):
+    def get_value_as_boolean(self):
         """
            Return the value as a boolean
               
@@ -237,10 +240,10 @@ class Resource(object):
            Raises:
               exception ValueError if conversion issue
         """
-        v = self.getValue()
-        if v.lower() not in self._boolean_states:
-            raise ValueError, 'Not a boolean: %s' % v
-        return self._boolean_states[v.lower()]
+        val = self.get_value()
+        if val.lower() not in self._boolean_states:
+            raise ValueError, 'Not a boolean: %s' % val
+        return self._boolean_states[val.lower()]
 
 class MockConf(object):
     """
@@ -357,7 +360,7 @@ class Conf(object):
         #No conf info passed to the resource so the Resource will not look into the conf (to avoid recursive search)
         the_res = Resource(cls.CLINAME, cls.ENVNAME)
         
-        filepath = the_res.getValue(aRaiseException=False)
+        filepath = the_res.get_value(a_raise_exception=False)
         
         if (filepath is not None) and os.path.exists(filepath):
             return True
@@ -389,7 +392,7 @@ class Conf(object):
         try:  
             # get it from a Resource if not files are passed
             if a_file is None:
-                a_file = self._conf_resource.getValue() 
+                a_file = self._conf_resource.get_value() 
              
             if a_file is None:
                 raise exceptions.Error("Conf. Error, need a configuration file path")
@@ -457,11 +460,11 @@ class Conf(object):
             #check if it is a ENV section
             dummy = None
             if section == Conf._ENVGROUP:
-                r = Resource(CliArgument=None, EnvVariable=opt)
-                dummy = r.getValue()
+                r = Resource(a_cli_argument=None, a_env_variable=opt)
+                dummy = r.get_value()
             elif section == Conf._CLIGROUP:
-                r = Resource(CliArgument=opt, EnvVariable=None)
-                dummy = r.getValue()
+                r = Resource(a_cli_argument=opt, a_env_variable=None)
+                dummy = r.get_value()
             #return default if dummy is None otherwise return dummy
             return ((self._get_defaults(section, opt, default, fail_if_missing)) if dummy == None else dummy)
         elif opt in self._sections[section]:
@@ -619,11 +622,11 @@ class Conf(object):
                     # if it is in CLIGROUP then check CLI argument with a Resource object
                     # otherwise check in standard groups
                     if g == Conf._ENVGROUP:
-                        r = Resource(CliArgument=None, EnvVariable=o)
-                        dummy = r.getValue()
+                        r = Resource(a_cli_argument=None, a_env_variable=o)
+                        dummy = r.get_value()
                     elif g == Conf._CLIGROUP:
-                        r = Resource(CliArgument=o, EnvVariable=None)
-                        dummy = r.getValue()
+                        r = Resource(a_cli_argument=o, a_env_variable=None)
+                        dummy = r.get_value()
                     else:
                         dummy = self._sections[g][self.optionxform(o)]
                 except KeyError, _: #IGNORE:W0612

@@ -289,12 +289,12 @@ class TestResource(unittest.TestCase):
         sys.argv.append("--LongName")
         sys.argv.append("My Cli Value")
         
-        resource = gmv.conf.conf_helper.Resource(CliArgument = "--LongName", EnvVariable = None) 
+        resource = gmv.conf.conf_helper.Resource(a_cli_argument = "--LongName", a_env_variable = None) 
         
         self.assertEqual("My Cli Value", resource.getValue())
         
         # look for LongName without --. It should be formalized by the Resource object
-        resource = gmv.conf.conf_helper.Resource(CliArgument = "LongName", EnvVariable = None) 
+        resource = gmv.conf.conf_helper.Resource(a_cli_argument = "LongName", a_env_variable = None) 
         
         self.assertEqual("My Cli Value", resource.getValue())
     
@@ -303,35 +303,35 @@ class TestResource(unittest.TestCase):
         #ENV 
         os.environ["MYENVVAR"] = "My ENV Value"
   
-        resource = gmv.conf.conf_helper.Resource(CliArgument=None, EnvVariable="MYENVVAR")
+        resource = gmv.conf.conf_helper.Resource(a_cli_argument=None, a_env_variable="MYENVVAR")
         
-        self.assertEqual("My ENV Value", resource.getValue())
+        self.assertEqual("My ENV Value", resource.get_value())
         
     def ztestResourcePriorityRules(self):
         """testResourcePriorityRules: test priority rules"""   
-        resource = gmv.conf.conf_helper.Resource(CliArgument="--LongName", EnvVariable="MYENVVAR")
+        resource = gmv.conf.conf_helper.Resource(a_cli_argument="--LongName", a_env_variable="MYENVVAR")
   
-        self.assertEqual("My Cli Value", resource.getValue())
+        self.assertEqual("My Cli Value", resource.get_value())
   
     def testResourceGetDifferentTypes(self):
         """testResourceGetDifferentTypes: return resource in different types"""
         
         os.environ["MYENVVAR"] = "yes"
-        resource = gmv.conf.conf_helper.Resource(CliArgument=None, EnvVariable="MYENVVAR")
+        resource = gmv.conf.conf_helper.Resource(a_cli_argument=None, a_env_variable="MYENVVAR")
         
-        self.assertEqual(resource.getValueAsBoolean(), True)
+        self.assertEqual(resource.get_value_as_boolean(), True)
         
         os.environ["MYENVVAR"] = "4"
   
-        resource = gmv.conf.conf_helper.Resource(CliArgument=None, EnvVariable="MYENVVAR")
+        resource = gmv.conf.conf_helper.Resource(a_cli_argument=None, a_env_variable="MYENVVAR")
   
-        self.assertEqual(resource.getValueAsInt()+1, 5)
+        self.assertEqual(resource.get_value_as_int()+1, 5)
         
         os.environ["MYENVVAR"] = "4.345"
   
-        resource = gmv.conf.conf_helper.Resource(CliArgument=None, EnvVariable="MYENVVAR")
+        resource = gmv.conf.conf_helper.Resource(a_cli_argument=None, a_env_variable="MYENVVAR")
   
-        self.assertEqual(resource.getValueAsFloat()+1, 5.345)
+        self.assertEqual(resource.get_value_as_float()+1, 5.345)
         
 def tests():
     #suite = unittest.TestLoader().loadTestsFromModule(gmv.conf.conf_tests)
