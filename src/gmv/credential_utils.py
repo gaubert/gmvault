@@ -30,9 +30,9 @@ import urllib
 import os
 import getpass
 
-import log_utils
-import blowfish
-import gmvault_utils
+import gmv.log_utils as log_utils
+import gmv.blowfish as blowfish
+import gmv.gmvault_utils as gmvault_utils
 
 LOG = log_utils.LoggerFactory.get_logger('oauth')
 
@@ -91,7 +91,8 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
             LOG.critical("=== End of Exception traceback ===\n")
         
         raw_input("You should now see the web page on your browser now.\n"\
-                  "If you don\'t, you can manually open:\n\n%s\n\nOnce you've granted gmvault access, press the Enter key.\n" % (auth_url))
+                  "If you don\'t, you can manually open:\n\n%s\n\nOnce you've granted"\
+                  " gmvault access, press the Enter key.\n" % (auth_url))
         
     else:
         raw_input('Please log in and/or grant access via your browser at %s '
@@ -117,7 +118,8 @@ def generate_xoauth_req(a_token, a_secret, email, two_legged=False):
     nonce = str(random.randrange(2**64 - 1))
     timestamp = str(int(time.time()))
     if two_legged:
-        request = atom.http_core.HttpRequest('https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s' % (email, urllib.quote(email)), 'GET')
+        request = atom.http_core.HttpRequest('https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s' \
+                                             % (email, urllib.quote(email)), 'GET')
          
         signature = gdata.gauth.generate_hmac_signature(http_request=request, consumer_key=a_token, consumer_secret=a_secret, \
                                                         timestamp=timestamp, nonce=nonce, version='1.0', next=None)
@@ -350,10 +352,10 @@ def test_xoauth():
         generate xoauth everytime your connect to imap
         do not use atom to create the request (no need to get a fake dependency
     """
-    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, file_path="./gmvault.log") 
+    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'CRITICAL', file_path="./gmvault.log") 
     
     token, secret = get_oauth_tok_sec('guillaume.aubert@gmail.com')
-    print('token = %s, secret = %s' % (token,secret) )
+    print('token = %s, secret = %s' % (token, secret) )
     req = generate_xoauth_req(token, secret, 'guillaume.aubert@gmail.com')
     
     print(req)
@@ -362,7 +364,7 @@ def test_encryption():
     """
       quickly test encryption
     """
-    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, file_path="./gmvault.log") 
+    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'CRITICAL', file_path="./gmvault.log") 
     CredentialHelper.get_secret_key("/tmp/toto.txt")
     
     CredentialHelper.store_passwd("toto.titi@gmail.com", "toto")
