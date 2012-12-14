@@ -291,12 +291,12 @@ class TestResource(unittest.TestCase):
         
         resource = gmv.conf.conf_helper.Resource(a_cli_argument = "--LongName", a_env_variable = None) 
         
-        self.assertEqual("My Cli Value", resource.getValue())
+        self.assertEqual("My Cli Value", resource.get_value())
         
         # look for LongName without --. It should be formalized by the Resource object
         resource = gmv.conf.conf_helper.Resource(a_cli_argument = "LongName", a_env_variable = None) 
         
-        self.assertEqual("My Cli Value", resource.getValue())
+        self.assertEqual("My Cli Value", resource.get_value())
     
     def testResourceFromEnv(self): 
         """testResourceFromENV: read resource from ENV"""   
