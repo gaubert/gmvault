@@ -51,20 +51,20 @@ class Resource(object):
               ConfProperty: It should be a tuple containing two elements (group,property)
         """
       
-        self._cliArg   = CliArgument.lower() if CliArgument is not None else None
-        self._envVar   = EnvVariable.upper() if EnvVariable is not None else None
+        self._cli_arg   = CliArgument.lower() if CliArgument is not None else None
+        self._env_var   = EnvVariable.upper() if EnvVariable is not None else None
       
         if ConfProperty is not None:
-            (self._confGroup, self._confProperty) = ConfProperty
+            (self._conf_group, self._conf_property) = ConfProperty
         else:
-            self._confGroup    = None
-            self._confProperty = None
+            self._conf_group    = None
+            self._conf_property = None
       
     def setCliArgument(self, CliArgument):
-        self._cliArg = CliArgument.lower()
+        self._cli_arg = CliArgument.lower()
         
     def setEnvVariable(self, EnvVariable):
-        self._envVar = EnvVariable
+        self._env_var = EnvVariable
     
     def _get_srandardized_cli_argument(self,a_tostrip):
         """
@@ -88,11 +88,11 @@ class Resource(object):
         """
           
         # check precondition
-        if self._cliArg == None:
+        if self._cli_arg == None:
             return None
         
 
-        s = self._get_srandardized_cli_argument(self._cliArg)
+        s = self._get_srandardized_cli_argument(self._cli_arg)
     
         # look for cliArg in sys argv
         for arg in sys.argv:
@@ -101,7 +101,7 @@ class Resource(object):
                 #print "i = %d, val = %s\n"%(i,sys.argv[i])
                 if len(sys.argv) <= i:
                     # No more thing to read in the command line so quit
-                    print "Resource: Commandline argument %s has no value\n" % (self._cliArg)
+                    print "Resource: Commandline argument %s has no value\n" % (self._cli_arg)
                     return None 
                 else:
                     #print "i+1 = %d, val = %s\n"%(i+1,sys.argv[i+1])
@@ -118,18 +118,18 @@ class Resource(object):
         """
       
         # precondition
-        if self._envVar == None:
+        if self._env_var == None:
             return None
      
-        return os.environ.get(self._envVar,None)
+        return os.environ.get(self._env_var,None)
       
     def _getFromConf(self):
         """
            Try to read the info from the Configuration if possible
         """
-        if self._confGroup and self._confProperty:
+        if self._conf_group and self._conf_property:
             if Conf.can_be_instanciated():
-                return Conf.get_instance().get(self._confGroup, self._confProperty)
+                return Conf.get_instance().get(self._conf_group, self._conf_property)
         
         return None
           
@@ -159,23 +159,23 @@ class Resource(object):
                     the_str = "Cannot find "
                     add_nor = 0
                     
-                    if self._cliArg is not None:
-                        the_str += "commandline argument %s" % (self._cliArg)
+                    if self._cli_arg is not None:
+                        the_str += "commandline argument %s" % (self._cli_arg)
                         add_nor += 1
                     
-                    if self._envVar is not None:
+                    if self._env_var is not None:
                         
                         if add_nor > 0:
                             the_str += ", nor "
                     
-                        the_str += "the Env Variable %s" % (self._envVar)
+                        the_str += "the Env Variable %s" % (self._env_var)
                         add_nor += 1
                     
-                    if self._confGroup is not None:
+                    if self._conf_group is not None:
                         if add_nor > 0:
                             the_str += ", nor "
                         
-                        the_str += "the Conf Group:[%s] and Property=%s" % (self._confGroup, self._confProperty)
+                        the_str += "the Conf Group:[%s] and Property=%s" % (self._conf_group, self._conf_property)
                         add_nor += 1
                         
                     if add_nor == 0:
@@ -185,7 +185,6 @@ class Resource(object):
                     
                     raise ResourceError(the_str)
     
-        # we do have a val
         return val
    
     def _get(self,conv):
