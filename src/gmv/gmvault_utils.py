@@ -338,7 +338,7 @@ def datetime2imapdate(a_datetime):
         
         month = MONTH_CONV[a_datetime.month]
         
-        pattern = '%%d-%s-%%Y' %(month) 
+        pattern = '%%d-%s-%%Y' % (month) 
         
         return a_datetime.strftime(pattern)
     
@@ -376,16 +376,16 @@ def contains_any(string, char_set):
     """Check whether 'string' contains ANY of the chars in 'set'"""
     return 1 in [c in string for c in char_set]
 
-def makedirs(aPath):
+def makedirs(a_path):
     """ my own version of makedir """
     
-    if os.path.isdir(aPath):
+    if os.path.isdir(a_path):
         # it already exists so return
         return
-    elif os.path.isfile(aPath):
-        raise OSError("a file with the same name as the desired dir, '%s', already exists."%(aPath))
+    elif os.path.isfile(a_path):
+        raise OSError("a file with the same name as the desired dir, '%s', already exists."%(a_path))
 
-    os.makedirs(aPath)
+    os.makedirs(a_path)
 
 def __rmgeneric(path, __func__):
     """ private function that is part of delete_all_under """
@@ -403,15 +403,15 @@ def delete_all_under(path, delete_top_dir = False):
     
     files = os.listdir(path)
 
-    for x in files:
-        fullpath = os.path.join(path, x)
+    for the_f in files:
+        fullpath = os.path.join(path, the_f)
         if os.path.isfile(fullpath):
-            f = os.remove
-            __rmgeneric(fullpath, f)
+            new_f = os.remove
+            __rmgeneric(fullpath, new_f)
         elif os.path.isdir(fullpath):
             delete_all_under(fullpath)
-            f = os.rmdir
-            __rmgeneric(fullpath, f)
+            new_f = os.rmdir
+            __rmgeneric(fullpath, new_f)
     
     if delete_top_dir:
         os.rmdir(path)
@@ -462,7 +462,8 @@ def get_home_dir_path():
     
     # check by default in user[HOME]
     if not gmvault_dir:
-        LOG.debug("no ENV variable $GMVAULT_DIR defined. Set by default $GMVAULT_DIR to $HOME/.gmvault (%s/.gmvault)" % (os.getenv("HOME",".")))
+        LOG.debug("no ENV variable $GMVAULT_DIR defined. Set by default $GMVAULT_DIR to $HOME/.gmvault (%s/.gmvault)" \
+                  % (os.getenv("HOME",".")))
         gmvault_dir = "%s/.gmvault" % (os.getenv("HOME", "."))
     
     #create dir if not there
@@ -484,11 +485,11 @@ def get_conf_defaults():
         
         os.environ[gmv.conf.conf_helper.Conf.ENVNAME] = filepath
     
-        cf = gmv.conf.conf_helper.Conf.get_instance()
+        the_cf = gmv.conf.conf_helper.Conf.get_instance()
     
         LOG.debug("Load defaults from %s" % (filepath))
         
-        return cf
+        return the_cf
     else:
         return gmv.conf.conf_helper.MockConf() #retrun MockObject that will play defaults
     
@@ -546,7 +547,7 @@ def _get_version_from_conf(home_conf_file):
             line = line.strip()
             matched = VERSION_RE.match(line)
             if matched:
-                ver =matched.group('version')
+                ver = matched.group('version')
                 return ver.strip()
     
     return ver
@@ -557,9 +558,9 @@ def _create_default_conf_file(home_conf_file):
     """
     LOG.critical("Create defaults in %s. Please touch this file only if you know what to do." % (home_conf_file))
     try:
-        fd = open(home_conf_file, "w+")
-        fd.write(DEFAULT_CONF_FILE)
-        fd.close()
+        the_fd = open(home_conf_file, "w+")
+        the_fd.write(DEFAULT_CONF_FILE)
+        the_fd.close()
         return home_conf_file
     except Exception, err:
         #catch all error and let run gmvault with defaults if needed
@@ -592,11 +593,11 @@ def get_conf_filepath():
             
 if __name__ == '__main__':
    
-    timer = Timer()
+    the_timer = Timer()
     
-    timer.start()
+    the_timer.start()
     
     import time
     time.sleep(3)
     
-    print(timer.elapsed())
+    print(the_timer.elapsed())
