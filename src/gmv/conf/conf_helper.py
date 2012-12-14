@@ -28,9 +28,9 @@ class ResourceError(Exception):
         Base class for ressource exceptions 
     """
 
-    def __init__(self, aMsg):
+    def __init__(self, a_msg):
         
-        super(ResourceError, self).__init__(aMsg)
+        super(ResourceError, self).__init__(a_msg)
 
 class Resource(object):
     """
@@ -79,7 +79,7 @@ class Resource(object):
         
         return '--%s' % (the_str)
     
-    def _get_value_from_the_command_line(self):
+    def _get_value_from_command_line(self):
         """
           internal method for extracting the value from the command line.
           All command line agruments must be lower case (unix style).
@@ -136,7 +136,7 @@ class Resource(object):
         return None
           
         
-    def get_value(self,a_raise_exception=True):
+    def get_value(self, a_raise_exception=True):
         """
            Return the value of the Resource as a string.
            - get from the command line if defined otherwise get from the Env variable if defined otherwise get from the conf file otherwise error
@@ -151,7 +151,7 @@ class Resource(object):
         """
        
         # get a value using precedence rule 1) command-line, 2) ENV, 3) Conf
-        val = self._get_value_from_the_command_line()
+        val = self._get_value_from_command_line()
         if val is None:
             val = self._get_value_from_env()
             if val is None:
@@ -411,6 +411,7 @@ class Conf(object):
             
     
     def get_conf_file_path(self):
+        """return conf_file_path"""
         return self._configuration_file_path if self._configuration_file_path != None else "unknown"
        
     def sections(self):
@@ -418,7 +419,8 @@ class Conf(object):
         # self._sections will never have [DEFAULT] in it
         return self._sections.keys()
     
-    def _get_defaults(self, section, option, default, fail_if_missing):
+    @classmethod
+    def _get_defaults(cls, section, option, default, fail_if_missing):
         """ To manage defaults.
             Args:
                default. The default value to return if fail_if_missing is False
@@ -460,11 +462,11 @@ class Conf(object):
             #check if it is a ENV section
             dummy = None
             if section == Conf._ENVGROUP:
-                r = Resource(a_cli_argument=None, a_env_variable=opt)
-                dummy = r.get_value()
+                the_r = Resource(a_cli_argument=None, a_env_variable=opt)
+                dummy = the_r.get_value()
             elif section == Conf._CLIGROUP:
-                r = Resource(a_cli_argument=opt, a_env_variable=None)
-                dummy = r.get_value()
+                the_r = Resource(a_cli_argument=opt, a_env_variable=None)
+                dummy = the_r.get_value()
             #return default if dummy is None otherwise return dummy
             return ((self._get_defaults(section, opt, default, fail_if_missing)) if dummy == None else dummy)
         elif opt in self._sections[section]:
@@ -536,7 +538,8 @@ class Conf(object):
             has_section = True
         return has_section
         
-    def _get_closing_bracket_index(self, index, s, location, lineno):
+    @classmethod
+    def _get_closing_bracket_index(cls, index, the_str, location, lineno):
         """ private method used by _replace_vars to count the closing brackets.
             
             Args:
@@ -551,7 +554,7 @@ class Conf(object):
                exception NoSectionError if the section cannot be found
         """
         
-        tolook = s[index + 2:]
+        tolook = the_str[index + 2:]
    
         opening_brack = 1
         closing_brack_index = index + 2
@@ -607,30 +610,35 @@ class Conf(object):
             
             dummy = None
             
-            m     = self._SUBSGROUPRE.match(var)
+            matched = self._SUBSGROUPRE.match(var)
         
-            if m == None:
-                raise exceptions.SubstitutionError(lineno, location, "Cannot match a group[option] in %s but found an opening bracket (. Malformated expression " % (var))
+            if matched == None:
+                raise exceptions.SubstitutionError(lineno, location, \
+                                                   "Cannot match a group[option] in %s "\
+                                                   "but found an opening bracket (. Malformated expression " \
+                                                   % (var))
             else:
             
                 # recursive calls
-                g = self._replace_vars(m.group('group'), location, - 1)
-                o = self._replace_vars(m.group('option'), location, - 1)
+                group = self._replace_vars(matched.group('group'), location, - 1)
+                option = self._replace_vars(matched.group('option'), location, - 1)
             
                 try:
                     # if it is in ENVGROUP then check ENV variables with a Resource object
                     # if it is in CLIGROUP then check CLI argument with a Resource object
                     # otherwise check in standard groups
-                    if g == Conf._ENVGROUP:
-                        r = Resource(a_cli_argument=None, a_env_variable=o)
-                        dummy = r.get_value()
-                    elif g == Conf._CLIGROUP:
-                        r = Resource(a_cli_argument=o, a_env_variable=None)
-                        dummy = r.get_value()
+                    if group == Conf._ENVGROUP:
+                        res = Resource(a_cli_argument=None, a_env_variable=option)
+                        dummy = res.get_value()
+                    elif group == Conf._CLIGROUP:
+                        res = Resource(a_cli_argument=option, a_env_variable=None)
+                        dummy = res.get_value()
                     else:
-                        dummy = self._sections[g][self.optionxform(o)]
+                        dummy = self._sections[group][self.optionxform(option)]
                 except KeyError, _: #IGNORE:W0612
-                    raise exceptions.SubstitutionError(lineno, location, "Property %s[%s] doesn't exist in this configuration file \n" % (g, o))
+                    raise exceptions.SubstitutionError(lineno, location, "Property %s[%s] "\
+                                                       "doesn't exist in this configuration file \n" \
+                                                       % (group, option))
             
             toparse = toparse.replace(var, dummy)
             
@@ -667,18 +675,18 @@ class Conf(object):
                        '0': False, 'no': False, 'false': False, 'off': False}
 
     def getboolean(self, section, option, default=False, fail_if_missing=False):
-         
-        v = self.get(section, option, default, fail_if_missing)
-        if v.lower() not in self._boolean_states:
-            raise ValueError, 'Not a boolean: %s' % v
-        return self._boolean_states[v.lower()]
+        """getboolean value""" 
+        val = self.get(section, option, default, fail_if_missing)
+        if val.lower() not in self._boolean_states:
+            raise ValueError, 'Not a boolean: %s' % val
+        return self._boolean_states[val.lower()]
     
     def get_boolean(self, section, option, default=False, fail_if_missing=False):
-         
-        v = self.get(section, option, default, fail_if_missing)
-        if v.lower() not in self._boolean_states:
-            raise ValueError, 'Not a boolean: %s' % v
-        return self._boolean_states[v.lower()]
+        """get_boolean value"""
+        val = self.get(section, option, default, fail_if_missing)
+        if val.lower() not in self._boolean_states:
+            raise ValueError, 'Not a boolean: %s' % val
+        return self._boolean_states[val.lower()]
     
     def get_list(self, section, option, default=None, fail_if_missing=False):
         """ get a list of string, int  """
@@ -713,8 +721,9 @@ class Conf(object):
         except struct_parser.CompilerError, err: 
             raise exceptions.Error(err.message)
         
-        
-    def optionxform(self, optionstr):
+    @classmethod
+    def optionxform(cls, optionstr):
+        """optionxform"""
         return optionstr.lower()
     
     #
@@ -735,10 +744,12 @@ class Conf(object):
         )
             
     def _read_include(self, lineno, line, origin, depth):
-        
+        """_read_include"""      
         # Error if depth is MAX_INCLUDE_DEPTH 
         if depth >= Conf._MAX_INCLUDE_DEPTH:
-            raise exceptions.IncludeError("Error. Cannot do more than %d nested includes. It is probably a mistake as you might have created a loop of includes" % (Conf._MAX_INCLUDE_DEPTH))
+            raise exceptions.IncludeError("Error. Cannot do more than %d nested includes."\
+                                          " It is probably a mistake as you might have created a loop of includes" \
+                                          % (Conf._MAX_INCLUDE_DEPTH))
         
         # remove %include from the path and we should have a path
         i = line.find('%include')
@@ -752,7 +763,8 @@ class Conf(object):
             dummy = line[i+1:].strip()
             f_i = dummy.find('>')
             if f_i == -1:
-                raise exceptions.IncludeError("Error. > is missing in the include line no %s: %s. It should be %%include<mode:group_name> path" \
+                raise exceptions.IncludeError("Error. > is missing in the include line no %s: %s."\
+                                              " It should be %%include<mode:group_name> path" \
                                                    % (line, lineno), origin )
             else:
                 group_name = None
@@ -789,7 +801,7 @@ class Conf(object):
                 # add include file and populate the section hash
                 self._read(open(path, 'r'), path, depth + 1)
 
-    def _read(self, fp, fpname, depth=0):
+    def _read(self, fpointer, fpname, depth=0):
         """Parse a sectioned setup file.
 
         The sections in setup file contains a title line at the top,
@@ -805,7 +817,7 @@ class Conf(object):
         lineno = 0
         err = None                                  # None, or an exception
         while True:
-            line = fp.readline()
+            line = fpointer.readline()
             if not line:
                 break
             lineno = lineno + 1
@@ -827,9 +839,9 @@ class Conf(object):
             # a section header or option header?
             else:
                 # is it a section header?
-                mo = self.SECTCRE.match(line)
-                if mo:
-                    sectname = mo.group('header')
+                matched = self.SECTCRE.match(line)
+                if matched:
+                    sectname = matched.group('header')
                     if sectname in self._sections:
                         cursect = self._sections[sectname]
                     else:
@@ -842,9 +854,9 @@ class Conf(object):
                     raise exceptions.MissingSectionHeaderError(fpname, lineno, line)
                 # an option line?
                 else:
-                    mo = self.OPTCRE.match(line)
-                    if mo:
-                        optname, vi, optval = mo.group('option', 'vi', 'value')
+                    matched = self.OPTCRE.match(line)
+                    if matched:
+                        optname, vi, optval = matched.group('option', 'vi', 'value')
                         if vi in ('=', ':') and ';' in optval:
                             # ';' is a comment delimiter only if it follows
                             # a spacing character
