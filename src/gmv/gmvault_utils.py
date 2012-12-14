@@ -31,12 +31,12 @@ import sys
 import traceback
 import random 
 
-import log_utils 
-import conf.conf_helper
+import gmv.log_utils as log_utils
+import gmv.conf.conf_helper
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
-GMVAULT_VERSION="1.7.2-beta"
+GMVAULT_VERSION = "1.7.2-beta"
 
 class memoized(object):
     """Decorator that caches a function's return value each time it is called.
@@ -64,7 +64,7 @@ class memoized(object):
         """Support instance methods."""
         return functools.partial(self.__call__, obj)
     
-class curry:
+class Curry:
     """ Class used to implement the currification (functional programming technic) :
         Create a function from another one by instanciating some of its parameters.
         For example double = curry(operator.mul,2), res = double(4) = 8
@@ -76,11 +76,11 @@ class curry:
         
     def __call__(self, *args, **kwargs):
         if kwargs and self.kwargs:
-            kw = self.kwargs.copy()
-            kw.update(kwargs)
+            the_kw = self.kwargs.copy()
+            the_kw.update(kwargs)
         else:
-            kw = kwargs or self.kwargs
-        return self.fun(*(self.pending + args), **kw) #IGNORE:W0142
+            the_kw = kwargs or self.kwargs
+        return self.fun(*(self.pending + args), **the_kw) #IGNORE:W0142
 
 
 
@@ -119,11 +119,15 @@ def get_exception_traceback():
 
              
 
+TIMER_SUFFIXES = ['y', 'w', 'd', 'h', 'm', 's']
+
 class Timer(object):
     """
        Timer Class to mesure time.
        Possess also few time utilities
     """
+    
+ 
     def __init__(self):
         
         self._start = None
@@ -154,7 +158,7 @@ class Timer(object):
         """
         return time.time() - self._start
     
-    def elapsed_human_time(self, suffixes=['y','w','d','h','m','s'], add_s=False, separator=' '):
+    def elapsed_human_time(self, suffixes=TIMER_SUFFIXES, add_s=False, separator=' '):
         """
         Takes an amount of seconds and turns it into a human-readable amount of time.
         """
@@ -173,12 +177,12 @@ class Timer(object):
             return int(round(float(still_to_be_done * in_sec)/nb_elem_done))
     
     @classmethod
-    def seconds_to_human_time(cls, seconds, suffixes=['y','w','d','h','m','s'], add_s=False, separator=' '):
+    def seconds_to_human_time(cls, seconds, suffixes=TIMER_SUFFIXES, add_s=False, separator=' '):
         """
            convert seconds to human time
         """
         # the formatted time string to be returned
-        time = []
+        the_time = []
         
         # the pieces of time to iterate over (days, hours, minutes, etc)
         # - the first piece in each tuple is the suffix (d, h, w)
@@ -199,12 +203,12 @@ class Timer(object):
             value = seconds / length
             if value > 0:
                 seconds = seconds % length
-                time.append('%s%s' % (str(value),
+                the_time.append('%s%s' % (str(value),
                                (suffix, (suffix, suffix + 's')[value > 1])[add_s]))
             if seconds < 1:
                 break
         
-        return separator.join(time)
+        return separator.join(the_time)
 
 ZERO = datetime.timedelta(0) 
 # A UTC class.    
@@ -322,7 +326,9 @@ def get_all_dirs_under(root_dir, ignored_dirs = []):
           root_dir   : the dir to look under
           ignored_dir: ignore the dir if it is in this list of dirnames 
     """
-    return [ name for name in os.listdir(root_dir) if ( os.path.isdir(os.path.join(root_dir, name)) and (name not in ignored_dirs) ) ]
+    return [ name for name in os.listdir(root_dir) \
+             if ( os.path.isdir(os.path.join(root_dir, name)) \
+                and (name not in ignored_dirs) ) ]
 
 def datetime2imapdate(a_datetime):
     """
@@ -476,15 +482,15 @@ def get_conf_defaults():
     
     if filepath:
         
-        os.environ[conf.conf_helper.Conf.ENVNAME] = filepath
+        os.environ[gmv.conf.conf_helper.Conf.ENVNAME] = filepath
     
-        cf = conf.conf_helper.Conf.get_instance()
+        cf = gmv.conf.conf_helper.Conf.get_instance()
     
         LOG.debug("Load defaults from %s" % (filepath))
         
         return cf
     else:
-        return conf.conf_helper.MockConf() #retrun MockObject that will play defaults
+        return gmv.conf.conf_helper.MockConf() #retrun MockObject that will play defaults
     
 DEFAULT_CONF_FILE = """#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  Gmvault Configuration file containing Gmvault defaults.
