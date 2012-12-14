@@ -134,7 +134,7 @@ class LoggerFactory(object):
     _created = False
     
     @classmethod
-    def get_factory(cls, type):
+    def get_factory(cls, the_type):
         """
            Get logger factory
         """
@@ -142,11 +142,11 @@ class LoggerFactory(object):
         if cls._created:
             return cls._factory
         
-        if type == STANDALONE:
+        if the_type == STANDALONE:
             cls._factory = LogbookLoggerFactory()
             cls._created = True
         else:
-            raise Exception("LoggerFactory type %s is unknown." % (type))
+            raise Exception("LoggerFactory type %s is unknown." % (the_type))
         
         return cls._factory
     
@@ -159,34 +159,34 @@ class LoggerFactory(object):
     
     
     @classmethod
-    def setup_simple_stderr_handler(cls, type):
+    def setup_simple_stderr_handler(cls, the_type):
         """
            Push a stderr handler logging only the message (no timestamp)
         """
-        cls.get_factory(type).setup_simple_stderr_handler()
+        cls.get_factory(the_type).setup_simple_stderr_handler()
     
     @classmethod
-    def setup_simple_stdout_handler(cls, type):
+    def setup_simple_stdout_handler(cls, the_type):
         """
            Push a stderr handler logging only the message (no timestamp)
         """
-        cls.get_factory(type).setup_simple_stdout_handler()
+        cls.get_factory(the_type).setup_simple_stdout_handler()
         
     @classmethod
-    def setup_simple_file_handler(cls, type, file_path):
+    def setup_simple_file_handler(cls, the_type, file_path):
         """
            Push a file handler logging only the message (no timestamp)
         """
-        cls.get_factory(type).setup_simple_file_handler(file_path)
+        cls.get_factory(the_type).setup_simple_file_handler(file_path)
         
     @classmethod
-    def setup_cli_app_handler(cls, type, activate_log_file=False, \
+    def setup_cli_app_handler(cls, the_type, activate_log_file=False, \
                               console_level= 'CRITICAL', file_path=DEFAULT_LOG,\
                                log_file_level = 'DEBUG'):
         """
            init logging engine
         """
-        cls.get_factory(type).setup_cli_app_handler(activate_log_file, \
+        cls.get_factory(the_type).setup_cli_app_handler(activate_log_file, \
                                                     console_level, \
                                                     file_path, log_file_level)
         
