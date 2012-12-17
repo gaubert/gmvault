@@ -33,11 +33,11 @@ class TokenizerError(Exception):
         else:
             extra = "(line=%s,col=%s)" % (self._line, self._col)
         
-        super(TokenizerError,self).__init__("%s %s." % (a_msg, extra))
+        super(TokenizerError, self).__init__("%s %s." % (a_msg, extra))
     
 
 class Token(object):
-    
+    """ Token class """
     def __init__(self, a_type, num, value, begin, end, parsed_line):
         
         self._type  = a_type
@@ -109,9 +109,9 @@ class Tokenizer(object):
             Raises:
                exception TokenizerError if the syntax of the aString string is incorrect
         """
-        g = tokenize.generate_tokens(StringIO.StringIO(a_program).readline)   # tokenize the string
+        g_info = tokenize.generate_tokens(StringIO.StringIO(a_program).readline)   # tokenize the string
         
-        for toknum, tokval, tokbeg, tokend, tokline  in g:
+        for toknum, tokval, tokbeg, tokend, tokline  in g_info:
             if token.tok_name[toknum] not in a_eatable_token_types:
                 self._tokens.append(Token(token.tok_name[toknum], toknum, tokval, tokbeg, tokend, tokline))
             
@@ -179,7 +179,7 @@ class Tokenizer(object):
             if tok.type not in a_token_types_list:
                 return tok
     
-    def consume_while_current_token_is_in(self, a_token_types_list):
+    def consume_while_current_token_is_in(self, a_token_types_list): #pylint: disable=C0103
         """
            Consume the tokens starting from the current token as long as they have one of the passed types.
            It is a classical token eater. It eats tokens as long as they are the specified type
@@ -219,7 +219,7 @@ class Tokenizer(object):
         else:
             return tok
     
-    def advance(self,inc=1):
+    def advance(self, inc=1):
         """ return the next + inc token but do not consume it.
             Useful to check future tokens.
         
@@ -229,12 +229,12 @@ class Tokenizer(object):
             Returns:
                return lookhead token
         """
-        return self._tokens[self._index-1+inc]
+        return self._tokens[self._index-1 + inc]
     
 class CompilerError(Exception):
     """Base class for All exceptions"""
 
-    def __init__(self,a_msg, a_line=None, a_col=None):
+    def __init__(self, a_msg, a_line=None, a_col=None):
         
         self._line = a_line
         self._col  = a_col
@@ -246,9 +246,9 @@ class CompilerError(Exception):
             msg = "%s." % (a_msg) 
         else:
             extra = "(line=%s,col=%s)" % (self._line, self._col)
-            msg = "%s %s." % (a_msg,extra)
+            msg = "%s %s." % (a_msg, extra)
         
-        super(CompilerError,self).__init__(msg)
+        super(CompilerError, self).__init__(msg)
     
 class Compiler(object):
     """ compile some python structures
@@ -326,8 +326,7 @@ class Compiler(object):
                         result[key] = val  
                     
                     the_token = a_tokenizer.current_token()
-                        
-                            
+                                   
             else:
                 raise CompilerError("Unsupported token (type: %s, value : %s)" \
                                     % (the_token.type, the_token.value), the_token.begin[0], the_token.begin[1])
@@ -353,7 +352,9 @@ class Compiler(object):
             the_token = a_tokenizer.current_token()
             
         else:
-            raise CompilerError("unexpected token (type: %s, value : %s)"%(the_token.type, the_token.value), the_token.begin[0], the_token.begin[1])  
+            raise CompilerError("unexpected token (type: %s, value : %s)" \
+                                % (the_token.type, the_token.value), \
+                                the_token.begin[0], the_token.begin[1])  
         
         #should have a comma now
         if the_token.type != 'OP' and the_token.value != ':':
@@ -397,7 +398,9 @@ class Compiler(object):
             the_token = a_tokenizer.next()
             
         else:
-            raise CompilerError("unexpected token (type: %s, value : %s)"%(the_token.type, the_token.value), the_token.begin[0], the_token.begin[1])  
+            raise CompilerError("unexpected token (type: %s, value : %s)" \
+                                % (the_token.type, the_token.value), the_token.begin[0], \
+                                the_token.begin[1])  
         
         #if we have a comma then eat it as it means that we will have more than one values
         if the_token.type == 'OP' and the_token.value == ',':
@@ -436,7 +439,9 @@ class Compiler(object):
                 dummy = self._create_number(the_token.value)
                  
             else:
-                raise CompilerError("unexpected token (type: %s, value : %s)"%(the_token.type, the_token.value), the_token.begin[0], the_token.begin[1])
+                raise CompilerError("unexpected token (type: %s, value : %s)" \
+                                    % (the_token.type, the_token.value), \
+                                    the_token.begin[0], the_token.begin[1])
            
             #if val is not None, it has to be a string
             if val:
@@ -450,7 +455,7 @@ class Compiler(object):
     
     
     def _compile_tuple(self, a_tokenizer):
-        
+        """ process tuple structure """
         result = []
         
         open_bracket = 0
@@ -490,7 +495,8 @@ class Compiler(object):
                 # cannot find a closing bracket and a simple list mode
                 elif simple_list_mode == 1:
                     raise CompilerError("unexpected token (type: %s, value : %s)" \
-                                        % (the_token.value, the_token.type), the_token.begin[0], the_token.begin[1])
+                                        % (the_token.value, the_token.type), the_token.begin[0], \
+                                        the_token.begin[1])
             # the comma case
             elif the_token.type == 'OP' and the_token.value == ',':
                 # just eat it
@@ -523,7 +529,7 @@ class Compiler(object):
                             % (the_token.parsed_line))
     
     def _compile_list(self, a_tokenizer):
-        
+        """ process a list structure """
         result = []
         
         

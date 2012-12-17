@@ -856,8 +856,8 @@ class Conf(object):
                 else:
                     matched = self.OPTCRE.match(line)
                     if matched:
-                        optname, vi, optval = matched.group('option', 'vi', 'value')
-                        if vi in ('=', ':') and ';' in optval:
+                        optname, vio, optval = matched.group('option', 'vi', 'value')
+                        if vio in ('=', ':') and ';' in optval:
                             # ';' is a comment delimiter only if it follows
                             # a spacing character
                             pos = optval.find(';')

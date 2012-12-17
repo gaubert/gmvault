@@ -39,7 +39,7 @@ class TestConf(unittest.TestCase):
         
         return test_dir
     
-    def setUp(self):
+    def setUp(self): #pylint: disable=C0103
          
         # necessary for the include with the VAR ENV substitution
         os.environ["DIRCONFENV"] = TestConf._get_tests_dir_path()
@@ -48,7 +48,7 @@ class TestConf(unittest.TestCase):
     
         the_fp = open('%s/%s' % (TestConf._get_tests_dir_path(), "test.config"))
     
-        self.conf._read(the_fp,"the file") #IGNORE:W0212
+        self.conf._read(the_fp,"the file") #pylint: disable=W0212
     
     def test_empty(self):
         """
@@ -145,16 +145,17 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(val, 'foo')
         
-    def _create_fake_conf_file_in_tmp(self):
+    @classmethod
+    def _create_fake_conf_file_in_tmp(cls):
+        """Create a fake conf file in tmp"""
+        the_f = open('/tmp/fake_conf.config', 'w')
         
-        f = open('/tmp/fake_conf.config', 'w')
-        
-        f.write('\n[MainDatabaseAccess]\n')
-        f.write('driverClassName=oracle.jdbc.driver.OracleDriver')
-        f.flush()
-        f.close()
+        the_f.write('\n[MainDatabaseAccess]\n')
+        the_f.write('driverClassName=oracle.jdbc.driver.OracleDriver')
+        the_f.flush()
+        the_f.close()
     
-    def test_use_conf_ENVNAME_resource(self):
+    def test_use_conf_ENVNAME_resource(self): #pylint: disable=C0103
         """testUseConfENVNAMEResource: Use default resource ENVNAME to locate conf file"""
         self._create_fake_conf_file_in_tmp()
         
@@ -163,11 +164,11 @@ class TestConf(unittest.TestCase):
    
         self.conf = gmv.conf.conf_helper.Conf.get_instance()
         
-        s = self.conf.get("MainDatabaseAccess", "driverClassName")
+        the_s = self.conf.get("MainDatabaseAccess", "driverClassName")
         
-        self.assertEqual(s, 'oracle.jdbc.driver.OracleDriver')
+        self.assertEqual(the_s, 'oracle.jdbc.driver.OracleDriver')
     
-    def test_read_from_CLI(self):
+    def test_read_from_CLI(self): #pylint: disable=C0103
         """testReadFromCLI: do substitutions from command line resources"""
         #set environment
         os.environ["TESTENV"] = "/tmp/foo/foo.bar"
@@ -189,7 +190,7 @@ class TestConf(unittest.TestCase):
    
         self.assertEqual(val, 'My Cli Value is embedded 2')
     
-    def test_read_from_ENV(self):
+    def test_read_from_ENV(self): #pylint: disable=C0103
         """testReadFromENV: do substitutions from ENV resources"""
         #set environment
         os.environ["TESTENV"] = "/tmp/foo/foo.bar"
@@ -229,14 +230,14 @@ class TestConf(unittest.TestCase):
         
         self.assertNotEqual(result, '')
         
-    def test_value_as_List(self):
+    def test_value_as_List(self): #pylint: disable=C0103
         """ Value as List """
         
         the_list = self.conf.getlist('GroupTestValueStruct', 'list')
         
         self.assertEqual(the_list, ['a', 1, 3])
     
-    def test_value_as_unicodeList(self):
+    def test_value_as_unicodeList(self): #pylint: disable=C0103
         """ Value as List """
         
         the_list = self.conf.getlist('GroupTestValueStruct', 'unicode_list')
@@ -283,7 +284,7 @@ class TestResource(unittest.TestCase):
     """
        Test Class for the Resource object
     """   
-    def testResourceSimpleCli(self):
+    def test_resource_simple_cli(self):
         """testResourceSimpleCli: read resource from CLI"""
         # set command line
         sys.argv.append("--LongName")
@@ -298,7 +299,7 @@ class TestResource(unittest.TestCase):
         
         self.assertEqual("My Cli Value", resource.get_value())
     
-    def testResourceFromEnv(self): 
+    def test_resource_from_env(self): 
         """testResourceFromENV: read resource from ENV"""   
         #ENV 
         os.environ["MYENVVAR"] = "My ENV Value"
@@ -307,13 +308,13 @@ class TestResource(unittest.TestCase):
         
         self.assertEqual("My ENV Value", resource.get_value())
         
-    def ztestResourcePriorityRules(self):
+    def ztest_resource_priority_rules(self):
         """testResourcePriorityRules: test priority rules"""   
         resource = gmv.conf.conf_helper.Resource(a_cli_argument="--LongName", a_env_variable="MYENVVAR")
   
         self.assertEqual("My Cli Value", resource.get_value())
   
-    def testResourceGetDifferentTypes(self):
+    def test_resource_get_different_types(self): #pylint: disable=C0103
         """testResourceGetDifferentTypes: return resource in different types"""
         
         os.environ["MYENVVAR"] = "yes"
@@ -334,6 +335,7 @@ class TestResource(unittest.TestCase):
         self.assertEqual(resource.get_value_as_float()+1, 5.345)
         
 def tests():
+    """ global test method"""
     #suite = unittest.TestLoader().loadTestsFromModule(gmv.conf.conf_tests)
     suite = unittest.TestLoader().loadTestsFromTestCase(TestConf)
     unittest.TextTestRunner(verbosity=2).run(suite)

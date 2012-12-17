@@ -22,9 +22,9 @@ import unittest
 from struct_parser import Compiler, CompilerError
 
 class TestParser(unittest.TestCase):
+    """ TestParser Class """
     
-    
-    def setUp(self):
+    def setUp(self): #pylint: disable=C0103
         pass
         
     def test_simple_list_test(self):
@@ -57,7 +57,8 @@ class TestParser(unittest.TestCase):
         
         the_result = compiler.compile_list(the_string)
         
-        self.assertEqual(the_result, ['a','b', [1,2,3,4, [456,6,'absdef'], 234, 2.456 ], 'aqwe', 'done'])
+        self.assertEqual(the_result, ['a', 'b', [1, 2, 3, 4, [456, 6, 'absdef'], 234, 2.456 ]\
+                                      , 'aqwe', 'done'])
   
     def test_list_without_bracket_test(self):
         """ simple list without bracket test """
@@ -68,9 +69,9 @@ class TestParser(unittest.TestCase):
         
         the_result = compiler.compile_list(the_string)
         
-        self.assertEqual(the_result, ['a','b'])
+        self.assertEqual(the_result, ['a', 'b'])
     
-    def test_list_without_bracket_test_2(self):
+    def test_list_without_bracket_test_2(self): #pylint: disable=C0103
         """ list without bracket test with a list inside """
         the_string = " 'a', b, ['a thing', 2]"
                 
@@ -78,7 +79,7 @@ class TestParser(unittest.TestCase):
         
         the_result = compiler.compile_list(the_string)
         
-        self.assertEqual(the_result, ['a','b', ['a thing', 2] ])
+        self.assertEqual(the_result, ['a', 'b', ['a thing', 2] ])
         
     def test_list_error(self):
         """ list error """
@@ -103,7 +104,7 @@ class TestParser(unittest.TestCase):
         
         self.assertEqual(the_result, [ u'[Gmail]/Чаты', 'z' ])
         
-    def test_special_character_in_string(self):
+    def test_special_character_in_string(self):#pylint: disable=C0103
         """ simple list without bracket test """
         
         the_string = " 'a@', b"
@@ -156,7 +157,7 @@ class TestParser(unittest.TestCase):
         
         the_result = compiler.compile_dict(the_string)
         
-        self.assertEqual(the_result, {'a':1, 'b':[1,2,3,4,5]})
+        self.assertEqual(the_result, {'a':1, 'b':[1, 2, 3, 4, 5]})
         
     def test_list_with_dict(self):
         """ list with dict """
@@ -178,7 +179,7 @@ class TestParser(unittest.TestCase):
         
         the_result = compiler.compile_dict(the_string)
         
-        self.assertEqual(the_result,{ 'no12': 'a b' , 'no10':'a'})
+        self.assertEqual(the_result, { 'no12': 'a b' , 'no10':'a'})
         
     def test_everything(self):
         """ everything """
@@ -189,9 +190,12 @@ class TestParser(unittest.TestCase):
         
         the_result = compiler.compile_list(the_string)
         
-        self.assertEqual(the_result, ['a',1,'b',{2:3,4:[1,'hello', 'no quotes', [1,2,3,{1:2,3:4}]]} ])
+        self.assertEqual(the_result, ['a', 1, 'b', \
+                                      {2 : 3, \
+                                       4: [1, 'hello', 'no quotes', [1, 2, 3, {1:2, 3:4 }]]} ])
         
 def tests():
+    """ Global test method """
     #suite = unittest.TestLoader().loadTestsFromModule(struct_parser)
     suite = unittest.TestLoader().loadTestsFromTestCase(TestParser)
     unittest.TextTestRunner(verbosity=2).run(suite)
