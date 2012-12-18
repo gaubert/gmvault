@@ -25,6 +25,7 @@ import os
 import ssl
 import imaplib
 import gmv.gmvault as gmvault
+import gmv.gmvault_db as gmvault_db
 import gmv.gmvault_utils as gmvault_utils
 import gmv.gmv_cmd as gmv_cmd
 import gmv.credential_utils as credential_utils
@@ -269,18 +270,16 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         #clean db dir
         delete_db_dir(args['db-dir'])
     
-    def ztest_delete_sync_gmv(self):
+    def test_delete_sync_gmv(self):
         """
            delete sync via command line
         """
         gmv_cmd.init_logging()
         
         #first request to have the extra dirs
-        sys.argv = ['gmvault.py', '--imap-server', 'imap.gmail.com', \
-                    '--imap-port', '993', '--imap-request', \
+        sys.argv = ['gmvault.py', 'sync', '-t', 'custom', '-r', \
                     'Since 1-Nov-2011 Before 7-Nov-2011', \
-                    '--email', self.login, \
-                    '--passwd', self.passwd, '--db-dir', '/tmp/new-db-1']
+                    '--db-dir', '/tmp/new-db-1', 'guillaume.aubert@gmail.com']
     
         gmvault_launcher = gmv_cmd.GMVaultLauncher()
         
@@ -289,16 +288,15 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gmvault_launcher.run(args)
         
         #second requests so all files after the 5 should disappear 
-        sys.argv = ['gmvault.py', '--imap-server', 'imap.gmail.com', \
-                    '--imap-port', '993', '--imap-request', \
-                    'Since 1-Nov-2011 Before 5-Nov-2011', '--email', self.login, \
-                    '--passwd', self.passwd, '--db-dir', '/tmp/new-db-1', '--db-cleaning', 'yes']
+        sys.argv = ['gmvault.py', 'sync', '-t', 'custom', '-r', \
+                    'Since 1-Nov-2011 Before 5-Nov-2011', \
+                    '--db-dir', '/tmp/new-db-1', '-c', 'yes', 'guillaume.aubert@gmail.com']
     
         args = gmvault_launcher.parse_args()
         gmvault_launcher.run(args)
     
         #check all stored gmail ids
-        gstorer = gmvault.GmailStorer(args['db-dir'])
+        gstorer = gmvault_db.GmailStorer('/tmp/new-db-1')
         
         ids = gstorer.get_all_existing_gmail_ids()
         
@@ -311,7 +309,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                                 1384578279292583731L: '2011-11'})
         
         #clean db dir
-        delete_db_dir(args['db-dir'])
+        delete_db_dir('/tmp/new-db-1')
         
     def ztest_password_handling(self):
         """
@@ -436,7 +434,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
         gmv_cmd.bootstrap_run()
         
-    def test_simple_get_encrypt_and_restore(self):
+    def ztest_simple_get_encrypt_and_restore(self):
         """
            get few emails and restore them
         """
