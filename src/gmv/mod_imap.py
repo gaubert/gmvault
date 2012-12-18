@@ -40,33 +40,33 @@ MON2NUM = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
 
 #need to monkey patch _convert_INTERNALDATE to work with imaplib2
 #modification of IMAPClient
-def mod_convert_INTERNALDATE(date_string, normalise_times=True):
+def mod_convert_INTERNALDATE(date_string, normalise_times=True):#pylint: disable=C0103
     """
        monkey patched convert_INTERNALDATE
     """
-    mo = INTERNALDATE_RE.match('INTERNALDATE "%s"' % date_string)
-    if not mo:
+    mon = INTERNALDATE_RE.match('INTERNALDATE "%s"' % date_string)
+    if not mon:
         raise ValueError("couldn't parse date %r" % date_string)
     
-    zoneh = int(mo.group('zoneh'))
-    zonem = (zoneh * 60) + int(mo.group('zonem'))
-    if mo.group('zonen') == '-':
+    zoneh = int(mon.group('zoneh'))
+    zonem = (zoneh * 60) + int(mon.group('zonem'))
+    if mon.group('zonen') == '-':
         zonem = -zonem
-    tz = imapclient.fixed_offset.FixedOffset(zonem)
+    timez = imapclient.fixed_offset.FixedOffset(zonem)
     
-    year = int(mo.group('year'))
-    mon = MON2NUM[mo.group('mon')]
-    day = int(mo.group('day'))
-    hour = int(mo.group('hour'))
-    minute = int(mo.group('min'))
-    sec = int(mo.group('sec'))
+    year    = int(mon.group('year'))
+    the_mon = MON2NUM[mon.group('mon')]
+    day     = int(mon.group('day'))
+    hour    = int(mon.group('hour'))
+    minute  = int(mon.group('min'))
+    sec = int(mon.group('sec'))
     
-    dt = datetime.datetime(year, mon, day, hour, minute, sec, 0, tz)
+    the_dt = datetime.datetime(year, the_mon, day, hour, minute, sec, 0, timez)
     
     if normalise_times:
         # Normalise to host system's timezone
-        return dt.astimezone(imapclient.fixed_offset.FixedOffset.for_system()).replace(tzinfo=None)
-    return dt
+        return the_dt.astimezone(imapclient.fixed_offset.FixedOffset.for_system()).replace(tzinfo=None)
+    return the_dt
 
 #monkey patching is done here
 imapclient.response_parser._convert_INTERNALDATE = mod_convert_INTERNALDATE
@@ -75,12 +75,11 @@ imapclient.response_parser._convert_INTERNALDATE = mod_convert_INTERNALDATE
 imaplib.Commands['COMPRESS'] = ('AUTH', 'SELECTED')
 
 class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
-
-    SOCK_TIMEOUT = 70 # set a socket timeout of 70 sec to avoid for ever blockage in ssl.read
-
     """
        Add support for compression inspired by inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
     """
+    SOCK_TIMEOUT = 70 # set a socket timeout of 70 sec to avoid for ever blockage in ssl.read
+
     def __init__(self, host = '', port = imaplib.IMAP4_SSL_PORT, keyfile = None, certfile = None):
         """
            constructor
@@ -100,25 +99,25 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
         self.compressor   = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
         
     def open(self, host = '', port = imaplib.IMAP4_SSL_PORT): 
-            """Setup connection to remote server on "host:port".
-                (default: localhost:standard IMAP4 SSL port).
-            This connection will be used by the routines:
-                read, readline, send, shutdown.
-            """
-            self.host   = host
-            self.port   = port
-            
-            self.sock   = socket.create_connection((host, port), self.SOCK_TIMEOUT) #add so_timeout  
+		"""Setup connection to remote server on "host:port".
+			(default: localhost:standard IMAP4 SSL port).
+		This connection will be used by the routines:
+			read, readline, send, shutdown.
+		"""
+		self.host   = host
+		self.port   = port
+		
+		self.sock   = socket.create_connection((host, port), self.SOCK_TIMEOUT) #add so_timeout  
 
-            #self.sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1) #try to set TCP NO DELAY to increase performances
+		#self.sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1) #try to set TCP NO DELAY to increase performances
 
-            self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
-            
-            # This is the last correction added to avoid memory fragmentation in imaplib
-            # makefile creates a file object that makes use of cStringIO to avoid mem fragmentation
-            # it could be used without the compression 
-            # (maybe make 2 set of methods without compression and with compression)
-            #self.file   = self.sslobj.makefile('rb')
+		self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
+		
+		# This is the last correction added to avoid memory fragmentation in imaplib
+		# makefile creates a file object that makes use of cStringIO to avoid mem fragmentation
+		# it could be used without the compression 
+		# (maybe make 2 set of methods without compression and with compression)
+		#self.file   = self.sslobj.makefile('rb')
     
     def read(self, size):
         """
@@ -130,7 +129,9 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
         read = 0
         while read < size:
             data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
-            if not data: raise self.abort('Gmvault ssl socket error: EOF') #to avoid infinite looping due to empty string returned
+            if not data: 
+                #to avoid infinite looping due to empty string returned
+                raise self.abort('Gmvault ssl socket error: EOF') 
             read += len(data)
             chunks.write(data)
         
@@ -186,24 +187,24 @@ def seq_to_parenlist(flags):
         raise ValueError('invalid flags list: %r' % flags)
     return '(%s)' % ' '.join(flags)
     
-class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903
+class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R904
     """
        Need to extend the IMAPClient to do more things such as compression
        Compression inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
     """
     
-    def __init__(self, host, port=None, use_uid=True, ssl=False):
+    def __init__(self, host, port=None, use_uid=True, a_ssl=False):
         """
            constructor
         """
-        super(MonkeyIMAPClient, self).__init__(host, port, use_uid, ssl)
+        super(MonkeyIMAPClient, self).__init__(host, port, use_uid, a_ssl)
     
     def _create_IMAP4(self): #pylint:disable-msg=C0103
         """
            Factory method creating an IMAPCOMPSSL or a standard IMAP4 Class
         """
-        ImapClass = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
-        return ImapClass(self.host, self.port)
+        imapClass = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
+        return imapClass(self.host, self.port)
     
     def xoauth_login(self, xoauth_cred ):
         """
@@ -272,7 +273,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903
 
         return data[0]
     
-    def enable_compression(self):
+    def enable_compression(self):#pylint: disable=W0212
         """
         enable_compression()
         Ask the server to start compressing the connection.
