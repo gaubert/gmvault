@@ -124,7 +124,7 @@ class GMVaultLauncher(object):
         super(GMVaultLauncher, self).__init__()
         
     @gmvault_utils.memoized
-    def _create_parser(self):
+    def _create_parser(self): #pylint: disable=R0915
         """
            Create the argument parser
            Return the created parser
@@ -395,7 +395,7 @@ class GMVaultLauncher(object):
              
         return parsed_args
     
-    def parse_args(self):
+    def parse_args(self): #pylint: disable=R0912
         """ Parse command line arguments 
             
             :returns: a dict that contains the arguments
@@ -545,7 +545,7 @@ class GMVaultLauncher(object):
             
             #call restore
             labels = [args['label']] if args['label'] else []
-            restorer.restore(pivot_dir = starting_dir, extra_labels = labels, restart = args['restart'],\
+            restorer.restore(pivot_dir = starting_dir, extra_labels = labels, restart = args['restart'], \
                              emails_only = args['emails_only'], chats_only = args['chats_only'])
         
         else:
@@ -577,7 +577,8 @@ class GMVaultLauncher(object):
             
         elif args.get('type', '') == 'quick':
             
-            #sync only the last x days (taken in defaults) in order to be quick (cleaning is import here because recent days might move again
+            #sync only the last x days (taken in defaults) in order to be quick 
+            #(cleaning is import here because recent days might move again
             
             # today - 2 months
             today = datetime.date.today()
