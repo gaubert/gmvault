@@ -28,11 +28,11 @@ import functools
 
 import imaplib
 
-import log_utils
-import credential_utils
+import gmv.log_utils as log_utils
+import gmv.credential_utils as credential_utils
 
-import gmvault_utils
-import mod_imap as mimap
+import gmv.gmvault_utils as gmvault_utils
+import gmv.mod_imap as mimap
 
 LOG = log_utils.LoggerFactory.get_logger('imap_utils')
 
@@ -48,6 +48,7 @@ class PushEmailError(Exception):
         self._in_quarantine = quarantined
     
     def quarantined(self):
+        """ Get email to quarantine """
         return self._in_quarantine
 
 #retry decorator with nb of tries and sleep_time and backoff
@@ -69,7 +70,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
     if a_sleep_time <= 0:
         raise ValueError("a_sleep_time must be greater than 0")
     
-    def reconnect(the_self, rec_nb_tries, total_nb_tries, rec_error, rec_sleep_time = [1]):
+    def reconnect(the_self, rec_nb_tries, total_nb_tries, rec_error, rec_sleep_time = [1]): #pylint: disable=W0102
         """
            Reconnect procedure. Sleep and try to reconnect
         """
@@ -166,7 +167,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902
     
     GENERIC_GMAIL_ALL   = u'\\AllMail' # unlocalised GMAIL ALL
     GENERIC_DRAFTS      = u'\\Drafts' # unlocalised DRAFTS
-    GENERIC_GMAIL_CHATS = [u'[Gmail]/Chats', u'[Google Mail]/Chats', u'[Gmail]/Chat', u'[Google Mail]/Chat',\
+    GENERIC_GMAIL_CHATS = [u'[Gmail]/Chats', u'[Google Mail]/Chats', u'[Gmail]/Chat', u'[Google Mail]/Chat', \
                            u'[Google Mail]/Tous les chats', u'[Gmail]/Tous les chats',\
                            u'[Gmail]/Чаты', u'[Google Mail]/Чаты']   # unlocalised Chats names
     
@@ -187,19 +188,23 @@ class GIMAPFetcher(object): #pylint:disable=R0902
     GMAIL_SPECIAL_DIRS_LOWER = ['\\inbox', '\\starred', '\\sent', '\\draft', '\\important']
     
     IMAP_BODY_PEEK     = 'BODY.PEEK[]' #get body without setting msg as seen
-    #IMAP_HEADER_PEEK_FIELDS = 'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT)]' #get the body info without setting msg as seen
-    #IMAP_HEADER_FIELDS_KEY      = 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT)]' #key used to find these fields in the IMAP Response
-    IMAP_HEADER_PEEK_FIELDS = 'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]' #get the body info without setting msg as seen
-    IMAP_HEADER_FIELDS_KEY      = 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]' #key used to find these fields in the IMAP Response
+
+    #get the body info without setting msg as seen
+    IMAP_HEADER_PEEK_FIELDS = 'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]' 
+
+    #key used to find these fields in the IMAP Response
+    IMAP_HEADER_FIELDS_KEY      = 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]'
     
     #GET_IM_UID_RE
-    APPENDUID         = '^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'
+    APPENDUID         = r'^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'
     
     APPENDUID_RE      = re.compile(APPENDUID)
     
-    GET_ALL_INFO      = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_BODY_PEEK, IMAP_FLAGS, IMAP_HEADER_PEEK_FIELDS]
+    GET_ALL_INFO      = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, \
+                          IMAP_BODY_PEEK, IMAP_FLAGS, IMAP_HEADER_PEEK_FIELDS]
 
-    GET_ALL_BUT_DATA  = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_FLAGS, IMAP_HEADER_PEEK_FIELDS]
+    GET_ALL_BUT_DATA  = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, \
+                          IMAP_FLAGS, IMAP_HEADER_PEEK_FIELDS]
     
     GET_DATA_ONLY     = [GMAIL_ID, IMAP_BODY_PEEK]
  
@@ -230,7 +235,8 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         self.server                 = None
         self.go_to_all_folder       = True
         self.total_nb_reconns       = 0
-        self.printed_folder_error_msg = { 'ALLMAIL' : False, 'CHATS': False , 'DRAFTS':False }#True when CHATS or other folder error msg has been already printed
+        # True when CHATS or other folder error msg has been already printed
+        self.printed_folder_error_msg = { 'ALLMAIL' : False, 'CHATS': False , 'DRAFTS':False }
         
         #update GENERIC_GMAIL_CHATS. Should be done at the class level
         self.GENERIC_GMAIL_CHATS.extend(gmvault_utils.get_conf_defaults().get_list('Localisation', 'chat_folder', []))
@@ -260,7 +266,8 @@ class GIMAPFetcher(object): #pylint:disable=R0902
                 
             self.server.xoauth_login(self.credential['value']) 
         else:
-            raise Exception("Unknown authentication method %s. Please use xoauth or passwd authentication " % (self.credential['type']))
+            raise Exception("Unknown authentication method %s. Please use xoauth or passwd authentication " \
+                            % (self.credential['type']))
             
         #set connected to True to handle reconnection in case of failure
         self.once_connected = True
@@ -326,9 +333,12 @@ class GIMAPFetcher(object): #pylint:disable=R0902
                 self.localized_folders['DRAFTS']['loc_dir'] = the_dir
                 
         if not self.localized_folders['ALLMAIL']['loc_dir']: # all mail error
-            raise Exception("Cannot find global 'All Mail' folder (maybe localized and translated into your language) ! Check whether 'Show in IMAP for 'All Mail' is enabled in Gmail (Go to Settings->Labels->All Mail)")
-        elif not self.localized_folders['CHATS']['loc_dir'] and gmvault_utils.get_conf_defaults().getboolean("General","errors_if_chat_not_visible", False):
-            raise Exception("Cannot find global 'Chats' folder ! Check whether 'Show in IMAP for 'Chats' is enabled in Gmail (Go to Settings->Labels->All Mail)") 
+            raise Exception("Cannot find global 'All Mail' folder (maybe localized and translated into your language) ! "\
+                            "Check whether 'Show in IMAP for 'All Mail' is enabled in Gmail (Go to Settings->Labels->All Mail)")
+        elif not self.localized_folders['CHATS']['loc_dir'] and \
+                 gmvault_utils.get_conf_defaults().getboolean("General","errors_if_chat_not_visible", False):
+            raise Exception("Cannot find global 'Chats' folder ! Check whether 'Show in IMAP for 'Chats' "\
+                            "is enabled in Gmail (Go to Settings->Labels->All Mail)") 
         elif not self.localized_folders['DRAFTS']['loc_dir']:
             raise Exception("Cannot find global 'Drafts' folder.")
     
@@ -346,13 +356,14 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         for (flags, _, the_dir) in folders:
             #non localised GMAIL_ALL
             if GIMAPFetcher.GENERIC_GMAIL_ALL in flags:
-                    #it could be a localized Dir name
-                    self.localized_folders['ALLMAIL']['loc_dir'] = the_dir
-                    return the_dir
+                #it could be a localized Dir name
+                self.localized_folders['ALLMAIL']['loc_dir'] = the_dir
+                return the_dir
         
         if not self.localized_folders['ALLMAIL']['loc_dir']:
             #Error
-            raise Exception("Cannot find global 'All Mail' folder (maybe localized and translated into your language) ! Check whether 'Show in IMAP for 'All Mail' is enabled in Gmail (Go to Settings->Labels->All Mail)")
+            raise Exception("Cannot find global 'All Mail' folder (maybe localized and translated into your language) !"\
+                  " Check whether 'Show in IMAP for 'All Mail' is enabled in Gmail (Go to Settings->Labels->All Mail)")
         
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def find_chats_folder(self):
@@ -371,13 +382,14 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         for (_, _, the_dir) in folders:
             #look for GMAIL Chats
             if the_dir in GIMAPFetcher.GENERIC_GMAIL_CHATS :
-                    #it could be a localized Dir name
-                    self.localized_folders['CHATS']['loc_dir'] = the_dir
-                    return the_dir
+                #it could be a localized Dir name
+                self.localized_folders['CHATS']['loc_dir'] = the_dir
+                return the_dir
         
         #Error did not find Chats dir 
-        if gmvault_utils.get_conf_defaults().getboolean("General","errors_if_chat_not_visible", False):
-            raise Exception("Cannot find global 'Chats' folder ! Check whether 'Show in IMAP for 'Chats' is enabled in Gmail (Go to Settings->Labels->All Mail)") 
+        if gmvault_utils.get_conf_defaults().getboolean("General", "errors_if_chat_not_visible", False):
+            raise Exception("Cannot find global 'Chats' folder ! Check whether 'Show in IMAP for 'Chats' "\
+                            "is enabled in Gmail (Go to Settings->Labels->All Mail)") 
        
         return None
     
@@ -391,14 +403,15 @@ class GIMAPFetcher(object): #pylint:disable=R0902
             return True
             
         if not self.printed_folder_error_msg.get(a_folder_name, None): 
-            LOG.critical("Cannot find 'Chats' folder on Gmail Server. If you wish to backup your chats, look at the documentation to see how to configure your Gmail account.\n")
+            LOG.critical("Cannot find 'Chats' folder on Gmail Server. If you wish to backup your chats,"\
+                         " look at the documentation to see how to configure your Gmail account.\n")
             self.printed_folder_error_msg[a_folder_name] = True
         
           
         return False
 
     def get_folder_name(self, a_folder_name):
-        
+        """return real folder name from generic ones"""        
         if a_folder_name not in self.FOLDER_NAMES:
             raise Exception("%s is not a predefined folder names. Please use one" % (a_folder_name) )
             
@@ -450,7 +463,8 @@ class GIMAPFetcher(object): #pylint:disable=R0902
            Check that the server is a gmail server
         """
         if not GIMAPFetcher.GMAIL_EXTENSION in self.get_capabilities():
-            raise Exception("GIMAPFetcher is not connected to a IMAP GMAIL server. Please check host (%s) and port (%s)" % (self.host, self.port))
+            raise Exception("GIMAPFetcher is not connected to a IMAP GMAIL server. Please check host (%s) and port (%s)" \
+                  % (self.host, self.port))
         
         return True
     
@@ -552,7 +566,8 @@ class GIMAPFetcher(object): #pylint:disable=R0902
                         #log error in log file if it exists
                         LOG.debug(gmvault_utils.get_exception_traceback())
                         if str(error).startswith("create failed: '[ALREADYEXISTS] Duplicate folder"):
-                            LOG.critical("Warning: label %s already exists on Gmail and Gmvault tried to create it. Ignore this issue." % (directory) )
+                            LOG.critical("Warning: label %s already exists on Gmail and Gmvault tried to create it."\
+                                         " Ignore this issue." % (directory) )
                         else:
                             raise error
                     
@@ -571,8 +586,8 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         # go to All Mail folder
         LOG.debug("Applying labels %s" % (labels))
         
-        t = gmvault_utils.Timer()
-        t.start()
+        the_timer = gmvault_utils.Timer()
+        the_timer.start()
 
         #utf7 the labels as they should be
         labels = [ utf7_encode(label) for label in labels ]
@@ -581,14 +596,15 @@ class GIMAPFetcher(object): #pylint:disable=R0902
     
         if labels_str:  
             #has labels so update email  
-            t.start()
+            the_timer.start()
             #LOG.debug("Before to store labels %s" % (labels_str))
             id_list = ",".join(map(str, imap_ids))
             #+X-GM-LABELS.SILENT to have not returned data
             ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', labels_str)
 
             #ret_code, data = self.server._imap.uid('COPY', id_list, labels[0])
-            LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" % (labels_str, t.elapsed_ms(),ret_code, data))
+            LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" \
+                      % (labels_str, the_timer.elapsed_ms(),ret_code, data))
 
             # check if it is ok otherwise exception
             if ret_code != 'OK':
@@ -609,11 +625,8 @@ class GIMAPFetcher(object): #pylint:disable=R0902
             
             for directory in reversed(labs):
                 
-                #listed_folders = set([ repertoire.lower() for (flag, delimiter, repertoire) in self.server.xlist_folders() ])
-                
-                #print("Existing folders on server side = %s\n" % (listed_folders))
-                
-                if force_delete or ( (directory.lower() not in self.GMAIL_SPECIAL_DIRS_LOWER) and self.server.folder_exists(directory) ): #call server exists each time
+                if force_delete or ( (directory.lower() not in self.GMAIL_SPECIAL_DIRS_LOWER) \
+                   and self.server.folder_exists(directory) ): #call server exists each time
                     try:
                         self.server.delete_folder(directory)
                     except imaplib.IMAP4.error, _:
@@ -640,19 +653,18 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         trash_folder_name = None
 
         for (flags, _, the_dir) in folders:
-           if (u'\\Starred' in flags) or (u'\\Spam' in flags) or (u'\\Sent' in flags) \
-              or (u'\\Important' in flags) or (the_dir == u'[Google Mail]/Chats') \
-              or (the_dir == u'[Google Mail]') or (u'\\Trash' in flags) or \
-              (u'\\Inbox' in flags) or (GIMAPFetcher.GENERIC_GMAIL_ALL in flags) or \
-              (GIMAPFetcher.GENERIC_DRAFTS in flags) or (GIMAPFetcher.GENERIC_GMAIL_CHATS in flags):
-              LOG.info("Ignore folder %s" % (the_dir))           
+            if (u'\\Starred' in flags) or (u'\\Spam' in flags) or (u'\\Sent' in flags) \
+               or (u'\\Important' in flags) or (the_dir == u'[Google Mail]/Chats') \
+               or (the_dir == u'[Google Mail]') or (u'\\Trash' in flags) or \
+               (u'\\Inbox' in flags) or (GIMAPFetcher.GENERIC_GMAIL_ALL in flags) or \
+               (GIMAPFetcher.GENERIC_DRAFTS in flags) or (GIMAPFetcher.GENERIC_GMAIL_CHATS in flags):
+                LOG.info("Ignore folder %s" % (the_dir))           
 
-              if (u'\\Trash' in flags): #keep trash folder name
-                 trash_folder_name = the_dir
-           else:
-              LOG.info("Delete folder %s" % (the_dir))
-              self.server.delete_folder(the_dir)
-        
+                if (u'\\Trash' in flags): #keep trash folder name
+                    trash_folder_name = the_dir
+            else:
+                LOG.info("Delete folder %s" % (the_dir))
+                self.server.delete_folder(the_dir)
         
         self.select_folder('ALLMAIL')
 
@@ -669,18 +681,18 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         #print(self.server.delete_messages(imap_ids))
 
         if len(imap_ids) > 0:
-           self.apply_labels_to(imap_ids, ['\\Trash'])
+            self.apply_labels_to(imap_ids, ['\\Trash'])
 
-           LOG.info("Got all imap_ids flagged to Trash : %s." % (imap_ids))
+            LOG.info("Got all imap_ids flagged to Trash : %s." % (imap_ids))
 
         
         else:
-           LOG.info("No messages to erase.")
+            LOG.info("No messages to erase.")
 
         LOG.info("Delete emails from Trash.")
 
         if trash_folder_name == None:
-           raise Exception("No trash folder ???")
+            raise Exception("No trash folder ???")
 
         self.select_folder(trash_folder_name, False)
         
@@ -703,8 +715,8 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         if self.login == 'guillaume.aubert@gmail.com':
             raise Exception("Cannot push to this account")
         
-        t = gmvault_utils.Timer()
-        t.start()
+        the_timer = gmvault_utils.Timer()
+        the_timer.start()
         LOG.debug("Before to Append email contents")
         import sys 
         import codecs
@@ -716,7 +728,8 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
         #res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
     
-        LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" % (a_flags, a_internal_time, t.elapsed_ms(), res))
+        LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" \
+                  % (a_flags, a_internal_time, the_timer.elapsed_ms(), res))
         
         # check res otherwise Exception
         if '(Success)' not in res:
@@ -741,13 +754,14 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         if self.login == 'guillaume.aubert@gmail.com':
             raise Exception("Cannot push to this account")
     
-        t = gmvault_utils.Timer()
-        t.start()
+        the_t = gmvault_utils.Timer()
+        the_t.start()
         LOG.debug("Before to Append email contents")
         #res = self.server.append(self.current_folder, a_body, a_flags, a_internal_time)
         res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
     
-        LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" % (a_flags, a_internal_time, t.elapsed_ms(), res))
+        LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" \
+                  % (a_flags, a_internal_time, the_t.elapsed_ms(), res))
         
         # check res otherwise Exception
         if '(Success)' not in res:
@@ -765,14 +779,15 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         
         if labels_str:  
             #has labels so update email  
-            t.start()
+            the_t.start()
             LOG.debug("Before to store labels %s" % (labels_str))
             self.server.select_folder(u'[Google Mail]/All Mail', readonly = self.readonly_folder) # go to current folder
-            LOG.debug("Changing folders. elapsed %s s\n" % (t.elapsed_ms()))
-            t.start()
+            LOG.debug("Changing folders. elapsed %s s\n" % (the_t.elapsed_ms()))
+            the_t.start()
             ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
             #ret_code = self.server._store('+X-GM-LABELS', [result_uid],labels_str)
-            LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" % (labels_str, t.elapsed_ms(),ret_code, data))
+            LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" \
+                      % (labels_str, the_t.elapsed_ms(),ret_code, data))
             
             LOG.debug("Stored Labels %s in gm_id %s" % (labels_str, result_uid))
 
@@ -797,14 +812,15 @@ def decode_labels(labels):
     return new_labels
 
 # utf7 conversion functions
-def utf7_encode(s):
+def utf7_encode(s): #pylint: disable=C0103
+    """encode in utf7"""
     if isinstance(s, str) and sum(n for n in (ord(c) for c in s) if n > 127):
         raise ValueError("%r contains characters not valid in a str folder name. "
                               "Convert to unicode first?" % s)
 
-    r = []
+    r = [] #pylint: disable=C0103
     _in = []
-    for c in s:
+    for c in s: #pylint: disable=C0103
         if ord(c) in (range(0x20, 0x26) + range(0x27, 0x7f)):
             if _in:
                 r.extend(['&', utf7_modified_base64(''.join(_in)), '-'])
@@ -822,10 +838,11 @@ def utf7_encode(s):
     return ''.join(r)
 
 
-def utf7_decode(s):
-    r = []
+def utf7_decode(s): #pylint: disable=C0103
+    """decode utf7"""
+    r = [] #pylint: disable=C0103
     decode = []
-    for c in s:
+    for c in s: #pylint: disable=C0103
         if c == '&' and not decode:
             decode.append('&')
         elif c == '-' and decode:
@@ -847,12 +864,14 @@ def utf7_decode(s):
     return out
 
 
-def utf7_modified_base64(s):
+def utf7_modified_base64(s): #pylint: disable=C0103
+    """utf7 base64"""
     s_utf7 = s.encode('utf-7')
     return s_utf7[1:-1].replace('/', ',')
 
 
-def utf7_modified_unbase64(s):
+def utf7_modified_unbase64(s): #pylint: disable=C0103
+    """ utf7 unbase64"""
     s_utf7 = '+' + s.replace(',', '/') + '-'
     return s_utf7.decode('utf-7')
 

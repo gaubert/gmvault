@@ -80,7 +80,7 @@ class Curry:
             the_kw.update(kwargs)
         else:
             the_kw = kwargs or self.kwargs
-        return self.fun(*(self.pending + args), **the_kw) #IGNORE:W0142
+        return self.fun(*(self.pending + args), **the_kw) #pylint: disable=W0142
 
 
 
@@ -215,15 +215,15 @@ ZERO = datetime.timedelta(0)
 class UTC(datetime.tzinfo):    
     """UTC Timezone"""    
     
-    def utcoffset(self, a_dt):  
+    def utcoffset(self, a_dt): #pylint: disable=W0613
         ''' return utcoffset '''  
         return ZERO    
     
-    def tzname(self, a_dt):
+    def tzname(self, a_dt): #pylint: disable=W0613
         ''' return tzname '''    
         return "UTC"    
         
-    def dst(self, a_dt):  
+    def dst(self, a_dt): #pylint: disable=W0613 
         ''' return dst '''      
         return ZERO  
 
@@ -291,7 +291,7 @@ def cmp_to_key(mycmp):
         Taken from functools. Not in all python versions so had to redefine it
         Convert a cmp= function into a key= function
     """
-    class K(object):
+    class Key(object):
         """Key class"""
         def __init__(self, obj, *args):
             self.obj = obj
@@ -309,7 +309,7 @@ def cmp_to_key(mycmp):
             return mycmp(self.obj, other.obj) != 0
         def __hash__(self):
             raise TypeError('hash not implemented')
-    return K
+    return Key
     
 def get_all_directories_posterior_to(a_dir, dirs):
     """
@@ -530,8 +530,7 @@ conf_version=1.7.2-beta
 """
 
 #VERSION DETECTION PATTERN
-VERSION_PATTERN  = '\s*conf_version=\s*(?P<version>\S*)\s*'
-#VERSION_PATTERN  = '\s*conf_version=\S*'
+VERSION_PATTERN  = r'\s*conf_version=\s*(?P<version>\S*)\s*'
 VERSION_RE  = re.compile(VERSION_PATTERN)
 
 #list of version conf to not overwrite with the next

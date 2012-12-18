@@ -24,19 +24,19 @@ import itertools
 import fnmatch
 import shutil
 
-import blowfish
-import log_utils
+import gmv.blowfish as blowfish
+import gmv.log_utils as log_utils
 
-import collections_utils
-import gmvault_utils
-import imap_utils
-import credential_utils
+import gmv.collections_utils as collections_utils
+import gmv.gmvault_utils as gmvault_utils
+import gmv.imap_utils as imap_utils
+import gmv.credential_utils as credential_utils
 
 
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_db')
             
-class GmailStorer(object): #pylint:disable=R0902
+class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
     '''
        Store emails on disk
     ''' 
@@ -54,15 +54,15 @@ class GmailStorer(object): #pylint:disable=R0902
     MSGID_K      = 'msg_id'
     XGM_RECV_K   = 'x_gmail_received'
      
-    HF_MSGID_PATTERN       = "[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>"
-    HF_SUB_PATTERN         = "[S,s][U,u][b,B][J,j][E,e][C,c][T,t]:\s+(?P<subject>.*)\s*"
-    HF_XGMAIL_RECV_PATTERN = "[X,x]-[G,g][M,m][A,a][I,i][L,l]-[R,r][E,e][C,c][E,e][I,i][V,v][E,e][D,d]:\s+(?P<received>.*)\s*"
+    HF_MSGID_PATTERN       = r"[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>"
+    HF_SUB_PATTERN         = r"[S,s][U,u][b,B][J,j][E,e][C,c][T,t]:\s+(?P<subject>.*)\s*"
+    HF_XGMAIL_RECV_PATTERN = r"[X,x]-[G,g][M,m][A,a][I,i][L,l]-[R,r][E,e][C,c][E,e][I,i][V,v][E,e][D,d]:\s+(?P<received>.*)\s*"
     
     HF_MSGID_RE          = re.compile(HF_MSGID_PATTERN)
     HF_SUB_RE            = re.compile(HF_SUB_PATTERN)
     HF_XGMAIL_RECV_RE    = re.compile(HF_XGMAIL_RECV_PATTERN)
     
-    ENCRYPTED_PATTERN = "[\w+,\.]+crypt[\w,\.]*"
+    ENCRYPTED_PATTERN = r"[\w+,\.]+crypt[\w,\.]*"
     ENCRYPTED_RE      = re.compile(ENCRYPTED_PATTERN)
     
     
@@ -171,8 +171,6 @@ class GmailStorer(object): #pylint:disable=R0902
             self._sub_chats_nb += 1
             return self._sub_chats_dir
     
-        
-    
     def _create_gmvault_db_version(self):
         """
            Create the Gmvault database version if it doesn't already exist
@@ -224,7 +222,8 @@ class GmailStorer(object): #pylint:disable=R0902
         """
         if not self._cipher:
             if not self._encryption_key:
-                self._encryption_key = credential_utils.CredentialHelper.get_secret_key('%s/%s' % (self._info_dir, self.ENCRYPTION_KEY_FILENAME))
+                self._encryption_key = credential_utils.CredentialHelper.get_secret_key('%s/%s' \
+                % (self._info_dir, self.ENCRYPTION_KEY_FILENAME))
             
             #create blowfish cipher if data needs to be encrypted
             self._cipher = blowfish.Blowfish(self._encryption_key)
@@ -311,11 +310,12 @@ class GmailStorer(object): #pylint:disable=R0902
         else:
             
             # get all yy-mm dirs to list
-            dirs = gmvault_utils.get_all_directories_posterior_to(pivot_dir, gmvault_utils.get_all_dirs_under(self._db_dir, ignore_sub_dir))
+            dirs = gmvault_utils.get_all_directories_posterior_to(pivot_dir, \
+                   gmvault_utils.get_all_dirs_under(self._db_dir, ignore_sub_dir))
             
             #create all iterators and chain them to keep the same interface
-            #iter_dirs = [gmvault_utils.dirwalk('%s/%s' % (self._db_dir, the_dir), "*.meta") for the_dir in dirs]
-            iter_dirs = [gmvault_utils.ordered_dirwalk('%s/%s' % (self._db_dir, the_dir), "*.meta", ignore_sub_dir) for the_dir in dirs]
+            iter_dirs = [gmvault_utils.ordered_dirwalk('%s/%s' \
+                        % (self._db_dir, the_dir), "*.meta", ignore_sub_dir) for the_dir in dirs]
             
             the_iter = itertools.chain.from_iterable(iter_dirs)
         
