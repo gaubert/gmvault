@@ -20,7 +20,7 @@ import collections
 
 ## {{{ http://code.activestate.com/recipes/576669/ (r18)
 class OrderedDict(dict, collections.MutableMapping):
-
+    '''OrderedDict Class'''
     # Methods with direct access to underlying attributes
 
     def __init__(self, *args, **kwds):
@@ -80,10 +80,11 @@ class OrderedDict(dict, collections.MutableMapping):
 
     @classmethod
     def fromkeys(cls, iterable, value=None):
-        d = cls()
+        '''fromkeys'''
+        the_d = cls()
         for key in iterable:
-            d[key] = value
-        return d
+            the_d[key] = value
+        return the_d
 ## end of http://code.activestate.com/recipes/576669/ }}}
 class Map(object):
     """ Map wraps a dictionary. It is essentially an abstract class from which
@@ -104,11 +105,16 @@ class Map(object):
     
     def __delitem__(self, key):
         del self._dict[key]
+
+    def __len__(self):
+        return len(self._dict)
         
-    def remove(self, key, value):
+    def remove(self, key, value): #pylint: disable=W0613
+        '''remove key from Map'''
         del self._dict[key]
     
     def keys(self):
+        '''returns list of keys'''
         return self._dict.keys()
     
     def dict(self):
@@ -119,35 +125,48 @@ class Map(object):
 class ListMultimap(Map):
     """ ListMultimap is based on lists and allows multiple instances of same value. """
     def __init__(self):
+        super(ListMultimap, self).__init__()
         self._dict = collections.defaultdict(list)
         
     def __setitem__(self, key, value):
         self._dict[key].append(value)
+
+    def __len__(self):
+        return len(self._dict)
     
     def remove(self, key, value):
+        '''Remove key'''
         self._dict[key].remove(value)
 
 class SetMultimap(Map):
     """ SetMultimap is based on sets and prevents multiple instances of same value. """
     def __init__(self):
+        super(SetMultimap, self).__init__()
         self._dict = collections.defaultdict(set)
         
     def __setitem__(self, key, value):
         self._dict[key].add(value)
+
+    def __len__(self):
+        return len(self._dict)
     
     def remove(self, key, value):
+        '''remove key'''
         self._dict[key].remove(value)
 
 class DictMultimap(Map):
     """ DictMultimap is based on dicts and allows fast tests for membership. """
     def __init__(self):
+        super(DictMultimap, self).__init__()
         self._dict = collections.defaultdict(dict)
         
     def __setitem__(self, key, value):
         self._dict[key][value] = True
+
+    def __len__(self):
+        return len(self._dict)
     
     def remove(self, key, value):
+        """ remove key"""
         del self._dict[key][value]
-
-
 

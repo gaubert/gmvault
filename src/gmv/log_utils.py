@@ -34,12 +34,12 @@ point to the current `stdout`, whereas a stream handler would still
 point to the old one.
 """
 
-    def __init__(self, level=logbook.base.NOTSET, format_string=None, a_filter = None, bubble=False): 
-        super(StdoutHandler, self).__init__(logbook.base._missing, level,\
+    def __init__(self, level=logbook.base.NOTSET, format_string=None, a_filter = None, bubble=False): #pylint: disable=W0212
+        super(StdoutHandler, self).__init__(logbook.base._missing, level, \
                                             format_string, None, a_filter, bubble )
 
     @property
-    def stream(self):
+    def stream(self): #pylint: disable=W0212
         """
            Return the stream where to write
         """
@@ -79,7 +79,7 @@ class LogbookLoggerFactory(object):
             
             file_handler.push_application()
     
-    def setup_simple_file_handler(self, type, file_path):
+    def setup_simple_file_handler(self, the_type, file_path):
         """
            Push a file handler logging only the message (no timestamp)
         """
