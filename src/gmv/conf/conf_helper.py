@@ -255,12 +255,14 @@ class MockConf(object):
         """
         pass
     
-    def get(self, section, option, default=None, fail_if_missing=False):
+    @classmethod
+    def get(cls, section, option, default=None, fail_if_missing=False): #pylint: disable=W0613
         """ get one option from a section.
         """
         return default
     
-    def print_content(self, substitute_values = True):
+    @classmethod
+    def print_content(cls, substitute_values = True):#pylint: disable=W0613
         """ print all the options variables substituted.
         
             :param a_substitue_vals: bool for substituting values
@@ -268,7 +270,8 @@ class MockConf(object):
         """
         raise exceptions.Error("Not implemented in MockupConf")            
 
-    def items(self, section):
+    @classmethod
+    def items(cls, section):#pylint: disable=W0613
         """ return all items from a section. Items is a list of tuples (option,value)
             
             Args:
@@ -281,40 +284,44 @@ class MockConf(object):
         """
         raise exceptions.Error("Not implemented in MockupConf") 
   
-    def getint(self, section, option, default=0, fail_if_missing=False):
+    @classmethod
+    def getint(cls, section, option, default=0, fail_if_missing=False):#pylint: disable=W0613
         """Return the int value of the option.
         Default value is 0, None value can't be used as default value"""
         return default
 
-    def getfloat(self, section, option, default=0, fail_if_missing=False):
+    @classmethod
+    def getfloat(cls, section, option, default=0, fail_if_missing=False):#pylint: disable=W0613
         """Return the float value of the option. 
         Default value is 0, None value can't be used as default value"""
         return default
 
-    def getboolean(self, section, option, default=False, fail_if_missing=False):
+    @classmethod
+    def getboolean(cls, section, option, default=False, fail_if_missing=False):#pylint: disable=W0613
         """get bool value """
         return default
     
-    def get_list(self, section, option, default=None, fail_if_missing=False):
+    @classmethod
+    def get_list(cls, section, option, default=None, fail_if_missing=False):#pylint: disable=W0613
         """ get a list of string, int  """
         return default
     
-    def getlist(self, section, option, default=None, fail_if_missing=False):
+    @classmethod
+    def getlist(cls, section, option, default=None, fail_if_missing=False):#pylint: disable=W0613
         """ Deprecated, use get_list instead"""
         return self.get_list(section, option, default, fail_if_missing)
 
-    def getdict(self, section, option, default=None, fail_if_missing=False):
+    @classmethod
+    def getdict(cls, section, option, default=None, fail_if_missing=False):#pylint: disable=W0613
         """ Deprecated, use get_dict instead"""
         return self.get_dict(section, option, default, fail_if_missing)
         
     
-    def get_dict(self, section, option, default=None, fail_if_missing=False):
+    @classmethod
+    def get_dict(cls, section, option, default=None, fail_if_missing=False):#pylint: disable=W0613
         """ get a dict """
         return default
  
-     
-
-
 class Conf(object):
     """ Configuration Object with a several features:
     
