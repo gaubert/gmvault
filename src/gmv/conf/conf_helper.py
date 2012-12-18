@@ -309,12 +309,12 @@ class MockConf(object):
     @classmethod
     def getlist(cls, section, option, default=None, fail_if_missing=False):#pylint: disable=W0613
         """ Deprecated, use get_list instead"""
-        return self.get_list(section, option, default, fail_if_missing)
+        return cls.get_list(section, option, default, fail_if_missing)
 
     @classmethod
     def getdict(cls, section, option, default=None, fail_if_missing=False):#pylint: disable=W0613
         """ Deprecated, use get_dict instead"""
-        return self.get_dict(section, option, default, fail_if_missing)
+        return cls.get_dict(section, option, default, fail_if_missing)
         
     
     @classmethod
@@ -808,7 +808,7 @@ class Conf(object):
                 # add include file and populate the section hash
                 self._read(open(path, 'r'), path, depth + 1)
 
-    def _read(self, fpointer, fpname, depth=0):
+    def _read(self, fpointer, fpname, depth=0): #pylint: disable=R0912
         """Parse a sectioned setup file.
 
         The sections in setup file contains a title line at the top,
