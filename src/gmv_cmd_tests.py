@@ -76,9 +76,9 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         
-    def zztest_args_custom_sync_mode(self):
+    def test_commandline_args(self):
         """
-           Test custom sync mode
+           Test commandline args
         """
         gmv_cmd.init_logging()
         
@@ -102,7 +102,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.assertEquals(args['request'], {'req': 'Since 1-Nov-2011 Before 4-Nov-2011', 'type': 'imap'})
         self.assertEquals(args['host'],'imap.gmail.com')
         self.assertEquals(args['port'], 993)
-        self.assertEquals(args['db-cleaning'], False)
+        self.assertEquals(args['db-cleaning'], True)
         self.assertEquals(args['db-dir'],'/tmp/new-db-1')
         
         # test 2: do gmail search
@@ -124,8 +124,93 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.assertEquals(args['request'], {'req': 'subject:Chandeleur bis', 'type': 'gmail'})
         self.assertEquals(args['host'],'imap.gmail.com')
         self.assertEquals(args['port'], 993)
+        self.assertEquals(args['db-cleaning'], True)
+        self.assertEquals(args['db-dir'],'/tmp/new-db-1')
+        
+        #test3 emails only
+        sys.argv = ['gmvault.py', 'sync','-t', 'custom',
+                    '-g', 'subject:Chandeleur bis', \
+                    '--db-dir','/tmp/new-db-1', \
+                    '--emails-only', self.login]
+        
+        #with emails only
+        gmvlt = gmv_cmd.GMVaultLauncher()
+    
+        args = gmvlt.parse_args()
+        
+        #check args
+        self.assertEquals(args['emails_only'], True)
+        self.assertEquals(args['chats_only'], False)
+        self.assertEquals(args['command'],  'sync')
+        self.assertEquals(args['type'],     'custom')
+        self.assertEquals(args['email'],    self.login)
+        self.assertEquals(args['passwd'],   'not_seen')
+        self.assertEquals(args['oauth'],    'empty')
+        self.assertEquals(args['request'], {'req': 'subject:Chandeleur bis', 'type': 'gmail'})
+        self.assertEquals(args['host'],'imap.gmail.com')
+        self.assertEquals(args['port'], 993)
+        self.assertEquals(args['db-cleaning'], True)
+        self.assertEquals(args['db-dir'],'/tmp/new-db-1')
+        
+        #test4 chats only
+        sys.argv = ['gmvault.py', 'sync','-t', 'custom',
+                    '-g', 'subject:Chandeleur bis', \
+                    '--db-dir','/tmp/new-db-1', \
+                    '--chats-only', self.login]
+        
+        #with emails only
+        gmvlt = gmv_cmd.GMVaultLauncher()
+    
+        args = gmvlt.parse_args()
+        
+        #check args
+        self.assertEquals(args['chats_only'], True)
+        self.assertEquals(args['emails_only'], False)
+        self.assertEquals(args['command'],  'sync')
+        self.assertEquals(args['type'],     'custom')
+        self.assertEquals(args['email'],    self.login)
+        self.assertEquals(args['passwd'],   'not_seen')
+        self.assertEquals(args['oauth'],    'empty')
+        self.assertEquals(args['request'], {'req': 'subject:Chandeleur bis', 'type': 'gmail'})
+        self.assertEquals(args['host'],'imap.gmail.com')
+        self.assertEquals(args['port'], 993)
+        self.assertEquals(args['db-cleaning'], True)
+        self.assertEquals(args['db-dir'],'/tmp/new-db-1')
+        self.assertEquals(args['ownership_control'], True)
+        self.assertEquals(args['compression'], True)
+        self.assertEquals(args['debug'], False)
+        self.assertEquals(args['restart'], False)
+ 
+ 
+        #test5 chats only
+        sys.argv = ['gmvault.py', 'sync','-t', 'custom',
+                    '-g', 'subject:Chandeleur bis', \
+                    '--db-dir','/tmp/new-db-1', \
+                    '--check-db', 'no', '--resume', '--debug',\
+                    '--no-compression', self.login]
+        
+        #with emails only
+        gmvlt = gmv_cmd.GMVaultLauncher()
+    
+        args = gmvlt.parse_args()
+        print("Args =%s" % args)
+        
+        #check args
+        self.assertEquals(args['chats_only'], False)
+        self.assertEquals(args['emails_only'], False)
+        self.assertEquals(args['command'],  'sync')
+        self.assertEquals(args['type'],     'custom')
+        self.assertEquals(args['email'],    self.login)
+        self.assertEquals(args['passwd'],   'not_seen')
+        self.assertEquals(args['oauth'],    'empty')
+        self.assertEquals(args['request'], {'req': 'subject:Chandeleur bis', 'type': 'gmail'})
+        self.assertEquals(args['host'],'imap.gmail.com')
+        self.assertEquals(args['port'], 993)
         self.assertEquals(args['db-cleaning'], False)
         self.assertEquals(args['db-dir'],'/tmp/new-db-1')
+        self.assertEquals(args['compression'], False)
+        self.assertEquals(args['debug'], True)
+        self.assertEquals(args['restart'], True)
         
         
     def zztest_cli_bad_server(self):
@@ -269,48 +354,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         #clean db dir
         delete_db_dir(args['db-dir'])
-    
-    def test_delete_sync_gmv(self):
-        """
-           delete sync via command line
-        """
-        gmv_cmd.init_logging()
-        
-        #first request to have the extra dirs
-        sys.argv = ['gmvault.py', 'sync', '-t', 'custom', '-r', \
-                    'Since 1-Nov-2011 Before 7-Nov-2011', \
-                    '--db-dir', '/tmp/new-db-1', 'guillaume.aubert@gmail.com']
-    
-        gmvault_launcher = gmv_cmd.GMVaultLauncher()
-        
-        args = gmvault_launcher.parse_args()
-    
-        gmvault_launcher.run(args)
-        
-        #second requests so all files after the 5 should disappear 
-        sys.argv = ['gmvault.py', 'sync', '-t', 'custom', '-r', \
-                    'Since 1-Nov-2011 Before 5-Nov-2011', \
-                    '--db-dir', '/tmp/new-db-1', '-c', 'yes', 'guillaume.aubert@gmail.com']
-    
-        args = gmvault_launcher.parse_args()
-        gmvault_launcher.run(args)
-    
-        #check all stored gmail ids
-        gstorer = gmvault_db.GmailStorer('/tmp/new-db-1')
-        
-        ids = gstorer.get_all_existing_gmail_ids()
-        
-        self.assertEquals(len(ids), 5)
-        
-        self.assertEquals(ids, {1384403887202624608L: '2011-11', \
-                                1384486067720566818L: '2011-11', \
-                                1384313269332005293L: '2011-11', \
-                                1384545182050901969L: '2011-11', \
-                                1384578279292583731L: '2011-11'})
-        
-        #clean db dir
-        delete_db_dir('/tmp/new-db-1')
-        
+           
     def ztest_password_handling(self):
         """
            Test all credentials handling
@@ -453,10 +497,51 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         sys.argv = ['gmvault.py', 'restore', '--db-dir', db_dir, 'gsync.mtester@gmail.com']
 
         gmv_cmd.bootstrap_run()
+        
+    def z_NEW_test_delete_sync_gmv(self):
+        """
+           delete sync via command line
+        """
+        delete_db_dir('/tmp/new-db-1')
+        
+        #first request to have the extra dirs
+        sys.argv = ['gmvault.py', 'sync', '-t', 'custom', '-r', \
+                    'Since 1-Nov-2011 Before 7-Nov-2011', \
+                    '--db-dir', '/tmp/new-db-1', 'guillaume.aubert@gmail.com']
+        
+        #check all stored gmail ids
+        gstorer = gmvault_db.GmailStorer('/tmp/new-db-1')
+        
+        gmv_cmd.bootstrap_run()
+        
+        ids = gstorer.get_all_existing_gmail_ids()
+        
+        self.assertEquals(len(ids), 9)
+        
+        delete_db_dir('/tmp/new-db-1')
+        
+        #second requests so all files after the 5 should disappear 
+        sys.argv = ['gmvault.py', 'sync', '-t', 'custom', '-r', \
+                    'Since 1-Nov-2011 Before 5-Nov-2011', \
+                    '--db-dir', '/tmp/new-db-1', '-c', 'yes', 'guillaume.aubert@gmail.com']
     
-
+        gmv_cmd.bootstrap_run()
+    
+        gstorer = gmvault_db.GmailStorer('/tmp/new-db-1')
         
+        ids = gstorer.get_all_existing_gmail_ids()
         
+        self.assertEquals(len(ids), 5)
+        
+        self.assertEquals(ids, {1384403887202624608L: '2011-11', \
+                                1384486067720566818L: '2011-11', \
+                                1384313269332005293L: '2011-11', \
+                                1384545182050901969L: '2011-11', \
+                                1384578279292583731L: '2011-11'})
+        
+        #clean db dir
+        delete_db_dir('/tmp/new-db-1')
+               
 
 def tests():
     """
