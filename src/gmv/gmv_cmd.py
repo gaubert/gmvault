@@ -24,13 +24,13 @@ import signal
 import traceback
 
 import argparse
-import log_utils
 import imaplib
-import gmvault_utils
-import gmvault
+import gmv.log_utils as log_utils
+import gmv.gmvault_utils as gmvault_utils
+import gmv.gmvault as gmvault
 
-from cmdline_utils  import CmdLineParser
-from credential_utils import CredentialHelper
+from gmv.cmdline_utils  import CmdLineParser
+from gmv.credential_utils import CredentialHelper
 
 GMVAULT_VERSION = gmvault_utils.GMVAULT_VERSION
 
