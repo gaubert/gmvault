@@ -16,13 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import sys
 import unittest
 import base64
-import shutil
-import os
 
-import ssl
 import gmv.gmvault as gmvault
 import gmv.gmvault_utils as gmvault_utils
 import gmv.imap_utils as imap_utils
@@ -96,36 +92,6 @@ class TestGMVaultValidation(unittest.TestCase): #pylint:disable=R0904
             for key in disk_metadata:
                 self.assertEquals(disk_metadata[key], online_metadata[key])
             
-        
-   
-    def ztest_restore_on_gmail(self):
-        """
-           clean db disk
-           sync with gmail for few emails
-           restore them on gmail test
-        """
-        
-        db_dir = '/tmp/gmail_bk'
-        
-        #clean db dir
-        delete_db_dir(db_dir)
-        credential    = { 'type' : 'passwd', 'value': self.passwd}
-        gs_credential = { 'type' : 'passwd', 'value': self.gmvault_passwd}
-        search_req    = { 'type' : 'imap', 'req': "Since 1-Nov-2011 Before 3-Nov-2011"}
-        
-        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, credential, read_only_access = False, use_encryption = True)
-        
-        #syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
-        # Nov-2007 BigDataset
-        syncer.sync(imap_req = search_req)
-        
-        restorer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.gmvault_login, gs_credential, read_only_access = False)
-        restorer.restore()
-            
-        print("Done \n")    
-        
-        
-        
 
 def tests():
     """
