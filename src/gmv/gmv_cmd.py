@@ -349,7 +349,8 @@ class GMVaultLauncher(object):
         
         #user entered both authentication methods
         if options.passwd == 'empty' and options.oauth_token == 'empty':
-            parser.error('You have to use one authentication method. Please choose between XOAuth and password (recommend XOAuth).')
+            parser.error('You have to use one authentication method. '\
+                         'Please choose between XOAuth and password (recommend XOAuth).')
         
         # user entered no authentication methods => go to default oauth
         if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
@@ -367,7 +368,8 @@ class GMVaultLauncher(object):
             if options.type.lower() in list_of_types:
                 parsed_args['type'] = options.type.lower()
             else:
-                parser.error('Unknown type for command %s. The type should be one of %s' % (parsed_args['command'], list_of_types))
+                parser.error('Unknown type for command %s. The type should be one of %s' \
+                             % (parsed_args['command'], list_of_types))
         
         #add db_dir
         parsed_args['db-dir']           = options.db_dir
@@ -528,7 +530,8 @@ class GMVaultLauncher(object):
             
             #call restore
             labels = [args['label']] if args['label'] else []
-            restorer.restore(extra_labels = labels, restart = args['restart'], emails_only = args['emails_only'], chats_only = args['chats_only'])
+            restorer.restore(extra_labels = labels, restart = args['restart'], \
+                             emails_only = args['emails_only'], chats_only = args['chats_only'])
             
         elif args.get('type', '') == 'quick':
             
@@ -542,7 +545,8 @@ class GMVaultLauncher(object):
             
             #call restore
             labels = [args['label']] if args['label'] else []
-            restorer.restore(pivot_dir = starting_dir, extra_labels = labels, restart = args['restart'], emails_only = args['emails_only'], chats_only = args['chats_only'])
+            restorer.restore(pivot_dir = starting_dir, extra_labels = labels, restart = args['restart'],\
+                             emails_only = args['emails_only'], chats_only = args['chats_only'])
         
         else:
             raise ValueError("Unknown synchronisation mode %s. Please use full (default), quick.")
@@ -568,8 +572,8 @@ class GMVaultLauncher(object):
         
             #choose full sync. Ignore the request
             syncer.sync({ 'type': 'imap', 'req': 'ALL' } , compress_on_disk = args['compression'], \
-                        db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'], restart = args['restart'], \
-                        emails_only = args['emails_only'], chats_only = args['chats_only'])
+                        db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'],\
+                        restart = args['restart'], emails_only = args['emails_only'], chats_only = args['chats_only'])
             
         elif args.get('type', '') == 'quick':
             
@@ -593,13 +597,8 @@ class GMVaultLauncher(object):
         elif args.get('type', '') == 'custom':
             
             # pass an imap request. Assume that the user know what to do here
-            LOG.critical("Perform custom synchronisation with %s request: %s.\n" % (args['request']['type'], args['request']['req']))
-            
-            #LOG.critical("Deactivate chats syncing and database cleaning when performing a custom synchronisation.\n" )
-            #deactivate everything
-            #args['emails_only'] = True
-            #args['chats_only']  = False
-            #args['db-cleaning'] = False
+            LOG.critical("Perform custom synchronisation with %s request: %s.\n" \
+                         % (args['request']['type'], args['request']['req']))
             
             syncer.sync(args['request'], compress_on_disk = args['compression'], db_cleaning = args['db-cleaning'], \
                         ownership_checking = args['ownership_control'], restart = args['restart'], \
@@ -658,7 +657,8 @@ class GMVaultLauncher(object):
             LOG.critical("\nCRTL^C. Stop all operations.\n")
             on_error = False
         except socket.error:
-            LOG.critical("Error: Network problem. Please check your gmail server hostname, the internet connection or your network setup.\n")
+            LOG.critical("Error: Network problem. Please check your gmail server hostname,"\
+                         " the internet connection or your network setup.\n")
             LOG.critical("=== Exception traceback ===")
             LOG.critical(gmvault_utils.get_exception_traceback())
             LOG.critical("=== End of Exception traceback ===\n")
@@ -666,9 +666,11 @@ class GMVaultLauncher(object):
         except imaplib.IMAP4.error, imap_err:
             #bad login or password
             if str(imap_err) in ['[AUTHENTICATIONFAILED] Invalid credentials (Failure)', \
-                                 '[ALERT] Web login required: http://support.google.com/mail/bin/answer.py?answer=78754 (Failure)', \
+                                 '[ALERT] Web login required: http://support.google.com/'\
+                                 'mail/bin/answer.py?answer=78754 (Failure)', \
                                  '[ALERT] Invalid credentials (Failure)'] :
-                LOG.critical("ERROR: Invalid credentials, cannot login to the gmail server. Please check your login and password or xoauth token.\n")
+                LOG.critical("ERROR: Invalid credentials, cannot login to the gmail server."\
+                             " Please check your login and password or xoauth token.\n")
                 die_with_usage = False
             else:
                 LOG.critical("Error: %s.\n" % (imap_err) )
@@ -697,7 +699,8 @@ def activate_debug_mode():
        Activate debugging logging
     """
     LOG.critical("Debugging logs are going to be saved in file %s/gmvault.log.\n" % os.getenv("HOME","."))
-    log_utils.LoggerFactory.setup_cli_app_handler(log_utils.STANDALONE, activate_log_file=True, console_level= 'DEBUG', file_path="%s/gmvault.log" % os.getenv("HOME","."))
+    log_utils.LoggerFactory.setup_cli_app_handler(log_utils.STANDALONE, activate_log_file=True, \
+                               console_level= 'DEBUG', file_path="%s/gmvault.log" % os.getenv("HOME","."))
 
 def sigusr1_handler(signum, frame): #pylint:disable=W0613
     """
