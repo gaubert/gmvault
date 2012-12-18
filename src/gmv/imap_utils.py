@@ -254,7 +254,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902
            connect to the IMAP server
         """
         # create imap object
-        self.server = mimap.MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, ssl= self.ssl)
+        self.server = mimap.MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, need_ssl= self.ssl)
         # connect with password or xoauth
         if self.credential['type'] == 'passwd':
             self.server.login(self.login, self.credential['value'])

@@ -193,11 +193,11 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
        Compression inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
     """
     
-    def __init__(self, host, port=None, use_uid=True, a_ssl=False):
+    def __init__(self, host, port=None, use_uid=True, need_ssl=False):
         """
            constructor
         """
-        super(MonkeyIMAPClient, self).__init__(host, port, use_uid, a_ssl)
+        super(MonkeyIMAPClient, self).__init__(host, port, use_uid, need_ssl)
     
     def _create_IMAP4(self): #pylint:disable-msg=C0103
         """

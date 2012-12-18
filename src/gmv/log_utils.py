@@ -79,7 +79,7 @@ class LogbookLoggerFactory(object):
             
             file_handler.push_application()
     
-    def setup_simple_file_handler(self, the_type, file_path):
+    def setup_simple_file_handler(self, file_path):
         """
            Push a file handler logging only the message (no timestamp)
         """
