@@ -99,25 +99,25 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
         self.compressor   = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
         
     def open(self, host = '', port = imaplib.IMAP4_SSL_PORT): 
-		"""Setup connection to remote server on "host:port".
-			(default: localhost:standard IMAP4 SSL port).
-		This connection will be used by the routines:
-			read, readline, send, shutdown.
-		"""
-		self.host   = host
-		self.port   = port
-		
-		self.sock   = socket.create_connection((host, port), self.SOCK_TIMEOUT) #add so_timeout  
+        """Setup connection to remote server on "host:port".
+           (default: localhost:standard IMAP4 SSL port).
+           This connection will be used by the routines:
+           read, readline, send, shutdown.
+        """
+        self.host   = host
+        self.port   = port
 
-		#self.sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1) #try to set TCP NO DELAY to increase performances
+        self.sock   = socket.create_connection((host, port), self.SOCK_TIMEOUT) #add so_timeout  
 
-		self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
+        #self.sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1) #try to set TCP NO DELAY to increase performances
+
+        self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
 		
-		# This is the last correction added to avoid memory fragmentation in imaplib
-		# makefile creates a file object that makes use of cStringIO to avoid mem fragmentation
-		# it could be used without the compression 
-		# (maybe make 2 set of methods without compression and with compression)
-		#self.file   = self.sslobj.makefile('rb')
+        # This is the last correction added to avoid memory fragmentation in imaplib
+        # makefile creates a file object that makes use of cStringIO to avoid mem fragmentation
+        # it could be used without the compression 
+        # (maybe make 2 set of methods without compression and with compression)
+        #self.file   = self.sslobj.makefile('rb')
     
     def read(self, size):
         """
@@ -187,7 +187,7 @@ def seq_to_parenlist(flags):
         raise ValueError('invalid flags list: %r' % flags)
     return '(%s)' % ' '.join(flags)
     
-class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R904
+class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
     """
        Need to extend the IMAPClient to do more things such as compression
        Compression inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
@@ -203,8 +203,8 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R904
         """
            Factory method creating an IMAPCOMPSSL or a standard IMAP4 Class
         """
-        imapClass = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
-        return imapClass(self.host, self.port)
+        imap_class = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
+        return imap_class(self.host, self.port)
     
     def xoauth_login(self, xoauth_cred ):
         """
@@ -273,7 +273,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R904
 
         return data[0]
     
-    def enable_compression(self):#pylint: disable=W0212
+    def enable_compression(self):
         """
         enable_compression()
         Ask the server to start compressing the connection.
@@ -281,7 +281,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R904
             if 'COMPRESS=DEFLATE' in imapobj.capabilities:
                 imapobj.enable_compression()
         """
-        ret_code, _ = self._imap._simple_command('COMPRESS', 'DEFLATE')
+        ret_code, _ = self._imap._simple_command('COMPRESS', 'DEFLATE') #pylint: disable=W0212
         if ret_code == 'OK':
             self._imap.activate_compression()
         else:
