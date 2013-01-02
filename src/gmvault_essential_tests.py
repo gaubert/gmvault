@@ -238,7 +238,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
          
     def test_restore_tricky_emails(self):
-        """test_restore_tricky_emails. Restore tricky emails in the a mailbox"""
+        """test_restore_tricky_emails. Restore emails with some specificities (japanese characters) in the a mailbox"""
         gsync_credential    = { 'type' : 'passwd', 'value': self.gsync_passwd }
 
         self.clean_mailbox(self.gsync_login, gsync_credential)
