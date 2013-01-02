@@ -256,14 +256,14 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
         self.check_remote_mailbox_identical_to_local(restorer)
         
-    def test_backup_and_restore(self):
+    def ztest_backup_and_restore(self):
         """backup from gmvault_test and restore"""
         gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
         gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
         
         self.clean_mailbox(self.gsync_login, gsync_credential)
         
-        gmvault_test_db_dir = "/tmp/backp-restore"
+        gmvault_test_db_dir = "/tmp/backup-restore"
         
         backuper = gmvault.GMVaulter(gmvault_test_db_dir, 'imap.gmail.com', 993, \
                                      self.gmvault_test_login, gmvault_test_credential, \

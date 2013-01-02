@@ -514,7 +514,7 @@ class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
 
         gmv_cmd.bootstrap_run()
         
-    def z_NEW_test_delete_sync_gmv(self):
+    def ztest_delete_sync_gmv(self):
         """
            delete sync via command line
         """
