@@ -53,7 +53,7 @@ class TestConf(unittest.TestCase):
     def tearDown(self): #pylint: disable=C0103
 
         if os.path.exists('/tmp/fake_conf.config'):
-           os.remove('/tmp/fake_conf.config')
+            os.remove('/tmp/fake_conf.config')
  
     def test_empty(self):
         """
