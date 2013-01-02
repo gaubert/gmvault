@@ -160,7 +160,7 @@ class TestConf(unittest.TestCase):
         the_f.flush()
         the_f.close()
     
-    def test_use_conf_ENVNAME_resource(self): #pylint: disable=C0103
+    def ztest_use_conf_ENVNAME_resource(self): #pylint: disable=C0103
         """testUseConfENVNAMEResource: Use default resource ENVNAME to locate conf file"""
         self._create_fake_conf_file_in_tmp()
 
