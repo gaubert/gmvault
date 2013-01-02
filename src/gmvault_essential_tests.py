@@ -70,7 +70,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.gmvault_test_passwd = None
     
     def setUp(self): #pylint:disable-msg=C0103
-        print("IN SETUP")
+        """setup"""
         self.gsync_login, self.gsync_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         self.gmvault_test_login, self.gmvault_test_passwd = read_password_file('/homespace/gaubert/.ssh/gmvault_test_passwd')
 
@@ -256,7 +256,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
         self.check_remote_mailbox_identical_to_local(restorer)
         
-    def ztest_backup_and_restore(self):
+    def test_backup_and_restore(self):
         """backup from gmvault_test and restore"""
         gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
         gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
