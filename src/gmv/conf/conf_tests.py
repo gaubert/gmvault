@@ -163,6 +163,12 @@ class TestConf(unittest.TestCase):
     def test_use_conf_ENVNAME_resource(self): #pylint: disable=C0103
         """testUseConfENVNAMEResource: Use default resource ENVNAME to locate conf file"""
         self._create_fake_conf_file_in_tmp()
+
+        f = open("/tmp/fake_conf.config")
+        for line in f:
+           print("Line:%s\n" %(line))
+
+        f.close()
         
         # need to setup the ENV containing the the path to the conf file:
         os.environ[gmv.conf.conf_helper.Conf.ENVNAME] = "/tmp/fake_conf.config"
