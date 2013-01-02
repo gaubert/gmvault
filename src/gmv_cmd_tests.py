@@ -1,6 +1,6 @@
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -56,14 +56,14 @@ def delete_db_dir(a_db_dir):
     gmvault_utils.delete_all_under(a_db_dir, delete_top_dir = True)
 
 
-class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
+class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
     """
        Current Main test class
     """
 
     def __init__(self, stuff):
         """ constructor """
-        super(TestGMVault, self).__init__(stuff)
+        super(TestGMVCMD, self).__init__(stuff)
         
         self.login  = None
         self.passwd = None
@@ -74,7 +74,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
     def setUp(self): #pylint:disable-msg=C0103
         self.login, self.passwd = read_password_file('/homespace/gaubert/.ssh/passwd')
         
-        self.gmvault_login, self.gmvault_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
+        self.gsync_login, self.gsync_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         
     def test_commandline_args(self):
         """
@@ -82,13 +82,31 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
         gmv_cmd.init_logging()
         
-        # test 1: do imap search
-
+        # test 1: default
+        sys.argv = ['gmvault.py', 'sync', self.login]
+        
+        gmvlt = gmv_cmd.GMVaultLauncher()
+    
+        args = gmvlt.parse_args()
+        
+        #check args
+        self.assertEquals(args['command'],  'sync')
+        self.assertEquals(args['type'],     'full')
+        self.assertEquals(args['email'],    self.login)
+        self.assertEquals(args['passwd'],   'not_seen')
+        self.assertEquals(args['oauth'],    'empty')
+        self.assertEquals(args['request'], {'req': 'ALL', 'type': 'imap'})
+        self.assertEquals(args['host'],'imap.gmail.com')
+        self.assertEquals(args['port'], 993)
+        self.assertEquals(args['db-cleaning'], True)
+        self.assertEquals(args['db-dir'],'%s/gmvault-db' % (os.environ['HOME']))
+            
+        
+        # test 2: do imap search
         sys.argv = ['gmvault.py', 'sync','-t', 'custom',
                     '-r', 'Since 1-Nov-2011 Before 4-Nov-2011', \
                     '--db-dir','/tmp/new-db-1', self.login]
         
-        #do same as in bootstrap
         gmvlt = gmv_cmd.GMVaultLauncher()
     
         args = gmvlt.parse_args()
@@ -152,13 +170,12 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.assertEquals(args['db-cleaning'], True)
         self.assertEquals(args['db-dir'],'/tmp/new-db-1')
         
-        #test4 chats only
+        #test chats only
         sys.argv = ['gmvault.py', 'sync','-t', 'custom',
                     '-g', 'subject:Chandeleur bis', \
                     '--db-dir','/tmp/new-db-1', \
                     '--chats-only', self.login]
         
-        #with emails only
         gmvlt = gmv_cmd.GMVaultLauncher()
     
         args = gmvlt.parse_args()
@@ -193,7 +210,6 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gmvlt = gmv_cmd.GMVaultLauncher()
     
         args = gmvlt.parse_args()
-        print("Args =%s" % args)
         
         #check args
         self.assertEquals(args['chats_only'], False)
@@ -547,7 +563,7 @@ def tests():
     """
        main test function
     """
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestGMVault)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestGMVCMD)
     unittest.TextTestRunner(verbosity=2).run(suite)
  
 if __name__ == '__main__':
