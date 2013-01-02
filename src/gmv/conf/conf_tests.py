@@ -49,7 +49,12 @@ class TestConf(unittest.TestCase):
         the_fp = open('%s/%s' % (TestConf._get_tests_dir_path(), "test.config"))
     
         self.conf._read(the_fp,"the file") #pylint: disable=W0212
-    
+
+    def tearDown(self): #pylint: disable=C0103
+
+        if os.path.exists('/tmp/fake_conf.config'):
+           os.remove('/tmp/fake_conf.config')
+ 
     def test_empty(self):
         """
           Do nothing
