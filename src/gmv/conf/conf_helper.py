@@ -410,6 +410,8 @@ class Conf(object):
             
             # memorize conf file path
             self._configuration_file_path = a_file
+
+            print("====== configuration file path = %s\n" % (self._configuration_file_path))
             
         except Exception, exce:
             print "Can't read the config file %s" % (a_file)
