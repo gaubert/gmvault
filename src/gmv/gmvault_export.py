@@ -25,10 +25,10 @@ import os
 import re
 import mailbox
 
-from imap_utils import GIMAPFetcher
-import log_utils
-from gmvault import GmailStorer
-from gmvault_utils import Timer
+from gmv.imap_utils import GIMAPFetcher
+import gmv.log_utils as log_utils
+from gmv.gmvault_db import GmailStorer
+from gmv.gmvault_utils import Timer
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_export')
 
@@ -82,7 +82,7 @@ class GMVaultExporter(object):
 class Mailbox(object):
     def add(self, msg, folder, flags):
         raise NotImplementedError('implement in subclass')
-    def close():
+    def close(self):
         pass
 
 class Maildir(Mailbox):
