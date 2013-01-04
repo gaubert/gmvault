@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -36,7 +36,7 @@ import gmv.conf.conf_helper
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
-GMVAULT_VERSION = "1.7.2-beta"
+GMVAULT_VERSION="1.7.2-beta"
 
 class memoized(object):
     """Decorator that caches a function's return value each time it is called.

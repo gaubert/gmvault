@@ -1,6 +1,6 @@
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,31 +64,32 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """ constructor """
         super(TestEssentialGMVault, self).__init__(stuff)
         
-        self.test_login  = None
-        self.test_passwd = None 
+        self.gsync_login         = None
+        self.gsync_passwd        = None 
+        self.gmvault_test_login  = None
+        self.gmvault_test_passwd = None
     
     def setUp(self): #pylint:disable-msg=C0103
-        print("IN SETUP")
-        self.test_login, self.test_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
+        """setup"""
+        self.gsync_login, self.gsync_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
+        self.gmvault_test_login, self.gmvault_test_passwd = read_password_file('/homespace/gaubert/.ssh/gmvault_test_passwd')
 
-    def assert_login_is_protected(self):
+    def assert_login_is_protected(self, login):
         """
           Insure that the login is not my personnal mailbox
         """
-        if self.test_login != 'gsync.mtester@gmail.com':
-            raise Exception("Beware login should be gsync.mtester@gmail.com and it is %s" % (self.test_login)) 
+        if login != 'gsync.mtester@gmail.com':
+            raise Exception("Beware login should be gsync.mtester@gmail.com and it is %s" % (self.login)) 
 
-    def clean_mailbox(self):
+    def clean_mailbox(self, login , credential):
         """
            Delete all emails, destroy all labels
         """
-        credential    = { 'type' : 'passwd', 'value': self.test_passwd }
+        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, login, credential, readonly_folder = False)
 
-        gimap = imap_utils.GIMAPFetcher('imap.gmail.com', 993, self.test_login, credential, readonly_folder = False)
+        print("login = %s" % (login))
 
-        print("self.test_login = %s" % (self.test_login))
-
-        self.assert_login_is_protected()
+        self.assert_login_is_protected(login)
 
         gimap.connect()
         
@@ -134,7 +135,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
             print("disk metadata %s\n" % (disk_metadata))
 
-            date     = disk_metadata['internal_date'].strftime('"%d %b %Y"')
+            #date     = disk_metadata['internal_date'].strftime('"%d %b %Y"')
             subject  = disk_metadata.get('subject', None)
             msgid    = disk_metadata.get('msg_id', None)
             received = disk_metadata.get('x_gmail_received', None)
@@ -236,21 +237,43 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     self.fail("flag %s should be in online_flags %s as it is in disk_flags %s" % (flag, online_flags, disk_flags))        
 
          
-    def test_restore(self):
-        """
-           Test connect error (connect to a wrong port). Too long to check
-        """
-        credential    = { 'type' : 'passwd', 'value': self.test_passwd }
+    def test_restore_tricky_emails(self):
+        """test_restore_tricky_emails. Restore emails with some specificities (japanese characters) in the a mailbox"""
+        gsync_credential    = { 'type' : 'passwd', 'value': self.gsync_passwd }
 
-        self.clean_mailbox()
+        self.clean_mailbox(self.gsync_login, gsync_credential)
 
         # test restore
-        #test_db_dir = "/homespace/gaubert/gmvault-db"
         test_db_dir = "/homespace/gaubert/gmvault-dbs/essential-dbs"
         #test_db_dir = "/home/gmv/Dev/projects/gmvault-develop/src/test-db"
         #test_db_dir = "/Users/gaubert/Dev/projects/gmvault-develop/src/test-db"
         
-        restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, self.test_login, credential, \
+        restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, \
+                                     self.gsync_login, gsync_credential, \
+                                     read_only_access = False)
+        
+        restorer.restore() #restore all emails from this essential-db
+
+        self.check_remote_mailbox_identical_to_local(restorer)
+        
+    def test_backup_and_restore(self):
+        """backup from gmvault_test and restore"""
+        gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
+        gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
+        
+        self.clean_mailbox(self.gsync_login, gsync_credential)
+        
+        gmvault_test_db_dir = "/tmp/backup-restore"
+        
+        backuper = gmvault.GMVaulter(gmvault_test_db_dir, 'imap.gmail.com', 993, \
+                                     self.gmvault_test_login, gmvault_test_credential, \
+                                     read_only_access = False)
+        
+        backuper.sync()
+        
+        #check that we have x emails in the database
+        restorer = gmvault.GMVaulter(gmvault_test_db_dir, 'imap.gmail.com', 993, \
+                                     self.gsync_login, gsync_credential, \
                                      read_only_access = False)
         
         restorer.restore() #restore all emails from this essential-db

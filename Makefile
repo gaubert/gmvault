@@ -22,7 +22,8 @@ ETC=$(BASEDIR)/etc
 PYTHONBIN=python #MacOSX machine
 #PYTHONWINBIN=python
 #PYTHONWINBIN=/drives/d/Programs/python2.7/python.exe #for my windows machine at work
-PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
+#PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
+PYTHONWINBIN=/c/Python27/python.exe #windows laptop
 PYTHONVERSION=2.7
 
 #MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
