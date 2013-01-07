@@ -67,5 +67,5 @@ setup(name='gmvault',
       scripts=['./etc/scripts/gmvault'],
       package_data={'': ['release-note.txt']},
       include_package_data=True,
-      install_requires=['argparse', 'Logbook==0.3', 'IMAPClient==0.9','gdata==2.0.17']
+      install_requires=['argparse', 'Logbook==0.4.1', 'IMAPClient==0.9','gdata==2.0.17']
       )
