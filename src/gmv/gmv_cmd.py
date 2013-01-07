@@ -350,6 +350,10 @@ class GMVaultLauncher(object):
                           action='store', dest='type', \
                           default='maildir', help='type of export: maildir, mbox. (default: maildir)')
 
+        export_parser.add_argument('-l', '--label', \
+                                   action='append', dest='label', \
+                                   default=None,
+                                   help='specify a label to export')
         export_parser.add_argument("--debug", \
                        action='store_true', help="Activate debugging info",\
                        dest="debug", default=False)
@@ -516,6 +520,7 @@ class GMVaultLauncher(object):
             self._parse_common_args(options, parser, parsed_args, self.CHECK_TYPES)
     
         elif parsed_args.get('command', '') == 'export':
+            parsed_args['labels'] = options.label
             parsed_args['db-dir'] = options.db_dir
             parsed_args['output'] = options.output
             if options.type.lower() in self.EXPORT_TYPES:
@@ -549,10 +554,13 @@ class GMVaultLauncher(object):
     
     @classmethod
     def _export(cls, args):
+        pred = None
+        if args['labels']:
+            pred = lambda l: l in args['labels']
         types = { 'maildir': gmvault_export.Maildir,
             'mbox': gmvault_export.MBox }
         output = types[args['type']](args['output'])
-        gmvault_export.GMVaultExporter(args['db-dir'], output).export()
+        gmvault_export.GMVaultExporter(args['db-dir'], output, pred).export()
         output.close()
 
     @classmethod

@@ -36,20 +36,26 @@ class GMVaultExporter(object):
     PROGRESS_INTERVAL = 200
 
     CHATS_FOLDER = 'Chats'
+    ARCHIVED_FOLDER = 'Archived' # Mails only in 'All Mail'
 
-    GM_INBOX = '\\Inbox'
+    GM_ALL = re.sub(r'^\\', '', GIMAPFetcher.GENERIC_GMAIL_ALL)
+    GM_INBOX = 'Inbox'
     GM_SEP = '/'
 
     GM_SEEN = '\\Seen'
     GM_FLAGGED = '\\Flagged'
 
-    def __init__(self, db_dir, mailbox):
+    def __init__(self, db_dir, mailbox, label_pred = None):
         self.storer = GmailStorer(db_dir)
         self.mailbox = mailbox
+        self.label_pred = label_pred or self.default_label_predicate()
+
+    def default_label_predicate(self):
+        return lambda l: l != self.GM_ALL
 
     def export(self):
         self.export_ids('emails', self.storer.get_all_existing_gmail_ids(), \
-            default_folder = GIMAPFetcher.GENERIC_GMAIL_ALL, use_labels = True)
+            default_folder = self.GM_ALL, use_labels = True)
         self.export_ids('chats', self.storer.get_all_chats_gmail_ids(), \
             default_folder = self.CHATS_FOLDER, use_labels = False)
 
@@ -64,9 +70,14 @@ class GMVaultExporter(object):
 
             folders = [default_folder]
             if use_labels:
-                folders.extend(meta[GmailStorer.LABELS_K])
+                add_labels = meta[GmailStorer.LABELS_K]
+                if not add_labels:
+                    add_labels = ['Archived']
+                folders.extend(add_labels)
             for folder in folders:
-                self.mailbox.add(msg, folder, meta[GmailStorer.FLAGS_K])
+                f = re.sub(r'^\\', '', folder)
+                if self.label_pred(f):
+                    self.mailbox.add(msg, f, meta[GmailStorer.FLAGS_K])
 
             done += 1
             left = len(ids) - done
@@ -97,11 +108,8 @@ class Maildir(Mailbox):
         if folder == GMVaultExporter.GM_INBOX:
             return None
 
-        # Get rid of initial \\ on mailboxes
-        r = re.sub(r'^\\', '', folder)
-
         # Escape tilde a la listescape
-        r = r.replace('~', '%s%02X' % (self.escape, ord('~')))
+        r = folder.replace('~', '%s%02X' % (self.escape, ord('~')))
 
         # listescape can't handle SEPARATOR, escape otherwise instead. Ewwww!!!
         se = self.sep_escape[0]
@@ -138,8 +146,6 @@ class MBox(Mailbox):
             m.close()
 
     def subdir(self, label):
-        label = re.sub(r'^\\', '', label)
-
         segments = label.split(GMVaultExporter.GM_SEP)
         segments = [s for s in segments if s != '..'] # safety first!
         fname = segments.pop()
