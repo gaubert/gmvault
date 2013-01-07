@@ -1131,8 +1131,8 @@ class GMVaulter(object):
                     # add in the labels_to_create struct
                     for label in labels:
                         if label != "\\Starred":
+                            #LOG.debug("label = %s\n" % (label.encode('utf-8')))
                             LOG.debug("label = %s\n" % (label))
-                            #labels_to_apply[str(label)] = imap_id
                             labels_to_apply[label] = imap_id
             
                     # get list of labels to create (do a union with labels to create)
