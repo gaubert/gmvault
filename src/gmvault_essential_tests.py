@@ -280,6 +280,84 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
         self.check_remote_mailbox_identical_to_local(restorer)
         
+    def test_difference(self):
+        """
+           
+        """
+        gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
+        gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
+        
+        gmv_dir_a = "/tmp/a-db"
+        gmv_dir_b = "/tmp/b-db"
+        
+        gmv_a = gmvault.GMVaulter(gmv_dir_a, 'imap.gmail.com', 993, \
+                                     self.gmvault_test_login, gmvault_test_credential, \
+                                     read_only_access = False)
+        
+        gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, \
+                                     self.gmvault_test_login, gmvault_test_credential, \
+                                     read_only_access = False)
+        
+        
+    def diff_mailboxes(self, gmvaulter_a, gmvaulter_b):
+        """
+           Diff 2 mailboxes
+        """
+        # check all ids one by one
+        gmvaulter_a.src.select_folder('ALLMAIL')
+        gmvaulter_b.src.select_folder('ALLMAIL')
+        
+        # check the number of id on disk 
+        imap_ids_a = gmvaulter_a.src.search({ 'type' : 'imap', 'req' : 'ALL'}) 
+        imap_ids_b = gmvaulter_b.src.search({ 'type' : 'imap', 'req' : 'ALL'}) 
+        
+        print("Got %d emails in gmvault_a.\n" % (len(imap_ids_a)))
+        print("Got %d emails in gmvault_b.\n" % (len(imap_ids_b)))
+        
+        if len(imap_ids_a) != len(imap_ids_b):
+            print("Oh Oh, gmvault_a has %s emails and gmvault_b has %s emails\n" \
+                  % (len(imap_ids_a), len(imap_ids_b)))
+        else:
+            print("Both databases has %d emails." % (len(imap_ids_a)))
+        
+        diff_result = { "in_a" : [],
+                        "in_b" : [],
+                      }
+        
+        #dumb search not optimisation
+        #iterate over imap_ids_a and flag emails only in a but not in b
+        #remove emails from imap_ids_b everytime they are found 
+        for id_a in imap_ids_a:
+            if id_a not in imap_ids_b:
+                #get gmail id 
+                online_metadata = gmvaulter_a.src.fetch(id_a, \
+                                                  imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA)
+                
+                gid = online_metadata[id_a][imap_utils.GIMAPFetcher.GMAIL_ID]
+                
+                diff_result["in_a"].append(gid)
+            else:
+                imap_ids_b.remove(id_a)
+        
+        #flag all ids left in imap_ids_b
+        
+        for id_b in imap_ids_b:
+            #get gmail id 
+            online_metadata = gmvaulter_a.src.fetch(id_b, \
+                                                  imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA)
+                
+            gid = online_metadata[id_b][imap_utils.GIMAPFetcher.GMAIL_ID]
+            diff_result["in_b"].append(gid)
+            
+        
+        # print report
+        print("gm_ids only in gmv_a:%s\n" % (diff_result["in_a"])) 
+        print("\n")
+        print("gm_ids only in gmv_b:%s\n" % (diff_result["in_b"])) 
+            
+                
+        
+        
 def tests():
     """
        main test function

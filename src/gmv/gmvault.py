@@ -294,28 +294,6 @@ class GMVaulter(object):
         
         return the_str
         
-    def _sync_between(self, begin_date, end_date, storage_dir, compress = True):
-        """
-           sync between 2 dates
-        """
-        #create storer
-        gstorer = gmvault_db.GmailStorer(storage_dir, self.use_encryption)
-        
-        #search before the next month
-        imap_req = self.get_imap_request_btw_2_dates(begin_date, end_date)
-        
-        ids = self.src.search(imap_req)
-                              
-        #loop over all ids, get email store email
-        for the_id in ids:
-            
-            #retrieve email from destination email account
-            data      = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_ALL_INFO)
-            
-            file_path = gstorer.bury_email(data[the_id], compress = compress)
-            
-            LOG.critical("Stored email %d in %s" %(the_id, file_path))
-        
     @classmethod
     def _get_next_date(cls, a_current_date, start_month_beginning = False):
         """
@@ -951,8 +929,6 @@ class GMVaulter(object):
                 
         LOG.critical("Read chats info from %s gmvault-db." % (self.db_root_dir))
         
-        #for the restore (save last_restored_id in .gmvault/last_restored_id
-        
         #get gmail_ids from db
         db_gmail_ids_info = self.gstorer.get_all_chats_gmail_ids()
         
@@ -989,7 +965,7 @@ class GMVaulter(object):
             labels_to_create    = set() #create label set
             labels_to_create.update(extra_labels) # add extra labels to applied to all emails
             
-            LOG.critical("Pushing the chats content of the current batch of %d emails.\n" % (nb_items))
+            LOG.critical("Processing next batch of %s chats.\n" % (nb_items))
             
             # unbury the metadata for all these emails
             for gm_id in group_imap_ids:    
@@ -1023,7 +999,7 @@ class GMVaulter(object):
                 existing_labels = self.src.create_gmail_labels(labels_to_create, existing_labels)
                 
             # associate labels with emails
-            LOG.critical("Applying labels to the current batch of %d emails" % (nb_items))
+            LOG.critical("Applying labels to the current batch of chats.")
             try:
                 LOG.debug("Changing directory. Going into ALLMAIL")
                 self.src.select_folder('ALLMAIL') #go to ALL MAIL to make STORE usable
@@ -1110,7 +1086,7 @@ class GMVaulter(object):
             labels_to_create    = set() #create label set
             labels_to_create.update(extra_labels) # add extra labels to applied to all emails
             
-            LOG.critical("Pushing the email content of the current batch of %d emails.\n" % (nb_items))
+            LOG.critical("Processing next batch of %s emails.\n" % (nb_items))
             
             # unbury the metadata for all these emails
             for gm_id in group_imap_ids:    
@@ -1146,7 +1122,7 @@ class GMVaulter(object):
                 existing_labels = self.src.create_gmail_labels(labels_to_create, existing_labels)
                 
             # associate labels with emails
-            LOG.critical("Applying labels to the current batch of %d emails" % (nb_items))
+            LOG.critical("Applying labels to the current batch of emails.")
             try:
                 LOG.debug("Changing directory. Going into ALLMAIL")
                 the_timer = gmvault_utils.Timer()
