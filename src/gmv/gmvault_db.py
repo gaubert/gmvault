@@ -359,8 +359,13 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         
         # need to convert labels that are number as string
         # come from imap_lib when label is a number
-        #labels = [ str(elem) for elem in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS] ]
-        labels = email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS]
+        labels = []
+        for label in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS]:
+            if isinstance(label, (int, long, float, complex)):
+                label = str(label)
+
+            labels.append(unicode(label))
+        
         labels.extend(extra_labels) #add extra labels
         
         #create json structure for metadata
