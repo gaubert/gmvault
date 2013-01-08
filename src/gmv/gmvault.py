@@ -577,7 +577,6 @@ class GMVaulter(object):
                     LOG.critical("Process email num %d (imap_id:%s) from %s." % (nb_emails_processed, the_id, the_dir))
                     
                     #decode the labels that are received as utf7 => unicode
-
                     new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
                     imap_utils.decode_labels(new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS])
                 
