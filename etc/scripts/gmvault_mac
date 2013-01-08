@@ -8,7 +8,8 @@ umask 002
 #################################
 ## GMVAULT Distribution home directory
 #################################
-CDIR=`dirname "$0"`
+ABSPATH="$(perl -e "use Cwd 'abs_path'; print abs_path('$0')")"
+CDIR=`dirname "$ABSPATH"`
 HERE=$(unset CDPATH; cd "$CDIR"; pwd)
 GMVAULT_HOME=$(unset CDPATH; cd "$HERE/.."; pwd)
 
