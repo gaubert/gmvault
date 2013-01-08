@@ -636,6 +636,8 @@ class GMVaulter(object):
         #check ownership to have one email per db unless user wants different
         #save the owner if new
         self._check_email_db_ownership(ownership_checking)
+        
+        
                 
         if not compress_on_disk:
             LOG.critical("Disable compression when storing emails.")

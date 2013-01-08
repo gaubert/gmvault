@@ -452,8 +452,17 @@ def dirwalk(a_dir, a_wildcards= '*'):
         for the_file in files:
             if fnmatch.fnmatch(the_file, a_wildcards):
                 yield os.path.join(root, the_file)  
-
-
+                
+def convert_to_utf8(a_str):
+    """
+    """
+    import chardet
+    res_char = chardet.detect(a_str)
+    first_arg_unicode = a_str.decode(res_char['encoding'])
+    utf8_arg = first_arg_unicode.encode("utf-8")
+    
+    return utf8_arg
+                
 @memoized
 def get_home_dir_path():
     """
