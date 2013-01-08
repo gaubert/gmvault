@@ -570,7 +570,7 @@ class GMVaulter(object):
                         
                         if self._metadata_needs_update(curr_metadata, new_data[the_id]):
                             
-                            LOG.debug("Chat with imap id %s and gmail id %s has changed. Updated it." % (the_id, gid))
+                            LOG.debug("Email with imap id %s and gmail id %s has changed. Updated it." % (the_id, gid))
                             
                             #restore everything at the moment
                             gid  = self.gstorer.bury_metadata(new_data[the_id], local_dir = the_dir)
