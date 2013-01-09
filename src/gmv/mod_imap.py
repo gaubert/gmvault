@@ -234,9 +234,12 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
         """  
         criteria = criteria.replace('\\', '\\\\')
         criteria = criteria.replace('"', '\\"')
+
+        args = ['CHARSET', 'utf-8', 'X-GM-RAW', '"%s"' % (criteria)]
         
         #typ, data = self._imap.uid('SEARCH', 'CHARSET utf-8', 'X-GM-RAW', '"%s"' % (criteria))
-        typ, data = self._imap.uid('SEARCH', 'X-GM-RAW', '"%s"' % (criteria))
+        #typ, data = self._imap.uid('SEARCH', 'X-GM-RAW', '"%s"' % (criteria))
+        typ, data = self._imap.uid('SEARCH', *args)
         
         self._checkok('search', typ, data)
         if data == [None]: # no untagged responses...
