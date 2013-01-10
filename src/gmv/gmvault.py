@@ -391,7 +391,7 @@ class GMVaulter(object):
         
     def _sync_chats(self, imap_req, compress, restart):
         """
-           backup the chat messages
+           sync emails
         """
         chat_dir = None
         
@@ -405,154 +405,67 @@ class GMVaulter(object):
         LOG.debug("Selection is finished")
 
         if chat_dir:
-            #imap_ids = self.src.search({ 'type': 'imap', 'req': 'ALL' })
-            imap_ids = self.src.search(imap_req)
-            
-            # check if there is a restart
-            if restart:
-                LOG.critical("Restart mode activated. Need to find information in Gmail, be patient ...")
-                imap_ids = self.get_gmails_ids_left_to_sync(self.OP_CHAT_SYNC, imap_ids)
-            
-            total_nb_chats_to_process = len(imap_ids) # total number of emails to get
-            
-            LOG.critical("%d chat messages to be fetched." % (total_nb_chats_to_process))
-            
-            nb_chats_processed = 0
-            
-            to_fetch = set(imap_ids)
-            batch_fetcher = IMAPBatchFetcher(self.src, imap_ids, self.error_report, \
-                                             imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
-                                             default_batch_size = \
-                                             gmvault_utils.get_conf_defaults().getint("General", \
-                                             "nb_messages_per_batch", 500))
-        
-        
-            for new_data in batch_fetcher:
-                for the_id in new_data: 
-                    if new_data.get(the_id, None):       
-                        gid = None
-                        
-                        LOG.debug("\nProcess imap chat id %s" % ( the_id ))
-                        
-                        gid = new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
-                        
-                        the_dir      = self.gstorer.get_sub_chats_dir()
-                        
-                        LOG.critical("Process chat num %d (imap_id:%s) into %s." % (nb_chats_processed, the_id, the_dir))
-                    
-                        #pass the dir and the ID
-                        curr_metadata = GMVaulter.check_email_on_disk( self.gstorer , \
-                                                                       new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID], \
-                                                                       the_dir)
-                        
-                        #if on disk check that the data is not different
-                        if curr_metadata:
-                            
-                            if self._metadata_needs_update(curr_metadata, new_data[the_id], chat_metadata = True):
-                                
-                                LOG.debug("Chat with imap id %s and gmail id %s has changed. Updated it." % (the_id, gid))
-                                
-                                #restore everything at the moment
-                                gid  = self.gstorer.bury_chat_metadata(new_data[the_id], local_dir = the_dir)
-                                
-                                #update local index id gid => index per directory to be thought out
-                            else:
-                                LOG.debug("The metadata for chat %s already exists and is identical to the one on GMail." % (gid))
-                        else:  
-                            try:
-                                #get the data
-                                email_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_DATA_ONLY )
-                                
-                                new_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY] = \
-                                email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
-                                
-                                # store data on disk within year month dir 
-                                gid  = self.gstorer.bury_chat(new_data[the_id], local_dir = the_dir, compress = compress)
-                                
-                                #update local index id gid => index per directory to be thought out
-                                LOG.debug("Create and store chat with imap id %s, gmail id %s." % (the_id, gid))   
-                            except Exception, error:
-                                #do everything in this handler 
-                                handle_sync_imap_error(error, the_id, self.error_report, self.src)    
-                    
-                        nb_chats_processed += 1    
-                        
-                        #indicate every 50 messages the number of messages left to process
-                        left_emails = (total_nb_chats_to_process - nb_chats_processed)
-                        
-                        if (nb_chats_processed % 50) == 0 and (left_emails > 0):
-                            elapsed = timer.elapsed() #elapsed time in seconds
-                            LOG.critical("\n== Processed %d emails in %s. %d left to be stored (time estimate %s).==\n" % \
-                                         (nb_chats_processed,  timer.seconds_to_human_time(elapsed), \
-                                          left_emails, \
-                                          timer.estimate_time_left(nb_chats_processed, elapsed, left_emails)))
-                        
-                        # save id every 10 restored emails
-                        if (nb_chats_processed % 10) == 0:
-                            if gid:
-                                self.save_lastid(self.OP_CHAT_SYNC, gid)
-                    else:
-                        LOG.info("Could not process imap with id %s. Ignore it\n")
-                        self.error_report['empty'].append((the_id, None)) 
-                    
-                to_fetch -= set(new_data.keys()) #remove all found keys from to_fetch set
-                
-            for the_id in to_fetch:
-                # case when gmail IMAP server returns OK without any data whatsoever
-                # eg. imap uid 142221L ignore it
-                LOG.info("Could not process chat with id %s. Ignore it\n")
-                self.error_report['empty_chats'].append((the_id, None))
-
+            imap_ids = self._common_sync(timer, "chat", imap_req, compress, restart)
         else:
             imap_ids = []    
         
-        LOG.critical("\nChats synchronisation operation performed in %s.\n" % (timer.seconds_to_human_time(timer.elapsed())))
+        LOG.critical("\nchats synchronisation operation performed in %s.\n" % (timer.seconds_to_human_time(timer.elapsed())))
+
         return imap_ids
 
-    
-    def _sync_emails(self, imap_req, compress, restart):
+
+    def _common_sync(self, a_timer, a_type, imap_req, compress, restart):
         """
-           First part of the double pass strategy: 
-           - create and update emails in db
-           
-        """    
-        timer = gmvault_utils.Timer()
-        timer.start()
-           
-        #select all mail folder using the constant name defined in GIMAPFetcher
-        self.src.select_folder('ALLMAIL')
-        
+          
+        """
         # get all imap ids in All Mail
         imap_ids = self.src.search(imap_req)
         
         # check if there is a restart
         if restart:
             LOG.critical("Restart mode activated for emails. Need to find information in Gmail, be patient ...")
-            imap_ids = self.get_gmails_ids_left_to_sync(self.OP_EMAIL_SYNC, imap_ids)
+            imap_ids = self.get_gmails_ids_left_to_sync(self.OP_EMAIL_SYNC if a_type == "email" \
+                                                        else self.OP_CHAT_SYNC, imap_ids)
         
-        total_nb_emails_to_process = len(imap_ids) # total number of emails to get
+        total_nb_msgs_to_process = len(imap_ids) # total number of emails to get
         
-        LOG.critical("%d emails to be fetched." % (total_nb_emails_to_process))
+        LOG.critical("%d %ss to be fetched." % (total_nb_msgs_to_process, a_type))
         
-        nb_emails_processed = 0
+        nb_msgs_processed = 0
         
         to_fetch = set(imap_ids)
         batch_fetcher = IMAPBatchFetcher(self.src, imap_ids, self.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
                                          default_batch_size = \
                                          gmvault_utils.get_conf_defaults().getint("General","nb_messages_per_batch",500))
         
+        #choose different bury methods if it is an email or a chat
+        if a_type == "email":
+            bury_metadata_fn = self.gstorer.bury_metadata
+            bury_data_fn     = self.gstorer.bury_email
+            chat_metadata    = False
+        elif a_type == "chat":
+            bury_metadata_fn = self.gstorer.bury_chat_metadata
+            bury_data_fn     = self.gstorer.bury_chat
+            chat_metadata    = True
+        else:
+            raise Exception("Error a_type %s in _common_sync is unknown" % (a_type))
+        
         #LAST Thing to do remove all found ids from imap_ids and if ids left add missing in report
         for new_data in batch_fetcher:            
             for the_id in new_data:
-                #LOG.debug("new_data = %s\n" % (new_data))
                 if new_data.get(the_id, None):
                     LOG.debug("\nProcess imap id %s" % ( the_id ))
                         
                     gid = new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
                     
-                    the_dir      = gmvault_utils.get_ym_from_datetime(new_data[the_id][imap_utils.GIMAPFetcher.IMAP_INTERNALDATE])
+                    if a_type == "email":
+                        the_dir       = gmvault_utils.get_ym_from_datetime(new_data[the_id][imap_utils.GIMAPFetcher.IMAP_INTERNALDATE])
+                    elif a_type == "chat":
+                        the_dir       = self.gstorer.get_sub_chats_dir()
+                    else:
+                        raise Exception("Error a_type %s in _common_sync is unknown" % (a_type))
                     
-                    LOG.critical("Process email num %d (imap_id:%s) from %s." % (nb_emails_processed, the_id, the_dir))
+                    LOG.critical("Process %s num %d (imap_id:%s) from %s." % (a_type, nb_msgs_processed, the_id, the_dir))
                     
                     #decode the labels that are received as utf7 => unicode
                     new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
@@ -568,12 +481,12 @@ class GMVaulter(object):
                         
                         LOG.debug("metadata for %s already exists. Check if different." % (gid))
                         
-                        if self._metadata_needs_update(curr_metadata, new_data[the_id]):
+                        if self._metadata_needs_update(curr_metadata, new_data[the_id], chat_metadata):
                             
-                            LOG.debug("Email with imap id %s and gmail id %s has changed. Updated it." % (the_id, gid))
+                            LOG.debug("%s with imap id %s and gmail id %s has changed. Updated it." % (a_type, the_id, gid))
                             
                             #restore everything at the moment
-                            gid  = self.gstorer.bury_metadata(new_data[the_id], local_dir = the_dir)
+                            gid  = bury_metadata_fn(new_data[the_id], local_dir = the_dir)
                             
                             #update local index id gid => index per directory to be thought out
                         else:
@@ -588,31 +501,31 @@ class GMVaulter(object):
                             email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
                             
                             # store data on disk within year month dir 
-                            gid  = self.gstorer.bury_email(new_data[the_id], local_dir = the_dir, compress = compress)
+                            gid  = bury_data_fn(new_data[the_id], local_dir = the_dir, compress = compress)
                             
                             #update local index id gid => index per directory to be thought out
                             LOG.debug("Create and store email with imap id %s, gmail id %s." % (the_id, gid))   
                         except Exception, error:
                             handle_sync_imap_error(error, the_id, self.error_report, self.src) #do everything in this handler    
                     
-                    nb_emails_processed += 1
+                    nb_msgs_processed += 1
                     
                     #indicate every 50 messages the number of messages left to process
-                    left_emails = (total_nb_emails_to_process - nb_emails_processed)
+                    left_emails = (total_nb_msgs_to_process - nb_msgs_processed)
                     
-                    if (nb_emails_processed % 50) == 0 and (left_emails > 0):
-                        elapsed = timer.elapsed() #elapsed time in seconds
+                    if (nb_msgs_processed % 50) == 0 and (left_emails > 0):
+                        elapsed = a_timer.elapsed() #elapsed time in seconds
                         LOG.critical("\n== Processed %d emails in %s. %d left to be stored (time estimate %s).==\n" % \
-                                     (nb_emails_processed,  \
-                                      timer.seconds_to_human_time(elapsed), left_emails, \
-                                      timer.estimate_time_left(nb_emails_processed, elapsed, left_emails)))
+                                     (nb_msgs_processed,  \
+                                      a_timer.seconds_to_human_time(elapsed), left_emails, \
+                                      a_timer.estimate_time_left(nb_msgs_processed, elapsed, left_emails)))
                     
                     # save id every 10 restored emails
-                    if (nb_emails_processed % 10) == 0:
+                    if (nb_msgs_processed % 10) == 0:
                         if gid:
                             self.save_lastid(self.OP_EMAIL_SYNC, gid)
                 else:
-                    LOG.info("Could not process imap with id %s. Ignore it\n")
+                    LOG.info("Could not process message with id %s. Ignore it\n" % (the_id))
                     self.error_report['empty'].append((the_id, gid if gid else None))
                     
             to_fetch -= set(new_data.keys()) #remove all found keys from to_fetch set
@@ -620,13 +533,29 @@ class GMVaulter(object):
         for the_id in to_fetch:
             # case when gmail IMAP server returns OK without any data whatsoever
             # eg. imap uid 142221L ignore it
-            LOG.info("Could not process imap with id %s. Ignore it\n")
+            LOG.info("Could not process imap with id %s. Ignore it\n" % (the_id))
             self.error_report['empty'].append((the_id, None))
         
-        LOG.critical("\nEmails synchronisation operation performed in %s.\n" % (timer.seconds_to_human_time(timer.elapsed())))
-        
         return imap_ids
-    
+
+    def _sync_emails(self, imap_req, compress, restart):
+        """
+           sync emails
+        """
+        timer = gmvault_utils.Timer()
+        timer.start()
+
+        #select all mail folder using the constant name defined in GIMAPFetcher
+        self.src.select_folder('ALLMAIL')
+
+        imap_ids = self._common_sync(timer, "email", imap_req, compress, restart)
+
+        LOG.critical("\nEmails synchronisation operation performed in %s.\n" % (timer.seconds_to_human_time(timer.elapsed())))
+
+        return imap_ids
+
+        
+
     def sync(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL, compress_on_disk = True, \
              db_cleaning = False, ownership_checking = True, \
             restart = False, emails_only = False, chats_only = False):
@@ -681,7 +610,7 @@ class GMVaulter(object):
     
     def _delete_sync(self, imap_ids, db_gmail_ids, db_gmail_ids_info, msg_type):
         """
-           Delete emails from the database if necessary
+           Delete emails or chats from the database if necessary
            imap_ids      : all remote imap_ids to check
            db_gmail_ids_info : info read from metadata
            msg_type : email or chat
@@ -758,7 +687,7 @@ class GMVaulter(object):
         
     def check_clean_db(self, db_cleaning):
         """
-           Check and clean the database (remove file that are not anymore in Gmail
+           Check and clean the database (remove file that are not anymore in Gmail)
         """
         owners = self.gstorer.get_db_owners()
         if not db_cleaning: #decouple the 2 conditions for activating cleaning

@@ -280,7 +280,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
         self.check_remote_mailbox_identical_to_local(restorer)
         
-    def test_difference(self):
+    def ztest_difference(self):
         """
            
         """
