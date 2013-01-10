@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
     Gmvault: a tool to backup and restore your gmail account.
     Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
@@ -597,6 +598,7 @@ class GMVaultLauncher(object):
             
         elif args.get('type', '') == 'custom':
             
+			#convert to unicode and utf-8
             args['request']['req']     = gmvault_utils.convert_to_utf8(args['request']['req'])
             args['request']['charset'] = 'utf-8'
 

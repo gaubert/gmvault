@@ -27,9 +27,9 @@ import ssl
 import cStringIO
 
 import imaplib  #for the exception
-imaplib.Debug = 4 #enable debugging
-
 import imapclient
+#to enable imap debugging and see all command
+#imaplib.Debug = 4 #enable debugging
 
 INTERNALDATE_RE = re.compile(r'.*INTERNALDATE "'
 r'(?P<day>[ 0123][0-9])-(?P<mon>[A-Z][a-z][a-z])-(?P<year>[0-9][0-9][0-9][0-9])'
