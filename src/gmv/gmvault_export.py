@@ -16,11 +16,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-# TODO
-# Allow syncing, aka resumability after a partial or complete export
-# Test other OSes that might not like colon in Maildir filenames
-# Use hard-links to save space?
-
 import os
 import re
 import mailbox
