@@ -85,7 +85,7 @@ class GMVaultExporter(object):
             LOG.debug("Processing id %s in labels %s" % \
                 (a_id, self.printable_label_list(folders)))
             for folder in folders:
-                self.mailbox.add(msg, f, meta[GmailStorer.FLAGS_K])
+                self.mailbox.add(msg, folder, meta[GmailStorer.FLAGS_K])
 
             done += 1
             left = len(ids) - done
@@ -155,21 +155,28 @@ class MBox(Mailbox):
 
     def subdir(self, label):
         segments = label.split(GMVaultExporter.GM_SEP)
-        segments = [s for s in segments if s != '..'] # safety first!
-        fname = segments.pop()
+        # Safety first: No unusable directory portions
+        segments = [s for s in segments if s != '..' and s != '.']
+        real_label = GMVaultExporter.GM_SEP.join(segments)
+        if real_label in self.open:
+            return self.open[real_label]
 
-        # Use .sbd folders a la Thunderbird, to allow nested folders
-        segments = [s + '.sbd' for s in segments]
-        mdir = os.path.join(self.folder, *segments)
-        if not os.path.exists(mdir):
-            os.makedirs(mdir)
+        cur_path = self.folder
+        label_segments = []
+        for s in segments:
+            label_segments.append(s)
+            cur_label = GMVaultExporter.GM_SEP.join(label_segments)
+            if cur_label not in self.open:
+                # Create an mbox for intermediate folders, to satisfy
+                # Thunderbird import
+                if not os.path.exists(cur_path):
+                    os.makedirs(cur_path)
+                mbox_path = os.path.join(cur_path, s)
+                self.open[cur_label] = mailbox.mbox(mbox_path)
+            # Use .sbd folders a la Thunderbird, to allow nested folders
+            cur_path = os.path.join(cur_path, s + '.sbd')
 
-        path = os.path.normpath(os.path.join(mdir, fname))
-        if path in self.open:
-            return self.open[path]
-        mb = mailbox.mbox(path)
-        self.open[path] = mb
-        return mb
+        return self.open[real_label]
 
     def add(self, msg, folder, flags):
         mmsg = mailbox.mboxMessage(msg)
