@@ -359,8 +359,13 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         
         # need to convert labels that are number as string
         # come from imap_lib when label is a number
-        #labels = [ str(elem) for elem in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS] ]
-        labels = email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS]
+        labels = []
+        for label in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS]:
+            if isinstance(label, (int, long, float, complex)):
+                label = str(label)
+
+            labels.append(unicode(label))
+        
         labels.extend(extra_labels) #add extra labels
         
         #create json structure for metadata
@@ -429,41 +434,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             data_desc.write(cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]))
         else:
             data_desc.write(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
+ 
+        self.bury_metadata(email_info, local_dir, extra_labels)
             
-        # parse header fields to extract subject and msgid
-        subject, msgid, received = self.parse_header_fields(email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS_KEY])
-        
-        # need to convert labels that are number as string
-        # come from imap_lib when label is a number
-        #labels = [ str(elem) for elem in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS] ]
-        labels = []
-        for label in  email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS]:
-            if isinstance(label, (int, long, float, complex)):
-                label = str(label)
-
-            labels.append(unicode(label))
-        
-        labels.extend(extra_labels) #add extra labels
-        
-        #create json structure for metadata
-        meta_obj = { 
-                     self.ID_K         : email_info[imap_utils.GIMAPFetcher.GMAIL_ID],
-                     self.LABELS_K     : labels,
-                     self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
-                     self.THREAD_IDS_K : email_info[imap_utils.GIMAPFetcher.GMAIL_THREAD_ID],
-                     self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]),
-                     self.SUBJECT_K    : subject,
-                     self.MSGID_K      : msgid,
-                     self.XGM_RECV_K   : received
-                   }
-        
-        meta_desc = open(self.METADATA_FNAME % (the_dir, email_info[imap_utils.GIMAPFetcher.GMAIL_ID]), 'w')
-        
-        json.dump(meta_obj, meta_desc)
-        
-        meta_desc.flush()
-        meta_desc.close()
-        
         data_desc.flush()
         data_desc.close()
         

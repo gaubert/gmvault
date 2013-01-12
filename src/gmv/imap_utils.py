@@ -718,15 +718,14 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         the_timer = gmvault_utils.Timer()
         the_timer.start()
         LOG.debug("Before to Append email contents")
-        import sys 
-        import codecs
-        sys.stdout = codecs.getwriter('utf-8')(sys.__stdout__) 
-        msg = "a_folder = %s, a_flags = %s" % (a_folder.encode('utf-8'), a_flags)
+        #import sys  #to print the msg in stdout
+        #import codecs
+        #sys.stdout = codecs.getwriter('utf-8')(sys.__stdout__) 
+        #msg = "a_folder = %s, a_flags = %s" % (a_folder.encode('utf-8'), a_flags)
         #msg = "a_folder = %s" % (a_folder.encode('utf-8'))
-        msg = msg.encode('utf-8')
-        print(msg)
+        #msg = msg.encode('utf-8')
+        #print(msg)
         res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
-        #res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
     
         LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" \
                   % (a_flags, a_internal_time, the_timer.elapsed_ms(), res))

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
     Gmvault: a tool to backup and restore your gmail account.
     Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
@@ -59,9 +60,9 @@ c) Restart a restore after a previous error (Gmail can cut the connection if it 
 
 #> gmvault restore -d ~/gmvault-db anewfoo.bar@gmail.com --resume
 
-d) Add label to all restored emails
+d) Apply a label to all restored emails
 
-#> gmvault restore --label "20120422-gmvault-restore" -d ~/gmvault-db anewfoo.bar@gmail.com
+#> gmvault restore --apply-label "20120422-gmvault" -d ~/gmvault-db anewfoo.bar@gmail.com
 """
 
 SYNC_HELP_EPILOGUE = """Examples:
@@ -207,7 +208,7 @@ class GMVaultLauncher(object):
                                  action='store_true',dest="encrypt", default=False)
         
         sync_parser.add_argument("-c", "--check-db", metavar = "VAL", \
-                          help="Enable/disable the removal from the gmvault db of the emails "\
+                          help="enable/disable the removal from the gmvault db of the emails "\
                                "that have been deleted from the given gmail account. VAL = yes or no.",\
                           dest="db_cleaning", default=None)
         
@@ -250,8 +251,8 @@ class GMVaultLauncher(object):
                                  default='full', help='type of restoration: full|quick. (default: full)')
         
         # add a label
-        rest_parser.add_argument('-l', '--label', \
-                                 action='store', dest='label', \
+        rest_parser.add_argument('-a', '--apply-label', \
+                                 action='store', dest='apply_label', \
                                  default=None, help='Apply a label to restored emails')
         
         # activate the resume mode --restart is deprecated
@@ -301,7 +302,7 @@ class GMVaultLauncher(object):
         
         # check_db command
         check_parser = subparsers.add_parser('check', \
-                                            help='Check and clean the gmvault-db disk database.')
+                                            help='check and clean the gmvault-db disk database.')
 
         #email argument
         check_parser.add_argument('email', \
@@ -498,8 +499,8 @@ class GMVaultLauncher(object):
             # parse common arguments for sync and restore
             self._parse_common_args(options, parser, parsed_args, self.RESTORE_TYPES)
             
-            # add restore label if there is any
-            parsed_args['label'] = options.label
+            # apply restore labels if there is any
+            parsed_args['apply_label'] = options.apply_label
             
             parsed_args['restart'] = options.restart
             
@@ -576,7 +577,7 @@ class GMVaultLauncher(object):
         if args.get('type', '') == 'full':
             
             #call restore
-            labels = [args['label']] if args['label'] else []
+            labels = [args['apply_label']] if args['apply_label'] else []
             restorer.restore(extra_labels = labels, restart = args['restart'], \
                              emails_only = args['emails_only'], chats_only = args['chats_only'])
             
@@ -591,7 +592,7 @@ class GMVaultLauncher(object):
             starting_dir = gmvault_utils.get_ym_from_datetime(begin)
             
             #call restore
-            labels = [args['label']] if args['label'] else []
+            labels = [args['apply_label']] if args['apply_label'] else []
             restorer.restore(pivot_dir = starting_dir, extra_labels = labels, restart = args['restart'], \
                              emails_only = args['emails_only'], chats_only = args['chats_only'])
         
@@ -644,6 +645,10 @@ class GMVaultLauncher(object):
             
         elif args.get('type', '') == 'custom':
             
+			#convert to unicode and utf-8
+            args['request']['req']     = gmvault_utils.convert_to_utf8(args['request']['req'])
+            args['request']['charset'] = 'utf-8'
+
             # pass an imap request. Assume that the user know what to do here
             LOG.critical("Perform custom synchronisation with %s request: %s.\n" \
                          % (args['request']['type'], args['request']['req']))
