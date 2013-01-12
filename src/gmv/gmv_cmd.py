@@ -554,13 +554,12 @@ class GMVaultLauncher(object):
     
     @classmethod
     def _export(cls, args):
-        pred = None
-        if args['labels']:
-            pred = lambda l: l in args['labels']
         types = { 'maildir': gmvault_export.Maildir,
             'mbox': gmvault_export.MBox }
         output = types[args['type']](args['output'])
-        gmvault_export.GMVaultExporter(args['db-dir'], output, pred).export()
+        exporter = gmvault_export.GMVaultExporter(args['db-dir'], output,
+            labels=args['labels'])
+        exporter.export()
         output.close()
 
     @classmethod

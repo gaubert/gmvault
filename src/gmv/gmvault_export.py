@@ -45,13 +45,15 @@ class GMVaultExporter(object):
     GM_SEEN = '\\Seen'
     GM_FLAGGED = '\\Flagged'
 
-    def __init__(self, db_dir, mailbox, label_pred = None):
+    def __init__(self, db_dir, mailbox, labels = None):
         self.storer = GmailStorer(db_dir)
         self.mailbox = mailbox
-        self.label_pred = label_pred or self.default_label_predicate()
+        self.labels = labels
 
-    def default_label_predicate(self):
-        return lambda l: l != self.GM_ALL
+    def want_label(self, label):
+        if self.labels:
+            return label in self.labels
+        return label != self.GM_ALL
 
     def export(self):
         self.export_ids('emails', self.storer.get_all_existing_gmail_ids(), \
@@ -59,10 +61,18 @@ class GMVaultExporter(object):
         self.export_ids('chats', self.storer.get_all_chats_gmail_ids(), \
             default_folder = self.CHATS_FOLDER, use_labels = False)
 
+    def printable_label_list(self, labels):
+        labels = [l.encode('ascii', 'backslashreplace') for l in labels]
+        return u'; '.join(labels)
+
     def export_ids(self, kind, ids, default_folder, use_labels):
+        exported_labels = "default labels"
+        if self.labels:
+            exported_labels = "labels " + self.printable_label_list(self.labels)
+        LOG.critical("Start %s export for %s" % (kind, exported_labels))
+
         timer = Timer()
         timer.start()
-        LOG.critical("Start %s export" % (kind,))
         done = 0
 
         for a_id in ids:
@@ -72,18 +82,21 @@ class GMVaultExporter(object):
             if use_labels:
                 add_labels = meta[GmailStorer.LABELS_K]
                 if not add_labels:
-                    add_labels = ['Archived']
+                    add_labels = [GMVaultExporter.ARCHIVED_FOLDER]
                 folders.extend(add_labels)
+            folders = [re.sub(r'^\\', '', f) for f in folders]
+            folders = [f for f in folders if self.want_label(f)]
+
+            LOG.debug("Processing id %s in labels %s" % \
+                (a_id, self.printable_label_list(folders)))
             for folder in folders:
-                f = re.sub(r'^\\', '', folder)
-                if self.label_pred(f):
-                    self.mailbox.add(msg, f, meta[GmailStorer.FLAGS_K])
+                self.mailbox.add(msg, f, meta[GmailStorer.FLAGS_K])
 
             done += 1
             left = len(ids) - done
             if done % self.PROGRESS_INTERVAL == 0 and left > 0:
                 elapsed = timer.elapsed()
-                LOG.critical("== Exported %d %s in %s, %d left (time estimate %s) ==" % \
+                LOG.critical("== Processed %d %s in %s, %d left (time estimate %s) ==" % \
                     (done, kind, timer.seconds_to_human_time(elapsed), \
                      left, timer.estimate_time_left(done, elapsed, left)))
 
