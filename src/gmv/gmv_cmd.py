@@ -117,7 +117,7 @@ class GMVaultLauncher(object):
     SYNC_TYPES    = ['full', 'quick', 'custom']
     RESTORE_TYPES = ['full', 'quick']
     CHECK_TYPES   = ['full']
-    EXPORT_TYPES   = ['maildir', 'mbox', 'list']
+    EXPORT_TYPES   = ['maildir', 'mbox']
     
     DEFAULT_GMVAULT_DB = "%s/gmvault-db" % (os.getenv("HOME", "."))
     
@@ -339,7 +339,7 @@ class GMVaultLauncher(object):
         export_parser = subparsers.add_parser('export', \
                                             help='Export the gmvault-db database to another format.')
 
-        export_parser.add_argument('output', nargs='?',
+        export_parser.add_argument('output', \
                                  action='store', help='destination to export to.')
 
         export_parser.add_argument("-d", "--db-dir", \
@@ -348,7 +348,7 @@ class GMVaultLauncher(object):
 
         export_parser.add_argument('-t', '-type', '--type', \
                           action='store', dest='type', \
-                          default='maildir', help='type of export: maildir, mbox, list. (default: maildir)')
+                          default='maildir', help='type of export: maildir, mbox. (default: maildir)')
 
         export_parser.add_argument('-l', '--label', \
                                    action='append', dest='label', \
@@ -527,8 +527,6 @@ class GMVaultLauncher(object):
                 parsed_args['type'] = options.type.lower()
             else:
                 parser.error('Unknown type for command export. The type should be one of %s' % self.EXPORT_TYPES)
-            if parsed_args['type'] != 'list' and not options.output:
-                parser.error('Export requires a destination!')
             parsed_args['debug'] = options.debug
 
         elif parsed_args.get('command', '') == 'config':
@@ -559,14 +557,10 @@ class GMVaultLauncher(object):
         pred = None
         if args['labels']:
             pred = lambda l: l in args['labels']
-        is_list = args['type'] == 'list'
         types = { 'maildir': gmvault_export.Maildir,
-            'mbox': gmvault_export.MBox,
-            'list': gmvault_export.ListLabels }
-
+            'mbox': gmvault_export.MBox }
         output = types[args['type']](args['output'])
-        gmvault_export.GMVaultExporter(args['db-dir'], output,
-            label_pred=pred, log=not is_list).export()
+        gmvault_export.GMVaultExporter(args['db-dir'], output, pred).export()
         output.close()
 
     @classmethod

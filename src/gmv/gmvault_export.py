@@ -45,11 +45,10 @@ class GMVaultExporter(object):
     GM_SEEN = '\\Seen'
     GM_FLAGGED = '\\Flagged'
 
-    def __init__(self, db_dir, mailbox, label_pred = None, log = True):
+    def __init__(self, db_dir, mailbox, label_pred = None):
         self.storer = GmailStorer(db_dir)
         self.mailbox = mailbox
         self.label_pred = label_pred or self.default_label_predicate()
-        self.do_log = log
 
     def default_label_predicate(self):
         return lambda l: l != self.GM_ALL
@@ -60,14 +59,10 @@ class GMVaultExporter(object):
         self.export_ids('chats', self.storer.get_all_chats_gmail_ids(), \
             default_folder = self.CHATS_FOLDER, use_labels = False)
 
-    def log(self, msg):
-        if self.do_log:
-            LOG.critical(msg)
-
     def export_ids(self, kind, ids, default_folder, use_labels):
         timer = Timer()
         timer.start()
-        self.log("Start %s export" % (kind,))
+        LOG.critical("Start %s export" % (kind,))
         done = 0
 
         for a_id in ids:
@@ -88,11 +83,11 @@ class GMVaultExporter(object):
             left = len(ids) - done
             if done % self.PROGRESS_INTERVAL == 0 and left > 0:
                 elapsed = timer.elapsed()
-                self.log("== Exported %d %s in %s, %d left (time estimate %s) ==" % \
+                LOG.critical("== Exported %d %s in %s, %d left (time estimate %s) ==" % \
                     (done, kind, timer.seconds_to_human_time(elapsed), \
                      left, timer.estimate_time_left(done, elapsed, left)))
 
-        self.log("Export complete in %s" % (timer.elapsed_human_time(),))
+        LOG.critical("Export complete in %s" % (timer.elapsed_human_time(),))
 
 
 class Mailbox(object):
@@ -100,17 +95,6 @@ class Mailbox(object):
         raise NotImplementedError('implement in subclass')
     def close(self):
         pass
-
-class ListLabels(Mailbox):
-    def __init__(self, path = None):
-        self.mailboxes = set()
-
-    def add(self, msg, folder, flags):
-        self.mailboxes.add(folder)
-
-    def close(self):
-        for m in sorted(self.mailboxes):
-            print m
 
 class Maildir(Mailbox):
     SEPARATOR = '.'
