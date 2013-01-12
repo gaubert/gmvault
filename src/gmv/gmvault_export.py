@@ -20,6 +20,8 @@ import os
 import re
 import mailbox
 
+import imapclient.imap_utf7 as imap_utf7
+
 from gmv.imap_utils import GIMAPFetcher
 import gmv.log_utils as log_utils
 from gmv.gmvault_db import GmailStorer
@@ -112,17 +114,25 @@ class Maildir(Mailbox):
         self.escape = esc
         self.sep_escape = sep_esc
 
+    def listescape(self, s, char, pattern = None):
+        pattern = pattern or re.escape(char)
+        esc = "%s%02x" % (self.escape, ord(char))
+        return re.sub(pattern, lambda m: esc, s)
+
     def maildir_name(self, folder):
         if folder == GMVaultExporter.GM_INBOX:
             return None
 
-        # Escape tilde a la listescape
-        r = folder.replace('~', '%s%02X' % (self.escape, ord('~')))
+        # Escape initial tilde
+        r = self.listescape(folder, '~', r'^~')
 
         # listescape can't handle SEPARATOR, escape otherwise instead. Ewwww!!!
         se = self.sep_escape[0]
         r = r.replace(se, se * 2)
         r = r.replace(self.SEPARATOR, self.sep_escape)
+
+        # Use IMAP modified UTF-7 encoding
+        r = imap_utf7.encode(r)
 
         # Replace GMail's directory separator with ours
         return r.replace(GMVaultExporter.GM_SEP, self.SEPARATOR)
