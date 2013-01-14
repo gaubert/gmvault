@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
     Gmvault: a tool to backup and restore your gmail account.
     Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
@@ -28,8 +29,9 @@ import cStringIO
 
 import imaplib  #for the exception
 import imapclient
+import gmvault_utils
 #to enable imap debugging and see all command
-#imaplib.Debug = 4 #enable debugging
+imaplib.Debug = 4 #enable debugging
 
 INTERNALDATE_RE = re.compile(r'.*INTERNALDATE "'
 r'(?P<day>[ 0123][0-9])-(?P<mon>[A-Z][a-z][a-z])-(?P<year>[0-9][0-9][0-9][0-9])'
@@ -239,6 +241,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
         criteria = criteria.replace('\\', '\\\\')
         criteria = criteria.replace('"', '\\"')
 
+        #criteria = criteria.encode("utf-7")
         #typ, data = self._imap.uid('SEARCH', 'CHARSET utf-8', 'X-GM-RAW', '"%s"' % (criteria))
         #typ, data = self._imap.uid('SEARCH', 'X-GM-RAW', '"%s"' % (criteria))
 
@@ -246,13 +249,15 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
         #args = ['CHARSET', 'utf-8', 'X-GM-RAW', '"%s"' % (criteria)]
         #typ, data = self._imap.uid('SEARCH', *args)
 
+        #working Literal search 
         args = ['X-GM-RAW']
+        #self._imap.literal = '"%s"' % (criteria)
+        #self._imap.literal = '"%s"' % (u"label:réception")
+        self._imap.literal = '"%s"' % (u"label:èévader")
+        print("unicode hex literal %s\n" % (gmvault_utils.ascii_hex(self._imap.literal)))
+        self._imap.literal = self._imap.literal.encode("utf-8")
+        #self._imap.literal = imaplib.MapCRLF.sub(imaplib.CRLF, self._imap.literal)
 
-        literal = imaplib.MapCRLF.sub(imaplib.CRLF, criteria)
-        self._imap.literal = '"%s"' % (literal)
-        self._imap.literal = literal.encode("utf-8")
-
-        print("literal %s\n" % (self._imap.literal))
         print("len(literal in utf-8= %d\n" % (len(self._imap.literal)))
         print("literal length = %s" % (str(len(self._imap.literal)).encode('ascii')))
         typ, data = self._imap.search('utf-8',*args)

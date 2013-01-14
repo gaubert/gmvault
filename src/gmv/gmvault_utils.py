@@ -456,11 +456,9 @@ def dirwalk(a_dir, a_wildcards= '*'):
 
 def ascii_hex(str):
    new_str = ""
-   old_str = ""
    for c in str:
       new_str += "%s=hex[%s]," % (c,hex(ord(c)))
-      old_str += "[%s]," % c
-   return new_str, old_str
+   return new_str
                 
 def convert_to_utf8(a_str):
     """
@@ -470,8 +468,14 @@ def convert_to_utf8(a_str):
     LOG.debug("detected encoding = %s" % (char_enc))
     LOG.debug("system machine encoding = %s" % (sys.getdefaultencoding()))
     u_str = unicode(a_str, char_enc['encoding'], errors='ignore')
+    #u_str = unicodedata.normalize('NFKC',u_str)
+    u_str = u_str.encode('unicode_escape').decode('unicode_escape')
+    LOG.debug("raw unicode = %s" % (u_str))
     LOG.debug("normalized unicode(NFKD) = %s" % (repr(unicodedata.normalize('NFKD',u_str))))
-    hex_s, _ = ascii_hex(u_str)
+    LOG.debug("normalized unicode(NFKC) = %s" % (repr(unicodedata.normalize('NFKC',u_str))))
+    LOG.debug("normalized unicode(NFC) = %s" % (repr(unicodedata.normalize('NFC',u_str))))
+    LOG.debug("normalized unicode(NFD) = %s" % (repr(unicodedata.normalize('NFD',u_str))))
+    hex_s = ascii_hex(u_str)
     LOG.debug("Hex ascii %s" % (hex_s))
     utf8_arg = u_str
     #utf8_arg = u_str.encode("utf-8")
