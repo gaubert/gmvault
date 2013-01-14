@@ -31,7 +31,7 @@ import imaplib  #for the exception
 import imapclient
 import gmvault_utils
 #to enable imap debugging and see all command
-imaplib.Debug = 4 #enable debugging
+#imaplib.Debug = 4 #enable debugging
 
 INTERNALDATE_RE = re.compile(r'.*INTERNALDATE "'
 r'(?P<day>[ 0123][0-9])-(?P<mon>[A-Z][a-z][a-z])-(?P<year>[0-9][0-9][0-9][0-9])'
