@@ -28,6 +28,7 @@ import functools
 
 import StringIO
 import sys
+import unicodedata
 import traceback
 import random 
 
@@ -452,14 +453,28 @@ def dirwalk(a_dir, a_wildcards= '*'):
         for the_file in files:
             if fnmatch.fnmatch(the_file, a_wildcards):
                 yield os.path.join(root, the_file)  
+
+def ascii_hex(str):
+   new_str = ""
+   old_str = ""
+   for c in str:
+      new_str += "%s=hex[%s]," % (c,hex(ord(c)))
+      old_str += "[%s]," % c
+   return new_str, old_str
                 
 def convert_to_utf8(a_str):
     """
     """
     import chardet
-    res_char = chardet.detect(a_str)
-    first_arg_unicode = a_str.decode(res_char['encoding'])
-    utf8_arg = first_arg_unicode.encode("utf-8")
+    char_enc = chardet.detect(a_str)
+    LOG.debug("detected encoding = %s" % (char_enc))
+    LOG.debug("system machine encoding = %s" % (sys.getdefaultencoding()))
+    u_str = unicode(a_str, char_enc['encoding'], errors='ignore')
+    LOG.debug("normalized unicode(NFKD) = %s" % (repr(unicodedata.normalize('NFKD',u_str))))
+    hex_s, _ = ascii_hex(u_str)
+    LOG.debug("Hex ascii %s" % (hex_s))
+    utf8_arg = u_str
+    #utf8_arg = u_str.encode("utf-8")
     
     return utf8_arg
                 

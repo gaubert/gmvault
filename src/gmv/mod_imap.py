@@ -250,6 +250,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
 
         literal = imaplib.MapCRLF.sub(imaplib.CRLF, criteria)
         self._imap.literal = '"%s"' % (literal)
+        self._imap.literal = literal.encode("utf-8")
 
         print("literal %s\n" % (self._imap.literal))
         print("len(literal in utf-8= %d\n" % (len(self._imap.literal)))
