@@ -588,7 +588,6 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         
         meta_fd = self._get_metadata_file_from_id(a_id_dir, a_id)
     
-        #metadata = json.load(meta_fd, encoding="utf-8")
         metadata = json.load(meta_fd)
         
         metadata[self.INT_DATE_K] =  gmvault_utils.e2datetime(metadata[self.INT_DATE_K])
@@ -600,7 +599,6 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         for label in  metadata[self.LABELS_K]:
             if isinstance(label, (int, long, float, complex)):
                 label = str(label)
-
             new_labels.append(unicode(label))
  
         metadata[self.LABELS_K] = new_labels
