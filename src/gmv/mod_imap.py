@@ -251,12 +251,12 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
 
         #working Literal search 
         args = ['X-GM-RAW']
-        #self._imap.literal = '"%s"' % (criteria)
+        self._imap.literal = '"%s"' % (criteria)
         #self._imap.literal = '"%s"' % (u"label:réception")
-        self._imap.literal = '"%s"' % (u"label:èévader")
+        #self._imap.literal = '"%s"' % (u"label:èévader")
         print("unicode hex literal %s\n" % (gmvault_utils.ascii_hex(self._imap.literal)))
-        self._imap.literal = self._imap.literal.encode("utf-8")
         #self._imap.literal = imaplib.MapCRLF.sub(imaplib.CRLF, self._imap.literal)
+        self._imap.literal = self._imap.literal.encode("utf-8")
 
         print("len(literal in utf-8= %d\n" % (len(self._imap.literal)))
         print("literal length = %s" % (str(len(self._imap.literal)).encode('ascii')))
