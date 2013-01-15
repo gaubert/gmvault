@@ -30,7 +30,6 @@ import StringIO
 import sys
 import traceback
 import random 
-import unicodedata
 import locale
 
 import gmv.log_utils as log_utils
@@ -456,6 +455,9 @@ def dirwalk(a_dir, a_wildcards= '*'):
                 yield os.path.join(root, the_file)  
 
 def ascii_hex(str):
+   """
+      transform any string in hexa values
+   """
    new_str = ""
    for c in str:
       new_str += "%s=hex[%s]," % (c,hex(ord(c)))

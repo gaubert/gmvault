@@ -279,6 +279,8 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         restorer.restore() #restore all emails from this essential-db
 
         self.check_remote_mailbox_identical_to_local(restorer)
+ 
+        gmvault_utils.delete_all_under(gmvault_test_db_dir, delete_top_dir = True)
         
     def ztest_difference(self):
         """
