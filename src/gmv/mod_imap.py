@@ -231,9 +231,11 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
            Perform a imap search or gmail search
         """
         if criteria.get('type','') == 'imap':
+            #encoding criteria in utf-8
+            criteria['req'] = criteria['req'].encode('utf-8')
+            criteria['charset'] = 'utf-8'
             return super(MonkeyIMAPClient, self).search(criteria.get('req',''), criteria.get('charset', None))
         elif criteria.get('type','') == 'gmail':
-            print("req type = %s\n" %(criteria.get('req')))
             return self.gmail_search(criteria.get('req',''))
         else:
             raise Exception("Unknown search type %s" % (criteria.get('type','no request type passed')))
@@ -243,13 +245,8 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
            perform a search with gmailsearch criteria.
            eg, subject:Hello World
         """  
-        print("criteria types %s\n" % (type(criteria)))
         criteria = criteria.replace('\\', '\\\\')
         criteria = criteria.replace('"', '\\"')
-
-        #criteria = criteria.encode("utf-7")
-        #typ, data = self._imap.uid('SEARCH', 'CHARSET utf-8', 'X-GM-RAW', '"%s"' % (criteria))
-        #typ, data = self._imap.uid('SEARCH', 'X-GM-RAW', '"%s"' % (criteria))
 
         #working but cannot send that understand when non ascii chars are used
         #args = ['CHARSET', 'utf-8', 'X-GM-RAW', '"%s"' % (criteria)]
@@ -258,14 +255,11 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
         #working Literal search 
         args = ['X-GM-RAW']
         self._imap.literal = '"%s"' % (criteria)
-        #self._imap.literal = '"%s"' % (u"label:réception")
-        #self._imap.literal = '"%s"' % (u"label:èévader")
-        print("unicode hex literal %s\n" % (gmvault_utils.ascii_hex(self._imap.literal)))
         #self._imap.literal = imaplib.MapCRLF.sub(imaplib.CRLF, self._imap.literal)
         self._imap.literal = self._imap.literal.encode("utf-8")
 
-        print("len(literal in utf-8= %d\n" % (len(self._imap.literal)))
-        print("literal length = %s" % (str(len(self._imap.literal)).encode('ascii')))
+        #print("unicode hex literal %s\n" % (gmvault_utils.ascii_hex(self._imap.literal)))
+        #print("literal length = %s" % (str(len(self._imap.literal)).encode('ascii')))
         typ, data = self._imap.search('utf-8',*args)
         
         self._checkok('search', typ, data)

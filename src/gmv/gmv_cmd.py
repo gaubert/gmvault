@@ -598,8 +598,8 @@ class GMVaultLauncher(object):
             
         elif args.get('type', '') == 'custom':
             
-			#convert to unicode and utf-8
-            args['request']['req']     = gmvault_utils.convert_to_utf8(args['request']['req'])
+			#convert args to unicode
+            args['request']['req']     = gmvault_utils.convert_to_unicode(args['request']['req'])
             args['request']['charset'] = 'utf-8'
 
             # pass an imap request. Assume that the user know what to do here

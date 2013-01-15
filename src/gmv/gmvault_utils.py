@@ -28,9 +28,10 @@ import functools
 
 import StringIO
 import sys
-import unicodedata
 import traceback
 import random 
+import unicodedata
+import locale
 
 import gmv.log_utils as log_utils
 import gmv.conf.conf_helper
@@ -460,27 +461,42 @@ def ascii_hex(str):
       new_str += "%s=hex[%s]," % (c,hex(ord(c)))
    return new_str
                 
-def convert_to_utf8(a_str):
+def convert_to_unicode(a_str):
     """
+       Try to get the stdin encoding and use it to convert the input string into unicode.
+       It is dependent on the platform (mac osx,linux, windows 
     """
-    import chardet
-    char_enc = chardet.detect(a_str)
-    LOG.debug("detected encoding = %s" % (char_enc))
-    LOG.debug("system machine encoding = %s" % (sys.getdefaultencoding()))
-    #u_str = unicode(a_str, char_enc['encoding'], errors='ignore')
-    u_str = unicode(a_str, 'utf-8', errors='ignore')
-    u_str = u_str.encode('unicode_escape').decode('unicode_escape')
-    LOG.debug("raw unicode = %s" % (u_str))
-    LOG.debug("normalized unicode(NFKD) = %s" % (repr(unicodedata.normalize('NFKD',u_str))))
-    LOG.debug("normalized unicode(NFKC) = %s" % (repr(unicodedata.normalize('NFKC',u_str))))
-    LOG.debug("normalized unicode(NFC) = %s" % (repr(unicodedata.normalize('NFC',u_str))))
-    LOG.debug("normalized unicode(NFD) = %s" % (repr(unicodedata.normalize('NFD',u_str))))
-    hex_s = ascii_hex(u_str)
-    LOG.debug("Hex ascii %s" % (hex_s))
-    utf8_arg = u_str
-    #utf8_arg = u_str.encode("utf-8")
+    #encoding can be forced from conf
+    term_encoding = get_conf_defaults().get('Localisation', 'term_encoding', None)
+    if not term_encoding:
+		term_encoding = locale.getpreferredencoding() #use it to find the encoding for text terminal
+		if not term_encoding:
+			loc = locale.getdefaultlocale() #try to get defaultlocale()
+			if loc and len(loc) == 2:
+			   term_encoding = loc[1]
+			else:
+			   Log.debug("Odd. loc = %s. Do not specify the encoding, let Python do its own investigation" % (loc))
+    else:
+        LOG.debug("Encoding forced. Read it from [Localisation]:term_encoding=%s" % (term_encoding))
+        
+    try: #encode
+        u_str = unicode(a_str, term_encoding, errors='ignore')
+           
+        LOG.debug("raw unicode     = %s." % (u_str))
+        LOG.debug("chosen encoding = %s." % (term_encoding))
+        #LOG.debug("normalized unicode(NFKD) = %s" % (repr(unicodedata.normalize('NFKD',u_str))))
+        #LOG.debug("normalized unicode(NFKC) = %s" % (repr(unicodedata.normalize('NFKC',u_str))))
+        #LOG.debug("normalized unicode(NFC)  = %s" % (repr(unicodedata.normalize('NFC',u_str))))
+        #LOG.debug("normalized unicode(NFD)  = %s" % (repr(unicodedata.normalize('NFD',u_str))))
+        LOG.debug("unicode_escape val = %s." % ( u_str.encode('unicode_escape')))
+    except Exception, e:
+        get_exception_traceback()
+        LOG.debug("Cannot convert to unicode from encoding:%s" % (term_encoding)) #add error
+        u_str = unicode(a_str, errors='ignore')
+
+    LOG.debug("hexval %s" % (ascii_hex(u_str)))
     
-    return utf8_arg
+    return u_str
                 
 @memoized
 def get_home_dir_path():
@@ -545,6 +561,8 @@ restore_default_location=DRAFTS
 [Localisation]
 #example with Russian
 chat_folder=[ u'[Google Mail]/Чаты', u'[GMail]/Чаты' ]
+#uncomment if you need to force the term_encoding
+#term_encoding='utf-8'
 
 #Do not touch any parameters below as it could force an overwrite of this file
 [VERSION]
