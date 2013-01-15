@@ -30,7 +30,6 @@ import os
 
 import imaplib  #for the exception
 import imapclient
-import gmvault_utils
 
 #enable imap debugging if GMV_IMAP_DEBUG is set 
 if os.getenv("GMV_IMAP_DEBUG"):
@@ -122,7 +121,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
         #self.sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1) #try to set TCP NO DELAY to increase performances
 
         self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
-		
+        
         # This is the last correction added to avoid memory fragmentation in imaplib
         # makefile creates a file object that makes use of cStringIO to avoid mem fragmentation
         # it could be used without the compression 
@@ -253,14 +252,16 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
         #typ, data = self._imap.uid('SEARCH', *args)
 
         #working Literal search 
-        args = ['X-GM-RAW']
         self._imap.literal = '"%s"' % (criteria)
-        #self._imap.literal = imaplib.MapCRLF.sub(imaplib.CRLF, self._imap.literal)
+        self._imap.literal = imaplib.MapCRLF.sub(imaplib.CRLF, self._imap.literal)
         self._imap.literal = self._imap.literal.encode("utf-8")
 
-        #print("unicode hex literal %s\n" % (gmvault_utils.ascii_hex(self._imap.literal)))
-        #print("literal length = %s" % (str(len(self._imap.literal)).encode('ascii')))
-        typ, data = self._imap.search('utf-8',*args)
+        #args = ['X-GM-RAW']
+        #typ, data = self._imap.search('utf-8',*args)
+        
+        #use uid to keep the imap ids consistent
+        args = ['CHARSET', 'utf-8', 'X-GM-RAW']
+        typ, data = self._imap.uid('SEARCH',*args)
         
         self._checkok('search', typ, data)
         if data == [None]: # no untagged responses...
