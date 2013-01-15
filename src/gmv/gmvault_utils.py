@@ -554,6 +554,7 @@ conf_version=1.7.2-beta
 #they will be read only once the conf file has been loaded
 [ENV]
 #by default it is ~/.gmvault
+GMV_IMAP_DEBUG=0
 
 """
 
