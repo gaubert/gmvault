@@ -141,12 +141,10 @@ gmv-win-dist: init
 	cp -R $(BASEDIR)/src/gmv $(GMVDIST)
 	cp -R $(BASEDIR)/src/gmv_runner.py $(GMVDIST)
 	cp $(BASEDIR)/src/setup_win.py $(GMVDIST)
-	#cd $(GMVDIST); $(PYTHONWINBIN) setup_win.py py2exe -d ../$(GMVWINBUILDDIST)
+	cd $(GMVDIST); $(PYTHONWINBIN) setup_win.py py2exe -d ../$(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault-shell.bat $(GMVWINBUILDDIST)
-	#$(PYTHONWINBIN) $(BASEDIR)/etc/utils/add_version.py $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)/gmv-msg.bat $(GMVVERSION)
-	cd $(BASEDIR)/etc/utils; $(PYTHONWINBIN) ./add_version.py ../etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)/gmv-msg.bat $(GMVVERSION)
-	#cp $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)
+	cd .; $(PYTHONWINBIN) $(BASEDIR)/etc/utils/add_version.py $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)/gmv-msg.bat $(GMVVERSION)
 	cp $(BASEDIR)/README.md $(GMVWINBUILDDIST)/README.txt
 	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVWINBUILDDIST)
 	#unix2dos $(GMVWINBUILDDIST)/README.txt $(GMVWINBUILDDIST)/RELEASE-NOTE.txt

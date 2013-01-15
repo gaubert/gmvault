@@ -37,7 +37,7 @@ import gmv.conf.conf_helper
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
-GMVAULT_VERSION="1.7.2-beta"
+GMVAULT_VERSION="1.7.2-test"
 
 class memoized(object):
     """Decorator that caches a function's return value each time it is called.

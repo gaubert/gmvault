@@ -12,12 +12,12 @@ def convert_to_utf8(a_str):
     """
     """
     if type(a_str) != type(u'a'):
-		import chardet
-		char_enc = chardet.detect(a_str)
-		print("detected encoding = %s" % (char_enc))
-		print("system machine encoding = %s" % (sys.getdefaultencoding()))
+		#import chardet
+		#char_enc = chardet.detect(a_str)
+		#print("detected encoding = %s" % (char_enc))
+		#print("system machine encoding = %s" % (sys.getdefaultencoding()))
 		#u_str = unicode(a_str, char_enc['encoding'], errors='ignore')
-		u_str = unicode(a_str, 'utf-8', errors='ignore')
+		u_str = unicode(a_str, 'cp437', errors='ignore')
     else:
         print("Already unicode do not convert")
         u_str = a_str
