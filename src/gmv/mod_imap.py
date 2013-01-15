@@ -26,10 +26,16 @@ import re
 import socket
 import ssl
 import cStringIO
+import os
 
 import imaplib  #for the exception
 import imapclient
 import gmvault_utils
+
+#enable imap debugging if GMV_IMAP_DEBUG is set 
+if os.getenv("GMV_IMAP_DEBUG"):
+    imaplib.Debug = 4 #enable debugging
+
 #to enable imap debugging and see all command
 #imaplib.Debug = 4 #enable debugging
 
