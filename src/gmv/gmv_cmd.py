@@ -598,9 +598,9 @@ class GMVaultLauncher(object):
             
         elif args.get('type', '') == 'custom':
             
-			#convert args to unicode
+            #convert args to unicode
             args['request']['req']     = gmvault_utils.convert_to_unicode(args['request']['req'])
-            args['request']['charset'] = 'utf-8'
+            args['request']['charset'] = 'utf-8' #for the moment always utf-8
 
             # pass an imap request. Assume that the user know what to do here
             LOG.critical("Perform custom synchronisation with %s request: %s.\n" \

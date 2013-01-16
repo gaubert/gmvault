@@ -231,14 +231,64 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
         """
         if criteria.get('type','') == 'imap':
             #encoding criteria in utf-8
-            criteria['req'] = criteria['req'].encode('utf-8')
-            criteria['charset'] = 'utf-8'
-            return super(MonkeyIMAPClient, self).search(criteria.get('req',''), criteria.get('charset', None))
+            req     = criteria['req'].encode('utf-8')
+            charset = 'utf-8'
+            return super(MonkeyIMAPClient, self).search(req, charset)
         elif criteria.get('type','') == 'gmail':
             return self.gmail_search(criteria.get('req',''))
         else:
             raise Exception("Unknown search type %s" % (criteria.get('type','no request type passed')))
     
+    def new_search(self, criteria):
+        """
+           Perform a imap search or gmail search
+        """
+        if criteria.get('type','') == 'imap':
+            #encoding criteria in utf-8
+            #req     = criteria['req'].encode('utf-8')
+            req     = criteria['req']
+            charset = 'utf-8'
+            #return super(MonkeyIMAPClient, self).search(req, charset)
+            return self.imap_search(req, charset)
+        
+        elif criteria.get('type','') == 'gmail':
+            return self.gmail_search(criteria.get('req',''))
+        else:
+            raise Exception("Unknown search type %s" % (criteria.get('type','no request type passed')))
+    
+    def imap_search(self, criteria='ALL', charset=None):
+        """
+           redefine imap search to support non ascii chars
+        """
+        if not criteria:
+            raise ValueError('no criteria specified')
+
+        #if isinstance(criteria, basestring):
+        #    criteria = (criteria,)
+        #crit_list = ['(%s)' % c for c in criteria]
+
+        #instantiate literal
+        self._imap.literal = '(%s)' % criteria
+        self._imap.literal = imaplib.MapCRLF.sub(imaplib.CRLF, self._imap.literal)
+        self._imap.literal = self._imap.literal.encode("utf-8")
+        
+        if self.use_uid:
+            if charset:
+                args = ['CHARSET', charset]
+            else:
+                args = []
+            #args.extend(crit_list)
+            typ, data = self._imap.uid('SEARCH', *args)
+        else:
+            #typ, data = self._imap.search(charset, *crit_list)
+            typ, data = self._imap.search(charset, *args)
+
+        self._checkok('search', typ, data)
+        data = data[0]
+        if data is None:    # no untagged responses...
+            return []
+        return [long(i) for i in data.split()]
+        
     def gmail_search(self, criteria):
         """
            perform a search with gmailsearch criteria.

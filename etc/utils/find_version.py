@@ -5,10 +5,11 @@ def find_version(path):
     fd = open(path)
 
     for line in fd:
-        index = line.find("GMVAULT_VERSION=\"")
+        index = line.find("GMVAULT_VERSION = \"")
         if index > -1:
-            print(line[index+17:-2])
-            return line[index+17:-2]
+            print(line[index+19:-2])
+            res = line[index+19:-2]
+            return res.strip()
 
     raise Exception("Cannot find GMVAULT_VERSION in %s\n" % (path))
 
