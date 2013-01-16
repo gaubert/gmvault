@@ -312,7 +312,7 @@ def cmp_to_key(mycmp):
             raise TypeError('hash not implemented')
     return Key
     
-def get_all_directories_posterior_to(a_dir, dirs):
+def get_all_dirs_posterior_to(a_dir, dirs):
     """
            get all directories posterior
     """
@@ -454,13 +454,13 @@ def dirwalk(a_dir, a_wildcards= '*'):
             if fnmatch.fnmatch(the_file, a_wildcards):
                 yield os.path.join(root, the_file)  
 
-def ascii_hex(str):
+def ascii_hex(a_str):
     """
        transform any string in hexa values
     """
     new_str = ""
-    for c in str:
-        new_str += "%s=hex[%s]," % (c,hex(ord(c)))
+    for the_char in a_str:
+        new_str += "%s=hex[%s]," % (the_char, hex(ord(the_char)))
     return new_str
                 
 def convert_to_unicode(a_str):

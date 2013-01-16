@@ -310,7 +310,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         else:
             
             # get all yy-mm dirs to list
-            dirs = gmvault_utils.get_all_directories_posterior_to(pivot_dir, \
+            dirs = gmvault_utils.get_all_dirs_posterior_to(pivot_dir, \
                    gmvault_utils.get_all_dirs_under(self._db_dir, ignore_sub_dir))
             
             #create all iterators and chain them to keep the same interface

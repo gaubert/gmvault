@@ -527,6 +527,7 @@ if __name__ == '__main__':
     import time
  
     def _demo(heading, source, encrypted, decrypted):
+        """demo method """
         print heading
         print "\tSource: %(source)s" % {
          'source': source,

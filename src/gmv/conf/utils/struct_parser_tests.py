@@ -19,7 +19,7 @@
 '''
 # unit tests part
 import unittest
-from struct_parser import Compiler, CompilerError
+from gmv.conf.utils.struct_parser import Compiler, CompilerError
 
 class TestParser(unittest.TestCase):
     """ TestParser Class """

@@ -83,7 +83,7 @@ imapclient.response_parser._convert_INTERNALDATE = mod_convert_INTERNALDATE
 #monkey patching add compress in COMMANDS of imap
 imaplib.Commands['COMPRESS'] = ('AUTH', 'SELECTED')
 
-class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable-msg=R0904
+class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
     """
        Add support for compression inspired by inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
     """
@@ -196,7 +196,7 @@ def seq_to_parenlist(flags):
         raise ValueError('invalid flags list: %r' % flags)
     return '(%s)' % ' '.join(flags)
     
-class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
+class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
     """
        Need to extend the IMAPClient to do more things such as compression
        Compression inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
@@ -208,7 +208,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
         """
         super(MonkeyIMAPClient, self).__init__(host, port, use_uid, need_ssl)
     
-    def _create_IMAP4(self): #pylint:disable-msg=C0103
+    def _create_IMAP4(self): #pylint:disable=C0103
         """
            Factory method creating an IMAPCOMPSSL or a standard IMAP4 Class
         """
@@ -261,7 +261,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable-msg=R0903,R0904
         
         #use uid to keep the imap ids consistent
         args = ['CHARSET', 'utf-8', 'X-GM-RAW']
-        typ, data = self._imap.uid('SEARCH',*args)
+        typ, data = self._imap.uid('SEARCH', *args)
         
         self._checkok('search', typ, data)
         if data == [None]: # no untagged responses...
