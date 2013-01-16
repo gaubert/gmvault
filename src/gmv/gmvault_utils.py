@@ -455,13 +455,13 @@ def dirwalk(a_dir, a_wildcards= '*'):
                 yield os.path.join(root, the_file)  
 
 def ascii_hex(str):
-   """
-      transform any string in hexa values
-   """
-   new_str = ""
-   for c in str:
-      new_str += "%s=hex[%s]," % (c,hex(ord(c)))
-   return new_str
+    """
+       transform any string in hexa values
+    """
+    new_str = ""
+    for c in str:
+        new_str += "%s=hex[%s]," % (c,hex(ord(c)))
+    return new_str
                 
 def convert_to_unicode(a_str):
     """
@@ -471,13 +471,13 @@ def convert_to_unicode(a_str):
     #encoding can be forced from conf
     term_encoding = get_conf_defaults().get('Localisation', 'term_encoding', None)
     if not term_encoding:
-		term_encoding = locale.getpreferredencoding() #use it to find the encoding for text terminal
-		if not term_encoding:
-			loc = locale.getdefaultlocale() #try to get defaultlocale()
-			if loc and len(loc) == 2:
-			   term_encoding = loc[1]
-			else:
-			   Log.debug("Odd. loc = %s. Do not specify the encoding, let Python do its own investigation" % (loc))
+        term_encoding = locale.getpreferredencoding() #use it to find the encoding for text terminal
+        if not term_encoding:
+            loc = locale.getdefaultlocale() #try to get defaultlocale()
+            if loc and len(loc) == 2:
+                term_encoding = loc[1]
+            else:
+                LOG.debug("Odd. loc = %s. Do not specify the encoding, let Python do its own investigation" % (loc))
     else:
         LOG.debug("Encoding forced. Read it from [Localisation]:term_encoding=%s" % (term_encoding))
         
@@ -491,7 +491,8 @@ def convert_to_unicode(a_str):
         #LOG.debug("normalized unicode(NFC)  = %s" % (repr(unicodedata.normalize('NFC',u_str))))
         #LOG.debug("normalized unicode(NFD)  = %s" % (repr(unicodedata.normalize('NFD',u_str))))
         LOG.debug("unicode_escape val = %s." % ( u_str.encode('unicode_escape')))
-    except Exception, e:
+    except Exception, err:
+        LOG.error(err)
         get_exception_traceback()
         LOG.debug("Cannot convert to unicode from encoding:%s" % (term_encoding)) #add error
         u_str = unicode(a_str, errors='ignore')
