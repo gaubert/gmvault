@@ -159,7 +159,7 @@ class Timer(object):
         """
         return time.time() - self._start
     
-    def elapsed_human_time(self, suffixes=TIMER_SUFFIXES, add_s=False, separator=' '):
+    def elapsed_human_time(self, suffixes=TIMER_SUFFIXES, add_s=False, separator=' '):#pylint:disable=W0102
         """
         Takes an amount of seconds and turns it into a human-readable amount of time.
         """
@@ -178,7 +178,7 @@ class Timer(object):
             return int(round(float(still_to_be_done * in_sec)/nb_elem_done))
     
     @classmethod
-    def seconds_to_human_time(cls, seconds, suffixes=TIMER_SUFFIXES, add_s=False, separator=' '):
+    def seconds_to_human_time(cls, seconds, suffixes=TIMER_SUFFIXES, add_s=False, separator=' '):#pylint:disable=W0102
         """
            convert seconds to human time
         """
@@ -321,7 +321,7 @@ def get_all_dirs_posterior_to(a_dir, dirs):
     return [ name for name in sorted(dirs, key=cmp_to_key(compare_yymm_dir))\
              if compare_yymm_dir(a_dir, name) <= 0 ]
 
-def get_all_dirs_under(root_dir, ignored_dirs = []):
+def get_all_dirs_under(root_dir, ignored_dirs = []):#pylint:disable=W0102
     """
        Get all directory names under (1 level only) the root dir
        params:
@@ -418,7 +418,7 @@ def delete_all_under(path, delete_top_dir = False):
     if delete_top_dir:
         os.rmdir(path)
         
-def ordered_dirwalk(a_dir, a_file_wildcards= '*', a_dir_ignore_list = [], sort_func = sorted):
+def ordered_dirwalk(a_dir, a_file_wildcards= '*', a_dir_ignore_list = [], sort_func = sorted):#pylint:disable=W0102
     """
         Walk a directory tree, using a generator.
         This implementation returns only the files in all the subdirectories.
