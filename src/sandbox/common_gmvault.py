@@ -209,6 +209,146 @@ class IMAPBatchFetcher(object):
         """
         self.to_fetch = self.imap_ids              
                
+#Client to support imap serch with non ascii char (not working because of imaplibs limitations)
+'''class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
+    """
+       Need to extend the IMAPClient to do more things such as compression
+       Compression inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
+    """
+    
+    def __init__(self, host, port=None, use_uid=True, need_ssl=False):
+        """
+           constructor
+        """
+        super(MonkeyIMAPClient, self).__init__(host, port, use_uid, need_ssl)
+    
+    def _create_IMAP4(self): #pylint:disable=C0103
+        """
+           Factory method creating an IMAPCOMPSSL or a standard IMAP4 Class
+        """
+        imap_class = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
+        return imap_class(self.host, self.port)
+    
+    def xoauth_login(self, xoauth_cred ):
+        """
+           Connect with xoauth
+           Redefine this method to suppress dependency to oauth2 (non-necessary)
+        """
+
+        typ, data = self._imap.authenticate('XOAUTH', lambda x: xoauth_cred)
+        self._checkok('authenticate', typ, data)
+        return data[0]  
+    
+    def old_search(self, criteria):
+        """
+           Perform a imap search or gmail search
+        """
+        if criteria.get('type','') == 'imap':
+            #encoding criteria in utf-8
+            req     = criteria['req'].encode('utf-8')
+            charset = 'utf-8'
+            return super(MonkeyIMAPClient, self).search(req, charset)
+        elif criteria.get('type','') == 'gmail':
+            return self.gmail_search(criteria.get('req',''))
+        else:
+            raise Exception("Unknown search type %s" % (criteria.get('type','no request type passed')))
+    
+    def search(self, criteria):
+        """
+           Perform a imap search or gmail search
+        """
+        if criteria.get('type','') == 'imap':
+            #encoding criteria in utf-8
+            #req     = criteria['req'].encode('utf-8')
+            req     = criteria['req']
+            charset = 'utf-8'
+            #return super(MonkeyIMAPClient, self).search(req, charset)
+            return self.imap_search(req, charset)
+        
+        elif criteria.get('type','') == 'gmail':
+            return self.gmail_search(criteria.get('req',''))
+        else:
+            raise Exception("Unknown search type %s" % (criteria.get('type','no request type passed')))
+    
+    
+        
+    def gmail_search(self, criteria):
+        """
+           perform a search with gmailsearch criteria.
+           eg, subject:Hello World
+        """  
+        criteria = criteria.replace('\\', '\\\\')
+        criteria = criteria.replace('"', '\\"')
+
+        #working but cannot send that understand when non ascii chars are used
+        #args = ['CHARSET', 'utf-8', 'X-GM-RAW', '"%s"' % (criteria)]
+        #typ, data = self._imap.uid('SEARCH', *args)
+
+        #working Literal search 
+        self._imap.literal = '"%s"' % (criteria)
+        self._imap.literal = imaplib.MapCRLF.sub(imaplib.CRLF, self._imap.literal)
+        self._imap.literal = self._imap.literal.encode("utf-8")
+
+        #args = ['X-GM-RAW']
+        #typ, data = self._imap.search('utf-8',*args)
+        
+        #use uid to keep the imap ids consistent
+        args = ['CHARSET', 'utf-8', 'X-GM-RAW']
+        typ, data = self._imap.uid('SEARCH', *args)
+        
+        self._checkok('search', typ, data)
+        if data == [None]: # no untagged responses...
+            return [ ]
+
+        return [ long(i) for i in data[0].split() ]
+    
+    def append(self, folder, msg, flags=(), msg_time=None):
+        """Append a message to *folder*.
+
+        *msg* should be a string contains the full message including
+        headers.
+
+        *flags* should be a sequence of message flags to set. If not
+        specified no flags will be set.
+
+        *msg_time* is an optional datetime instance specifying the
+        date and time to set on the message. The server will set a
+        time if it isn't specified. If *msg_time* contains timezone
+        information (tzinfo), this will be honoured. Otherwise the
+        local machine's time zone sent to the server.
+
+        Returns the APPEND response as returned by the server.
+        """
+        if msg_time:
+            time_val = time.mktime(msg_time.timetuple())
+        else:
+            time_val = None
+
+        flags_list = seq_to_parenlist(flags)
+
+        typ, data = self._imap.append(self._encode_folder_name(folder) if folder else None,
+                                      flags_list, time_val, msg)
+        self._checkok('append', typ, data)
+
+        return data[0]
+    
+    def enable_compression(self):
+        """
+        enable_compression()
+        Ask the server to start compressing the connection.
+        Should be called from user of this class after instantiation, as in:
+            if 'COMPRESS=DEFLATE' in imapobj.capabilities:
+                imapobj.enable_compression()
+        """
+        ret_code, _ = self._imap._simple_command('COMPRESS', 'DEFLATE') #pylint: disable=W0212
+        if ret_code == 'OK':
+            self._imap.activate_compression()
+        else:
+            #no errors for the moment
+            pass
+'''
+        
+
 class GMVaulter(object):
     """
        Main object operating over gmail
