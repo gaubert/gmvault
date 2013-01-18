@@ -300,6 +300,8 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                                      self.gmvault_test_login, gmvault_test_credential, \
                                      read_only_access = False)
         
+        self.diff_mailboxes(gmv_a, gmv_b)
+        
         
     def diff_mailboxes(self, gmvaulter_a, gmvaulter_b):
         """
@@ -312,6 +314,14 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         # check the number of id on disk 
         imap_ids_a = gmvaulter_a.src.search({ 'type' : 'imap', 'req' : 'ALL'}) 
         imap_ids_b = gmvaulter_b.src.search({ 'type' : 'imap', 'req' : 'ALL'}) 
+  
+        batch_fetcher_a = gmvault.IMAPBatchFetcher(self.src, imap_ids_a, self.error_report, imap_utils.GIMAPFetcher.GET_GMAIL_ID, \
+                                         default_batch_size = \
+                                         gmvault_utils.get_conf_defaults().getint(500))
+        
+        batch_fetcher_b = gmvault.IMAPBatchFetcher(self.src, imap_ids_b, self.error_report, imap_utils.GIMAPFetcher.GET_GMAIL_ID, \
+                                         default_batch_size = \
+                                         gmvault_utils.get_conf_defaults().getint(500))
         
         print("Got %d emails in gmvault_a.\n" % (len(imap_ids_a)))
         print("Got %d emails in gmvault_b.\n" % (len(imap_ids_b)))
@@ -326,39 +336,29 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                         "in_b" : [],
                       }
         
+        gm_ids_b = []
+        # get all gm_id for fetcher_b
+        for gm_ids in batch_fetcher_b:
+            gm_ids_b.extend(gm_ids)
+        
         #dumb search not optimisation
         #iterate over imap_ids_a and flag emails only in a but not in b
         #remove emails from imap_ids_b everytime they are found 
-        for id_a in imap_ids_a:
-            if id_a not in imap_ids_b:
-                #get gmail id 
-                online_metadata = gmvaulter_a.src.fetch(id_a, \
-                                                  imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA)
-                
-                gid = online_metadata[id_a][imap_utils.GIMAPFetcher.GMAIL_ID]
-                
-                diff_result["in_a"].append(gid)
-            else:
-                imap_ids_b.remove(id_a)
+        for gm_ids in batch_fetcher_a:
+            for gm_id in gm_ids:
+                if gm_id not in gm_ids_b:
+                    diff_result["in_a"].append(gm_id)
+                else:
+                    gm_ids_b.remove(gm_id)
         
-        #flag all ids left in imap_ids_b
-        
-        for id_b in imap_ids_b:
-            #get gmail id 
-            online_metadata = gmvaulter_a.src.fetch(id_b, \
-                                                  imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA)
-                
-            gid = online_metadata[id_b][imap_utils.GIMAPFetcher.GMAIL_ID]
-            diff_result["in_b"].append(gid)
+        for gm_id in gm_ids_b:
+            diff_result["in_b"].append(gm_id)
             
         
         # print report
         print("gm_ids only in gmv_a:%s\n" % (diff_result["in_a"])) 
         print("\n")
         print("gm_ids only in gmv_b:%s\n" % (diff_result["in_b"])) 
-            
-                
-        
         
 def tests():
     """
