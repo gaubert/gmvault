@@ -107,7 +107,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
  
         print("imap_ids = %s\n" % (imap_ids))
         
-    def zcheck_remote_mailbox_identical_to_local(self, gmvaulter):
+    def check_remote_mailbox_identical_to_local(self, gmvaulter):
         """
            Check that the remote mailbox is identical to the local one.
            Need a connected gmvaulter
@@ -328,10 +328,10 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         imap_ids_b = gmvaulter_b.src.search({ 'type' : 'imap', 'req' : 'ALL'}) 
         
   
-        batch_fetcher_a = gmvault.IMAPBatchFetcher(gmvaulter_a.src, imap_ids_a, gmvaulter_a.error_report, imap_utils.GIMAPFetcher.GET_GMAIL_ID, \
+        batch_fetcher_a = gmvault.IMAPBatchFetcher(gmvaulter_a.src, imap_ids_a, gmvaulter_a.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
                                          default_batch_size = 5)
         
-        batch_fetcher_b = gmvault.IMAPBatchFetcher(gmvaulter_b.src, imap_ids_b, gmvaulter_b.error_report, imap_utils.GIMAPFetcher.GET_GMAIL_ID, \
+        batch_fetcher_b = gmvault.IMAPBatchFetcher(gmvaulter_b.src, imap_ids_b, gmvaulter_b.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
                                          default_batch_size = 5)
         
         print("Got %d emails in gmvault_a.\n" % (len(imap_ids_a)))
@@ -343,38 +343,48 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         else:
             print("Both databases has %d emails." % (len(imap_ids_a)))
         
-        diff_result = { "in_a" : [],
-                        "in_b" : [],
-                      }
+        diff_result = { "in_a" : {},
+                        "in_b" : {},
+                      }  
         
-        gm_ids_b = []
+        gm_ids_b = {}
         # get all gm_id for fetcher_b
         for gm_ids in batch_fetcher_b:
             #print("gm_ids = %s\n" % (gm_ids))
-            for one_ids in gm_ids:
-               gm_ids_b.append(gm_ids[one_ids]['X-GM-MSGID'])
-
-        #{5: {'X-GM-MSGID': 1423085886468103731L, 'SEQ': 1}, 6: {'X-GM-MSGID': 1423086696329371561L, 'SEQ': 2}, 7: {'X-GM-MSGID': 1424430351644189575L, 'SEQ': 3}}
+            for one_id in gm_ids:
+                gm_id = gm_ids[one_id]['X-GM-MSGID']
+                
+                header_fields = gm_ids[one_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
+            
+                subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
         
+                gm_ids_b[received] = [gm_id, subject, msgid]
+    
         #dumb search not optimisation
         #iterate over imap_ids_a and flag emails only in a but not in b
         #remove emails from imap_ids_b everytime they are found 
-        for gm_ids in batch_fetcher_a:
-            for gm_id in gm_ids:
-                if gm_ids[gm_id]['X-GM-MSGID'] not in gm_ids_b:
-                    diff_result["in_a"].append(gm_ids[gm_id]['X-GM-MSGID'])
-                else:
-                    gm_ids_b.remove(gm_ids[gm_id]['X-GM-MSGID'])
+        for data_infos in batch_fetcher_a:
+            for gm_info in data_infos:
+                gm_id = data_infos[gm_info]['X-GM-MSGID']
+                
+                header_fields = data_infos[gm_info]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
+            
+                subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
         
-        for gm_id in gm_ids_b:
-            diff_result["in_b"].append(gm_ids[gm_id]['X-GM-MSGID'])
+                if received not in gm_ids_b:
+                    diff_result["in_a"][received] = [gm_id, subject, msgid]
+                else:
+                    gm_ids_b.remove(received)
+        
+        for recv_id in gm_ids_b:
+            diff_result["in_b"][recv_id] = gm_ids_b[recv_id]
             
         
         # print report
         if (len(diff_result["in_a"]) > 0 or len(diff_result["in_b"]) > 0):
-			print("gm_ids only in gmv_a:%s\n" % (diff_result["in_a"])) 
-			print("\n")
-			print("gm_ids only in gmv_b:%s\n" % (diff_result["in_b"])) 
+            print("gm_ids only in gmv_a:%s\n" % (diff_result["in_a"])) 
+            print("\n")
+            print("gm_ids only in gmv_b:%s\n" % (diff_result["in_b"])) 
         else:
             print("Mailbox %s and %s are identical.\n" % (gmvaulter_a.login, gmvaulter_b.login))
         
