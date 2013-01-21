@@ -23,6 +23,7 @@ import os
 import ssl
 import datetime
 import imapclient
+import md5
 import gmv.mod_imap as mod_imap
 import gmv.gmvault as gmvault
 import gmv.gmvault_db as gmvault_db
@@ -73,7 +74,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """setup"""
         self.gsync_login, self.gsync_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         self.gmvault_test_login, self.gmvault_test_passwd = read_password_file('/homespace/gaubert/.ssh/gmvault_test_passwd')
-        #self.ba_login, self.ba_passwd = read_password_file('/homespace/gaubert/.ssh/ba_passwd')
+        self.ba_login, self.ba_passwd = read_password_file('/homespace/gaubert/.ssh/ba_passwd')
 
     def assert_login_is_protected(self, login):
         """
@@ -289,28 +290,20 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """
         gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
         gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
-        #ba_credential           = { 'type' : 'passwd', 'value': self.ba_passwd }
+        ba_credential           = { 'type' : 'passwd', 'value': self.ba_passwd }
 
         
         
         gmv_dir_a = "/tmp/a-db"
         gmv_dir_b = "/tmp/b-db"
 
-        gmv_a = gmvault.GMVaulter(gmv_dir_a, 'imap.gmail.com', 993, \
-                                     self.gsync_login, gsync_credential, \
-                                     read_only_access = True)
+        gmv_a = gmvault.GMVaulter(gmv_dir_a, 'imap.gmail.com', 993, self.gsync_login, gsync_credential, read_only_access = True)
         
-        #gmv_a = gmvault.GMVaulter(gmv_dir_a, 'imap.gmail.com', 993, \
-        #                             self.gmvault_test_login, gmvault_test_credential, \
-        #                             read_only_access = False)
+        #gmv_a = gmvault.GMVaulter(gmv_dir_a, 'imap.gmail.com', 993, self.gmvault_test_login, gmvault_test_credential, read_only_access = False)
         
-        gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, \
-                                     self.gmvault_test_login, gmvault_test_credential, \
-                                     read_only_access = False)
+        #gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, self.gmvault_test_login, gmvault_test_credential, read_only_access = False)
 
-        #gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, \
-        #                             self.gsync_login, gsync_credential, \
-        #                             read_only_access = True)
+        gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, self.ba_login, ba_credential, read_only_access = True)
         
         self.diff_mailboxes(gmv_a, gmv_b)
         
@@ -329,10 +322,10 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
   
         batch_fetcher_a = gmvault.IMAPBatchFetcher(gmvaulter_a.src, imap_ids_a, gmvaulter_a.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
-                                         default_batch_size = 5)
+                                         default_batch_size = 500)
         
         batch_fetcher_b = gmvault.IMAPBatchFetcher(gmvaulter_b.src, imap_ids_b, gmvaulter_b.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
-                                         default_batch_size = 5)
+                                         default_batch_size = 500)
         
         print("Got %d emails in gmvault_a.\n" % (len(imap_ids_a)))
         print("Got %d emails in gmvault_b.\n" % (len(imap_ids_b)))
@@ -351,14 +344,27 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         # get all gm_id for fetcher_b
         for gm_ids in batch_fetcher_b:
             #print("gm_ids = %s\n" % (gm_ids))
+            print("Process a batch\n")
             for one_id in gm_ids:
                 gm_id = gm_ids[one_id]['X-GM-MSGID']
                 
                 header_fields = gm_ids[one_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
             
                 subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
+                
+                hash = md5.new()
+                if received:
+                    hash.update(received)
+                
+                if subject:
+                    hash.update(subject)
+                    
+                if msgid:
+                    hash.update(msgid)
+
+                id =  base64.encodestring(hash.digest())
         
-                gm_ids_b[received] = [gm_id, subject, msgid]
+                gm_ids_b[id] = [gm_id, subject, msgid]
     
         #dumb search not optimisation
         #iterate over imap_ids_a and flag emails only in a but not in b
@@ -370,11 +376,23 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                 header_fields = data_infos[gm_info]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
             
                 subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
+                
+                hash = md5.new()
+                if received:
+                    hash.update(received)
+                
+                if subject:
+                    hash.update(subject)
+                    
+                if msgid:
+                    hash.update(msgid)
+
+                id =  base64.encodestring(hash.digest())
         
-                if received not in gm_ids_b:
+                if id not in gm_ids_b:
                     diff_result["in_a"][received] = [gm_id, subject, msgid]
                 else:
-                    gm_ids_b.remove(received)
+                    del gm_ids_b[id]
         
         for recv_id in gm_ids_b:
             diff_result["in_b"][recv_id] = gm_ids_b[recv_id]
