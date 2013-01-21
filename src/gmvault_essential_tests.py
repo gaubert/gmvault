@@ -73,6 +73,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """setup"""
         self.gsync_login, self.gsync_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         self.gmvault_test_login, self.gmvault_test_passwd = read_password_file('/homespace/gaubert/.ssh/gmvault_test_passwd')
+        #self.ba_login, self.ba_passwd = read_password_file('/homespace/gaubert/.ssh/ba_passwd')
 
     def assert_login_is_protected(self, login):
         """
@@ -106,7 +107,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
  
         print("imap_ids = %s\n" % (imap_ids))
         
-    def check_remote_mailbox_identical_to_local(self, gmvaulter):
+    def zcheck_remote_mailbox_identical_to_local(self, gmvaulter):
         """
            Check that the remote mailbox is identical to the local one.
            Need a connected gmvaulter
@@ -237,7 +238,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     self.fail("flag %s should be in online_flags %s as it is in disk_flags %s" % (flag, online_flags, disk_flags))        
 
          
-    def test_restore_tricky_emails(self):
+    def ztest_restore_tricky_emails(self):
         """test_restore_tricky_emails. Restore emails with some specificities (japanese characters) in the a mailbox"""
         gsync_credential    = { 'type' : 'passwd', 'value': self.gsync_passwd }
 
@@ -256,7 +257,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
         self.check_remote_mailbox_identical_to_local(restorer)
         
-    def test_backup_and_restore(self):
+    def ztest_backup_and_restore(self):
         """backup from gmvault_test and restore"""
         gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
         gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
@@ -282,23 +283,34 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
  
         gmvault_utils.delete_all_under(gmvault_test_db_dir, delete_top_dir = True)
         
-    def ztest_difference(self):
+    def test_difference(self):
         """
            
         """
         gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
         gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
+        #ba_credential           = { 'type' : 'passwd', 'value': self.ba_passwd }
+
+        
         
         gmv_dir_a = "/tmp/a-db"
         gmv_dir_b = "/tmp/b-db"
-        
+
         gmv_a = gmvault.GMVaulter(gmv_dir_a, 'imap.gmail.com', 993, \
-                                     self.gmvault_test_login, gmvault_test_credential, \
-                                     read_only_access = False)
+                                     self.gsync_login, gsync_credential, \
+                                     read_only_access = True)
+        
+        #gmv_a = gmvault.GMVaulter(gmv_dir_a, 'imap.gmail.com', 993, \
+        #                             self.gmvault_test_login, gmvault_test_credential, \
+        #                             read_only_access = False)
         
         gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, \
                                      self.gmvault_test_login, gmvault_test_credential, \
                                      read_only_access = False)
+
+        #gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, \
+        #                             self.gsync_login, gsync_credential, \
+        #                             read_only_access = True)
         
         self.diff_mailboxes(gmv_a, gmv_b)
         
@@ -314,14 +326,13 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         # check the number of id on disk 
         imap_ids_a = gmvaulter_a.src.search({ 'type' : 'imap', 'req' : 'ALL'}) 
         imap_ids_b = gmvaulter_b.src.search({ 'type' : 'imap', 'req' : 'ALL'}) 
-  
-        batch_fetcher_a = gmvault.IMAPBatchFetcher(self.src, imap_ids_a, self.error_report, imap_utils.GIMAPFetcher.GET_GMAIL_ID, \
-                                         default_batch_size = \
-                                         gmvault_utils.get_conf_defaults().getint(500))
         
-        batch_fetcher_b = gmvault.IMAPBatchFetcher(self.src, imap_ids_b, self.error_report, imap_utils.GIMAPFetcher.GET_GMAIL_ID, \
-                                         default_batch_size = \
-                                         gmvault_utils.get_conf_defaults().getint(500))
+  
+        batch_fetcher_a = gmvault.IMAPBatchFetcher(gmvaulter_a.src, imap_ids_a, gmvaulter_a.error_report, imap_utils.GIMAPFetcher.GET_GMAIL_ID, \
+                                         default_batch_size = 5)
+        
+        batch_fetcher_b = gmvault.IMAPBatchFetcher(gmvaulter_b.src, imap_ids_b, gmvaulter_b.error_report, imap_utils.GIMAPFetcher.GET_GMAIL_ID, \
+                                         default_batch_size = 5)
         
         print("Got %d emails in gmvault_a.\n" % (len(imap_ids_a)))
         print("Got %d emails in gmvault_b.\n" % (len(imap_ids_b)))
@@ -339,26 +350,33 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gm_ids_b = []
         # get all gm_id for fetcher_b
         for gm_ids in batch_fetcher_b:
-            gm_ids_b.extend(gm_ids)
+            #print("gm_ids = %s\n" % (gm_ids))
+            for one_ids in gm_ids:
+               gm_ids_b.append(gm_ids[one_ids]['X-GM-MSGID'])
+
+        #{5: {'X-GM-MSGID': 1423085886468103731L, 'SEQ': 1}, 6: {'X-GM-MSGID': 1423086696329371561L, 'SEQ': 2}, 7: {'X-GM-MSGID': 1424430351644189575L, 'SEQ': 3}}
         
         #dumb search not optimisation
         #iterate over imap_ids_a and flag emails only in a but not in b
         #remove emails from imap_ids_b everytime they are found 
         for gm_ids in batch_fetcher_a:
             for gm_id in gm_ids:
-                if gm_id not in gm_ids_b:
-                    diff_result["in_a"].append(gm_id)
+                if gm_ids[gm_id]['X-GM-MSGID'] not in gm_ids_b:
+                    diff_result["in_a"].append(gm_ids[gm_id]['X-GM-MSGID'])
                 else:
-                    gm_ids_b.remove(gm_id)
+                    gm_ids_b.remove(gm_ids[gm_id]['X-GM-MSGID'])
         
         for gm_id in gm_ids_b:
-            diff_result["in_b"].append(gm_id)
+            diff_result["in_b"].append(gm_ids[gm_id]['X-GM-MSGID'])
             
         
         # print report
-        print("gm_ids only in gmv_a:%s\n" % (diff_result["in_a"])) 
-        print("\n")
-        print("gm_ids only in gmv_b:%s\n" % (diff_result["in_b"])) 
+        if (len(diff_result["in_a"]) > 0 or len(diff_result["in_b"]) > 0):
+			print("gm_ids only in gmv_a:%s\n" % (diff_result["in_a"])) 
+			print("\n")
+			print("gm_ids only in gmv_b:%s\n" % (diff_result["in_b"])) 
+        else:
+            print("Mailbox %s and %s are identical.\n" % (gmvaulter_a.login, gmvaulter_b.login))
         
 def tests():
     """
