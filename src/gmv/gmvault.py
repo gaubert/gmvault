@@ -470,6 +470,8 @@ class GMVaulter(object):
                     #decode the labels that are received as utf7 => unicode
                     new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
                     imap_utils.decode_labels(new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS])
+
+                    LOG.debug("metadata info collected: %s\n" % (new_data[the_id]))
                 
                     #pass the dir and the ID
                     curr_metadata = GMVaulter.check_email_on_disk( self.gstorer , \
