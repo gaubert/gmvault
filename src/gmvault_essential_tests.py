@@ -238,76 +238,6 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                 if flag not in online_flags:
                     self.fail("flag %s should be in online_flags %s as it is in disk_flags %s" % (flag, online_flags, disk_flags))        
 
-         
-    def test_restore_tricky_emails(self):
-        """test_restore_tricky_emails. Restore emails with some specificities (japanese characters) in the a mailbox"""
-        gsync_credential    = { 'type' : 'passwd', 'value': self.gsync_passwd }
-
-        self.clean_mailbox(self.gsync_login, gsync_credential)
-
-        # test restore
-        test_db_dir = "/homespace/gaubert/gmvault-dbs/essential-dbs"
-        #test_db_dir = "/home/gmv/Dev/projects/gmvault-develop/src/test-db"
-        #test_db_dir = "/Users/gaubert/Dev/projects/gmvault-develop/src/test-db"
-        
-        restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, \
-                                     self.gsync_login, gsync_credential, \
-                                     read_only_access = False)
-        
-        restorer.restore() #restore all emails from this essential-db
-
-        self.check_remote_mailbox_identical_to_local(restorer)
-        
-    def test_backup_and_restore(self):
-        """backup from gmvault_test and restore"""
-        gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
-        gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
-        
-        self.clean_mailbox(self.gsync_login, gsync_credential)
-        
-        gmvault_test_db_dir = "/tmp/backup-restore"
-        
-        backuper = gmvault.GMVaulter(gmvault_test_db_dir, 'imap.gmail.com', 993, \
-                                     self.gmvault_test_login, gmvault_test_credential, \
-                                     read_only_access = False)
-        
-        backuper.sync()
-        
-        #check that we have x emails in the database
-        restorer = gmvault.GMVaulter(gmvault_test_db_dir, 'imap.gmail.com', 993, \
-                                     self.gsync_login, gsync_credential, \
-                                     read_only_access = False)
-        
-        restorer.restore() #restore all emails from this essential-db
-
-        self.check_remote_mailbox_identical_to_local(restorer)
- 
-        gmvault_utils.delete_all_under(gmvault_test_db_dir, delete_top_dir = True)
-        
-    def ztest_difference(self):
-        """
-           
-        """
-        gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
-        gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
-        ba_credential           = { 'type' : 'passwd', 'value': self.ba_passwd }
-
-        
-        
-        gmv_dir_a = "/tmp/a-db"
-        gmv_dir_b = "/tmp/b-db"
-
-        gmv_a = gmvault.GMVaulter(gmv_dir_a, 'imap.gmail.com', 993, self.gsync_login, gsync_credential, read_only_access = True)
-        
-        #gmv_a = gmvault.GMVaulter(gmv_dir_a, 'imap.gmail.com', 993, self.gmvault_test_login, gmvault_test_credential, read_only_access = False)
-        
-        #gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, self.gmvault_test_login, gmvault_test_credential, read_only_access = False)
-
-        gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, self.ba_login, ba_credential, read_only_access = True)
-        
-        self.diff_online_mailboxes(gmv_a, gmv_b)
-        
-        
     def diff_online_mailboxes(self, gmvaulter_a, gmvaulter_b):
         """
            Diff 2 mailboxes
@@ -405,6 +335,77 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             print("gm_ids only in gmv_b:%s\n" % (diff_result["in_b"])) 
         else:
             print("Mailbox %s and %s are identical.\n" % (gmvaulter_a.login, gmvaulter_b.login))
+        
+         
+    def ztest_restore_tricky_emails(self):
+        """test_restore_tricky_emails. Restore emails with some specificities (japanese characters) in the a mailbox"""
+        gsync_credential    = { 'type' : 'passwd', 'value': self.gsync_passwd }
+
+        self.clean_mailbox(self.gsync_login, gsync_credential)
+
+        # test restore
+        test_db_dir = "/homespace/gaubert/gmvault-dbs/essential-dbs"
+        #test_db_dir = "/home/gmv/Dev/projects/gmvault-develop/src/test-db"
+        #test_db_dir = "/Users/gaubert/Dev/projects/gmvault-develop/src/test-db"
+        
+        restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, \
+                                     self.gsync_login, gsync_credential, \
+                                     read_only_access = False)
+        
+        restorer.restore() #restore all emails from this essential-db
+
+        self.check_remote_mailbox_identical_to_local(restorer)
+        
+    def test_backup_and_restore(self):
+        """backup from gmvault_test and restore"""
+        gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
+        gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
+        
+        self.clean_mailbox(self.gsync_login, gsync_credential)
+        
+        gmvault_test_db_dir = "/tmp/backup-restore"
+        
+        backuper = gmvault.GMVaulter(gmvault_test_db_dir, 'imap.gmail.com', 993, \
+                                     self.gmvault_test_login, gmvault_test_credential, \
+                                     read_only_access = False)
+        
+        backuper.sync()
+        
+        #check that we have x emails in the database
+        restorer = gmvault.GMVaulter(gmvault_test_db_dir, 'imap.gmail.com', 993, \
+                                     self.gsync_login, gsync_credential, \
+                                     read_only_access = False)
+        
+        restorer.restore() #restore all emails from this essential-db
+
+        self.check_remote_mailbox_identical_to_local(restorer)
+
+        self.diff_online_mailboxes(backuper, restorer)
+ 
+        gmvault_utils.delete_all_under(gmvault_test_db_dir, delete_top_dir = True)
+        
+    def ztest_difference(self):
+        """
+           
+        """
+        gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
+        gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
+        ba_credential           = { 'type' : 'passwd', 'value': self.ba_passwd }
+
+        
+        
+        gmv_dir_a = "/tmp/a-db"
+        gmv_dir_b = "/tmp/b-db"
+
+        gmv_a = gmvault.GMVaulter(gmv_dir_a, 'imap.gmail.com', 993, self.gsync_login, gsync_credential, read_only_access = True)
+        
+        #gmv_a = gmvault.GMVaulter(gmv_dir_a, 'imap.gmail.com', 993, self.gmvault_test_login, gmvault_test_credential, read_only_access = False)
+        
+        #gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, self.gmvault_test_login, gmvault_test_credential, read_only_access = False)
+
+        gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, self.ba_login, ba_credential, read_only_access = True)
+        
+        self.diff_online_mailboxes(gmv_a, gmv_b)
         
 def tests():
     """
