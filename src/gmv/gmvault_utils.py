@@ -39,7 +39,7 @@ LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
 GMVAULT_VERSION = "1.7.2-test"
 
-class memoized(object):
+class memoized(object): #pylint: disable=C0103
     """Decorator that caches a function's return value each time it is called.
     If called later with the same arguments, the cached value is returned, and
     not re-evaluated.
@@ -292,9 +292,9 @@ def cmp_to_key(mycmp):
         Taken from functools. Not in all python versions so had to redefine it
         Convert a cmp= function into a key= function
     """
-    class Key(object):
+    class Key(object): #pylint: disable=R0903
         """Key class"""
-        def __init__(self, obj, *args):
+        def __init__(self, obj, *args): #pylint: disable=W0613
             self.obj = obj
         def __lt__(self, other):
             return mycmp(self.obj, other.obj) < 0

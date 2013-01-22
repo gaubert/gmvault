@@ -255,13 +255,10 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
         self._imap.literal = '"%s"' % (criteria)
         self._imap.literal = imaplib.MapCRLF.sub(imaplib.CRLF, self._imap.literal)
         self._imap.literal = self._imap.literal.encode("utf-8")
-
-        #args = ['X-GM-RAW']
-        #typ, data = self._imap.search('utf-8',*args)
-        
+ 
         #use uid to keep the imap ids consistent
         args = ['CHARSET', 'utf-8', 'X-GM-RAW']
-        typ, data = self._imap.uid('SEARCH', *args)
+        typ, data = self._imap.uid('SEARCH', *args) #pylint: disable=W0142
         
         self._checkok('search', typ, data)
         if data == [None]: # no untagged responses...

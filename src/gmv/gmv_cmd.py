@@ -99,7 +99,7 @@ e) Custom synchronisation with an Gmail request for advance users.
 
 LOG = log_utils.LoggerFactory.get_logger('gmv')
 
-class NotSeenAction(argparse.Action): #pylint:disable=R0903
+class NotSeenAction(argparse.Action): #pylint:disable=R0903,w0232
     """
        to differenciate between a seen and non seen command
     """
@@ -679,12 +679,12 @@ class GMVaultLauncher(object):
                              " Please check your login and password or xoauth token.\n")
                 die_with_usage = False
             else:
-                LOG.critical("Error: %s.\n" % (imap_err) )
+                LOG.critical("Error: %s. \n" % (imap_err) )
                 LOG.critical("=== Exception traceback ===")
                 LOG.critical(gmvault_utils.get_exception_traceback())
                 LOG.critical("=== End of Exception traceback ===\n")
         except Exception, err:
-            LOG.critical("Error: %s.\n" % (err) )
+            LOG.critical("Error: %s. \n" % (err) )
             LOG.critical("=== Exception traceback ===")
             LOG.critical(gmvault_utils.get_exception_traceback())
             LOG.critical("=== End of Exception traceback ===\n")

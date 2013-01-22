@@ -514,7 +514,7 @@ class Blowfish:
         # Perform all ops as longs then and out the last 32-bits to
         # obtain the integer
         f = long(self._s_boxes[0][(xl & 0xFF000000) >> 24])
-        f +=long(self._s_boxes[1][(xl & 0x00FF0000) >> 16])
+        f += long(self._s_boxes[1][(xl & 0x00FF0000) >> 16])
         f %= self._MODULUS
         f ^= long(self._s_boxes[2][(xl & 0x0000FF00) >> 8])
         f += long(self._s_boxes[3][(xl & 0x000000FF)])
@@ -560,7 +560,7 @@ if __name__ == '__main__':
     text = "The quick brown fox jumps over the lazy dog"
     crypted = cipher.encryptCTR(text)
     cipher.initCTR()
-    decrypted=cipher.decryptCTR(crypted)
+    decrypted = cipher.decryptCTR(crypted)
     _demo("Testing CTR logic", text, repr(crypted), decrypted)
  
     # Test speed

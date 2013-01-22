@@ -25,7 +25,7 @@ import os
 import gmv.conf.conf_helper
 
 
-class TestConf(unittest.TestCase):
+class TestConf(unittest.TestCase): #pylint: disable=R0904
     """
        Test Class for the Conf Object
     """  
