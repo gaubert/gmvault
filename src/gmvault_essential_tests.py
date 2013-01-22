@@ -383,6 +383,15 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.diff_online_mailboxes(backuper, restorer)
  
         gmvault_utils.delete_all_under(gmvault_test_db_dir, delete_top_dir = True)
+
+    def ztest_delete_gsync(self):
+        """
+           Simply delete gsync
+        """
+        gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
+        gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
+
+        self.clean_mailbox(self.gsync_login, gsync_credential)
         
     def ztest_difference(self):
         """
