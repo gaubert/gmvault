@@ -337,7 +337,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             print("Mailbox %s and %s are identical.\n" % (gmvaulter_a.login, gmvaulter_b.login))
         
          
-    def ztest_restore_tricky_emails(self):
+    def test_restore_tricky_emails(self):
         """test_restore_tricky_emails. Restore emails with some specificities (japanese characters) in the a mailbox"""
         gsync_credential    = { 'type' : 'passwd', 'value': self.gsync_passwd }
 
@@ -392,8 +392,6 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
         ba_credential           = { 'type' : 'passwd', 'value': self.ba_passwd }
 
-        
-        
         gmv_dir_a = "/tmp/a-db"
         gmv_dir_b = "/tmp/b-db"
 
