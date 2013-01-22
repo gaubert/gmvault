@@ -416,7 +416,7 @@ class GMVaulter(object):
 
     def _common_sync(self, a_timer, a_type, imap_req, compress, restart):
         """
-          
+           common syncing method for both emails and chats. 
         """
         # get all imap ids in All Mail
         imap_ids = self.src.search(imap_req)
@@ -459,9 +459,9 @@ class GMVaulter(object):
                     gid = new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
                     
                     if a_type == "email":
-                        the_dir       = gmvault_utils.get_ym_from_datetime(new_data[the_id][imap_utils.GIMAPFetcher.IMAP_INTERNALDATE])
+                        the_dir = gmvault_utils.get_ym_from_datetime(new_data[the_id][imap_utils.GIMAPFetcher.IMAP_INTERNALDATE])
                     elif a_type == "chat":
-                        the_dir       = self.gstorer.get_sub_chats_dir()
+                        the_dir = self.gstorer.get_sub_chats_dir()
                     else:
                         raise Exception("Error a_type %s in _common_sync is unknown" % (a_type))
                     
