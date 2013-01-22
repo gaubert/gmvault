@@ -239,7 +239,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                     self.fail("flag %s should be in online_flags %s as it is in disk_flags %s" % (flag, online_flags, disk_flags))        
 
          
-    def ztest_restore_tricky_emails(self):
+    def test_restore_tricky_emails(self):
         """test_restore_tricky_emails. Restore emails with some specificities (japanese characters) in the a mailbox"""
         gsync_credential    = { 'type' : 'passwd', 'value': self.gsync_passwd }
 
@@ -284,7 +284,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
  
         gmvault_utils.delete_all_under(gmvault_test_db_dir, delete_top_dir = True)
         
-    def test_difference(self):
+    def ztest_difference(self):
         """
            
         """
@@ -305,10 +305,10 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
         gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, self.ba_login, ba_credential, read_only_access = True)
         
-        self.diff_mailboxes(gmv_a, gmv_b)
+        self.diff_online_mailboxes(gmv_a, gmv_b)
         
         
-    def diff_mailboxes(self, gmvaulter_a, gmvaulter_b):
+    def diff_online_mailboxes(self, gmvaulter_a, gmvaulter_b):
         """
            Diff 2 mailboxes
         """
