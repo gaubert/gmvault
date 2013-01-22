@@ -26,6 +26,7 @@ import re
 
 import functools
 
+import ssl
 import imaplib
 
 import gmv.log_utils as log_utils
@@ -139,16 +140,32 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
                 except socket.error, sock_err:
                     LOG.debug("error message = %s. traceback:%s" % (sock_err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Cannot reach the Gmail server. Wait %s seconds and retrying." % (m_sleep_time[0]))
-                    
+                    if nb_tries[0] < a_nb_tries:
+                        LOG.critical("Cannot reach the Gmail server. Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    else:
+                        LOG.critical("Stop retrying, tried too many times ...")
+                        
                     reconnect(args[0], nb_tries, a_nb_tries, sock_err, m_sleep_time)
+                
+                except ssl.SSLError, ssl_err:
+                    LOG.debug("error message = %s. traceback:%s" % (ssl_err, gmvault_utils.get_exception_traceback()))
                     
+                    if nb_tries[0] < a_nb_tries:
+                        LOG.critical("Cannot reach the Gmail server. Wait %s seconds and retrying." % (m_sleep_time[0]))
+                    else:
+                        LOG.critical("Stop retrying, tried too many times ...")
+                        
+                    reconnect(args[0], nb_tries, a_nb_tries, sock_err, m_sleep_time)
+                
                 except imaplib.IMAP4.error, err:
                     
                     #just trace it back for the moment
                     LOG.debug("IMAP (normal) error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
                     
-                    LOG.critical("Error when reaching Gmail server. Wait %s seconds and retry up to 2 times." % (m_sleep_time[0]))
+                    if nb_tries[0] < a_nb_tries:
+                        LOG.critical("Error when reaching Gmail server. Wait %s seconds and retry up to 2 times." % (m_sleep_time[0]))
+                    else:
+                        LOG.critical("Stop retrying, tried too many times ...")
                     
                     #raise err
                     # retry 2 times before to quit
