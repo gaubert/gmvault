@@ -29,6 +29,7 @@ import gmv.gmvault as gmvault
 import gmv.gmvault_db as gmvault_db
 import gmv.gmvault_utils as gmvault_utils
 import gmv.imap_utils as imap_utils
+import gmv.credential_utils as cred_utils
 
 
 def obfuscate_string(a_str):
@@ -48,6 +49,39 @@ def read_password_file(a_path):
     (login, passwd) = line.split(":")
     
     return (deobfuscate_string(login.strip()), deobfuscate_string(passwd.strip()))
+
+def get_oauth_cred(email, cred_path):
+   """
+	   Read oauth token secret credential
+	   Look by default to ~/.gmvault
+	   Look for file ~/.gmvault/email.oauth
+   """
+   user_oauth_file_path = cred_path
+
+   token  = None
+   secret = None
+   if os.path.exists(user_oauth_file_path):
+       print("Get XOAuth credential from %s.\n" % (user_oauth_file_path))
+            
+       oauth_file  = open(user_oauth_file_path)
+            
+       try:
+          oauth_result = oauth_file.read()
+          if oauth_result:
+             oauth_result = oauth_result.split('::')
+             if len(oauth_result) == 2:
+                 token  = oauth_result[0]
+                 secret = oauth_result[1]
+       except Exception, _: #pylint: disable-msg=W0703              
+           print("Cannot read oauth credentials from %s. Force oauth credentials renewal." % (user_oauth_file_path))
+           print("=== Exception traceback ===")
+           print(gmvault_utils.get_exception_traceback())
+           print("=== End of Exception traceback ===\n")
+        
+       if token: token   = token.strip() #pylint: disable-msg=C0321
+       if secret: secret = secret.strip()  #pylint: disable-msg=C0321
+        
+   return { 'type' : 'xoauth', 'value' : cred_utils.generate_xoauth_req(token, secret, email), 'option':None}
 
 def delete_db_dir(a_db_dir):
     """
@@ -75,6 +109,10 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.gsync_login, self.gsync_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         self.gmvault_test_login, self.gmvault_test_passwd = read_password_file('/homespace/gaubert/.ssh/gmvault_test_passwd')
         self.ba_login, self.ba_passwd = read_password_file('/homespace/gaubert/.ssh/ba_passwd')
+
+        #xoauth hanlding
+        self.ga_login = 'guillaume.aubert@gmail.com'
+        self.ga_cred  = get_oauth_cred(self.ga_login, '/homespace/gaubert/.ssh/ga_oauth')
 
     def assert_login_is_protected(self, login):
         """
@@ -337,7 +375,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
             print("Mailbox %s and %s are identical.\n" % (gmvaulter_a.login, gmvaulter_b.login))
         
          
-    def test_restore_tricky_emails(self):
+    def ztest_restore_tricky_emails(self):
         """test_restore_tricky_emails. Restore emails with some specificities (japanese characters) in the a mailbox"""
         gsync_credential    = { 'type' : 'passwd', 'value': self.gsync_passwd }
 
@@ -356,7 +394,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
         self.check_remote_mailbox_identical_to_local(restorer)
         
-    def test_backup_and_restore(self):
+    def ztest_backup_and_restore(self):
         """backup from gmvault_test and restore"""
         gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
         gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
@@ -393,7 +431,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
         self.clean_mailbox(self.gsync_login, gsync_credential)
         
-    def ztest_difference(self):
+    def test_difference(self):
         """
            
         """
@@ -410,7 +448,8 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         #gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, self.gmvault_test_login, gmvault_test_credential, read_only_access = False)
 
-        gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, self.ba_login, ba_credential, read_only_access = True)
+        #gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, self.ba_login, ba_credential, read_only_access = True)
+        gmv_b = gmvault.GMVaulter(gmv_dir_b, 'imap.gmail.com', 993, self.ga_login, self.ga_cred, read_only_access = True)
         
         self.diff_online_mailboxes(gmv_a, gmv_b)
         
