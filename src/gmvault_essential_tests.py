@@ -288,12 +288,13 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         imap_ids_a = gmvaulter_a.src.search({ 'type' : 'imap', 'req' : 'ALL'}) 
         imap_ids_b = gmvaulter_b.src.search({ 'type' : 'imap', 'req' : 'ALL'}) 
         
+        batch_size = 700
   
         batch_fetcher_a = gmvault.IMAPBatchFetcher(gmvaulter_a.src, imap_ids_a, gmvaulter_a.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
-                                         default_batch_size = 500)
+                                         default_batch_size = batch_size)
         
         batch_fetcher_b = gmvault.IMAPBatchFetcher(gmvaulter_b.src, imap_ids_b, gmvaulter_b.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
-                                         default_batch_size = 500)
+                                         default_batch_size = batch_size)
         
         print("Got %d emails in gmvault_a.\n" % (len(imap_ids_a)))
         print("Got %d emails in gmvault_b.\n" % (len(imap_ids_b)))
@@ -309,10 +310,11 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                       }  
         
         gm_ids_b = {}
+        total_processed = 0
         # get all gm_id for fetcher_b
         for gm_ids in batch_fetcher_b:
             #print("gm_ids = %s\n" % (gm_ids))
-            print("Process a batch\n")
+            print("Process a new batch (%d). Total processed:%d.\n" % (batch_size, total_processed))
             for one_id in gm_ids:
                 gm_id = gm_ids[one_id]['X-GM-MSGID']
                 
@@ -333,6 +335,8 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
                 id =  base64.encodestring(hash.digest())
         
                 gm_ids_b[id] = [gm_id, subject, msgid]
+
+            total_processed += batch_size
     
         #dumb search not optimisation
         #iterate over imap_ids_a and flag emails only in a but not in b
@@ -368,12 +372,21 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         # print report
         if (len(diff_result["in_a"]) > 0 or len(diff_result["in_b"]) > 0):
-            print("gm_ids only in gmv_a:%s\n" % (diff_result["in_a"])) 
+            print("emails only in gmv_a:\n") 
+            self.print_diff_result(diff_result["in_a"])
             print("\n")
-            print("gm_ids only in gmv_b:%s\n" % (diff_result["in_b"])) 
+            print("emails only in gmv_b:%s\n") 
+            self.print_diff_result(diff_result["in_b"])
         else:
             print("Mailbox %s and %s are identical.\n" % (gmvaulter_a.login, gmvaulter_b.login))
         
+    def print_diff_result(self, diff_result):
+        """ print the diff_result structure
+        """
+        
+        for key in diff_result:
+            vals = diff_result[key]
+            print("mailid:%s#####subject:%s#####%s." % (vals[2], vals[1], vals[0]))
          
     def ztest_restore_tricky_emails(self):
         """test_restore_tricky_emails. Restore emails with some specificities (japanese characters) in the a mailbox"""
