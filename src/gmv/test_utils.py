@@ -20,7 +20,7 @@
 import base64
 import os
 import datetime
-import hashlib
+import md5
 
 import gmv.gmvault as gmvault
 import gmv.imap_utils       as imap_utils
@@ -206,7 +206,7 @@ def diff_online_mailboxes(gmvaulter_a, gmvaulter_b):
         
             subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
             
-            hash = hashlib.new()
+            hash = md5.new()
             if received:
                 hash.update(received)
             
@@ -233,7 +233,7 @@ def diff_online_mailboxes(gmvaulter_a, gmvaulter_b):
         
             subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
             
-            hash = hashlib.new()
+            hash = md5.new()
             if received:
                 hash.update(received)
             
