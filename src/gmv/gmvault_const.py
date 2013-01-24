@@ -52,7 +52,7 @@ restore_default_location=DRAFTS
 
 [Localisation]
 #example with Russian
-chat_folder=[ '[Google Mail]/Чаты', '[GMail]/Чаты' ]
+chat_folder=[ '[Google Mail]/Чаты', '[Gmail]/Чаты' ]
 #uncomment if you need to force the term_encoding
 #term_encoding='utf-8'
 
