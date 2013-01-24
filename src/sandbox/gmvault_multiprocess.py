@@ -275,7 +275,7 @@ class GMVaulter(object):
         
         return imap_req
     
-    def get_error_report(self):
+    def get_operation_report(self):
         """
            Return the error report
         """

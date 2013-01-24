@@ -553,7 +553,7 @@ class GMVaultLauncher(object):
             raise ValueError("Unknown synchronisation mode %s. Please use full (default), quick.")
         
         #print error report
-        LOG.critical(restorer.get_error_report()) 
+        LOG.critical(restorer.get_operation_report()) 
             
     @classmethod        
     def _sync(cls, args, credential):
@@ -614,7 +614,7 @@ class GMVaultLauncher(object):
         
         
         #print error report
-        LOG.critical(syncer.get_error_report())
+        LOG.critical(syncer.get_operation_report())
     
     @classmethod
     def _check_db(cls, args, credential):

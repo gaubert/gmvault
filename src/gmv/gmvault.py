@@ -275,16 +275,19 @@ class GMVaulter(object):
         
         return imap_req
     
-    def get_error_report(self):
+    def get_operation_report(self):
         """
            Return the error report
         """
         the_str = "\n================================================================\n"\
-              "Number of reconnections: %d.\nNumber of emails quarantined: %d.\n" \
-              "Number of emails that could not be fetched: %d.\n" \
-              "Number of emails that were returned empty by gmail: %d\n"\
-              "================================================================" \
-              % (self.error_report['reconnections'], \
+                  "%s operation performed in %s.\n" \
+                  "Number of reconnections: %d.\nNumber of emails quarantined: %d.\n" \
+                  "Number of emails that could not be fetched: %d.\n" \
+                  "Number of emails that were returned empty by gmail: %d\n"\
+                  "================================================================" \
+              % (self.error_report['operation'], \
+                 self.error_report['operation_time'], \
+                 self.error_report['reconnections'], \
                  len(self.error_report['emails_in_quarantine']), \
                  len(self.error_report['cannot_be_fetched']), \
                  len(self.error_report['empty'])
@@ -567,9 +570,7 @@ class GMVaulter(object):
         #check ownership to have one email per db unless user wants different
         #save the owner if new
         self._check_email_db_ownership(ownership_checking)
-        
-        
-                
+          
         if not compress_on_disk:
             LOG.critical("Disable compression when storing emails.")
             
@@ -578,6 +579,8 @@ class GMVaulter(object):
             LOG.critical("Please take care of the encryption key stored in (%s) or all"\
                          " your stored emails will become unreadable." \
                          % (gmvault_db.GmailStorer.get_encryption_key_path(self.db_root_dir)))
+        
+        self.error_report['operation'] = 'Sync'
         
         self.timer.start() #start syncing emails
         
@@ -601,8 +604,9 @@ class GMVaulter(object):
         else:
             LOG.critical("Deactivate database cleaning on a multi-owners Gmvault db.")
         
-        LOG.critical("Synchronisation operation performed in %s.\n" \
+        LOG.debug("Sync operation performed in %s.\n" \
                      % (self.timer.seconds_to_human_time(self.timer.elapsed())))
+        self.error_report["operation_time"] = self.timer.seconds_to_human_time(self.timer.elapsed())
         
         #update number of reconnections
         self.error_report["reconnections"] = self.src.total_nb_reconns
@@ -824,9 +828,9 @@ class GMVaulter(object):
         """
            Restore emails in a gmail account
         """
-        self.timer.start() #start restoring
         
-        #self.src.select_folder('ALLMAIL') #insure that Gmvault is in ALLMAIL
+        self.error_report['operation'] = 'Sync'
+        self.timer.start() #start restoring
         
         if not chats_only:
             # backup emails
@@ -846,8 +850,10 @@ class GMVaulter(object):
         else:
             LOG.critical("Skip chats restoration.\n")
         
-        LOG.critical("Restore operation performed in %s.\n" \
+        LOG.debug("Restore operation performed in %s.\n" \
                      % (self.timer.seconds_to_human_time(self.timer.elapsed())))
+        
+        self.error_report["operation_time"] = self.timer.seconds_to_human_time(self.timer.elapsed())
         
         #update number of reconnections
         self.error_report["reconnections"] = self.src.total_nb_reconns
