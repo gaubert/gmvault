@@ -29,6 +29,7 @@ import functools
 import ssl
 import imaplib
 
+import gmv.gmvault_const as gmvault_const
 import gmv.log_utils as log_utils
 import gmv.credential_utils as credential_utils
 
@@ -184,9 +185,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902
     
     GENERIC_GMAIL_ALL   = u'\\AllMail' # unlocalised GMAIL ALL
     GENERIC_DRAFTS      = u'\\Drafts' # unlocalised DRAFTS
-    GENERIC_GMAIL_CHATS = [u'[Gmail]/Chats', u'[Google Mail]/Chats', u'[Gmail]/Chat', u'[Google Mail]/Chat', \
-                           u'[Google Mail]/Tous les chats', u'[Gmail]/Tous les chats',\
-                           u'[Gmail]/Чаты', u'[Google Mail]/Чаты']   # unlocalised Chats names
+    GENERIC_GMAIL_CHATS = gmvault_const.GMAIL_UNLOCAL_CHATS   # unlocalised Chats names
     
     FOLDER_NAMES        = ['ALLMAIL', 'CHATS', 'DRAFTS']
     

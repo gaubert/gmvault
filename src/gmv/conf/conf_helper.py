@@ -19,6 +19,7 @@
 import sys
 import os
 import re
+import codecs
 
 import gmv.conf.exceptions as exceptions
 import gmv.conf.utils.struct_parser as struct_parser                                      
@@ -404,7 +405,9 @@ class Conf(object):
             if a_file is None:
                 raise exceptions.Error("Conf. Error, need a configuration file path")
             
-            f_desc = open(a_file, 'r') 
+            #f_desc = open(a_file, 'r') 
+            f_desc = codecs.open(a_file, 'r', 'utf-8') 
+             
                 
             self._read(f_desc, a_file)
             
@@ -806,7 +809,7 @@ class Conf(object):
                 raise exceptions.IncludeError("the config file to include %s does not exits" % (path), origin)
             else:
                 # add include file and populate the section hash
-                self._read(open(path, 'r'), path, depth + 1)
+                self._read(codecs.open(path, 'r', 'utf-8'), path, depth + 1)
 
     def _read(self, fpointer, fpname, depth=0): #pylint: disable=R0912
         """Parse a sectioned setup file.

@@ -423,7 +423,7 @@ class Compiler(object):
                 #check if the string is unicode
                 if len(the_token.value) >= 3 and the_token.value[:2] == "u'":
                     #unicode string
-                    dummy = unicode(the_token.value[2:-1], 'utf_8')
+                    dummy = unicode(the_token.value[2:-1], 'utf_8') #decode from utf-8 encoding not necessary if read full utf-8 file
                     
                 else:
                     #ascii string
