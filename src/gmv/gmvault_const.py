@@ -23,8 +23,8 @@
 GMAIL_UNLOCAL_CHATS = [
                      u'[Gmail]/Chats', u'[Google Mail]/Chats', #en, es, ger, portuguese
                      u'[Gmail]/Chat', u'[Google Mail]/Chat', #it
-#                     u'[Google Mail]/Tous les chats', u'[Gmail]/Tous les chats', # french
-#                     u'[Gmail]/Чаты', u'[Google Mail]/Чаты', # russian
+                     u'[Google Mail]/Tous les chats', u'[Gmail]/Tous les chats', # french
+                     u'[Gmail]/Чаты', u'[Google Mail]/Чаты', # russian
 #                     u'[Google Mail]/Czat', u'[Gmail]/Czat', # polish
                      u'[Google Mail]/Bate-papos', u'[Gmail]/Bate-papos', #portuguese brazil
                     ]   # unlocalised Chats names
@@ -52,7 +52,7 @@ restore_default_location=DRAFTS
 
 [Localisation]
 #example with Russian
-chat_folder=[ '[Google Mail]/Чаты', '[Gmail]/Чаты' ]
+chat_folder=[ u'[Google Mail]/Чаты', u'[Gmail]/Чаты' ]
 #uncomment if you need to force the term_encoding
 #term_encoding='utf-8'
 
