@@ -23,10 +23,10 @@
 GMAIL_UNLOCAL_CHATS = [
                      u'[Gmail]/Chats', u'[Google Mail]/Chats', #en, es, ger, portuguese
                      u'[Gmail]/Chat', u'[Google Mail]/Chat', #it
-                     u'[Google Mail]/Tous les chats', u'[Gmail]/Tous les chats', # french
+#                     u'[Google Mail]/Tous les chats', u'[Gmail]/Tous les chats', # french
 #                     u'[Gmail]/Чаты', u'[Google Mail]/Чаты', # russian
-                     u'[Google Mail]/Czaty', u'[GMail]/Czaty', # polish
-                     u'[Google Mail]/Bate-papos', u'[GMail]/Bate-papos', #portuguese brazil
+#                     u'[Google Mail]/Czat', u'[Gmail]/Czat', # polish
+                     u'[Google Mail]/Bate-papos', u'[Gmail]/Bate-papos', #portuguese brazil
                     ]   # unlocalised Chats names
 
 #The default conf file

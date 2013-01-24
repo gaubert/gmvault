@@ -810,6 +810,7 @@ class Conf(object):
             else:
                 # add include file and populate the section hash
                 self._read(codecs.open(path, 'r', 'utf-8'), path, depth + 1)
+                #self._read(open(path, 'r'), path, depth + 1)
 
     def _read(self, fpointer, fpname, depth=0): #pylint: disable=R0912
         """Parse a sectioned setup file.
