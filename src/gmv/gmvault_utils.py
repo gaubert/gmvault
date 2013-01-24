@@ -34,6 +34,7 @@ import locale
 
 import gmv.log_utils as log_utils
 import gmv.conf.conf_helper
+import gmv.gmvault_const as gmvault_const
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
@@ -541,44 +542,6 @@ def get_conf_defaults():
     else:
         return gmv.conf.conf_helper.MockConf() #retrun MockObject that will play defaults
     
-DEFAULT_CONF_FILE = """#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#  Gmvault Configuration file containing Gmvault defaults.
-#  DO NOT CHANGE IT IF YOU ARE NOT AN ADVANCED USER
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-[Sync]
-quick_days=10
-
-[Restore]
-# it is 10 days but currently it will always be the current month or the last 2 months
-# the notion of days is not yet apparent in restore (only months).
-quick_days=10
-
-[General]
-limit_per_chat_dir=2000
-errors_if_chat_not_visible=False
-nb_messages_per_batch=500
-nb_messages_per_restore_batch=80
-restore_default_location=DRAFTS
-
-[Localisation]
-#example with Russian
-chat_folder=[ u'[Google Mail]/Чаты', u'[GMail]/Чаты' ]
-#uncomment if you need to force the term_encoding
-#term_encoding='utf-8'
-
-#Do not touch any parameters below as it could force an overwrite of this file
-[VERSION]
-conf_version=1.7.2-beta
-
-#set environment variables for the program locally
-#they will be read only once the conf file has been loaded
-[ENV]
-#by default it is ~/.gmvault
-GMV_IMAP_DEBUG=0
-
-"""
-
 #VERSION DETECTION PATTERN
 VERSION_PATTERN  = r'\s*conf_version=\s*(?P<version>\S*)\s*'
 VERSION_RE  = re.compile(VERSION_PATTERN)
@@ -609,7 +572,7 @@ def _create_default_conf_file(home_conf_file):
     LOG.critical("Create defaults in %s. Please touch this file only if you know what to do." % (home_conf_file))
     try:
         the_fd = open(home_conf_file, "w+")
-        the_fd.write(DEFAULT_CONF_FILE)
+        the_fd.write(gmvault_const.DEFAULT_CONF_FILE)
         the_fd.close()
         return home_conf_file
     except Exception, err:
