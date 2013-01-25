@@ -20,7 +20,7 @@
 import base64
 import os
 import datetime
-import md5
+import hashlib
 
 import gmv.gmvault as gmvault
 import gmv.imap_utils       as imap_utils
@@ -160,6 +160,60 @@ def check_remote_mailbox_identical_to_local(self, gmvaulter):
             if flag not in online_flags:
                 self.fail("flag %s should be in online_flags %s as it is in disk_flags %s" % (flag, online_flags, disk_flags))        
 
+def find_identical_emails(gmvaulter_a):
+    """
+       Find emails that are identical
+    """
+    # check all ids one by one
+    gmvaulter_a.src.select_folder('ALLMAIL')
+    
+    # check the number of id on disk 
+    imap_ids_a = gmvaulter_a.src.search({ 'type' : 'imap', 'req' : 'ALL'}) 
+    
+    batch_size = 700
+
+    batch_fetcher_a = gmvault.IMAPBatchFetcher(gmvaulter_a.src, imap_ids_a, gmvaulter_a.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
+                                     default_batch_size = batch_size)
+    
+    print("Got %d emails in gmvault_a(%s).\n" % (len(imap_ids_a), gmvaulter_a.login))
+    
+    identicals = {}  
+    
+    total_processed = 0
+    # get all gm_id for fetcher_b
+    for gm_ids in batch_fetcher_a:
+        #print("gm_ids = %s\n" % (gm_ids))
+        print("Process a new batch (%d). Total processed:%d.\n" % (batch_size, total_processed))
+        for one_id in gm_ids:
+            header_fields = gm_ids[one_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
+        
+            _, msgid, _ = gmvault_db.GmailStorer.parse_header_fields(header_fields)
+    
+            # look for msgid
+            req = ['HEADER MESSAGE-ID {msgid} '.format(msgid=msgid.strip())]
+            req.append('X-GM-MSGID')
+            req.append('X-GM-LABELS')
+            req.append('INTERNALDATE')
+            req.append('BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]')
+            
+            imap_ids = gmvaulter_a.src.search({ 'type' : 'imap', 'req' : req})
+            
+            if len(imap_ids) > 1: #more that one email with the same msgid 
+                #flag it
+                for id in imap_ids:
+                    #gm_id = gm_ids[one_id]['X-GM-MSGID']
+                    #header_fields = gm_ids[one_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
+                    #subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
+                    
+                    if msgid in identicals:
+                        identicals.append(imap_ids[id])
+                    else:
+                        identicals[msgid] = [imap_ids[id]]
+        
+        
+    print("Identical emails:\n%s" % (identicals))   
+
+
 def diff_online_mailboxes(gmvaulter_a, gmvaulter_b):
     """
        Diff 2 mailboxes
@@ -206,7 +260,7 @@ def diff_online_mailboxes(gmvaulter_a, gmvaulter_b):
         
             subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
             
-            hash = md5.new()
+            hash = hashlib.md5()
             if received:
                 hash.update(received)
             
@@ -233,7 +287,7 @@ def diff_online_mailboxes(gmvaulter_a, gmvaulter_b):
         
             subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
             
-            hash = md5.new()
+            hash = hashlib.md5()
             if received:
                 hash.update(received)
             
