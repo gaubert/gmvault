@@ -180,8 +180,8 @@ def diff_online_mailboxes(gmvaulter_a, gmvaulter_b):
     batch_fetcher_b = gmvault.IMAPBatchFetcher(gmvaulter_b.src, imap_ids_b, gmvaulter_b.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
                                      default_batch_size = batch_size)
     
-    print("Got %d emails in gmvault_a.\n" % (len(imap_ids_a)))
-    print("Got %d emails in gmvault_b.\n" % (len(imap_ids_b)))
+    print("Got %d emails in gmvault_a(%s).\n" % (len(imap_ids_a), gmvaulter_a.login))
+    print("Got %d emails in gmvault_b(%s).\n" % (len(imap_ids_b), gmvaulter_b.login))
     
     if len(imap_ids_a) != len(imap_ids_b):
         print("Oh Oh, gmvault_a has %s emails and gmvault_b has %s emails\n" \
