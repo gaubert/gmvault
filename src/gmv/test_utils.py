@@ -212,15 +212,15 @@ def find_identical_emails(gmvaulter_a):
 
     #create list of identicals
     for msgid in in_db:
-        if len(in_db[msgid]) > 0:
+        if len(in_db[msgid]) > 1:
             identicals[msgid] = in_db[msgid]
 
     #print identicals
     print("Found %d identicals" % (len(identicals)))
     for msgid in identicals:
-        print("MSGID: %s" % (msgid))
+        print("== MSGID ==: %s" % (msgid))
         for vals in identicals[msgid]:
-            print("gmid: %s ### subject: %s ### received: %s" % (vals.get('gmid',None), vals.get('subject',None), vals.get('received',None)))
+            print("===========> gmid: %s ### subject: %s ### received: %s" % (vals.get('gmid',None), vals.get('subject',None), vals.get('received',None)))
             #print("vals:%s" % (vals))
         
     #print("Identical emails:\n%s" % (identicals))   
