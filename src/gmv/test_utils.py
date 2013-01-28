@@ -200,12 +200,14 @@ def find_identical_emails(gmvaulter_a):
             header_fields = gm_ids[one_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
         
             subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
+            labels        = gm_ids[one_id]['X-GM-LABELS']
+            date_internal = gm_ids[one_id]['INTERNALDATE'] 
 
             if not in_db.get(msgid, None):
-                in_db[msgid] = [{'subject': subject, 'received': received , 'gmid': gm_ids[one_id]['X-GM-MSGID']}]  
+                in_db[msgid] = [{'subject': subject, 'received': received, 'gmid': gm_ids[one_id]['X-GM-MSGID'], 'date': date_internal , 'labels': labels}]  
             else:
-                in_db[msgid].append({'subject': subject, 'received': received, 'gmid': gm_ids[one_id]['X-GM-MSGID']}) 
-                print("identical found msgid %s : %s" % (msgid, {'subject': subject, 'received': received, 'gmid': gm_ids[one_id]['X-GM-MSGID']}))
+                in_db[msgid].append({'subject': subject, 'received': received, 'gmid': gm_ids[one_id]['X-GM-MSGID'], 'date': date_internal , 'labels': labels}) 
+                print("identical found msgid %s : %s" % (msgid, {'subject': subject, 'received': received, 'gmid': gm_ids[one_id]['X-GM-MSGID'], 'date': date_internal , 'labels': labels}))
                 
             cpt += 1 
         total_processed += batch_size
@@ -220,8 +222,9 @@ def find_identical_emails(gmvaulter_a):
     for msgid in identicals:
         print("== MSGID ==: %s" % (msgid))
         for vals in identicals[msgid]:
-            print("===========> gmid: %s ### subject: %s ### received: %s" % (vals.get('gmid',None), vals.get('subject',None), vals.get('received',None)))
+            print("===========> gmid: %s ### date: %s ### subject: %s ### labels: %s ### received: %s" % (vals.get('gmid',None), vals.get('date', None), vals.get('subject',None), vals.get('labels', None), vals.get('received',None)))
             #print("vals:%s" % (vals))
+        print("\n")
         
     #print("Identical emails:\n%s" % (identicals))   
 
