@@ -599,11 +599,8 @@ class GMVaulter(object):
             LOG.critical("\nSkip chats synchronization.\n")
         
         #delete supress emails from DB since last sync
-        if len(self.gstorer.get_db_owners()) <= 1:
-            self.check_clean_db(db_cleaning)
-        else:
-            LOG.critical("Deactivate database cleaning on a multi-owners Gmvault db.")
-        
+        self.check_clean_db(db_cleaning)
+       
         LOG.debug("Sync operation performed in %s.\n" \
                      % (self.timer.seconds_to_human_time(self.timer.elapsed())))
         self.error_report["operation_time"] = self.timer.seconds_to_human_time(self.timer.elapsed())
@@ -700,8 +697,11 @@ class GMVaulter(object):
             LOG.debug("db_cleaning is off so ignore removing deleted emails from disk.")
             return
         elif len(owners) > 1:
-            LOG.critical("Gmvault db hosting emails from different accounts: %s.\n"\
-                         "Cannot activate database cleaning." % (", ".join(owners)))
+            LOG.critical("The Gmvault db hosts emails from the following accounts: %s.\n"\
+                         % (", ".join(owners)))
+            
+            LOG.critical("Deactivate database cleaning on a multi-owners Gmvault db.")
+        
             return
         else:
             LOG.critical("Look for emails/chats that are in the Gmvault db but not in Gmail servers anymore.\n")
