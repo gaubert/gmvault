@@ -180,35 +180,53 @@ def find_identical_emails(gmvaulter_a):
     identicals = {}  
     
     total_processed = 0
+
+    fetching_req = [ 'X-GM-MSGID', 'X-GM-LABELS', 'INTERNALDATE', 'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
+
+    imap_ids = gmvaulter_a.src.search({ 'type' : 'imap', 'req' : '(HEADER MESSAGE-ID 1929235391.1106286872672.JavaMail.wserver@disvds016)'})
+
+    print("Len(imap_ids): %d, imap_ids = %s" % (len(imap_ids), imap_ids))
+
+
     # get all gm_id for fetcher_b
     for gm_ids in batch_fetcher_a:
+        cpt = 0
         #print("gm_ids = %s\n" % (gm_ids))
         print("Process a new batch (%d). Total processed:%d.\n" % (batch_size, total_processed))
         for one_id in gm_ids:
+            if cpt % 50 == 0:
+                print("look for %s" % (one_id))
             header_fields = gm_ids[one_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
         
             _, msgid, _ = gmvault_db.GmailStorer.parse_header_fields(header_fields)
     
             # look for msgid
-            req = ['HEADER MESSAGE-ID {msgid} '.format(msgid=msgid.strip())]
-            req.append('X-GM-MSGID')
-            req.append('X-GM-LABELS')
-            req.append('INTERNALDATE')
-            req.append('BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]')
-            
-            imap_ids = gmvaulter_a.src.search({ 'type' : 'imap', 'req' : req})
-            
-            if len(imap_ids) > 1: #more that one email with the same msgid 
-                #flag it
-                for id in imap_ids:
-                    #gm_id = gm_ids[one_id]['X-GM-MSGID']
-                    #header_fields = gm_ids[one_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
-                    #subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
-                    
-                    if msgid in identicals:
-                        identicals.append(imap_ids[id])
-                    else:
-                        identicals[msgid] = [imap_ids[id]]
+            if msgid:
+                req = '(HEADER MESSAGE-ID {msgid})'.format(msgid=msgid.strip())
+                
+                #print("search for %s" % (req))
+                imap_ids = gmvaulter_a.src.search({ 'type' : 'imap', 'req' : req})
+                
+                if len(imap_ids) > 1: #more that one email with the same msgid 
+                    print("***** Got more than one email with %s *****" % (msgid.strip()))
+                    #flag it
+                    for a_id in imap_ids:
+
+                        vals = gmvaulter_a.src.fetch(a_id, fetching_req)
+
+                        gm_id = vals[a_id]['X-GM-MSGID']
+                        header_fields = vals[a_id]['BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
+                        subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
+                        
+                        if msgid in identicals:
+                            identicals[msgid].append({gm_id: [subject, received]})
+                        else:
+                            identicals[msgid] = [{gm_id: [subject, received]}]
+            else:
+                 print("msgid is empty for imap id %s\n" % one_id)
+            cpt +=1
+
+        total_processed += batch_size
         
         
     print("Identical emails:\n%s" % (identicals))   
