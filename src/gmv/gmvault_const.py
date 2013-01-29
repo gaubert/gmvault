@@ -49,6 +49,7 @@ errors_if_chat_not_visible=False
 nb_messages_per_batch=500
 nb_messages_per_restore_batch=80
 restore_default_location=DRAFTS
+keep_in_bin=False
 
 [Localisation]
 #example with Russian

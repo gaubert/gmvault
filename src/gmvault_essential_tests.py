@@ -112,7 +112,17 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         gmvault_test_credential = { 'type' : 'passwd', 'value': self.gmvault_test_passwd }
 
         test_utils.clean_mailbox(self.gsync_login, gsync_credential)
+       
+    def ztest_find_identicals(self):
+        """
+        """
+        gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
         
+        gmv_dir_a = "/tmp/a-db"
+        gmv_a = gmvault.GMVaulter(gmv_dir_a, 'imap.gmail.com', 993, self.gsync_login, gsync_credential, read_only_access = True)
+        
+        test_utils.find_identical_emails(gmv_a)
+         
     def test_difference(self):
         """
            

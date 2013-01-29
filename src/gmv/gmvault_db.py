@@ -32,8 +32,6 @@ import gmv.gmvault_utils as gmvault_utils
 import gmv.imap_utils as imap_utils
 import gmv.credential_utils as credential_utils
 
-
-
 LOG = log_utils.LoggerFactory.get_logger('gmvault_db')
             
 class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
@@ -69,6 +67,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
     DB_AREA                    = 'db'
     QUARANTINE_AREA            = 'quarantine'
     CHATS_AREA                 = 'chats'
+    BIN_AREA                   = 'bin'
     SUB_CHAT_AREA              = 'chats/%s'
     INFO_AREA                  = '.info'  # contains metadata concerning the database
     ENCRYPTION_KEY_FILENAME    = '.storage_key.sec'
@@ -89,6 +88,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         self._quarantine_dir  = '%s/%s' % (a_storage_dir, GmailStorer.QUARANTINE_AREA)
         self._info_dir        = '%s/%s' % (a_storage_dir, GmailStorer.INFO_AREA)
         self._chats_dir       = '%s/%s' % (self._db_dir, GmailStorer.CHATS_AREA)
+        self._bin_dir         = '%s/%s' % (a_storage_dir, GmailStorer.BIN_AREA)
         
         self._sub_chats_dir   = None
         self._sub_chats_inc   = -1
@@ -627,6 +627,11 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             db_dir = self._db_dir
         else:
             db_dir = self._chats_dir
+
+        to_move = gmvault_utils.get_conf_defaults().get("General", "keep_in_a_bin" , False)
+
+        if to_move:
+           LOG.critical("Move emails to the bin:%s" % (self._bin_dir))
         
         for (a_id, date_dir) in emails_info:
             
@@ -638,13 +643,33 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             
             metadata_p  = self.METADATA_FNAME % (the_dir, a_id)
             
-            #delete files if they exists
-            if os.path.exists(data_p):
-                os.remove(data_p)
-            elif os.path.exists(comp_data_p):
-                os.remove(comp_data_p)
-            elif os.path.exists(cryp_comp_data_p):
-                os.remove(cryp_comp_data_p)   
             
-            if os.path.exists(metadata_p):
-                os.remove(metadata_p)
+            if not to_move:
+                #create bin dir if necessary
+                gmvault_utils.makedirs(self._bin_dir)
+                
+                #delete files if they exists
+                if os.path.exists(data_p):
+                    os.remove(data_p)
+                elif os.path.exists(comp_data_p):
+                    os.remove(comp_data_p)
+                elif os.path.exists(cryp_comp_data_p):
+                    os.remove(cryp_comp_data_p)   
+                
+                if os.path.exists(metadata_p):
+                    os.remove(metadata_p)
+            else:
+                #move files to the bin
+                # create bin filenames
+                bin_p          = self.DATA_FNAME % (self._bin_dir, a_id)
+                metadata_bin_p = self.METADATA_FNAME % (self._bin_dir, a_id)
+                
+                if os.path.exists(data_p):
+                    os.rename(data_p, bin_p)
+                elif os.path.exists(comp_data_p):
+                    os.rename(comp_data_p, '%s.gz' % (bin_p))
+                elif os.path.exists(cryp_comp_data_p):
+                    os.rename(crypt_comp_data_p, '%s.crypt.gz' % bin_p)   
+                
+                if os.path.exists(metadata_p):
+                    os.rename(metadata_p, metadata_bin_p)
