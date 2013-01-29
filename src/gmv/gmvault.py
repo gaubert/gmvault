@@ -505,6 +505,7 @@ class GMVaulter(object):
                             new_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY] = \
                             email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
                             
+                            LOG.debug("Storing on disk data for %s" % (gid))
                             # store data on disk within year month dir 
                             gid  = bury_data_fn(new_data[the_id], local_dir = the_dir, compress = compress)
                             

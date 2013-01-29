@@ -399,6 +399,18 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         extra_labels = ['gmvault-chats']
         
         return self.bury_email(chat_info, local_dir, compress, extra_labels)
+
+    def big_write(self, fd, data):
+        """
+           buffered write
+        """
+        size = 1024*1024
+        total_size = len(data)
+        wr_bytes = 0
+        
+        while wr_bytes < total_size:
+            written = fd.write(buffer(data, wr_bytes, size))
+            wr_bytes += size
         
     def bury_email(self, email_info, local_dir = None, compress = False, extra_labels = []): #pylint:disable=W0102
         """
@@ -423,9 +435,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         
         if compress:
             data_path = '%s.gz' % (data_path)
-            data_desc = gzip.open(data_path, 'wb')
+            data_desc = gzip.open(data_path, 'w+b')
         else:
-            data_desc = open(data_path, 'wb')
+            data_desc = open(data_path, 'w+b')
             
         if self._encrypt_data:
             # need to be done for every encryption
@@ -433,7 +445,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             cipher.initCTR()
             data_desc.write(cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]))
         else:
-            data_desc.write(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
+            #data_desc.write(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
+            self.big_write(data_desc, email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
+ 
  
         self.bury_metadata(email_info, local_dir, extra_labels)
             
