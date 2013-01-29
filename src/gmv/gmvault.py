@@ -778,10 +778,14 @@ class GMVaulter(object):
         
         the_fd = open(filepath, 'w')
         
+        #json.dump({
+        #            'last_id' : gm_id,
+        #            'date'    : gmvault_utils.datetime2e(eml_date) if eml_date else None,
+        #            'req'     : imap_req 
+        #          }, the_fd)
+        
         json.dump({
                     'last_id' : gm_id,
-                    'date'    : eml_date,
-                    'req'     : imap_req 
                   }, the_fd)
         
         the_fd.close()

@@ -400,17 +400,17 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         
         return self.bury_email(chat_info, local_dir, compress, extra_labels)
 
-    def big_write(self, fd, data):
+    @classmethod
+    def big_write(cls, fd, data):
         """
            buffered write
         """
-        size = 1024*1024
+        size = 1048576 # 1MB
         total_size = len(data)
         wr_bytes = 0
-        
         while wr_bytes < total_size:
             written = fd.write(buffer(data, wr_bytes, size))
-            wr_bytes += size
+            wr_bytes += written
         
     def bury_email(self, email_info, local_dir = None, compress = False, extra_labels = []): #pylint:disable=W0102
         """
@@ -443,7 +443,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             # need to be done for every encryption
             cipher = self.get_encryption_cipher()
             cipher.initCTR()
-            data_desc.write(cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]))
+            #data_desc.write(cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]))
+            self.big_write(data_desc, cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]))
         else:
             #data_desc.write(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
             self.big_write(data_desc, email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
@@ -631,7 +632,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         to_move = gmvault_utils.get_conf_defaults().get("General", "keep_in_a_bin" , False)
 
         if to_move:
-           LOG.critical("Move emails to the bin:%s" % (self._bin_dir))
+            LOG.critical("Move emails to the bin:%s" % (self._bin_dir))
         
         for (a_id, date_dir) in emails_info:
             
@@ -669,7 +670,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 elif os.path.exists(comp_data_p):
                     os.rename(comp_data_p, '%s.gz' % (bin_p))
                 elif os.path.exists(cryp_comp_data_p):
-                    os.rename(crypt_comp_data_p, '%s.crypt.gz' % bin_p)   
+                    os.rename(cryp_comp_data_p, '%s.crypt.gz' % bin_p)   
                 
                 if os.path.exists(metadata_p):
                     os.rename(metadata_p, metadata_bin_p)
