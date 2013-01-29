@@ -459,10 +459,11 @@ class GMVaulter(object):
                 if new_data.get(the_id, None):
                     LOG.debug("\nProcess imap id %s" % ( the_id ))
                         
-                    gid = new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
+                    gid      = new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
+                    eml_date = new_data[the_id][imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]
                     
                     if a_type == "email":
-                        the_dir = gmvault_utils.get_ym_from_datetime(new_data[the_id][imap_utils.GIMAPFetcher.IMAP_INTERNALDATE])
+                        the_dir = gmvault_utils.get_ym_from_datetime(eml_date)
                     elif a_type == "chat":
                         the_dir = self.gstorer.get_sub_chats_dir()
                     else:
@@ -528,7 +529,7 @@ class GMVaulter(object):
                     # save id every 10 restored emails
                     if (nb_msgs_processed % 10) == 0:
                         if gid:
-                            self.save_lastid(self.OP_EMAIL_SYNC, gid)
+                            self.save_lastid(self.OP_EMAIL_SYNC, gid, eml_date, imap_req)
                 else:
                     LOG.info("Could not process message with id %s. Ignore it\n" % (the_id))
                     self.error_report['empty'].append((the_id, gid if gid else None))
@@ -561,7 +562,7 @@ class GMVaulter(object):
 
         
 
-    def sync(self, imap_req = imap_utils.GIMAPFetcher.IMAP_ALL, compress_on_disk = True, \
+    def sync(self, imap_req, compress_on_disk = True, \
              db_cleaning = False, ownership_checking = True, \
             restart = False, emails_only = False, chats_only = False):
         """
@@ -759,7 +760,7 @@ class GMVaulter(object):
         pass
         
     
-    def save_lastid(self, op_type, gm_id):
+    def save_lastid(self, op_type, gm_id, eml_date = None, imap_req = None):
         """
            Save the passed gmid in last_id.restore
            For the moment reopen the file every time
@@ -777,7 +778,9 @@ class GMVaulter(object):
         the_fd = open(filepath, 'w')
         
         json.dump({
-                    'last_id' : gm_id  
+                    'last_id' : gm_id,
+                    'date'    : eml_date,
+                    'req'     : imap_req 
                   }, the_fd)
         
         the_fd.close()

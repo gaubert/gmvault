@@ -572,7 +572,7 @@ class GMVaultLauncher(object):
         if args.get('type', '') == 'full':
         
             #choose full sync. Ignore the request
-            syncer.sync({ 'type': 'imap', 'req': 'ALL' } , compress_on_disk = args['compression'], \
+            syncer.sync({ 'mode': 'full', 'type': 'imap', 'req': 'ALL' } , compress_on_disk = args['compression'], \
                         db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'],\
                         restart = args['restart'], emails_only = args['emails_only'], chats_only = args['chats_only'])
             
@@ -590,17 +590,22 @@ class GMVaultLauncher(object):
             # today + 1 day
             end   = today + datetime.timedelta(1)
             
-            syncer.sync( { 'type': 'imap', 'req': syncer.get_imap_request_btw_2_dates(begin, end) }, \
-                           compress_on_disk = args['compression'], \
-                           db_cleaning = args['db-cleaning'], \
-                           ownership_checking = args['ownership_control'], restart = args['restart'], \
-                           emails_only = args['emails_only'], chats_only = args['chats_only'])
+            req   = { 'type' : 'imap', \
+                      'req'  : syncer.get_imap_request_btw_2_dates(begin, end), \
+                      'mode' : 'quick'}
+            
+            syncer.sync( req, \
+                         compress_on_disk = args['compression'], \
+                         db_cleaning = args['db-cleaning'], \
+                         ownership_checking = args['ownership_control'], restart = args['restart'], \
+                         emails_only = args['emails_only'], chats_only = args['chats_only'])
             
         elif args.get('type', '') == 'custom':
             
             #convert args to unicode
             args['request']['req']     = gmvault_utils.convert_to_unicode(args['request']['req'])
             args['request']['charset'] = 'utf-8' #for the moment always utf-8
+            args['request']['mode']    = 'custom'
 
             # pass an imap request. Assume that the user know what to do here
             LOG.critical("Perform custom synchronisation with %s request: %s.\n" \
