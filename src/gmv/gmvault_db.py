@@ -435,9 +435,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         
         if compress:
             data_path = '%s.gz' % (data_path)
-            data_desc = gzip.open(data_path, 'w+b')
+            data_desc = gzip.open(data_path, 'wb')
         else:
-            data_desc = open(data_path, 'w+b')
+            data_desc = open(data_path, 'wb')
             
         if self._encrypt_data:
             # need to be done for every encryption
