@@ -613,6 +613,11 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             db_dir = self._db_dir
         else:
             db_dir = self._chats_dir
+
+        to_move = gmvault_utils.get_conf_defaults().get("General", "keep_in_a_bin" , False)
+
+        if to_move:
+           LOG.critical("Move emails to the bin:%s" % (self._bin_dir))
         
         for (a_id, date_dir) in emails_info:
             
@@ -625,7 +630,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             metadata_p  = self.METADATA_FNAME % (the_dir, a_id)
             
             
-            if gmvault_utils.get_conf_defaults().get("General", "keep_in_a_bin" , False):
+            if not to_move:
                 #create bin dir if necessary
                 gmvault_utils.makedirs(self._bin_dir)
                 
@@ -648,9 +653,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 if os.path.exists(data_p):
                     os.rename(data_p, bin_p)
                 elif os.path.exists(comp_data_p):
-                    os.remove('%s.gz' % (bin_p))
+                    os.rename(comp_data_p, '%s.gz' % (bin_p))
                 elif os.path.exists(cryp_comp_data_p):
-                    os.remove('%s.crypt.gz' % bin_p)   
+                    os.rename(crypt_comp_data_p, '%s.crypt.gz' % bin_p)   
                 
                 if os.path.exists(metadata_p):
-                    os.remove(metadata_bin_p)
+                    os.rename(metadata_p, metadata_bin_p)

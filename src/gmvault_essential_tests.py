@@ -113,7 +113,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
 
         test_utils.clean_mailbox(self.gsync_login, gsync_credential)
        
-    def test_find_identicals(self):
+    def ztest_find_identicals(self):
         """
         """
         gsync_credential        = { 'type' : 'passwd', 'value': self.gsync_passwd }
@@ -123,7 +123,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         test_utils.find_identical_emails(gmv_a)
          
-    def ztest_difference(self):
+    def test_difference(self):
         """
            
         """
