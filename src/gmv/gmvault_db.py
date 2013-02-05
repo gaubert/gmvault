@@ -410,7 +410,19 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         wr_bytes = 0
         while wr_bytes < total_size:
             written = fd.write(buffer(data, wr_bytes, size))
-            wr_bytes += written
+            if written:
+                wr_bytes += written
+            else:
+                #if buffer size > what is left what is left
+                # else buffer size
+                # data = 100
+                # wr_bytes = 20
+                # size = 30
+                left = len(data) - wr_bytes
+                if left < size:
+                    wr_bytes += left
+                else:
+                    wr_bytes += size
         
     def bury_email(self, email_info, local_dir = None, compress = False, extra_labels = []): #pylint:disable=W0102
         """
