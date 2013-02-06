@@ -37,6 +37,16 @@ import gmv.gmvault_utils as gmvault_utils
 LOG = log_utils.LoggerFactory.get_logger('oauth')
 
 
+def get_2_legged_oauth_tok_sec():
+    '''
+       Get 2 legged token and secret
+    '''
+    tok = raw_input('Enter your domain\'s OAuth consumer key: ')
+  
+    sec = raw_input('Enter your domain\'s OAuth consumer secret: ')
+      
+    return tok, sec, "two_legged"
+    
 
 def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
     '''
@@ -53,7 +63,7 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
     gdata_serv.SetOAuthInputParameters(gdata.auth.OAuthSignatureMethod.HMAC_SHA1, \
                                        consumer_key = 'anonymous', consumer_secret = 'anonymous')
     
-    params = {'xoauth_displayname':'gmvault - Backup your Gmail account'}
+    params = {'xoauth_displayname':'Gmvault - Backup your Gmail account'}
     try:
         request_token = gdata_serv.FetchOAuthRequestToken(scopes=scopes, extra_parameters = params)
     except gdata.service.FetchingOAuthRequestTokenFailed, err:
@@ -108,16 +118,16 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
         
         return (None, None)
 
-    return (final_token.key, final_token.secret)
+    return (final_token.key, final_token.secret, "normal")
 
-def generate_xoauth_req(a_token, a_secret, email, two_legged=False):
+def generate_xoauth_req(a_token, a_secret, email, type):
     """
        generate the xoauth req from a user token and secret.
        Handle two_legged xoauth for admins.
     """
     nonce = str(random.randrange(2**64 - 1))
     timestamp = str(int(time.time()))
-    if two_legged:
+    if type == "two_legged": #2 legged oauth
         request = atom.http_core.HttpRequest('https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s' \
                                              % (email, urllib.quote(email)), 'GET')
          
@@ -249,6 +259,11 @@ class CredentialHelper(object):
                     if len(oauth_result) == 2:
                         token  = oauth_result[0]
                         secret = oauth_result[1]
+                        type   = "normal"
+                    elif len(oauth_result) == 3:
+                        token  = oauth_result[0]
+                        secret = oauth_result[1]
+                        type   = oauth_result[2]
             except Exception, _: #pylint: disable-msg=W0703              
                 LOG.critical("Cannot read oauth credentials from %s. Force oauth credentials renewal." % (user_oauth_file_path))
                 LOG.critical("=== Exception traceback ===")
@@ -257,8 +272,9 @@ class CredentialHelper(object):
         
         if token: token   = token.strip() #pylint: disable-msg=C0321
         if secret: secret = secret.strip()  #pylint: disable-msg=C0321
+        if type: type = type.strip()
         
-        return token, secret
+        return token, secret, type
             
     @classmethod
     def get_credential(cls, args, test_mode = {'activate': False, 'value' : 'test_password'}): #pylint: disable-msg=W0102
@@ -306,10 +322,12 @@ class CredentialHelper(object):
         elif args['passwd'] in ('not_seen', None) and args['oauth'] in (None, 'empty', 'renew', 'not_seen'):
             # get token secret
             # if they are in a file then no need to call get_oauth_tok_sec
-            # will have to add 2 legged or 3 legged
+            # will have to add 2 legged 
             LOG.critical("Authentication performed with Gmail XOAuth token.\n")
             
-            token, secret = cls.read_oauth_tok_sec(args['email'])
+            two_legged = args.get('two_legged', False) # 2 legged oauth
+            
+            token, secret, type = cls.read_oauth_tok_sec(args['email'])
            
             if not token or args['oauth'] == 'renew':
                 
@@ -317,14 +335,18 @@ class CredentialHelper(object):
                     LOG.critical("Renew XOAuth token. Initiate interactive session to get it from Gmail.\n")
                 else:
                     LOG.critical("Initiate interactive session to get XOAuth token from Gmail.\n")
-                token, secret = get_oauth_tok_sec(args['email'], use_webbrowser = True)
+                
+                if two_legged:
+                    token, secret, type = get_2_legged_oauth_tok_sec()
+                else:
+                    token, secret, type = get_oauth_tok_sec(args['email'], use_webbrowser = True)
                 
                 if not token:
                     raise Exception("Cannot get XOAuth token from Gmail. See Gmail error message")
                 #store newly created token
-                cls.store_oauth_credentials(args['email'], token, secret)
+                cls.store_oauth_credentials(args['email'], token, secret, type)
                
-            xoauth_req = generate_xoauth_req(token, secret, args['email'])
+            xoauth_req = generate_xoauth_req(token, secret, args['email'], type)
             
             LOG.critical("Successfully read oauth credentials.\n")
 
