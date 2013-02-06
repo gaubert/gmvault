@@ -165,8 +165,12 @@ class GMVaultLauncher(object):
                           help="use interactive password authentication. (not recommended)",
                           action= 'store_const' , dest="passwd", const='empty', default='not_seen')
         
+        sync_parser.add_argument("-2", "--2-legged-oauth", \
+                          help="use 2 legged oauth for authentication. (Google Apps Business or Education accounts)",\
+                          action='store_const', dest="two_legged_oauth_token", const='empty', default='not_seen')
+        
         sync_parser.add_argument("--renew-oauth-tok", \
-                          help="renew the stored oauth token via an interactive authentication session.",
+                          help="renew the stored oauth token (two legged or normal) via an interactive authentication session.",
                           action= 'store_const' , dest="oauth_token", const='renew')
          
         sync_parser.add_argument("--renew-passwd", \
@@ -282,6 +286,11 @@ class GMVaultLauncher(object):
                           help="use interactive password authentication. (not recommended)",
                           action='store_const', dest="passwd", const='empty', default='not_seen')
         
+        rest_parser.add_argument("-2", "--2-legged-oauth", \
+                          help="use 2 legged oauth for authentication. (Google Apps Business or Education accounts)",\
+                          action='store_const', dest="two_legged_oauth_token", const='empty', default='not_seen')
+        
+        
         rest_parser.add_argument("--server", metavar = "HOSTNAME", \
                               action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
                               dest="host", default="imap.gmail.com")
@@ -320,6 +329,11 @@ class GMVaultLauncher(object):
                           help="use interactive password authentication. (not recommended)",
                           action='store_const', dest="passwd", const='empty', default='not_seen')
         
+        check_parser.add_argument("-2", "--2-legged-oauth", \
+                          help="use 2 legged oauth for authentication. (Google Apps Business or Education accounts)",\
+                          action='store_const', dest="two_legged_oauth_token", const='empty', default='not_seen')
+        
+        
         check_parser.add_argument("--server", metavar = "HOSTNAME", \
                               action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
                               dest="host", default="imap.gmail.com")
@@ -349,12 +363,12 @@ class GMVaultLauncher(object):
         parsed_args['restart']          = options.restart
         
         #user entered both authentication methods
-        if options.passwd == 'empty' and options.oauth_token == 'empty':
+        if options.passwd == 'empty' and (options.oauth_token == 'empty' or options.two_legged_oauth_token == 'empty'):
             parser.error('You have to use one authentication method. '\
                          'Please choose between XOAuth and password (recommend XOAuth).')
         
         # user entered no authentication methods => go to default oauth
-        if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
+        if options.passwd == 'not_seen' and options.oauth_token == 'not_seen' and options.two_legged_oauth_token == 'not_seen':
             #default to xoauth
             options.oauth_token = 'empty'
             
@@ -362,7 +376,12 @@ class GMVaultLauncher(object):
         parsed_args['passwd']           = options.passwd
         
         # add oauth tok
-        parsed_args['oauth']            = options.oauth_token
+        if options.oauth_token == 'empty':
+            parsed_args['oauth']      = options.oauth_token
+            parsed_args['two_legged'] = False
+        elif options.two_legged_oauth_token == 'empty':
+            parsed_args['oauth']      = options.two_legged_oauth_token
+            parsed_args['two_legged'] = True
         
         #add ops type
         if options.type:

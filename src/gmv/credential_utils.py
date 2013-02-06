@@ -196,7 +196,7 @@ class CredentialHelper(object):
             raise Exception("Error: Cannot write password in %s" % (passwd_file))
         
     @classmethod
-    def store_oauth_credentials(cls, email, token, secret):
+    def store_oauth_credentials(cls, email, token, secret, type):
         """
            store oauth_credentials
         """
@@ -207,6 +207,8 @@ class CredentialHelper(object):
         os.write(fdesc, token)
         os.write(fdesc, '::')
         os.write(fdesc, secret)
+        os.write(fdesc, '::')
+        os.write(fdesc, type)
     
         os.close(fdesc)
     
@@ -247,6 +249,7 @@ class CredentialHelper(object):
 
         token  = None
         secret = None
+        type   = None
         if os.path.exists(user_oauth_file_path):
             LOG.critical("Get XOAuth credential from %s.\n" % (user_oauth_file_path))
             
@@ -284,8 +287,6 @@ class CredentialHelper(object):
            --passwd passed. If --passwd passed and not password given if no password saved go in interactive mode
            2) XOAuth Token
         """
-        
-        
         credential = { }
         
         #first check that there is an email
