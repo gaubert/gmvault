@@ -38,7 +38,7 @@ import gmv.gmvault_const as gmvault_const
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
-GMVAULT_VERSION = "1.7.2-write"
+GMVAULT_VERSION = "1.7.2.1-write"
 
 class memoized(object): #pylint: disable=C0103
     """Decorator that caches a function's return value each time it is called.
