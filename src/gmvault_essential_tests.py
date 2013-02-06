@@ -104,7 +104,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
  
         gmvault_utils.delete_all_under(gmvault_test_db_dir, delete_top_dir = True)
 
-    def ztest_delete_gsync(self):
+    def test_delete_gsync(self):
         """
            Simply delete gsync
         """
@@ -123,7 +123,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         test_utils.find_identical_emails(gmv_a)
          
-    def test_difference(self):
+    def ztest_difference(self):
         """
            
         """

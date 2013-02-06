@@ -340,14 +340,14 @@ def print_diff_result(diff_result):
         print("mailid:%s#####subject:%s#####%s." % (vals[2], vals[1], vals[0]))
 
 
-def assert_login_is_protected(self, login):
+def assert_login_is_protected(login):
     """
       Insure that the login is not my personnal mailbox
     """
     if login != 'gsync.mtester@gmail.com':
         raise Exception("Beware login should be gsync.mtester@gmail.com and it is %s" % (self.login)) 
 
-def clean_mailbox(self, login , credential):
+def clean_mailbox(login , credential):
     """
        Delete all emails, destroy all labels
     """
