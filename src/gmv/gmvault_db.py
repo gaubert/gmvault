@@ -399,31 +399,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         extra_labels = ['gmvault-chats']
         
         return self.bury_email(chat_info, local_dir, compress, extra_labels)
-
-    @classmethod
-    def big_write(cls, fd, data):
-        """
-           buffered write
-        """
-        size = 1048576 # 1MB
-        total_size = len(data)
-        wr_bytes = 0
-        while wr_bytes < total_size:
-            written = fd.write(buffer(data, wr_bytes, size))
-            if written:
-                wr_bytes += written
-            else:
-                #if buffer size > what is left what is left
-                # else buffer size
-                # data = 100
-                # wr_bytes = 20
-                # size = 30
-                left = len(data) - wr_bytes
-                if left < size:
-                    wr_bytes += left
-                else:
-                    wr_bytes += size
-        
+    
     def bury_email(self, email_info, local_dir = None, compress = False, extra_labels = []): #pylint:disable=W0102
         """
            store all email info in 2 files (.meta and .eml files)
@@ -455,11 +431,13 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             # need to be done for every encryption
             cipher = self.get_encryption_cipher()
             cipher.initCTR()
-            #data_desc.write(cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]))
-            self.big_write(data_desc, cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]))
+            data     = cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
+            gmvault_utils.buffered_write(data_desc, data) if len(data) > 4194304 else data_desc.write(data)
         else:
-            #data_desc.write(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
-            self.big_write(data_desc, email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
+            
+            data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
+            #data_desc.write(data)
+            gmvault_utils.buffered_write(data_desc, data) if len(data) > 4194304 else data_desc.write(data)
  
  
         self.bury_metadata(email_info, local_dir, extra_labels)

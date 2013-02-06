@@ -119,6 +119,30 @@ def get_exception_traceback():
     return the_file.getvalue()
 
 
+def buffered_write(fd, data, buf_size = 1048576):
+    """
+       fd: file descriptor where to write
+       data: data to write
+       buf_size: size of the buffer (default 1MB)
+       buffered write handling case when write returns nb of written bytes
+       and when write returns None (Linux)
+    """
+    LOG.critical("======= In buffered write")
+    total_size = len(data)
+    wr_bytes = 0
+    while wr_bytes < total_size:
+        written = fd.write(buffer(data, wr_bytes, buf_size))
+        if written:
+            wr_bytes += written
+        else:
+            #if buffer size > left then left else buffer size
+            # else buffer size
+            left = total_size - wr_bytes
+            if left < buf_size:
+                wr_bytes += left
+            else:
+                wr_bytes += buf_size
+        
              
 
 TIMER_SUFFIXES = ['y', 'w', 'd', 'h', 'm', 's']
