@@ -360,10 +360,10 @@ class CredentialHelper(object):
         """
            This will be used to reconnect after a timeout
         """
-        token, secret = cls.read_oauth_tok_sec(email)
+        token, secret, type = cls.read_oauth_tok_sec(email)
         if not token: 
             raise Exception("Error cannot read token, secret from")
         
-        xoauth_req = generate_xoauth_req(token, secret, email)
+        xoauth_req = generate_xoauth_req(token, secret, email, type)
         
         return xoauth_req
