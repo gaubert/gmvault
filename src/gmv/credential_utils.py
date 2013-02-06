@@ -333,9 +333,9 @@ class CredentialHelper(object):
             if not token or args['oauth'] == 'renew':
                 
                 if args['oauth'] == 'renew':
-                    LOG.critical("Renew XOAuth token. Initiate interactive session to get it from Gmail.\n")
+                    LOG.critical("Renew XOAuth token (normal or 2-legged). Initiate interactive session to get it from Gmail.\n")
                 else:
-                    LOG.critical("Initiate interactive session to get XOAuth token from Gmail.\n")
+                    LOG.critical("Initiate interactive session to get XOAuth normal or 2-legged token from Gmail.\n")
                 
                 if two_legged:
                     token, secret, type = get_2_legged_oauth_tok_sec()
