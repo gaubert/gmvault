@@ -379,6 +379,9 @@ class GMVaultLauncher(object):
         if options.oauth_token == 'empty':
             parsed_args['oauth']      = options.oauth_token
             parsed_args['two_legged'] = False
+        elif options.oauth_token == 'renew':
+            parsed_args['oauth'] = 'renew'
+            parsed_args['two_legged'] = True if options.two_legged_oauth_token == 'empty' else False          
         elif options.two_legged_oauth_token == 'empty':
             parsed_args['oauth']      = options.two_legged_oauth_token
             parsed_args['two_legged'] = True
