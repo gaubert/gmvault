@@ -587,7 +587,7 @@ class GMVaulter(object):
         self.timer.start() #start syncing emails
         
         now = datetime.datetime.now()
-        LOG.critical("Starting synchronization at %s.\n" % (now.strftime('%Y-%m-%dT%Hh%Mm%Ss')))
+        LOG.critical("Starting Synchronization at %s.\n" % (now.strftime('%Y-%m-%dT%Hh%Mm%Ss')))
         
         if not chats_only:
             # backup emails
@@ -842,6 +842,9 @@ class GMVaulter(object):
         
         self.error_report['operation'] = 'Sync'
         self.timer.start() #start restoring
+        
+        now = datetime.datetime.now()
+        LOG.critical("Starting Restoration at %s.\n" % (now.strftime('%Y-%m-%dT%Hh%Mm%Ss')))
         
         if not chats_only:
             # backup emails
