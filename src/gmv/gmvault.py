@@ -586,16 +586,19 @@ class GMVaulter(object):
         
         self.timer.start() #start syncing emails
         
+        now = datetime.datetime.now()
+        LOG.critical("Starting synchronization at %s.\n" % (now.strftime('%Y-%m-%dT%Hh%Mm%Ss')))
+        
         if not chats_only:
             # backup emails
-            LOG.critical("Start emails synchronization.\n")
+            LOG.critical("Start emails synchronization.")
             self._sync_emails(imap_req, compress = compress_on_disk, restart = restart)
         else:
             LOG.critical("Skip emails synchronization.\n")
         
         if not emails_only:
             # backup chats
-            LOG.critical("Start chats synchronization.\n")
+            LOG.critical("Start chats synchronization.")
             self._sync_chats(imap_req, compress = compress_on_disk, restart = restart)
         else:
             LOG.critical("\nSkip chats synchronization.\n")
