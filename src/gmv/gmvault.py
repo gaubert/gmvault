@@ -428,7 +428,7 @@ class GMVaulter(object):
         if restart:
             LOG.critical("Restart mode activated for emails. Need to find information in Gmail, be patient ...")
             imap_ids = self.get_gmails_ids_left_to_sync(self.OP_EMAIL_SYNC if a_type == "email" \
-                                                        else self.OP_CHAT_SYNC, imap_ids)
+                                                        else self.OP_CHAT_SYNC, imap_ids, imap_req)
         
         total_nb_msgs_to_process = len(imap_ids) # total number of emails to get
         
@@ -652,12 +652,23 @@ class GMVaulter(object):
             LOG.critical("gm_id %s not in the Gmail server. Delete it." % (gm_id))
             self.gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])], msg_type)
         
-    def get_gmails_ids_left_to_sync(self, op_type, imap_ids):
+    def search_on_date(self, a_eml_date):
+        """
+           get eml_date and format it to search 
+        """
+        imap_date = gmvault_utils.datetime2imapdate(a_eml_date)
+        
+        imap_req = "SINCE %s" % (imap_date)
+
+        imap_ids = self.src.search({'type':'imap', 'req': imap_req})
+        
+        return imap_ids
+            
+    def get_gmails_ids_left_to_sync(self, op_type, imap_ids, imap_req):
         """
            Get the ids that still needs to be sync
            Return a list of ids
         """
-        
         filename = self.OP_TO_FILENAME.get(op_type, None)
         
         if not filename:
@@ -683,8 +694,11 @@ class GMVaulter(object):
             dummy = self.src.search({'type':'imap', 'req':'X-GM-MSGID %s' % (last_id)})
             
             imap_id = dummy[0]
+            
             last_id_index = imap_ids.index(imap_id)
+            
             LOG.critical("Restart from gmail id %s (imap id %s)." % (last_id, imap_id))
+            
             new_gmail_ids = imap_ids[last_id_index:]   
         except Exception, _: #ignore any exception and try to get all ids in case of problems. pylint:disable=W0703
             #element not in keys return current set of keys

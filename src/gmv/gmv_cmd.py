@@ -597,7 +597,14 @@ class GMVaultLauncher(object):
             syncer.sync({ 'mode': 'full', 'type': 'imap', 'req': 'ALL' } , compress_on_disk = args['compression'], \
                         db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'],\
                         restart = args['restart'], emails_only = args['emails_only'], chats_only = args['chats_only'])
-            
+        
+        elif args.get('type', '') == 'auto':
+        
+            #choose auto sync. imap request = ALL and restart = True
+            syncer.sync({ 'mode': 'auto', 'type': 'imap', 'req': 'ALL' } , compress_on_disk = args['compression'], \
+                        db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'],\
+                        restart = True, emails_only = args['emails_only'], chats_only = args['chats_only'])
+              
         elif args.get('type', '') == 'quick':
             
             #sync only the last x days (taken in defaults) in order to be quick 
