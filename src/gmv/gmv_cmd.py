@@ -388,7 +388,9 @@ class GMVaultLauncher(object):
         
         #add ops type
         if options.type:
-            if options.type.lower() in list_of_types:
+            tempo_list = ['auto']
+            tempo_list.extend(list_of_types)
+            if options.type.lower() in tempo_list:
                 parsed_args['type'] = options.type.lower()
             else:
                 parser.error('Unknown type for command %s. The type should be one of %s' \
