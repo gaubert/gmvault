@@ -636,9 +636,6 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             
             
             if not to_move:
-                #create bin dir if necessary
-                gmvault_utils.makedirs(self._bin_dir)
-                
                 #delete files if they exists
                 if os.path.exists(data_p):
                     os.remove(data_p)
@@ -651,6 +648,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                     os.remove(metadata_p)
             else:
                 #move files to the bin
+                gmvault_utils.makedirs(self._bin_dir)
+
                 # create bin filenames
                 bin_p          = self.DATA_FNAME % (self._bin_dir, a_id)
                 metadata_bin_p = self.METADATA_FNAME % (self._bin_dir, a_id)
