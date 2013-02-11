@@ -619,9 +619,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         else:
             db_dir = self._chats_dir
 
-        to_move = gmvault_utils.get_conf_defaults().get("General", "keep_in_a_bin" , False)
+        move_to_bin = gmvault_utils.get_conf_defaults().get_boolean("General", "keep_in_bin" , False)
 
-        if to_move:
+        if move_to_bin:
             LOG.critical("Move emails to the bin:%s" % (self._bin_dir))
         
         for (a_id, date_dir) in emails_info:
@@ -633,20 +633,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             cryp_comp_data_p = '%s.crypt.gz' % (data_p)
             
             metadata_p  = self.METADATA_FNAME % (the_dir, a_id)
-            
-            
-            if not to_move:
-                #delete files if they exists
-                if os.path.exists(data_p):
-                    os.remove(data_p)
-                elif os.path.exists(comp_data_p):
-                    os.remove(comp_data_p)
-                elif os.path.exists(cryp_comp_data_p):
-                    os.remove(cryp_comp_data_p)   
-                
-                if os.path.exists(metadata_p):
-                    os.remove(metadata_p)
-            else:
+
+            if move_to_bin:
                 #move files to the bin
                 gmvault_utils.makedirs(self._bin_dir)
 
@@ -663,3 +651,14 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 
                 if os.path.exists(metadata_p):
                     os.rename(metadata_p, metadata_bin_p)
+            else:
+                #delete files if they exists
+                if os.path.exists(data_p):
+                    os.remove(data_p)
+                elif os.path.exists(comp_data_p):
+                    os.remove(comp_data_p)
+                elif os.path.exists(cryp_comp_data_p):
+                    os.remove(cryp_comp_data_p)   
+                
+                if os.path.exists(metadata_p):
+                    os.remove(metadata_p)
