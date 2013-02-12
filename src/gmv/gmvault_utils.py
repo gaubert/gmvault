@@ -127,7 +127,7 @@ def buffered_write(fd, data, buf_size = 1048576):
        buffered write handling case when write returns nb of written bytes
        and when write returns None (Linux)
     """
-    LOG.critical("======= In buffered write")
+    #LOG.critical("======= In buffered write")
     total_size = len(data)
     wr_bytes = 0
     while wr_bytes < total_size:
