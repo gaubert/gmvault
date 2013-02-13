@@ -500,7 +500,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902
                 
     
     @classmethod
-    def _build_labels_str(cls, a_labels):
+    def _old_build_labels_str(cls, a_labels):
         """
            Create IMAP label string from list of given labels. 
            Convert the labels to utf7
@@ -516,6 +516,31 @@ class GIMAPFetcher(object): #pylint:disable=R0902
                     labels_str += '\"%s\" ' % (label)
                 else:
                     labels_str += '%s ' % (label)
+                    #labels_str += '\"%s\" ' % (label) #check if this is always ok or not
+            
+            labels_str = '%s%s' % (labels_str[:-1],')')
+        
+        return labels_str
+
+    @classmethod
+    def _build_labels_str(cls, a_labels):
+        """
+           Create IMAP label string from list of given labels. 
+           Convert the labels to utf7
+           a_labels: List of labels
+        """
+        # add GMAIL LABELS
+        labels_str = None
+        if a_labels and len(a_labels) > 0:
+            labels_str = '('
+            for label in a_labels:
+                #add not in self.GMAIL_SPECIAL_DIRS_LOWER
+                if gmvault_utils.contains_any(label, ' "*'):
+                    label = label.replace('"', '\\"') #replace quote with escaped quotes
+                    labels_str += '\"%s\" ' % (label)
+                else:
+                    labels_str += '%s ' % (label)
+                    #labels_str += '\"%s\" ' % (label) #check if this is always ok or not
             
             labels_str = '%s%s' % (labels_str[:-1],')')
         

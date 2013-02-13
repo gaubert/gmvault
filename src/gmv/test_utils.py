@@ -411,7 +411,7 @@ def get_oauth_cred(email, cred_path):
         if token: token   = token.strip() #pylint: disable-msg=C0321
         if secret: secret = secret.strip()  #pylint: disable-msg=C0321
  
-    return { 'type' : 'xoauth', 'value' : cred_utils.generate_xoauth_req(token, secret, email), 'option':None}
+    return { 'type' : 'xoauth', 'value' : cred_utils.generate_xoauth_req(token, secret, email, 'normal'), 'option':None}
 
 def delete_db_dir(a_db_dir):
     """
