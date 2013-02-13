@@ -511,7 +511,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         if a_labels and len(a_labels) > 0:
             labels_str = '('
             for label in a_labels:
-                if gmvault_utils.contains_any(label, ' "'):
+                if gmvault_utils.contains_any(label, ' "*'):
                     label = label.replace('"', '\\"') #replace quote with escaped quotes
                     labels_str += '\"%s\" ' % (label)
                 else:
