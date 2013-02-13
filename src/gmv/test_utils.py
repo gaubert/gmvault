@@ -29,7 +29,7 @@ import gmv.gmvault_db as gmvault_db
 import gmv.gmvault_utils    as gmvault_utils
 
 
-def check_remote_mailbox_identical_to_local(self, gmvaulter):
+def check_remote_mailbox_identical_to_local(the_self, gmvaulter):
     """
        Check that the remote mailbox is identical to the local one attached
        to gmvaulter
@@ -47,7 +47,7 @@ def check_remote_mailbox_identical_to_local(self, gmvaulter):
     # check the number of id on disk 
     imap_ids = gmvaulter.src.search({ 'type' : 'imap', 'req' : 'ALL'}) #get everything
     
-    self.assertEquals(len(imap_ids), \
+    the_self.assertEquals(len(imap_ids), \
                       len(gmail_ids), \
                       "Error. Should have the same number of emails: local nb of emails %d, remote nb of emails %d" % (len(gmail_ids), len(imap_ids)))
 
@@ -101,7 +101,7 @@ def check_remote_mailbox_identical_to_local(self, gmvaulter):
         print("imap_ids = %s\n" % (imap_ids))
 
         if len(imap_ids) != 1:
-            self.fail("more than one imap_id (%s) retrieved for request %s" % (imap_ids, req))
+            the_self.fail("more than one imap_id (%s) retrieved for request %s" % (imap_ids, req))
 
         imap_id = imap_ids[0]
         
@@ -117,9 +117,9 @@ def check_remote_mailbox_identical_to_local(self, gmvaulter):
         subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
 
         #compare metadata
-        self.assertEquals(subject, disk_metadata.get('subject', None))
-        self.assertEquals(msgid,   disk_metadata.get('msg_id', None))
-        self.assertEquals(received, disk_metadata.get('x_gmail_received', None))
+        the_self.assertEquals(subject, disk_metadata.get('subject', None))
+        the_self.assertEquals(msgid,   disk_metadata.get('msg_id', None))
+        the_self.assertEquals(received, disk_metadata.get('x_gmail_received', None))
 
         # check internal date it is plus or minus 1 hour
         online_date   = online_metadata[imap_id].get('INTERNALDATE', None) 
@@ -132,33 +132,33 @@ def check_remote_mailbox_identical_to_local(self, gmvaulter):
             if min_date <= online_date <= max_date:
                 print("online_date (%s) and disk_date (%s) differs but within one hour. This is OK (timezone pb) *****" % (online_date, disk_date))
             else:
-                self.fail("online_date (%s) and disk_date (%s) are different" % (online_date, disk_date))
+                the_self.fail("online_date (%s) and disk_date (%s) are different" % (online_date, disk_date))
 
         #check labels
         disk_labels   = disk_metadata.get('labels', None)
         online_labels = imap_utils.decode_labels(online_metadata[imap_id].get('X-GM-LABELS', None)) 
 
         if not disk_labels: #no disk_labels check that there are no online_labels
-            self.assertTrue(not online_labels)
+            the_self.assertTrue(not online_labels)
 
-        self.assertEquals(len(disk_labels), len(online_labels))
+        the_self.assertEquals(len(disk_labels), len(online_labels))
 
         for label in disk_labels:
             if label not in online_labels:
-                self.fail("label %s should be in online_labels %s as it is in disk_labels %s" % (label, online_labels, disk_labels))
+                the_self.fail("label %s should be in online_labels %s as it is in disk_labels %s" % (label, online_labels, disk_labels))
 
         # check flags
         disk_flags   = disk_metadata.get('flags', None)
         online_flags = online_metadata[imap_id].get('FLAGS', None) 
 
         if not disk_flags: #no disk flags
-            self.assertTrue(not online_flags)
+            the_self.assertTrue(not online_flags)
 
-        self.assertEquals(len(disk_flags), len(online_flags))
+        the_self.assertEquals(len(disk_flags), len(online_flags))
 
         for flag in disk_flags:
             if flag not in online_flags:
-                self.fail("flag %s should be in online_flags %s as it is in disk_flags %s" % (flag, online_flags, disk_flags))        
+                the_self.fail("flag %s should be in online_flags %s as it is in disk_flags %s" % (flag, online_flags, disk_flags))        
 
 def find_identical_emails(gmvaulter_a):
     """
@@ -345,7 +345,7 @@ def assert_login_is_protected(login):
       Insure that the login is not my personnal mailbox
     """
     if login != 'gsync.mtester@gmail.com':
-        raise Exception("Beware login should be gsync.mtester@gmail.com and it is %s" % (self.login)) 
+        raise Exception("Beware login should be gsync.mtester@gmail.com and it is %s" % (login)) 
 
 def clean_mailbox(login , credential):
     """

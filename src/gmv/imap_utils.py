@@ -201,7 +201,8 @@ class GIMAPFetcher(object): #pylint:disable=R0902
     
     GMAIL_SPECIAL_DIRS = ['\\Inbox', '\\Starred', '\\Sent', '\\Draft', '\\Important']
     
-    GMAIL_SPECIAL_DIRS_LOWER = ['\\inbox', '\\starred', '\\sent', '\\draft', '\\important']
+    #GMAIL_SPECIAL_DIRS_LOWER = ['\\inbox', '\\starred', '\\sent', '\\draft', '\\important']
+    GMAIL_SPECIAL_DIRS_LOWER = ['\\inbox', '\\starred', '\\sent', '\\draft', '\\important', '\\trash']
     
     IMAP_BODY_PEEK     = 'BODY.PEEK[]' #get body without setting msg as seen
 

@@ -61,7 +61,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         """test_restore_tricky_emails. Restore emails with some specificities (japanese characters) in the a mailbox"""
         gsync_credential    = { 'type' : 'passwd', 'value': self.gsync_passwd }
 
-        self.clean_mailbox(self.gsync_login, gsync_credential)
+        test_utils.clean_mailbox(self.gsync_login, gsync_credential)
 
         # test restore
         test_db_dir = "/homespace/gaubert/gmvault-dbs/essential-dbs"
@@ -74,7 +74,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         restorer.restore() #restore all emails from this essential-db
 
-        test_utils.check_remote_mailbox_identical_to_local(restorer)
+        test_utils.check_remote_mailbox_identical_to_local(self, restorer)
         
     def ztest_backup_and_restore(self):
         """backup from gmvault_test and restore"""
