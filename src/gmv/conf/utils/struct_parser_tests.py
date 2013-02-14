@@ -94,7 +94,10 @@ class TestParser(unittest.TestCase):
     
     def test_list_unicode_val(self):
         """ list unicode val """
-        the_string = "[ u'[Gmail]/Чаты', 'z' ]"
+        the_string = "[ u'[Gmail]/Чаты', 'z' ]".decode('utf-8')
+
+        #to be in the same conditions as the conf object need to decode utf-8 as
+        # it is done automatically with the os.open(...., 'uft-8')
         
         compiler = Compiler()
         

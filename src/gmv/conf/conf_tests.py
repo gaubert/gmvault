@@ -22,6 +22,7 @@
 import unittest
 import sys
 import os
+import codecs
 import gmv.conf.conf_helper
 
 
@@ -46,7 +47,8 @@ class TestConf(unittest.TestCase): #pylint: disable=R0904
          
         self.conf = gmv.conf.conf_helper.Conf(use_resource=False)
     
-        the_fp = open('%s/%s' % (TestConf._get_tests_dir_path(), "test.config"))
+        #the_fp = open('%s/%s' % (TestConf._get_tests_dir_path(), "test.config"))
+        the_fp = codecs.open('%s/%s' % (TestConf._get_tests_dir_path(), "test.config"), 'r', 'utf-8')
     
         self.conf._read(the_fp,"the file") #pylint: disable=W0212
 
