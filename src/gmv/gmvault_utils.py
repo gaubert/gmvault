@@ -120,15 +120,15 @@ def get_exception_traceback():
 
 
 MULTI_SPACES_PATTERN = r"\s{2,}"
-MULTI_SPACES_RE = re.compile(MULTI_SPACES_PATTERN)
+MULTI_SPACES_RE = re.compile(MULTI_SPACES_PATTERN, flags=re.U) #to support unicode
 
 def remove_consecutive_spaces_and_strip(a_str):
     """
        Supress consecutive spaces to replace them with a unique one.
        e.g "two  spaces" = "two spaces"
     """
-    #   return re.sub("\s{2,}", " ", a_str).strip()
-    return MULTI_SPACES_RE.sub(" ", str).strip()
+    #return re.sub("\s{2,}", " ", a_str, flags=re.U).strip()
+    return MULTI_SPACES_RE.sub(u" ", a_str).strip()
 
 def buffered_write(fd, data, buf_size = 1048576):
     """

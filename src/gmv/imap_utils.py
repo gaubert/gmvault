@@ -535,12 +535,13 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         if a_labels and len(a_labels) > 0:
             labels_str = '('
             for label in a_labels:
+                label = gmvault_utils.remove_consecutive_spaces_and_strip(label)
                 #add not in self.GMAIL_SPECIAL_DIRS_LOWER
                 if label.lower() in cls.GMAIL_SPECIAL_DIRS_LOWER:
-                    labels_str += '%s ' % (gmvault_utils.remove_consecutive_spaces_and_strip(label))
+                    labels_str += '%s ' % (label)
                 else:
                     label = label.replace('"', '\\"') #replace quote with escaped quotes
-                    labels_str += '\"%s\" ' % (gmvault_utils.remove_consecutive_spaces_and_strip(label))
+                    labels_str += '\"%s\" ' % (label)
             labels_str = '%s%s' % (labels_str[:-1],')')
         
         return labels_str
@@ -557,7 +558,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         
         i = 0
         for lab in label.split('/'):
-            
+            lab = gmvault_utils.remove_consecutive_spaces_and_strip(lab)
             if i == 0:
                 dirs.append(lab)
             else:
