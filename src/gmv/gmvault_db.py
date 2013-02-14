@@ -364,7 +364,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             if isinstance(label, (int, long, float, complex)):
                 label = str(label)
 
-            labels.append(unicode(label))
+            labels.append(unicode(gmvault_utils.remove_consecutive_spaces_and_strip(label)))
         
         labels.extend(extra_labels) #add extra labels
         

@@ -119,6 +119,14 @@ def get_exception_traceback():
     return the_file.getvalue()
 
 
+
+def remove_consecutive_spaces_and_strip(a_str):
+    """
+       Supress consecutive spaces to replace them with a unique one.
+       e.g "two  spaces" = "two spaces"
+    """
+    return re.sub("\s{2,}", " ", a_str).strip()
+
 def buffered_write(fd, data, buf_size = 1048576):
     """
        fd: file descriptor where to write
