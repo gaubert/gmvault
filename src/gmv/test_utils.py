@@ -138,6 +138,10 @@ def check_remote_mailbox_identical_to_local(the_self, gmvaulter):
         disk_labels   = disk_metadata.get('labels', None)
         online_labels = imap_utils.decode_labels(online_metadata[imap_id].get('X-GM-LABELS', None)) 
 
+        #clean potential labels with multiple spaces
+        disk_labels   = [ gmvault_utils.remove_consecutive_spaces_and_strip(label) for label in disk_labels ]
+        online_labels = [ gmvault_utils.remove_consecutive_spaces_and_strip(label) for label in online_labels ]
+
         if not disk_labels: #no disk_labels check that there are no online_labels
             the_self.assertTrue(not online_labels)
 
