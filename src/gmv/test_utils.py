@@ -181,7 +181,7 @@ def find_identical_emails(gmvaulter_a): #pylint: disable=R0914
     
     batch_size = 1000
 
-    batch_fetcher_a = gmvault.IMAPBatchFetcher(gmvaulter_a.src, imap_ids_a, i\
+    batch_fetcher_a = gmvault.IMAPBatchFetcher(gmvaulter_a.src, imap_ids_a, \
                       gmvaulter_a.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
                       default_batch_size = batch_size)
     
