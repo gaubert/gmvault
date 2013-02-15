@@ -29,7 +29,7 @@ import gmv.gmvault_db as gmvault_db
 import gmv.gmvault_utils    as gmvault_utils
 
 
-def check_remote_mailbox_identical_to_local(the_self, gmvaulter):
+def check_remote_mailbox_identical_to_local(the_self, gmvaulter): #pylint: disable=C0103
     """
        Check that the remote mailbox is identical to the local one attached
        to gmvaulter
@@ -49,7 +49,8 @@ def check_remote_mailbox_identical_to_local(the_self, gmvaulter):
     
     the_self.assertEquals(len(imap_ids), \
                       len(gmail_ids), \
-                      "Error. Should have the same number of emails: local nb of emails %d, remote nb of emails %d" % (len(gmail_ids), len(imap_ids)))
+                      "Error. Should have the same number of emails: local nb of emails %d,"\
+                      " remote nb of emails %d" % (len(gmail_ids), len(imap_ids)))
 
     for gm_id in gmail_ids:
 
@@ -130,7 +131,8 @@ def check_remote_mailbox_identical_to_local(the_self, gmvaulter):
             max_date = disk_date + datetime.timedelta(hours=1)
             
             if min_date <= online_date <= max_date:
-                print("online_date (%s) and disk_date (%s) differs but within one hour. This is OK (timezone pb) *****" % (online_date, disk_date))
+                print("online_date (%s) and disk_date (%s) differs but "\
+                      "within one hour. This is OK (timezone pb) *****" % (online_date, disk_date))
             else:
                 the_self.fail("online_date (%s) and disk_date (%s) are different" % (online_date, disk_date))
 
@@ -149,7 +151,8 @@ def check_remote_mailbox_identical_to_local(the_self, gmvaulter):
 
         for label in disk_labels:
             if label not in online_labels:
-                the_self.fail("label %s should be in online_labels %s as it is in disk_labels %s" % (label, online_labels, disk_labels))
+                the_self.fail("label %s should be in online_labels %s as"\
+                              " it is in disk_labels %s" % (label, online_labels, disk_labels))
 
         # check flags
         disk_flags   = disk_metadata.get('flags', None)
@@ -162,9 +165,11 @@ def check_remote_mailbox_identical_to_local(the_self, gmvaulter):
 
         for flag in disk_flags:
             if flag not in online_flags:
-                the_self.fail("flag %s should be in online_flags %s as it is in disk_flags %s" % (flag, online_flags, disk_flags))        
+                the_self.fail("flag %s should be in "\
+                              "online_flags %s as it is in disk_flags %s" \
+                              % (flag, online_flags, disk_flags))        
 
-def find_identical_emails(gmvaulter_a):
+def find_identical_emails(gmvaulter_a): #pylint: disable=R0914
     """
        Find emails that are identical
     """
@@ -176,8 +181,9 @@ def find_identical_emails(gmvaulter_a):
     
     batch_size = 1000
 
-    batch_fetcher_a = gmvault.IMAPBatchFetcher(gmvaulter_a.src, imap_ids_a, gmvaulter_a.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
-                                     default_batch_size = batch_size)
+    batch_fetcher_a = gmvault.IMAPBatchFetcher(gmvaulter_a.src, imap_ids_a, i\
+                      gmvaulter_a.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
+                      default_batch_size = batch_size)
     
     print("Got %d emails in gmvault_a(%s).\n" % (len(imap_ids_a), gmvaulter_a.login))
     
@@ -187,9 +193,11 @@ def find_identical_emails(gmvaulter_a):
     
     total_processed = 0
 
-    fetching_req = [ 'X-GM-MSGID', 'X-GM-LABELS', 'INTERNALDATE', 'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
+    fetching_req = [ 'X-GM-MSGID', 'X-GM-LABELS', 'INTERNALDATE', \
+                     'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
 
-    imap_ids = gmvaulter_a.src.search({ 'type' : 'imap', 'req' : '(HEADER MESSAGE-ID 1929235391.1106286872672.JavaMail.wserver@disvds016)'})
+    imap_ids = gmvaulter_a.src.search({ 'type' : 'imap', \
+               'req' : '(HEADER MESSAGE-ID 1929235391.1106286872672.JavaMail.wserver@disvds016)'})
 
     print("Len(imap_ids): %d, imap_ids = %s" % (len(imap_ids), imap_ids))
 
@@ -208,10 +216,18 @@ def find_identical_emails(gmvaulter_a):
             date_internal = gm_ids[one_id]['INTERNALDATE'] 
 
             if not in_db.get(msgid, None):
-                in_db[msgid] = [{'subject': subject, 'received': received, 'gmid': gm_ids[one_id]['X-GM-MSGID'], 'date': date_internal , 'labels': labels}]  
+                in_db[msgid] = [{'subject': subject, 'received': received, \
+                                 'gmid': gm_ids[one_id]['X-GM-MSGID'], \
+                                 'date': date_internal , 'labels': labels}]  
             else:
-                in_db[msgid].append({'subject': subject, 'received': received, 'gmid': gm_ids[one_id]['X-GM-MSGID'], 'date': date_internal , 'labels': labels}) 
-                print("identical found msgid %s : %s" % (msgid, {'subject': subject, 'received': received, 'gmid': gm_ids[one_id]['X-GM-MSGID'], 'date': date_internal , 'labels': labels}))
+                in_db[msgid].append({'subject': subject, 'received': received,\
+                             'gmid': gm_ids[one_id]['X-GM-MSGID'], \
+                             'date': date_internal , 'labels': labels}) 
+                print("identical found msgid %s : %s" \
+                      % (msgid, {'subject': subject, \
+                        'received': received, \
+                        'gmid': gm_ids[one_id]['X-GM-MSGID'],\
+                        'date': date_internal , 'labels': labels}))
                 
             cpt += 1 
         total_processed += batch_size
@@ -226,7 +242,11 @@ def find_identical_emails(gmvaulter_a):
     for msgid in identicals:
         print("== MSGID ==: %s" % (msgid))
         for vals in identicals[msgid]:
-            print("===========> gmid: %s ### date: %s ### subject: %s ### labels: %s ### received: %s" % (vals.get('gmid',None), vals.get('date', None), vals.get('subject',None), vals.get('labels', None), vals.get('received',None)))
+            print("===========> gmid: %s ### date: %s ### subject: %s ### "\
+                  "labels: %s ### received: %s" \
+                  % (vals.get('gmid',None), vals.get('date', None),\
+                  vals.get('subject',None), vals.get('labels', None), \
+                  vals.get('received',None)))
             #print("vals:%s" % (vals))
         print("\n")
         
@@ -246,11 +266,13 @@ def diff_online_mailboxes(gmvaulter_a, gmvaulter_b):
     
     batch_size = 700
 
-    batch_fetcher_a = gmvault.IMAPBatchFetcher(gmvaulter_a.src, imap_ids_a, gmvaulter_a.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
-                                     default_batch_size = batch_size)
+    batch_fetcher_a = gmvault.IMAPBatchFetcher(gmvaulter_a.src, imap_ids_a, gmvaulter_a.error_report, \
+                                               imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
+                                               default_batch_size = batch_size)
     
-    batch_fetcher_b = gmvault.IMAPBatchFetcher(gmvaulter_b.src, imap_ids_b, gmvaulter_b.error_report, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
-                                     default_batch_size = batch_size)
+    batch_fetcher_b = gmvault.IMAPBatchFetcher(gmvaulter_b.src, imap_ids_b, gmvaulter_b.error_report, \
+                                               imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA, \
+                                               default_batch_size = batch_size)
     
     print("Got %d emails in gmvault_a(%s).\n" % (len(imap_ids_a), gmvaulter_a.login))
     print("Got %d emails in gmvault_b(%s).\n" % (len(imap_ids_b), gmvaulter_b.login))
