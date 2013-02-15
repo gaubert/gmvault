@@ -29,7 +29,7 @@ import gmv.gmvault_db as gmvault_db
 import gmv.gmvault_utils    as gmvault_utils
 
 
-def check_remote_mailbox_identical_to_local(the_self, gmvaulter): #pylint: disable=C0103
+def check_remote_mailbox_identical_to_local(the_self, gmvaulter): #pylint: disable=C0103,R0912,R0914,R0915
     """
        Check that the remote mailbox is identical to the local one attached
        to gmvaulter
@@ -193,9 +193,6 @@ def find_identical_emails(gmvaulter_a): #pylint: disable=R0914
     
     total_processed = 0
 
-    fetching_req = [ 'X-GM-MSGID', 'X-GM-LABELS', 'INTERNALDATE', \
-                     'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]']
-
     imap_ids = gmvaulter_a.src.search({ 'type' : 'imap', \
                'req' : '(HEADER MESSAGE-ID 1929235391.1106286872672.JavaMail.wserver@disvds016)'})
 
@@ -220,7 +217,7 @@ def find_identical_emails(gmvaulter_a): #pylint: disable=R0914
                                  'gmid': gm_ids[one_id]['X-GM-MSGID'], \
                                  'date': date_internal , 'labels': labels}]  
             else:
-                in_db[msgid].append({'subject': subject, 'received': received,\
+                in_db[msgid].append({'subject': subject, 'received': received, \
                              'gmid': gm_ids[one_id]['X-GM-MSGID'], \
                              'date': date_internal , 'labels': labels}) 
                 print("identical found msgid %s : %s" \
@@ -252,7 +249,7 @@ def find_identical_emails(gmvaulter_a): #pylint: disable=R0914
         
     #print("Identical emails:\n%s" % (identicals))   
 
-def diff_online_mailboxes(gmvaulter_a, gmvaulter_b):
+def diff_online_mailboxes(gmvaulter_a, gmvaulter_b): #pylint: disable=R0912, R0914
     """
        Diff 2 mailboxes
     """
@@ -300,17 +297,17 @@ def diff_online_mailboxes(gmvaulter_a, gmvaulter_b):
         
             subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
             
-            hash = hashlib.md5()
+            the_hash = hashlib.md5()
             if received:
-                hash.update(received)
+                the_hash.update(received)
             
             if subject:
-                hash.update(subject)
+                the_hash.update(subject)
                 
             if msgid:
-                hash.update(msgid)
+                the_hash.update(msgid)
 
-            id =  base64.encodestring(hash.digest())
+            id =  base64.encodestring(the_hash.digest())
     
             gm_ids_b[id] = [gm_id, subject, msgid]
 
@@ -327,17 +324,17 @@ def diff_online_mailboxes(gmvaulter_a, gmvaulter_b):
         
             subject, msgid, received = gmvault_db.GmailStorer.parse_header_fields(header_fields)
             
-            hash = hashlib.md5()
+            the_hash = hashlib.md5()
             if received:
-                hash.update(received)
+                the_hash.update(received)
             
             if subject:
-                hash.update(subject)
+                the_hash.update(subject)
                 
             if msgid:
-                hash.update(msgid)
+                the_hash.update(msgid)
 
-            id =  base64.encodestring(hash.digest())
+            id =  base64.encodestring(the_hash.digest())
     
             if id not in gm_ids_b:
                 diff_result["in_a"][received] = [gm_id, subject, msgid]
