@@ -43,6 +43,7 @@ a) Get help for each of the individual commands
 #> gmvault sync -h
 #> gmvault restore --help
 #> gmvault check -h
+#> gmvault export -h
 
 """
 
@@ -118,7 +119,7 @@ class GMVaultLauncher(object):
     SYNC_TYPES    = ['full', 'quick', 'custom']
     RESTORE_TYPES = ['full', 'quick']
     CHECK_TYPES   = ['full']
-    EXPORT_TYPES   = ['maildir', 'mbox']
+    EXPORT_TYPES  = ['maildir', 'mbox']
     
     DEFAULT_GMVAULT_DB = "%s/gmvault-db" % (os.getenv("HOME", "."))
     
@@ -580,7 +581,7 @@ class GMVaultLauncher(object):
     @classmethod
     def _export(cls, args):
         types = { 'maildir': gmvault_export.Maildir,
-            'mbox': gmvault_export.MBox }
+                  'mbox': gmvault_export.MBox }
         output = types[args['type']](args['output'])
         exporter = gmvault_export.GMVaultExporter(args['db-dir'], output,
             labels=args['labels'])
