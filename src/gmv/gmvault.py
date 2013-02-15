@@ -1120,7 +1120,7 @@ class GMVaulter(object):
             if (left_emails > 0): 
                 elapsed = timer.elapsed() #elapsed time in seconds
                 LOG.critical("\n== Processed %d emails in %s. %d left to be restored "\
-                             "(time estimate %s).==\n" % \
+                             "(time estimate %s). ==\n" % \
                              (nb_emails_restored, timer.seconds_to_human_time(elapsed), \
                               left_emails, timer.estimate_time_left(nb_emails_restored, elapsed, left_emails)))
             

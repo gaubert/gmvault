@@ -66,7 +66,7 @@ class GMVaultExporter(object):
         exported_labels = "default labels"
         if self.labels:
             exported_labels = "labels " + self.printable_label_list(self.labels)
-        LOG.critical("Start %s export for %s" % (kind, exported_labels))
+        LOG.critical("Start %s export for %s." % (kind, exported_labels))
 
         timer = gmvault_utils.Timer()
         timer.start()
@@ -84,7 +84,7 @@ class GMVaultExporter(object):
             folders = [re.sub(r'^\\', '', f) for f in folders]
             folders = [f for f in folders if self.want_label(f)]
 
-            LOG.debug("Processing id %s in labels %s" % \
+            LOG.debug("Processing id %s in labels %s." % \
                 (a_id, self.printable_label_list(folders)))
             for folder in folders:
                 self.mailbox.add(msg, folder, meta[gmvault_db.GmailStorer.FLAGS_K])
@@ -93,11 +93,11 @@ class GMVaultExporter(object):
             left = len(ids) - done
             if done % self.PROGRESS_INTERVAL == 0 and left > 0:
                 elapsed = timer.elapsed()
-                LOG.critical("== Processed %d %s in %s, %d left (time estimate %s) ==" % \
+                LOG.critical("== Processed %d %s in %s, %d left (time estimate %s). ==\n" % \
                     (done, kind, timer.seconds_to_human_time(elapsed), \
                      left, timer.estimate_time_left(done, elapsed, left)))
 
-        LOG.critical("Export complete in %s" % (timer.elapsed_human_time(),))
+        LOG.critical("Export complete in %s." % (timer.elapsed_human_time(),))
 
 
 class Mailbox(object):
@@ -160,7 +160,7 @@ class MBox(Mailbox):
         self.open = dict()
 
     def close(self):
-        for k, m in self.open.items():
+        for _, m in self.open.items():
             m.close()
 
     def subdir(self, label):
