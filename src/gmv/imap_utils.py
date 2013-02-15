@@ -164,7 +164,8 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
                     LOG.debug("IMAP (normal) error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
                     
                     if nb_tries[0] < a_nb_tries:
-                        LOG.critical("Error when reaching Gmail server. Wait %s seconds and retry up to 2 times." % (m_sleep_time[0]))
+                        LOG.critical("Error when reaching Gmail server. Wait %s seconds and retry up to 2 times." \
+                                     % (m_sleep_time[0]))
                     else:
                         LOG.critical("Stop retrying, tried too many times ...")
                     
@@ -641,7 +642,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902
             #LOG.debug("Before to store labels %s" % (labels_str))
             id_list = ",".join(map(str, imap_ids))
             #+X-GM-LABELS.SILENT to have not returned data
-            ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', labels_str)
+            ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', labels_str) #pylint: disable=W0212
 
             #ret_code, data = self.server._imap.uid('COPY', id_list, labels[0])
             LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" \
@@ -824,7 +825,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902
             self.server.select_folder(u'[Google Mail]/All Mail', readonly = self.readonly_folder) # go to current folder
             LOG.debug("Changing folders. elapsed %s s\n" % (the_t.elapsed_ms()))
             the_t.start()
-            ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
+            ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str) #pylint: disable=W0212
             #ret_code = self.server._store('+X-GM-LABELS', [result_uid],labels_str)
             LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" \
                       % (labels_str, the_t.elapsed_ms(),ret_code, data))
