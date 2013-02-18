@@ -146,13 +146,10 @@ a[name] {
    <p>Gmvault v1.8-beta includes the following new features and bug fixes:</p>
    <h4>Added new Features:</h4>
    <ul>
-    <li class="icon-plus">GTalk chat logs are now backed up when the Chats label can be accessed via IMAP.</li>
-    <li class="icon-plus">GTalk chats can be restored in any accounts in the label gmvault-chats as the official Gmail Chats label in read-only.</li>
-    <li class="icon-plus">Add the check command for cleaning your Gmvault db. With check, Gmvault-db will reflect your Gmail account and emails that have been trashed on Gmail will be deleted from the Gmvault-db.</li>
-    <li class="icon-plus">The check option used to keep in sync the Gmvault-db with your Gmail account is now by default activated in the sync mode. Use option --check-db no to deactivate it.
-       </br>Beware if you have a Gmvault db containg emails from multiple accounts: You will have to resync in quick mode with --db-cleaning no with both accounts to no have part of it deleted.
-    </li>
-  <li class="icon-plus">Add options --chats-only and --emails-only to synchronise only emails or chats.</li>
+    <li class="icon-plus">Performances: Backup speed increased by 4 (mailbox of 40000+ emails synched in 2.2 hrs instead of 9.5 hrs.</li>
+    <li class="icon-plus">Performances: Restore speed increased by 1.5 (mailbox of 40000+ emails restored in 12 hours instead of 18 hrs).</li>
+    <li class="icon-plus">Increase support for non english languages: Support for labels tested in Japanese, German, French, Spanish, Danish. Other languages should also be supported.</li>
+    <li class="icon-plus">Experimental export function to export gmvault-db as an mbox or maildir standard mailbox to allow offline browsing with Thunderbird or Dovecot.</li>
   
   <li class="icon-plus">Create default configuration file $HOME/.gmvault/gmvault_defaults.conf in order to make some options customisable.</li>
   <li class="icon-plus">Change quick sync and restore time to 7 days. It can be configured in $HOME/.gmvault/gmvault_defaults.conf.</li>
