@@ -149,20 +149,26 @@ a[name] {
     <li class="icon-plus">Performances: Backup speed increased by 4 (mailbox of 40000+ emails synched in 2.2 hrs instead of 9.5 hrs.</li>
     <li class="icon-plus">Performances: Restore speed increased by 1.5 (mailbox of 40000+ emails restored in 12 hours instead of 18 hrs).</li>
     <li class="icon-plus">Increase support for non english languages: Support for labels tested in Japanese, German, French, Spanish, Danish. Other languages should also be supported.</li>
-    <li class="icon-plus">Experimental export function to export gmvault-db as an mbox or maildir standard mailbox to allow offline browsing with Thunderbird or Dovecot.</li>
-  
-  <li class="icon-plus">Create default configuration file $HOME/.gmvault/gmvault_defaults.conf in order to make some options customisable.</li>
-  <li class="icon-plus">Change quick sync and restore time to 7 days. It can be configured in $HOME/.gmvault/gmvault_defaults.conf.</li>
-  <li class="icon-plus">The default dir $HOME/.gmvault can now be moved with the ENV variable GMVAULT_DIR. [Github features #57].</li>
-    </ul>
+    <li class="icon-plus">Experimental export function to create a mbox or maildir mailbox from a gmvault-db allowing offline browsing with a stand mail client (Thunderbird, Dovecot, ...).</li>
+    <li class="icon-plus">Support Gmail 2-legged OAuth authentication allowing Google Apps Business or Education account owners to use Gmvault [Github feature #105].</li>
+    <li class="icon-plus">Add starting date and time at the beginning of a sync or restore operation [Github feature #106].</li>
+    <li class="icon-plus">Introduction of a deferred Logger allowing easier integration with a Graphical User Interface (GUI).</li>
+    <li class="icon-plus">Change license to AGPLv3.</li>
+    <li class="icon-plus">Add total time spent in synchronising or restoring.</li>
+    
+   </ul>
    <h4>Bug Fixes:</h4>
    <ul>
-    <li class="icon-minus">Memory Consumption bug in socket and imap_lib layer fixed. [Github issue #42, #54, #45]</li>
-    <li class="icon-minus">Stability dramatically improved. Cpu infinite Consumption bug fixed in ssl layer. [Github issue #51, #45]</li>
-    <li class="icon-minus">When Restored, unread messages are now always marked as unread in Gmail. A bug was preventing them to be restored as unread in some cases.</li>
-    <li class="icon-minus">Restore emails in chronologic order. Before they were restored in filesystem listing order.</li>
-    <li class="icon-minus">Mac OSX and Linux Gmvault clients can now be contained by a directory name with a space character.</li>
-    <li class="icon-minus">Handle NULL character in emails that was preventing them from being restored. The emails are now moved to the quarantine area.</li>
+    <li class="icon-minus">Fix bug preventing the backup of very large emails on windows.</li>
+    <li class="icon-minus">Fix bug preventing the deletion of encrypted emails in gmvault-db. [Github issue #108, #100, #94, #93].</li>
+    <li class="icon-minus">Upgrade Windows version to Python2.7.3 to avoid having potential non existent security issue [Github issue #89].</li>
+    <li class="icon-minus">Fix bug preventing Chat backup for non english languages fixed (all languages potentially allowed) [Github issue #76].</li>
+    <li class="icon-minus">Fix bug preventing support for labels with spaces, quotes [Github issue #86 #79].</li>
+    <li class="icon-minus">Fix bug preventing the support of non ascii character in labels [Github issue #107].</li>
+    <li class="icon-minus">Fix bug preventing Gmail searches with non ascii characters (ie support german, norvegian, french letters, ...) [Github issue #99].</li>
+    <li class="icon-minus">Fix bug preventing to link the gmvault starting script [Github issue #98 contributed by @jinnko].</li>
+    <li class="icon-minus">Fix bug preventing quick sync in some case to update \Seen flag [Github issue #69].</li>
+    <li class="icon-minus">Fix bug creating wrong time reportings when chats synchronised [Github issue #75].</li>
    </ul>
    <h3>Shout-outs </h3>
    <p><strong>Thank you all for supporting Gmvault on Twitter, Github and other social media.</strong> </br>
