@@ -290,7 +290,7 @@ class GMVaultLauncher(object):
                                  default=False, help= 'Only sync chats.')
         
         rest_parser.add_argument("-d", "--db-dir", \
-                                 action='store', help="Database root directory. (default: ./gmvault-db)",\
+                                 action='store', help="Database root directory. (default: $HOME/gmvault-db)",\
                                  dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
                
         # for both when seen add const empty otherwise not_seen
@@ -333,7 +333,7 @@ class GMVaultLauncher(object):
                                  action='store', default='empty_$_email', help='gmail account against which to check.')
         
         check_parser.add_argument("-d", "--db-dir", \
-                                 action='store', help="Database root directory. (default: ./gmvault-db)",\
+                                 action='store', help="Database root directory. (default: $HOME/gmvault-db)",\
                                  dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
      
         # for both when seen add const empty otherwise not_seen
@@ -373,7 +373,7 @@ class GMVaultLauncher(object):
                                    action='store', help='destination directory to export to.')
 
         export_parser.add_argument("-d", "--db-dir", \
-                                 action='store', help="Database root directory. (default: ./gmvault-db)",\
+                                 action='store', help="Database root directory. (default: $HOME/gmvault-db)",\
                                  dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
 
         export_parser.add_argument('-t', '-type', '--type', \
