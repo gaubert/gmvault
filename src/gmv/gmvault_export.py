@@ -107,41 +107,42 @@ class Mailbox(object):
         pass
 
 class Maildir(Mailbox):
-    SEPARATOR = '.'
+    def __init__(self, path, separator = '/'):
+        self.path = path
+        self.subdirs = {}
+        self.separator = separator
+        if not self.root_is_maildir() and not os.path.exists(self.path):
+            os.makedirs(self.path)
 
-    def __init__(self, path, esc = '\\', sep_esc = "*'"):
-        self.mailbox = mailbox.Maildir(path, create = True)
-        self.escape = esc
-        self.sep_escape = sep_esc
+    @staticmethod
+    def separate(folder, sep):
+        return folder.replace(GMVaultExporter.GM_SEP, sep)
 
-    def listescape(self, s, char, pattern = None):
-        pattern = pattern or re.escape(char)
-        esc = "%s%02x" % (self.escape, ord(char))
-        return re.sub(pattern, lambda m: esc, s)
+    def subdir_name(self, folder):
+        return self.separate(folder, self.separator)
 
-    def maildir_name(self, folder):
-        if folder == GMVaultExporter.GM_INBOX:
-            return None
-
-        # Escape initial tilde
-        r = self.listescape(folder, '~', r'^~')
-
-        # listescape can't handle SEPARATOR, escape otherwise instead. Ewwww!!!
-        se = self.sep_escape[0]
-        r = r.replace(se, se * 2)
-        r = r.replace(self.SEPARATOR, self.sep_escape)
-
-        # Use IMAP modified UTF-7 encoding
-        r = imap_utf7.encode(r)
-
-        # Replace GMail's directory separator with ours
-        return r.replace(GMVaultExporter.GM_SEP, self.SEPARATOR)
+    def root_is_maildir(self):
+        return False;
 
     def subdir(self, folder):
-        name = self.maildir_name(folder)
-        if name:
-            return self.mailbox.add_folder(name)
-        return self.mailbox
+        if folder in self.subdirs:
+            return self.subdirs[folder]
+
+        if folder:
+            parts = folder.split(GMVaultExporter.GM_SEP)
+            parent = GMVaultExporter.GM_SEP.join(parts[:-1])
+            self.subdir(parent)
+            path = self.subdir_name(folder)
+            path = imap_utf7.encode(path)
+        else:
+            if not self.root_is_maildir():
+                return
+            path = ''
+
+        abspath = os.path.join(self.path, path)
+        sub = mailbox.Maildir(abspath, create = True)
+        self.subdirs[folder] = sub
+        return sub
 
     def add(self, msg, folder, flags):
         mmsg = mailbox.MaildirMessage(msg)
@@ -153,6 +154,72 @@ class Maildir(Mailbox):
             mmsg.add_flag('F')
 
         self.subdir(folder).add(mmsg)
+
+class OfflineIMAP(Maildir):
+    DEFAULT_SEPARATOR = '.'
+    def __init__(self, path, separator = DEFAULT_SEPARATOR):
+        super(OfflineIMAP, self).__init__(path, separator = separator)
+
+class Dovecot(Maildir):
+    # See http://wiki2.dovecot.org/Namespaces
+    class Layout(object):
+        def join(self, parts):
+            return self.SEPARATOR.join(parts)
+    class FSLayout(Layout):
+        SEPARATOR = '/'
+    class MaildirPlusPlusLayout(Layout):
+        SEPARATOR = '.'
+        def join(self, parts):
+            return '.' + super(Dovecot.MaildirPlusPlusLayout, self).join(parts)
+
+    DEFAULT_NS_SEP = '.'
+    DEFAULT_LISTESCAPE = '\\'
+
+    # The namespace separator cannot be escaped with listescape.
+    # Replace it with a two-character escape code.
+    DEFAULT_SEP_ESCAPE = "*'"
+
+    def __init__(self, path,
+                 layout = MaildirPlusPlusLayout(),
+                 ns_sep = DEFAULT_NS_SEP,
+                 listescape = DEFAULT_LISTESCAPE,
+                 sep_escape = DEFAULT_SEP_ESCAPE):
+        super(Dovecot, self).__init__(path, separator = layout.SEPARATOR)
+        self.layout = layout
+        self.ns_sep = ns_sep
+        self.listescape = listescape
+        self.sep_escape = sep_escape
+
+    # Escape one character
+    def _listescape(self, s, char = None, pattern = None):
+        pattern = pattern or re.escape(char)
+        esc = "%s%02x" % (self.listescape, ord(char))
+        return re.sub(pattern, lambda m: esc, s)
+
+    def _munge_name(self, s):
+        # Escape namespace separator: . => *', * => **
+        esc = self.sep_escape[0]
+        s = re.sub(re.escape(esc), esc * 2, s)
+        s = re.sub(re.escape(self.ns_sep), self.sep_escape, s)
+
+        if self.listescape:
+            # See http://wiki2.dovecot.org/Plugins/Listescape
+            if self.layout.SEPARATOR == '.':
+                s = self._listescape(s, '.')
+            s = self._listescape(s, '/')
+            s = self._listescape(s, '~', r'^~')
+        return s
+
+    def subdir_name(self, folder):
+        if folder == GMVaultExporter.GM_INBOX:
+            return ''
+
+        parts = folder.split(GMVaultExporter.GM_SEP)
+        parts = [self._munge_name(n) for n in parts]
+        return self.layout.join(parts)
+
+    def root_is_maildir(self):
+        return True
 
 class MBox(Mailbox):
     def __init__(self, folder):

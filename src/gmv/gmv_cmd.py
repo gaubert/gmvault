@@ -30,6 +30,7 @@ import gmv.log_utils as log_utils
 import gmv.gmvault_utils as gmvault_utils
 import gmv.gmvault as gmvault
 import gmv.gmvault_export as gmvault_export
+import gmv.collections_utils as collections_utils
 
 from gmv.cmdline_utils  import CmdLineParser
 from gmv.credential_utils import CredentialHelper
@@ -127,7 +128,12 @@ class GMVaultLauncher(object):
     SYNC_TYPES    = ['full', 'quick', 'custom']
     RESTORE_TYPES = ['full', 'quick']
     CHECK_TYPES   = ['full']
-    EXPORT_TYPES  = ['maildir', 'mbox']
+    EXPORT_TYPES  = collections_utils.OrderedDict([
+                     ('offlineimap', gmvault_export.OfflineIMAP),
+                     ('dovecot', gmvault_export.Dovecot),
+                     ('maildir', gmvault_export.OfflineIMAP),
+                     ('mbox', gmvault_export.MBox)])
+    EXPORT_TYPE_NAMES = ", ".join(EXPORT_TYPES)
     
     DEFAULT_GMVAULT_DB = "%s/gmvault-db" % (os.getenv("HOME", "."))
     
@@ -372,7 +378,7 @@ class GMVaultLauncher(object):
 
         export_parser.add_argument('-t', '-type', '--type', \
                           action='store', dest='type', \
-                          default='maildir', help='type of export: maildir, mbox. (default: maildir)')
+                          default='offlineimap', help='type of export: %s. (default: offlineimap)' % self.EXPORT_TYPE_NAMES)
 
         export_parser.add_argument('-l', '--label', \
                                    action='append', dest='label', \
@@ -562,7 +568,7 @@ class GMVaultLauncher(object):
             if options.type.lower() in self.EXPORT_TYPES:
                 parsed_args['type'] = options.type.lower()
             else:
-                parser.error('Unknown type for command export. The type should be one of %s' % self.EXPORT_TYPES)
+                parser.error('Unknown type for command export. The type should be one of %s' % self.EXPORT_TYPE_NAMES)
             parsed_args['debug'] = options.debug
 
         elif parsed_args.get('command', '') == 'config':
@@ -590,9 +596,8 @@ class GMVaultLauncher(object):
     
     @classmethod
     def _export(cls, args):
-        types = { 'maildir': gmvault_export.Maildir,
-                  'mbox': gmvault_export.MBox }
-        output_dir = types[args['type']](args['output-dir'])
+        export_type = cls.EXPORT_TYPES[args['type']]
+        output_dir = export_type(args['output-dir'])
         exporter = gmvault_export.GMVaultExporter(args['db-dir'], output_dir,
             labels=args['labels'])
         exporter.export()
