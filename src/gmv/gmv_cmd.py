@@ -96,16 +96,25 @@ e) Custom synchronisation with an Gmail request for advance users.
 
 """
 
-EXPORT_HELP_EPILOGUE = """Examples:
+EXPORT_HELP_EPILOGUE = """Warning: Experimental Functionality requiring more testing.
+
+Examples:
 
 a) Export default gmvault-db ($HOME/gmvault-db or %HOME$/gmvault-db) as a maildir mailbox.
 
 #> gmvault export ~/my-mailbox-dir
 
-b) Export as a gmvault-db as a mbox mailbox (compliant with Thunderbird).
+b) Export a gmvault-db as a mbox mailbox (compliant with Thunderbird).
 
 #> gmvault export -d /tmp/gmvault-db /tmp/a-mbox-dir
 
+c) Export only a limited set of labels from the default gmvault-db as a mbox mailbox (compliant with Thunderbird).
+
+#> gmvault export -l "label1" -l "TopLabel/LabelLev1" /tmp/a-mbox-dir
+
+d) Use one of the export type dedicated to a specific tool (dovecot or offlineIMAP)
+
+#> gmvault export -t dovecot /tmp/a-dovecot-dir
 """
 
 LOG = log_utils.LoggerFactory.get_logger('gmv')
@@ -378,7 +387,7 @@ class GMVaultLauncher(object):
 
         export_parser.add_argument('-t', '-type', '--type', \
                           action='store', dest='type', \
-                          default='offlineimap', help='type of export: %s. (default: offlineimap)' % self.EXPORT_TYPE_NAMES)
+                          default='mbox', help='type of export: %s. (default: mbox)' % self.EXPORT_TYPE_NAMES)
 
         export_parser.add_argument('-l', '--label', \
                                    action='append', dest='label', \
