@@ -44,7 +44,7 @@ init:
 	mkdir -p $(GMVBUILDDIST)
 
 list:
-	@echo "=== Available Make tasks:"
+	@echo "=== Available Make targets:"
 	@echo "--- gmv-src-dist, gmv-pypi-dist, gmv-mac-dist, gmv-win-dist, gmv-win-installer" 
 
 gmv-egg-dist: init 
