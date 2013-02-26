@@ -29,6 +29,8 @@ import imaplib
 import gmv.log_utils as log_utils
 import gmv.gmvault_utils as gmvault_utils
 import gmv.gmvault as gmvault
+import gmv.gmvault_export as gmvault_export
+import gmv.collections_utils as collections_utils
 
 from gmv.cmdline_utils  import CmdLineParser
 from gmv.credential_utils import CredentialHelper
@@ -42,6 +44,7 @@ a) Get help for each of the individual commands
 #> gmvault sync -h
 #> gmvault restore --help
 #> gmvault check -h
+#> gmvault export -h
 
 """
 
@@ -91,10 +94,27 @@ e) Custom synchronisation with an Gmail request for advance users.
 
 #> gmvault sync --type custom --gmail-req "in:work from:foo" foo.bar@gmail.com
 
+"""
 
+EXPORT_HELP_EPILOGUE = """Warning: Experimental Functionality requiring more testing.
 
+Examples:
 
+a) Export default gmvault-db ($HOME/gmvault-db or %HOME$/gmvault-db) as a maildir mailbox.
 
+#> gmvault export ~/my-mailbox-dir
+
+b) Export a gmvault-db as a mbox mailbox (compliant with Thunderbird).
+
+#> gmvault export -d /tmp/gmvault-db /tmp/a-mbox-dir
+
+c) Export only a limited set of labels from the default gmvault-db as a mbox mailbox (compliant with Thunderbird).
+
+#> gmvault export -l "label1" -l "TopLabel/LabelLev1" /tmp/a-mbox-dir
+
+d) Use one of the export type dedicated to a specific tool (dovecot or offlineIMAP)
+
+#> gmvault export -t dovecot /tmp/a-dovecot-dir
 """
 
 LOG = log_utils.LoggerFactory.get_logger('gmv')
@@ -117,6 +137,12 @@ class GMVaultLauncher(object):
     SYNC_TYPES    = ['full', 'quick', 'custom']
     RESTORE_TYPES = ['full', 'quick']
     CHECK_TYPES   = ['full']
+    EXPORT_TYPES  = collections_utils.OrderedDict([
+                     ('offlineimap', gmvault_export.OfflineIMAP),
+                     ('dovecot', gmvault_export.Dovecot),
+                     ('maildir', gmvault_export.OfflineIMAP),
+                     ('mbox', gmvault_export.MBox)])
+    EXPORT_TYPE_NAMES = ", ".join(EXPORT_TYPES)
     
     DEFAULT_GMVAULT_DB = "%s/gmvault-db" % (os.getenv("HOME", "."))
     
@@ -273,7 +299,7 @@ class GMVaultLauncher(object):
                                  default=False, help= 'Only sync chats.')
         
         rest_parser.add_argument("-d", "--db-dir", \
-                                 action='store', help="Database root directory. (default: ./gmvault-db)",\
+                                 action='store', help="Database root directory. (default: $HOME/gmvault-db)",\
                                  dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
                
         # for both when seen add const empty otherwise not_seen
@@ -316,7 +342,7 @@ class GMVaultLauncher(object):
                                  action='store', default='empty_$_email', help='gmail account against which to check.')
         
         check_parser.add_argument("-d", "--db-dir", \
-                                 action='store', help="Database root directory. (default: ./gmvault-db)",\
+                                 action='store', help="Database root directory. (default: $HOME/gmvault-db)",\
                                  dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
      
         # for both when seen add const empty otherwise not_seen
@@ -348,6 +374,33 @@ class GMVaultLauncher(object):
         
         check_parser.set_defaults(verb='check')
         
+        # export command
+        export_parser = subparsers.add_parser('export', \
+                                            help='Export the gmvault-db database to another format.')
+
+        export_parser.add_argument('output_dir', \
+                                   action='store', help='destination directory to export to.')
+
+        export_parser.add_argument("-d", "--db-dir", \
+                                 action='store', help="Database root directory. (default: $HOME/gmvault-db)",\
+                                 dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
+
+        export_parser.add_argument('-t', '-type', '--type', \
+                          action='store', dest='type', \
+                          default='mbox', help='type of export: %s. (default: mbox)' % self.EXPORT_TYPE_NAMES)
+
+        export_parser.add_argument('-l', '--label', \
+                                   action='append', dest='label', \
+                                   default=None,
+                                   help='specify a label to export')
+        export_parser.add_argument("--debug", \
+                       action='store_true', help="Activate debugging info",\
+                       dest="debug", default=False)
+
+        export_parser.set_defaults(verb='export')
+        
+        export_parser.epilogue = EXPORT_HELP_EPILOGUE
+
         return parser
       
     @classmethod
@@ -517,6 +570,16 @@ class GMVaultLauncher(object):
             # parse common arguments for sync and restore
             self._parse_common_args(options, parser, parsed_args, self.CHECK_TYPES)
     
+        elif parsed_args.get('command', '') == 'export':
+            parsed_args['labels']     = options.label
+            parsed_args['db-dir']     = options.db_dir
+            parsed_args['output-dir'] = options.output_dir
+            if options.type.lower() in self.EXPORT_TYPES:
+                parsed_args['type'] = options.type.lower()
+            else:
+                parser.error('Unknown type for command export. The type should be one of %s' % self.EXPORT_TYPE_NAMES)
+            parsed_args['debug'] = options.debug
+
         elif parsed_args.get('command', '') == 'config':
             pass
     
@@ -540,6 +603,15 @@ class GMVaultLauncher(object):
         LOG.debug("clean_imap_or_gm_request. processed request = %s\n" % (request))
         return request
     
+    @classmethod
+    def _export(cls, args):
+        export_type = cls.EXPORT_TYPES[args['type']]
+        output_dir = export_type(args['output-dir'])
+        exporter = gmvault_export.GMVaultExporter(args['db-dir'], output_dir,
+            labels=args['labels'])
+        exporter.export()
+        output_dir.close()
+
     @classmethod
     def _restore(cls, args, credential):
         """
@@ -675,7 +747,8 @@ class GMVaultLauncher(object):
         
         try:
             
-            credential = CredentialHelper.get_credential(args)
+            if args.get('command') not in ('export'):
+                credential = CredentialHelper.get_credential(args)
             
             if args.get('command', '') == 'sync':
                 
@@ -689,6 +762,10 @@ class GMVaultLauncher(object):
                 
                 self._check_db(args, credential)
                 
+            elif args.get('command', '') == 'export':
+
+                self._export(args)
+
             elif args.get('command', '') == 'config':
                 
                 LOG.critical("Configure something. TBD.\n")
