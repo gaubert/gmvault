@@ -43,6 +43,7 @@ a) Get help for each of the individual commands
 #> gmvault sync -h
 #> gmvault restore --help
 #> gmvault check -h
+#> gmvault export -h
 
 """
 
@@ -92,9 +93,17 @@ e) Custom synchronisation with an Gmail request for advance users.
 
 #> gmvault sync --type custom --gmail-req "in:work from:foo" foo.bar@gmail.com
 
+"""
 
+EXPORT_HELP_EPILOGUE = """Examples:
 
+a) Export default gmvault-db ($HOME/gmvault-db or %HOME$/gmvault-db) as a maildir mailbox.
 
+#> gmvault export ~/my-mailbox-dir
+
+b) Export as a gmvault-db as a mbox mailbox (compliant with Thunderbird).
+
+#> gmvault export -d /tmp/gmvault-db /tmp/a-mbox-dir
 
 """
 
@@ -118,7 +127,7 @@ class GMVaultLauncher(object):
     SYNC_TYPES    = ['full', 'quick', 'custom']
     RESTORE_TYPES = ['full', 'quick']
     CHECK_TYPES   = ['full']
-    EXPORT_TYPES   = ['maildir', 'mbox']
+    EXPORT_TYPES  = ['maildir', 'mbox']
     
     DEFAULT_GMVAULT_DB = "%s/gmvault-db" % (os.getenv("HOME", "."))
     
@@ -354,8 +363,8 @@ class GMVaultLauncher(object):
         export_parser = subparsers.add_parser('export', \
                                             help='Export the gmvault-db database to another format.')
 
-        export_parser.add_argument('output', \
-                                 action='store', help='destination to export to.')
+        export_parser.add_argument('output_dir', \
+                                   action='store', help='destination directory to export to.')
 
         export_parser.add_argument("-d", "--db-dir", \
                                  action='store', help="Database root directory. (default: ./gmvault-db)",\
@@ -374,6 +383,8 @@ class GMVaultLauncher(object):
                        dest="debug", default=False)
 
         export_parser.set_defaults(verb='export')
+        
+        export_parser.epilogue = EXPORT_HELP_EPILOGUE
 
         return parser
       
@@ -545,9 +556,9 @@ class GMVaultLauncher(object):
             self._parse_common_args(options, parser, parsed_args, self.CHECK_TYPES)
     
         elif parsed_args.get('command', '') == 'export':
-            parsed_args['labels'] = options.label
-            parsed_args['db-dir'] = options.db_dir
-            parsed_args['output'] = options.output
+            parsed_args['labels']     = options.label
+            parsed_args['db-dir']     = options.db_dir
+            parsed_args['output-dir'] = options.output_dir
             if options.type.lower() in self.EXPORT_TYPES:
                 parsed_args['type'] = options.type.lower()
             else:
@@ -580,12 +591,12 @@ class GMVaultLauncher(object):
     @classmethod
     def _export(cls, args):
         types = { 'maildir': gmvault_export.Maildir,
-            'mbox': gmvault_export.MBox }
-        output = types[args['type']](args['output'])
-        exporter = gmvault_export.GMVaultExporter(args['db-dir'], output,
+                  'mbox': gmvault_export.MBox }
+        output_dir = types[args['type']](args['output-dir'])
+        exporter = gmvault_export.GMVaultExporter(args['db-dir'], output_dir,
             labels=args['labels'])
         exporter.export()
-        output.close()
+        output_dir.close()
 
     @classmethod
     def _restore(cls, args, credential):

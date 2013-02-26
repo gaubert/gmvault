@@ -22,10 +22,10 @@ import mailbox
 
 import imapclient.imap_utf7 as imap_utf7
 
-from gmv.imap_utils import GIMAPFetcher
+import gmv.imap_utils as imap_utils
 import gmv.log_utils as log_utils
-from gmv.gmvault_db import GmailStorer
-from gmv.gmvault_utils import Timer
+import gmv.gmvault_utils as gmvault_utils
+import gmv.gmvault_db as gmvault_db
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_export')
 
@@ -35,7 +35,7 @@ class GMVaultExporter(object):
     CHATS_FOLDER = 'Chats'
     ARCHIVED_FOLDER = 'Archived' # Mails only in 'All Mail'
 
-    GM_ALL = re.sub(r'^\\', '', GIMAPFetcher.GENERIC_GMAIL_ALL)
+    GM_ALL = re.sub(r'^\\', '', imap_utils.GIMAPFetcher.GENERIC_GMAIL_ALL)
     GM_INBOX = 'Inbox'
     GM_SEP = '/'
 
@@ -43,7 +43,7 @@ class GMVaultExporter(object):
     GM_FLAGGED = '\\Flagged'
 
     def __init__(self, db_dir, mailbox, labels = None):
-        self.storer = GmailStorer(db_dir)
+        self.storer = gmvault_db.GmailStorer(db_dir)
         self.mailbox = mailbox
         self.labels = labels
 
@@ -66,9 +66,9 @@ class GMVaultExporter(object):
         exported_labels = "default labels"
         if self.labels:
             exported_labels = "labels " + self.printable_label_list(self.labels)
-        LOG.critical("Start %s export for %s" % (kind, exported_labels))
+        LOG.critical("Start %s export for %s." % (kind, exported_labels))
 
-        timer = Timer()
+        timer = gmvault_utils.Timer()
         timer.start()
         done = 0
 
@@ -77,27 +77,27 @@ class GMVaultExporter(object):
 
             folders = [default_folder]
             if use_labels:
-                add_labels = meta[GmailStorer.LABELS_K]
+                add_labels = meta[gmvault_db.GmailStorer.LABELS_K]
                 if not add_labels:
                     add_labels = [GMVaultExporter.ARCHIVED_FOLDER]
                 folders.extend(add_labels)
             folders = [re.sub(r'^\\', '', f) for f in folders]
             folders = [f for f in folders if self.want_label(f)]
 
-            LOG.debug("Processing id %s in labels %s" % \
+            LOG.debug("Processing id %s in labels %s." % \
                 (a_id, self.printable_label_list(folders)))
             for folder in folders:
-                self.mailbox.add(msg, folder, meta[GmailStorer.FLAGS_K])
+                self.mailbox.add(msg, folder, meta[gmvault_db.GmailStorer.FLAGS_K])
 
             done += 1
             left = len(ids) - done
             if done % self.PROGRESS_INTERVAL == 0 and left > 0:
                 elapsed = timer.elapsed()
-                LOG.critical("== Processed %d %s in %s, %d left (time estimate %s) ==" % \
+                LOG.critical("== Processed %d %s in %s, %d left (time estimate %s). ==\n" % \
                     (done, kind, timer.seconds_to_human_time(elapsed), \
                      left, timer.estimate_time_left(done, elapsed, left)))
 
-        LOG.critical("Export complete in %s" % (timer.elapsed_human_time(),))
+        LOG.critical("Export complete in %s." % (timer.elapsed_human_time(),))
 
 
 class Mailbox(object):
@@ -160,7 +160,7 @@ class MBox(Mailbox):
         self.open = dict()
 
     def close(self):
-        for k, m in self.open.items():
+        for _, m in self.open.items():
             m.close()
 
     def subdir(self, label):
