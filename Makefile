@@ -43,6 +43,10 @@ init:
 	mkdir -p $(GMVDIST)
 	mkdir -p $(GMVBUILDDIST)
 
+list:
+	@echo "=== Available Make tasks:"
+	@echo "--- gmv-src-dist, gmv-pypi-dist, gmv-mac-dist, gmv-win-dist, gmv-win-installer" 
+
 gmv-egg-dist: init 
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
 	cp -R $(BASEDIR)/src $(GMVDIST)
