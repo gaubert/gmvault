@@ -257,7 +257,7 @@ class GMVaultLauncher(object):
                               action='store', help="Gmail imap server port. (default: 993)",\
                               dest="port", default=993)
         
-        sync_parser.add_argument("--debug", \
+        sync_parser.add_argument("--debug", "-debug", \
                               action='store_true', help="Activate debugging info",\
                               dest="debug", default=False)
         
@@ -325,7 +325,7 @@ class GMVaultLauncher(object):
                               action='store', help="Gmail imap server port. (default: 993)",\
                               dest="port", default=993)
         
-        rest_parser.add_argument("--debug", \
+        rest_parser.add_argument("--debug", "-debug", \
                               action='store_true', help="Activate debugging info",\
                               dest="debug", default=False)
         
@@ -368,7 +368,7 @@ class GMVaultLauncher(object):
                               action='store', help="Gmail imap server port. (default: 993)",\
                               dest="port", default=993)
         
-        check_parser.add_argument("--debug", \
+        check_parser.add_argument("--debug", "-debug", \
                               action='store_true', help="Activate debugging info",\
                               dest="debug", default=False)
         
@@ -393,7 +393,7 @@ class GMVaultLauncher(object):
                                    action='append', dest='label', \
                                    default=None,
                                    help='specify a label to export')
-        export_parser.add_argument("--debug", \
+        export_parser.add_argument("--debug", "-debug", \
                        action='store_true', help="Activate debugging info",\
                        dest="debug", default=False)
 
