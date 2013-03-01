@@ -664,7 +664,7 @@ class GMVaulter(object):
         
         return imap_ids
             
-    def get_gmails_ids_left_to_sync(self, op_type, imap_ids, imap_req):
+    def get_gmails_ids_left_to_sync(self, op_type, imap_ids, imap_req):#pylint:disable-msg=W0613
         """
            Get the ids that still needs to be sync
            Return a list of ids
@@ -778,7 +778,7 @@ class GMVaulter(object):
         pass
         
     
-    def save_lastid(self, op_type, gm_id, eml_date = None, imap_req = None):
+    def save_lastid(self, op_type, gm_id, eml_date = None, imap_req = None):#pylint:disable-msg=W0613
         """
            Save the passed gmid in last_id.restore
            For the moment reopen the file every time
@@ -790,7 +790,6 @@ class GMVaulter(object):
             raise Exception("Bad Operation (%s) in save_last_id. "\
                             "This should not happen, send the error to the software developers." % (op_type))
         
-        #filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)  
         filepath = '%s/%s_%s' % (self.gstorer.get_info_dir(), self.login, filename)  
         
         the_fd = open(filepath, 'w')
@@ -972,7 +971,8 @@ class GMVaulter(object):
                 self.src.select_folder('ALLMAIL') #go to ALL MAIL to make STORE usable
                 for label in labels_to_apply.keys():
                     if label.lower() == "migrated": #exclude creation of migrated label
-                        LOG.info("Apply label 'gmv-migrated' instead of 'Migrated' (lower or uppercase) because it a Gmail reserved label.") 
+                        LOG.info("Apply label 'gmv-migrated' instead of 'Migrated' (lower or uppercase)"\
+                                 " because it is a Gmail reserved label.") 
                         #need ot change labels_to_apply
                         ids = labels_to_apply[label]
                         del labels_to_apply[label]
@@ -1083,7 +1083,8 @@ class GMVaulter(object):
                             #LOG.debug("label = %s\n" % (label.encode('utf-8')))
                             LOG.debug("label = %s\n" % (label))
                             if label.lower() == "migrated": #exclude creation of migrated label
-                                LOG.debug("Apply label 'gmv-migrated' instead of 'Migrated' (lower or uppercase) because it a Gmail reserved label.") 
+                                LOG.debug("Apply label 'gmv-migrated' instead of 'Migrated' (lower or uppercase)"\
+                                          " because it is a Gmail reserved label.") 
                                 label = "gmv-migrated"
                             labels_to_apply[label] = imap_id
             
