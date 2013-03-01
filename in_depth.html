@@ -821,6 +821,77 @@ Restore email with id 1150203908444884403.
 <pre>$>./gmvault restore --label "20120422-gmvault-restore" -d ~/gmvault-db anewfoo.bar@gmail.com</pre>
 This will apply "20120422-gmvault-restore" to all restored emails.
 </p>
+<div class="page-header">
+<h2><a id="export" name="export"></a>Export your Gmvault-db to another format</h2>
+</div>
+</br>
+<p>Gmvault allows you to export your gmvault-db or part of it as a standard mailbox format such as <strong>maildir</strong> or <strong>mbox</strong>. Exporting your saved gmvault-db into one fo this format allows your to easily import your emails into a non-Gmail onlline mailbox (yahoo, outlook, ...) or to simply visualise them with your favorite email client such as Dovecot, Thunderbird.
+</br></p>
+<h5>Export Options</h5>
+<p>Use gmvault export -h to get explanations regarding all the options. Examples are also provided after the options details. 
+<pre>$>gmvault export -h
+
+usage: gmvault export [-h] [-d DB_DIR] [-t TYPE] [-l LABEL] [--debug]
+                      output_dir
+
+positional arguments:
+  output_dir            destination directory to export to.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DB_DIR, --db-dir DB_DIR
+                        Database root directory. (default: $HOME/gmvault-db)
+  -t TYPE, -type TYPE, --type TYPE
+                        type of export: offlineimap, dovecot, maildir, mbox.
+                        (default: mbox)
+  -l LABEL, --label LABEL
+                        specify a label to export
+  --debug, -debug       Activate debugging info
+
+Warning: Experimental Functionality requiring more testing.
+
+Examples:
+
+a) Export default gmvault-db ($HOME/gmvault-db or %HOME$/gmvault-db) as a maildir mailbox.
+
+#> gmvault export ~/my-mailbox-dir
+
+b) Export a gmvault-db as a mbox mailbox (compliant with Thunderbird).
+
+#> gmvault export -d /tmp/gmvault-db /tmp/a-mbox-dir
+
+c) Export only a limited set of labels from the default gmvault-db as a mbox mailbox (compliant with Thunderbird).
+
+#> gmvault export -l "label1" -l "TopLabel/LabelLev1" /tmp/a-mbox-dir
+
+d) Use one of the export type dedicated to a specific tool (dovecot or offlineIMAP)
+
+#> gmvault export -t dovecot /tmp/a-dovecot-dir
+</pre>
+</p>
+<h5>Create a Default mbox Export</h5>
+<p>By default the export function will create a mbox mailbox storage. 
+<pre>$>gmvault export /tmp/my-mbox-export -d /home/myuser/gmvault-db/
+
+Start emails export for default labels.
+== Processed 200 emails in 3s, 11746 left (time estimate 2m 56s). ==
+
+== Processed 400 emails in 9s, 11546 left (time estimate 4m 20s). ==
+
+== Processed 600 emails in 17s, 11346 left (time estimate 5m 21s). ==
+
+....
+
+== Processed 11200 emails in 4m 23s, 146 left (time estimate 24s). ==
+
+== Processed 11346 emails in 4m 47s, 0 left (time estimate 0s). ==
+
+Export complete in 4m48s.
+Start chats export for default labels.
+Export complete in less than a second.
+$>
+</pre>
+</p>
 <!-- Footer ================================================== -->
    <footer class="footer">
         <p class="pull-right"><a href="#">Back to top</a></p>
