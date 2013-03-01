@@ -30,6 +30,10 @@ import gmv.gmvault_db as gmvault_db
 LOG = log_utils.LoggerFactory.get_logger('gmvault_export')
 
 class GMVaultExporter(object):
+    """
+       Class hanlding the creation of exports in standard formats
+       such as maildir, mbox
+    """
     PROGRESS_INTERVAL = 200
 
     CHATS_FOLDER = 'Chats'
@@ -43,26 +47,33 @@ class GMVaultExporter(object):
     GM_FLAGGED = '\\Flagged'
 
     def __init__(self, db_dir, mailbox, labels = None):
+        """
+           constructor
+        """
         self.storer = gmvault_db.GmailStorer(db_dir)
         self.mailbox = mailbox
         self.labels = labels
 
     def want_label(self, label):
+        """ helper indicating is a label is needed"""
         if self.labels:
             return label in self.labels
         return label != self.GM_ALL
 
     def export(self):
+        """core method for starting the export """
         self.export_ids('emails', self.storer.get_all_existing_gmail_ids(), \
             default_folder = self.GM_ALL, use_labels = True)
         self.export_ids('chats', self.storer.get_all_chats_gmail_ids(), \
             default_folder = self.CHATS_FOLDER, use_labels = False)
 
     def printable_label_list(self, labels):
+        """helper to print a list of labels"""
         labels = [l.encode('ascii', 'backslashreplace') for l in labels]
         return u'; '.join(labels)
 
     def export_ids(self, kind, ids, default_folder, use_labels):
+        """ export organised by ids """
         exported_labels = "default labels"
         if self.labels:
             exported_labels = "labels " + self.printable_label_list(self.labels)
@@ -101,12 +112,14 @@ class GMVaultExporter(object):
 
 
 class Mailbox(object):
+    """ Mailbox abstract class"""
     def add(self, msg, folder, flags):
         raise NotImplementedError('implement in subclass')
     def close(self):
         pass
 
 class Maildir(Mailbox):
+    """ Class delaing with the Maildir format """
     def __init__(self, path, separator = '/'):
         self.path = path
         self.subdirs = {}
@@ -116,15 +129,19 @@ class Maildir(Mailbox):
 
     @staticmethod
     def separate(folder, sep):
+        """ separate method """
         return folder.replace(GMVaultExporter.GM_SEP, sep)
 
     def subdir_name(self, folder):
+        """get subdir_name """
         return self.separate(folder, self.separator)
 
     def root_is_maildir(self):
+        """check if root is maildir"""
         return False;
 
     def subdir(self, folder):
+        """ return a subdir """
         if folder in self.subdirs:
             return self.subdirs[folder]
 
@@ -145,6 +162,7 @@ class Maildir(Mailbox):
         return sub
 
     def add(self, msg, folder, flags):
+        """ add message in a given subdir """
         mmsg = mailbox.MaildirMessage(msg)
 
         if GMVaultExporter.GM_SEEN in flags:
@@ -156,11 +174,13 @@ class Maildir(Mailbox):
         self.subdir(folder).add(mmsg)
 
 class OfflineIMAP(Maildir):
+    """ Class dealing with offlineIMAP specificities """
     DEFAULT_SEPARATOR = '.'
     def __init__(self, path, separator = DEFAULT_SEPARATOR):
         super(OfflineIMAP, self).__init__(path, separator = separator)
 
 class Dovecot(Maildir):
+    """ Class dealing with Dovecot specificities """
     # See http://wiki2.dovecot.org/Namespaces
     class Layout(object):
         def join(self, parts):
@@ -222,6 +242,7 @@ class Dovecot(Maildir):
         return True
 
 class MBox(Mailbox):
+    """ Class dealing with MBox specificities """
     def __init__(self, folder):
         self.folder = folder
         self.open = dict()
