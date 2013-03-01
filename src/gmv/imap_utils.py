@@ -592,6 +592,11 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         LOG.debug("Labels to create: [%s]" % (labels))
             
         for lab in labels:
+
+            if lab.lower() == "migrated": #exclude creation of migrated label
+                LOG.info("Warning ! label 'Migrated' (lower or uppercase) is reserved by Gmail and cannot be used."\
+                         "Use gmv-migrated instead") 
+                lab = u"gmv-migrated"
            
             #split all labels
             labs = self._get_dir_from_labels(lab) 

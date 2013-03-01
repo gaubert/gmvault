@@ -150,6 +150,9 @@ def check_remote_mailbox_identical_to_local(the_self, gmvaulter): #pylint: disab
         the_self.assertEquals(len(disk_labels), len(online_labels))
 
         for label in disk_labels:
+            #change label Migrated (lower and uppercase) to gmv-migrated because reserved by Gmail
+            if label.lower() == "migrated":
+               label = "gmv-migrated"
             if label not in online_labels:
                 the_self.fail("label %s should be in online_labels %s as"\
                               " it is in disk_labels %s" % (label, online_labels, disk_labels))

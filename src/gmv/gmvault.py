@@ -971,6 +971,13 @@ class GMVaulter(object):
                 LOG.debug("Changing directory. Going into ALLMAIL")
                 self.src.select_folder('ALLMAIL') #go to ALL MAIL to make STORE usable
                 for label in labels_to_apply.keys():
+                    if label.lower() == "migrated": #exclude creation of migrated label
+                        LOG.info("Apply label 'gmv-migrated' instead of 'Migrated' (lower or uppercase) because it a Gmail reserved label.") 
+                        #need ot change labels_to_apply
+                        ids = labels_to_apply[label]
+                        del labels_to_apply[label]
+                        label = "gmv-migrated"
+                        labels_to_apply[label] = ids
                     self.src.apply_labels_to(labels_to_apply[label], [label]) 
             except Exception, err:
                 LOG.error("Problem when applying labels %s to the following ids: %s" %(label, labels_to_apply[label]), err)
@@ -1075,6 +1082,9 @@ class GMVaulter(object):
                         if label != "\\Starred":
                             #LOG.debug("label = %s\n" % (label.encode('utf-8')))
                             LOG.debug("label = %s\n" % (label))
+                            if label.lower() == "migrated": #exclude creation of migrated label
+                                LOG.debug("Apply label 'gmv-migrated' instead of 'Migrated' (lower or uppercase) because it a Gmail reserved label.") 
+                                label = "gmv-migrated"
                             labels_to_apply[label] = imap_id
             
                     # get list of labels to create (do a union with labels to create)
