@@ -633,6 +633,8 @@ def get_conf_filepath():
         # check if the conf file needs to be replaced
         version = _get_version_from_conf(home_conf_file)
         if version not in VERSIONS_TO_PRESERVE:
+            LOG.debug("%s with version %s is too old, overwrite it with the latest file." \
+                       % (home_conf_file, version))
             return _create_default_conf_file(home_conf_file)    
     
     return home_conf_file
