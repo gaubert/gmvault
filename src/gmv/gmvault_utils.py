@@ -582,7 +582,7 @@ VERSION_PATTERN  = r'\s*conf_version=\s*(?P<version>\S*)\s*'
 VERSION_RE  = re.compile(VERSION_PATTERN)
 
 #list of version conf to not overwrite with the next
-VERSIONS_TO_PRESERVE = [ '1.7.2-beta' ]
+VERSIONS_TO_PRESERVE = [ '1.8-beta' ]
 
 def _get_version_from_conf(home_conf_file):
     """

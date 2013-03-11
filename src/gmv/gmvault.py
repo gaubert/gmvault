@@ -907,6 +907,7 @@ class GMVaulter(object):
         LOG.critical("Got all chats id left to restore. Still %s chats to do.\n" % (total_nb_emails_to_restore) )
         
         existing_labels     = set() #set of existing labels to not call create_gmail_labels all the time
+        reserved_labels     = gmvault_utils.get_conf_defaults().get_list("Restore", "reserved_labels", [ u'migrated' ])
         nb_emails_restored  = 0  #to count nb of emails restored
         labels_to_apply     = collections_utils.SetMultimap()
 
@@ -970,9 +971,9 @@ class GMVaulter(object):
                 LOG.debug("Changing directory. Going into ALLMAIL")
                 self.src.select_folder('ALLMAIL') #go to ALL MAIL to make STORE usable
                 for label in labels_to_apply.keys():
-                    if label.lower() == "migrated": #exclude creation of migrated label
-                        LOG.info("Apply label 'gmv-migrated' instead of 'Migrated' (lower or uppercase)"\
-                                 " because it is a Gmail reserved label.") 
+                    if label.lower() in reserved_labels: #exclude creation of migrated label
+                        LOG.info("Apply label 'gmv-migrated' instead of '%s' (lower or uppercase)"\
+                                 " because it is a Gmail reserved label." % (label)) 
                         #need ot change labels_to_apply
                         ids = labels_to_apply[label]
                         del labels_to_apply[label]
@@ -1036,6 +1037,7 @@ class GMVaulter(object):
         LOG.critical("Got all emails id left to restore. Still %s emails to do.\n" % (total_nb_emails_to_restore) )
         
         existing_labels     = set() #set of existing labels to not call create_gmail_labels all the time
+        reserved_labels     = gmvault_utils.get_conf_defaults().get_list("Restore", "reserved_labels", [ u'migrated' ])
         nb_emails_restored  = 0  #to count nb of emails restored
         labels_to_apply     = collections_utils.SetMultimap()
 
@@ -1082,9 +1084,10 @@ class GMVaulter(object):
                         if label != "\\Starred":
                             #LOG.debug("label = %s\n" % (label.encode('utf-8')))
                             LOG.debug("label = %s\n" % (label))
-                            if label.lower() == "migrated": #exclude creation of migrated label
-                                LOG.debug("Apply label 'gmv-migrated' instead of 'Migrated' (lower or uppercase)"\
-                                          " because it is a Gmail reserved label.") 
+                            if label.lower() in reserved_labels: #exclude creation of migrated label
+                                LOG.debug("Apply label 'gmv-migrated' instead of '%s' (lower or uppercase)"\
+                                          " because it is a Gmail reserved label."\
+                                          % (label) ) 
                                 label = "gmv-migrated"
                             labels_to_apply[label] = imap_id
             

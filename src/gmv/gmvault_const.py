@@ -42,6 +42,7 @@ quick_days=10
 # it is 10 days but currently it will always be the current month or the last 2 months
 # the notion of days is not yet apparent in restore (only months).
 quick_days=10
+reserved_labels = [ u'migrated' ]
 
 [General]
 limit_per_chat_dir=2000
