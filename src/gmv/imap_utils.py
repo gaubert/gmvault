@@ -54,7 +54,7 @@ class PushEmailError(Exception):
         return self._in_quarantine
 
 #retry decorator with nb of tries and sleep_time and backoff
-def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
+def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1): #pylint:disable=R0912
     """
       Decorator for retrying command when it failed with a imap or socket error.
       Should be used exclusively on imap exchanges.
@@ -108,8 +108,8 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
             #cascade error
             raise rec_error
     
-    def inner_retry(the_func): #pylint:disable=C0111
-        def wrapper(*args, **kwargs): #pylint:disable=C0111
+    def inner_retry(the_func): #pylint:disable=C0111,R0912
+        def wrapper(*args, **kwargs): #pylint:disable=C0111,R0912
             nb_tries = [0] # make it mutable in reconnect
             m_sleep_time = [a_sleep_time]  #make it mutable in reconnect
             while True:
@@ -177,7 +177,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1):
         #return wrapper
     return inner_retry
 
-class GIMAPFetcher(object): #pylint:disable=R0902
+class GIMAPFetcher(object): #pylint:disable=R0902,R0904
     '''
     IMAP Class reading the information
     '''
@@ -588,7 +588,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902
         # get in lower case because Gmail labels are case insensitive
         listed_folders   = set([ directory.lower() for (_, _, directory) in self.list_all_folders() ])
         existing_folders = listed_folders.union(existing_folders)
-        reserved_labels  = gmvault_utils.get_conf_defaults().get_list("Restore", "reserved_labels",\
+        reserved_labels  = gmvault_utils.get_conf_defaults().get_list("Restore", "reserved_labels", \
                                                                       [ u'migrated' ])
         
 
@@ -658,7 +658,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902
             # check if it is ok otherwise exception
             if ret_code != 'OK':
                 # Try again to code the error message (do not use .SILENT)
-                ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS', labels_str)
+                ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS', labels_str) #pylint: disable=W0212
                 if ret_code != 'OK':
                     raise PushEmailError("Cannot add Labels %s to emails with uids %d. Error:%s" % (labels_str, imap_ids, data))
             else:
