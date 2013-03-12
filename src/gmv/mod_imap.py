@@ -157,7 +157,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
         if self.decompressor.unconsumed_tail:
             data = self.decompressor.unconsumed_tail
         else:
-            data = self.sslobj.read(8192) #maybe change to 16384
+            data = self.sslobj.read(8192) #Fixed buffer size. maybe change to 16384
 
         return self.decompressor.decompress(data, size)
         
