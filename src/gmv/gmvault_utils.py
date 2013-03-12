@@ -498,6 +498,17 @@ def ascii_hex(a_str):
     for the_char in a_str:
         new_str += "%s=hex[%s]," % (the_char, hex(ord(the_char)))
     return new_str
+
+def profile_this(fn):
+    """ profiling decorator """
+    def profiled_fn(*args, **kwargs):
+        import cProfile
+        fpath = fn.__name__ + ".profile"
+        prof  = cProfile.Profile()
+        ret   = prof.runcall(fn, *args, **kwargs)
+        prof.dump_stats(fpath)
+        return ret
+    return profiled_fn
                 
 def convert_to_unicode(a_str):
     """
@@ -522,10 +533,6 @@ def convert_to_unicode(a_str):
            
         LOG.debug("raw unicode     = %s." % (u_str))
         LOG.debug("chosen encoding = %s." % (term_encoding))
-        #LOG.debug("normalized unicode(NFKD) = %s" % (repr(unicodedata.normalize('NFKD',u_str))))
-        #LOG.debug("normalized unicode(NFKC) = %s" % (repr(unicodedata.normalize('NFKC',u_str))))
-        #LOG.debug("normalized unicode(NFC)  = %s" % (repr(unicodedata.normalize('NFC',u_str))))
-        #LOG.debug("normalized unicode(NFD)  = %s" % (repr(unicodedata.normalize('NFD',u_str))))
         LOG.debug("unicode_escape val = %s." % ( u_str.encode('unicode_escape')))
     except Exception, err:
         LOG.error(err)
