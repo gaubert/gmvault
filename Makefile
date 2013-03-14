@@ -168,7 +168,7 @@ gmv-win-installer: gmv-win-dist
 
 clean: clean-build
 	mkdir -p $(GMVDIST)
-	cd $(GMVDIST); rm -Rf build; rm -Rf gmvault.egg-info; rm -f setup*.py ; rm -Rf dist ; rm -Rf src; rm -f README* ;rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
+	cd $(GMVDIST); rm -Rf ./etc; rm -f MANIFEST.in; rm -f RELEASE-NOTE.txt; rm -Rf build; rm -Rf gmvault.egg-info; rm -f setup*.py ; rm -Rf dist ; rm -Rf src; rm -f README* ;rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
 
 clean-build:
 	mkdir -p $(GMVBUILD)
