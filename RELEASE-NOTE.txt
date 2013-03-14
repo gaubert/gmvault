@@ -4,7 +4,7 @@ Release Notes for the different versions:
 Version Gmvault-v1.8-beta:
 -------------------------------
 -------------------------------
-Date: 15.03.2013
+Date: 17.03.2013
 
 New Features:
 -------------------
@@ -13,6 +13,7 @@ New Features:
 - Increase support for non english languages: Support for labels tested in Japanese, German, French, Spanish, Danish. Other languages should also be supported.
 - Support Gmail 2-legged OAuth authentication allowing Google Apps Business or Education account owners to use Gmvault [Github feature #105].
 - Experimental export function to create a mbox or maildir mailbox from a gmvault-db allowing offline browsing with a stand mail client (Thunderbird, Dovecot, ...).
+- Handle reserved labels such as Migrated [Github feature #110]
 - Add starting date and time at the beginning of a sync or restore operation [Github feature #106].
 - Introduction of a deferred Logger allowing easier integration with a Graphical User Interface (GUI).
 - Change license to AGPLv3.
@@ -44,7 +45,7 @@ Shoutouts to:
 
 Special shoutouts to the following githubbers that help me in raising issues, testing intermediate version and help me improving Gmvault.
 
-Github id: @vasi, @kormoc, @burkemw3, @bdkzero, @hebner, @Rragen, @dukaras, @altsyst, @mistofvongola, @jinnko, @konfetov, @martey, @dmd, @jeverling, @poolis, @aseemk, @tazir, @takluyver, @isaakm, 
+Github id: @vasi, @kormoc, @burkemw3, @bdkzero, @hebner, @Rragen, @dukaras, @altsyst, @mistofvongola, @jinnko, @konfetov, @martey, @dmd, @jeverling, @poolis, @aseemk, @tazir, @takluyver, @isaakm, @musicjunkieg 
 
 Also shoutouts to all the users that sent me support emails and raised issues by emails.
 
