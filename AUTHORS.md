@@ -1,11 +1,11 @@
 Gmvault is written and maintained by Guillaume Aubert and
 various contributors:
 
-# Development Lead
+## Development Lead
 
 - Guillaume Aubert <guillaume.aubert@gmail.com>
 
 
-# Patches and Suggestions
+## Patches and Suggestions
 
 - Dave Vasilevsky (ghub:@vasi, email:dave@vasilevsky.ca)
