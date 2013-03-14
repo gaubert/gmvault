@@ -3,9 +3,9 @@ various contributors:
 
 ## Development Lead
 
-- Guillaume Aubert <guillaume.aubert@gmail.com>
+- Guillaume Aubert (email:<guillaume.aubert@gmail.com>)
 
 
 ## Patches and Suggestions
 
-- Dave Vasilevsky (ghub:@vasi, email:dave@vasilevsky.ca)
+- Dave Vasilevsky (ghub:@vasi, email:<dave@vasilevsky.ca>)
