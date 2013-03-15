@@ -1,20 +1,19 @@
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
+    You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 
  Module handling the xauth authentication.
  Strongly influenced by http://code.google.com/p/googlecl/source/browse/trunk/src/googlecl/service.py
@@ -31,13 +30,23 @@ import urllib
 import os
 import getpass
 
-import log_utils
-import blowfish
-import gmvault_utils
+import gmv.log_utils as log_utils
+import gmv.blowfish as blowfish
+import gmv.gmvault_utils as gmvault_utils
 
 LOG = log_utils.LoggerFactory.get_logger('oauth')
 
 
+def get_2_legged_oauth_tok_sec():
+    '''
+       Get 2 legged token and secret
+    '''
+    tok = raw_input('Enter your domain\'s OAuth consumer key: ')
+  
+    sec = raw_input('Enter your domain\'s OAuth consumer secret: ')
+      
+    return tok, sec, "two_legged"
+    
 
 def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
     '''
@@ -54,7 +63,7 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
     gdata_serv.SetOAuthInputParameters(gdata.auth.OAuthSignatureMethod.HMAC_SHA1, \
                                        consumer_key = 'anonymous', consumer_secret = 'anonymous')
     
-    params = {'xoauth_displayname':'gmvault - Backup your Gmail account'}
+    params = {'xoauth_displayname':'Gmvault - Backup your Gmail account'}
     try:
         request_token = gdata_serv.FetchOAuthRequestToken(scopes=scopes, extra_parameters = params)
     except gdata.service.FetchingOAuthRequestTokenFailed, err:
@@ -92,7 +101,8 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
             LOG.critical("=== End of Exception traceback ===\n")
         
         raw_input("You should now see the web page on your browser now.\n"\
-                  "If you don\'t, you can manually open:\n\n%s\n\nOnce you've granted gmvault access, press the Enter key.\n" % (auth_url))
+                  "If you don\'t, you can manually open:\n\n%s\n\nOnce you've granted"\
+                  " gmvault access, press the Enter key.\n" % (auth_url))
         
     else:
         raw_input('Please log in and/or grant access via your browser at %s '
@@ -108,28 +118,32 @@ def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
         
         return (None, None)
 
-    return (final_token.key, final_token.secret)
+    return (final_token.key, final_token.secret, "normal")
 
-def generate_xoauth_req(a_token, a_secret, email, two_legged=False):
+def generate_xoauth_req(a_token, a_secret, email, type):
     """
        generate the xoauth req from a user token and secret.
        Handle two_legged xoauth for admins.
     """
     nonce = str(random.randrange(2**64 - 1))
     timestamp = str(int(time.time()))
-    if two_legged:
-        request = atom.http_core.HttpRequest('https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s' % (email, urllib.quote(email)), 'GET')
+    if type == "two_legged": #2 legged oauth
+        request = atom.http_core.HttpRequest('https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s' \
+                                             % (email, urllib.quote(email)), 'GET')
          
         signature = gdata.gauth.generate_hmac_signature(http_request=request, consumer_key=a_token, consumer_secret=a_secret, \
                                                         timestamp=timestamp, nonce=nonce, version='1.0', next=None)
-        return '''GET https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s oauth_consumer_key="%s",oauth_nonce="%s",oauth_signature="%s",oauth_signature_method="HMAC-SHA1",oauth_timestamp="%s",oauth_version="1.0"''' \
+        return '''GET https://mail.google.com/mail/b/%s/imap/?xoauth_requestor_id=%s oauth_consumer_key="%s",oauth_nonce="%s"'''\
+               ''',oauth_signature="%s",oauth_signature_method="HMAC-SHA1",oauth_timestamp="%s",oauth_version="1.0"''' \
                % (email, urllib.quote(email), a_token, nonce, urllib.quote(signature), timestamp)
     else:
         request = atom.http_core.HttpRequest('https://mail.google.com/mail/b/%s/imap/' % email, 'GET')
         signature = gdata.gauth.generate_hmac_signature(
             http_request=request, consumer_key='anonymous', consumer_secret='anonymous', timestamp=timestamp,
             nonce=nonce, version='1.0', next=None, token = a_token, token_secret= a_secret)
-        return '''GET https://mail.google.com/mail/b/%s/imap/ oauth_consumer_key="anonymous",oauth_nonce="%s",oauth_signature="%s",oauth_signature_method="HMAC-SHA1",oauth_timestamp="%s",oauth_token="%s",oauth_version="1.0"''' \
+        return '''GET https://mail.google.com/mail/b/%s/imap/ oauth_consumer_key="anonymous",oauth_nonce="%s"'''\
+               ''',oauth_signature="%s",oauth_signature_method="HMAC-SHA1",oauth_timestamp="%s",oauth_token="%s"'''\
+               ''',oauth_version="1.0"''' \
                % (email, nonce, urllib.quote(signature), timestamp, urllib.quote(a_token))
 
 
@@ -182,7 +196,7 @@ class CredentialHelper(object):
             raise Exception("Error: Cannot write password in %s" % (passwd_file))
         
     @classmethod
-    def store_oauth_credentials(cls, email, token, secret):
+    def store_oauth_credentials(cls, email, token, secret, type):
         """
            store oauth_credentials
         """
@@ -193,6 +207,8 @@ class CredentialHelper(object):
         os.write(fdesc, token)
         os.write(fdesc, '::')
         os.write(fdesc, secret)
+        os.write(fdesc, '::')
+        os.write(fdesc, type)
     
         os.close(fdesc)
     
@@ -216,8 +232,6 @@ class CredentialHelper(object):
             cipher       = blowfish.Blowfish(cls.get_secret_key(cls.SECRET_FILEPATH % (gmvault_utils.get_home_dir_path())))
             cipher.initCTR()
             password     = cipher.decryptCTR(password)
-
-            #LOG.debug("password=[%s]" % (password))
         
         return password
     
@@ -235,6 +249,7 @@ class CredentialHelper(object):
 
         token  = None
         secret = None
+        type   = None
         if os.path.exists(user_oauth_file_path):
             LOG.critical("Get XOAuth credential from %s.\n" % (user_oauth_file_path))
             
@@ -247,6 +262,11 @@ class CredentialHelper(object):
                     if len(oauth_result) == 2:
                         token  = oauth_result[0]
                         secret = oauth_result[1]
+                        type   = "normal"
+                    elif len(oauth_result) == 3:
+                        token  = oauth_result[0]
+                        secret = oauth_result[1]
+                        type   = oauth_result[2]
             except Exception, _: #pylint: disable-msg=W0703              
                 LOG.critical("Cannot read oauth credentials from %s. Force oauth credentials renewal." % (user_oauth_file_path))
                 LOG.critical("=== Exception traceback ===")
@@ -255,8 +275,9 @@ class CredentialHelper(object):
         
         if token: token   = token.strip() #pylint: disable-msg=C0321
         if secret: secret = secret.strip()  #pylint: disable-msg=C0321
+        if type: type = type.strip()
         
-        return token, secret
+        return token, secret, type
             
     @classmethod
     def get_credential(cls, args, test_mode = {'activate': False, 'value' : 'test_password'}): #pylint: disable-msg=W0102
@@ -266,8 +287,6 @@ class CredentialHelper(object):
            --passwd passed. If --passwd passed and not password given if no password saved go in interactive mode
            2) XOAuth Token
         """
-        
-        
         credential = { }
         
         #first check that there is an email
@@ -304,27 +323,31 @@ class CredentialHelper(object):
         elif args['passwd'] in ('not_seen', None) and args['oauth'] in (None, 'empty', 'renew', 'not_seen'):
             # get token secret
             # if they are in a file then no need to call get_oauth_tok_sec
-            # will have to add 2 legged or 3 legged
+            # will have to add 2 legged 
             LOG.critical("Authentication performed with Gmail XOAuth token.\n")
             
-            token, secret = cls.read_oauth_tok_sec(args['email'])
+            two_legged = args.get('two_legged', False) # 2 legged oauth
+            
+            token, secret, type = cls.read_oauth_tok_sec(args['email'])
            
             if not token or args['oauth'] == 'renew':
                 
                 if args['oauth'] == 'renew':
-                    LOG.critical("Renew XOAuth token. Initiate interactive session to get it from Gmail.\n")
+                    LOG.critical("Renew XOAuth token (normal or 2-legged). Initiate interactive session to get it from Gmail.\n")
                 else:
-                    LOG.critical("Initiate interactive session to get XOAuth token from Gmail.\n")
-                token, secret = get_oauth_tok_sec(args['email'], use_webbrowser = True)
+                    LOG.critical("Initiate interactive session to get XOAuth normal or 2-legged token from Gmail.\n")
+                
+                if two_legged:
+                    token, secret, type = get_2_legged_oauth_tok_sec()
+                else:
+                    token, secret, type = get_oauth_tok_sec(args['email'], use_webbrowser = True)
                 
                 if not token:
                     raise Exception("Cannot get XOAuth token from Gmail. See Gmail error message")
                 #store newly created token
-                cls.store_oauth_credentials(args['email'], token, secret)
+                cls.store_oauth_credentials(args['email'], token, secret, type)
                
-            #LOG.debug("token=[%s], secret=[%s]" % (token, secret))
-            
-            xoauth_req = generate_xoauth_req(token, secret, args['email'])
+            xoauth_req = generate_xoauth_req(token, secret, args['email'], type)
             
             LOG.critical("Successfully read oauth credentials.\n")
 
@@ -337,43 +360,10 @@ class CredentialHelper(object):
         """
            This will be used to reconnect after a timeout
         """
-        token, secret = cls.read_oauth_tok_sec(email)
+        token, secret, type = cls.read_oauth_tok_sec(email)
         if not token: 
             raise Exception("Error cannot read token, secret from")
         
-        xoauth_req = generate_xoauth_req(token, secret, email)
+        xoauth_req = generate_xoauth_req(token, secret, email, type)
         
         return xoauth_req
-
-def test_xoauth():
-    """
-        algo:
-        get key and secret
-        if key and secret in conf take it
-        otherwise generate them with get_oauth_tok_sec
-        save secret once you have it (encrypt or not ?)
-        generate xoauth everytime your connect to imap
-        do not use atom to create the request (no need to get a fake dependency
-    """
-    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, file_path="./gmvault.log") 
-    
-    token, secret = get_oauth_tok_sec('guillaume.aubert@gmail.com')
-    print('token = %s, secret = %s' % (token,secret) )
-    req = generate_xoauth_req(token, secret, 'guillaume.aubert@gmail.com')
-    
-    print(req)
-    
-def test_encryption():
-    """
-      quickly test encryption
-    """
-    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, file_path="./gmvault.log") 
-    CredentialHelper.get_secret_key("/tmp/toto.txt")
-    
-    CredentialHelper.store_passwd("toto.titi@gmail.com", "toto")
-
-
-if __name__ == '__main__':
-    
-    test_encryption()
-  

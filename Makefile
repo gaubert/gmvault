@@ -22,7 +22,8 @@ ETC=$(BASEDIR)/etc
 PYTHONBIN=python #MacOSX machine
 #PYTHONWINBIN=python
 #PYTHONWINBIN=/drives/d/Programs/python2.7/python.exe #for my windows machine at work
-PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
+#PYTHONWINBIN=/c/Program\ Files/Python2.7/python.exe #windows laptop
+PYTHONWINBIN=/c/Python27/python.exe #windows laptop
 PYTHONVERSION=2.7
 
 #MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
@@ -41,6 +42,10 @@ version:
 init:
 	mkdir -p $(GMVDIST)
 	mkdir -p $(GMVBUILDDIST)
+
+list:
+	@echo "=== Available Make targets:"
+	@echo "--- gmv-src-dist, gmv-pypi-dist, gmv-mac-dist, gmv-win-dist, gmv-win-installer" 
 
 gmv-egg-dist: init 
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
@@ -143,7 +148,7 @@ gmv-win-dist: init
 	cd $(GMVDIST); $(PYTHONWINBIN) setup_win.py py2exe -d ../$(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault-shell.bat $(GMVWINBUILDDIST)
-	cp $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)
+	cd .; $(PYTHONWINBIN) $(BASEDIR)/etc/utils/add_version.py $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)/gmv-msg.bat $(GMVVERSION)
 	cp $(BASEDIR)/README.md $(GMVWINBUILDDIST)/README.txt
 	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVWINBUILDDIST)
 	#unix2dos $(GMVWINBUILDDIST)/README.txt $(GMVWINBUILDDIST)/RELEASE-NOTE.txt
@@ -163,7 +168,7 @@ gmv-win-installer: gmv-win-dist
 
 clean: clean-build
 	mkdir -p $(GMVDIST)
-	cd $(GMVDIST); rm -Rf build; rm -Rf gmvault.egg-info; rm -f setup*.py ; rm -Rf dist ; rm -Rf src; rm -f README* ;rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
+	cd $(GMVDIST); rm -Rf ./etc; rm -f MANIFEST.in; rm -f RELEASE-NOTE.txt; rm -Rf build; rm -Rf gmvault.egg-info; rm -f setup*.py ; rm -Rf dist ; rm -Rf src; rm -f README* ;rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
 
 clean-build:
 	mkdir -p $(GMVBUILD)

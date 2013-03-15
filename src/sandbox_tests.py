@@ -1,6 +1,6 @@
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -226,7 +226,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         for root, dirs, files in os.walk('/Users/gaubert/Dev/projects/gmvault/src/gmv/gmvault-db/db'):
             print("root: %s, sub-dirs : %s, files = %s" % (root, dirs, files))
     
-    def test_get_subdir_info(self):
+    def ztest_get_subdir_info(self):
         """
            test get subdir info
         """

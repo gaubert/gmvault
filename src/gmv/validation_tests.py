@@ -16,15 +16,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import sys
 import unittest
 import base64
-import shutil
-import os
 
-import ssl
 import gmv.gmvault as gmvault
 import gmv.gmvault_utils as gmvault_utils
+import gmv.imap_utils as imap_utils
 
 def obfuscate_string(a_str):
     """ use base64 to obfuscate a string """
@@ -51,7 +48,7 @@ def delete_db_dir(a_db_dir):
     gmvault_utils.delete_all_under(a_db_dir, delete_top_dir = True)
 
 
-class TestGMVaultValidation(unittest.TestCase): #pylint:disable-msg=R0904
+class TestGMVaultValidation(unittest.TestCase): #pylint:disable=R0904
     """
        Validation Tests
     """
@@ -60,69 +57,41 @@ class TestGMVaultValidation(unittest.TestCase): #pylint:disable-msg=R0904
         """ constructor """
         super(TestGMVaultValidation, self).__init__(stuff)
         
-        self.login  = None
-        self.passwd = None
-        
-        self.gmvault_login  = None
-        self.gmvault_passwd = None 
+        self.test_login  = None
+        self.test_passwd = None 
         
         self.default_dir = "/tmp/gmvault-tests"
     
-    def setUp(self): #pylint:disable-msg=C0103
-        self.login, self.passwd = read_password_file('/homespace/gaubert/.ssh/passwd')
-        
-        self.gmvault_test_login, self.gmvault_test_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
+    def setUp(self): #pylint:disable=C0103
+        self.test_login, self.test_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
                 
     def test_help_msg_spawned_by_def(self):
         """
            spawn python gmv_runner account > help_msg_spawned.txt
            check that res is 0 or 1
         """
-        pass
-   
-    def test_backup_10_emails(self):
-        """
-           backup 10 emails and check that they are backed
-           => spawn a process with the options
-           => python gmv_runner.py sync account > checkfile
-        """
-        pass
-    
-    def test_restore_and_check(self):
-        """
-           Restore emails, retrieve them and compare with originals
-        """
-        db_dir = "/tmp/the_dir"
-    
-    
-    def ztest_restore_on_gmail(self):
-        """
-           clean db disk
-           sync with gmail for few emails
-           restore them on gmail test
-        """
+        credential  = { 'type' : 'passwd', 'value': self.test_passwd}
+        test_db_dir = "/tmp/gmvault-tests"
         
-        db_dir = '/tmp/gmail_bk'
+        restorer = gmvault.GMVaulter(test_db_dir, 'imap.gmail.com', 993, self.test_login, credential, \
+                                     read_only_access = False)
         
-        #clean db dir
-        delete_db_dir(db_dir)
-        credential    = { 'type' : 'passwd', 'value': self.passwd}
-        gs_credential = { 'type' : 'passwd', 'value': self.gmvault_passwd}
-        search_req    = { 'type' : 'imap', 'req': "Since 1-Nov-2011 Before 3-Nov-2011"}
+        restorer.restore() #restore all emails from this essential-db
         
-        syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, credential, read_only_access = False, use_encryption = True)
+        #need to check that all labels are there for emails in essential
+        gmail_ids = restorer.gstorer.get_all_existing_gmail_ids()
         
-        #syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
-        # Nov-2007 BigDataset
-        syncer.sync(imap_req = search_req)
-        
-        restorer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.gmvault_login, gs_credential, read_only_access = False)
-        restorer.restore()
+        for gm_id in gmail_ids:
+            #get disk_metadata
+            disk_metadata   = restorer.gstorer.unbury_metadata(gm_id)
             
-        print("Done \n")    
-        
-        
-        
+            # get online_metadata 
+            online_metadata = restorer.src.fetch(gm_id, imap_utils.GIMAPFetcher.GET_ALL_BUT_DATA) 
+            
+            #compare metadata
+            for key in disk_metadata:
+                self.assertEquals(disk_metadata[key], online_metadata[key])
+            
 
 def tests():
     """

@@ -1,21 +1,22 @@
+# -*- coding: utf-8 -*-
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
+    You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
 
+'''
 import socket
 import sys
 import datetime
@@ -24,13 +25,15 @@ import signal
 import traceback
 
 import argparse
-import log_utils
 import imaplib
-import gmvault_utils
-import gmvault
+import gmv.log_utils as log_utils
+import gmv.gmvault_utils as gmvault_utils
+import gmv.gmvault as gmvault
+import gmv.gmvault_export as gmvault_export
+import gmv.collections_utils as collections_utils
 
-from cmdline_utils  import CmdLineParser
-from credential_utils import CredentialHelper
+from gmv.cmdline_utils  import CmdLineParser
+from gmv.credential_utils import CredentialHelper
 
 GMVAULT_VERSION = gmvault_utils.GMVAULT_VERSION
 
@@ -41,6 +44,7 @@ a) Get help for each of the individual commands
 #> gmvault sync -h
 #> gmvault restore --help
 #> gmvault check -h
+#> gmvault export -h
 
 """
 
@@ -58,9 +62,9 @@ c) Restart a restore after a previous error (Gmail can cut the connection if it 
 
 #> gmvault restore -d ~/gmvault-db anewfoo.bar@gmail.com --resume
 
-d) Add label to all restored emails
+d) Apply a label to all restored emails
 
-#> gmvault restore --label "20120422-gmvault-restore" -d ~/gmvault-db anewfoo.bar@gmail.com
+#> gmvault restore --apply-label "20120422-gmvault" -d ~/gmvault-db anewfoo.bar@gmail.com
 """
 
 SYNC_HELP_EPILOGUE = """Examples:
@@ -90,15 +94,32 @@ e) Custom synchronisation with an Gmail request for advance users.
 
 #> gmvault sync --type custom --gmail-req "in:work from:foo" foo.bar@gmail.com
 
+"""
 
+EXPORT_HELP_EPILOGUE = """Warning: Experimental Functionality requiring more testing.
 
+Examples:
 
+a) Export default gmvault-db ($HOME/gmvault-db or %HOME$/gmvault-db) as a maildir mailbox.
 
+#> gmvault export ~/my-mailbox-dir
+
+b) Export a gmvault-db as a mbox mailbox (compliant with Thunderbird).
+
+#> gmvault export -d /tmp/gmvault-db /tmp/a-mbox-dir
+
+c) Export only a limited set of labels from the default gmvault-db as a mbox mailbox (compliant with Thunderbird).
+
+#> gmvault export -l "label1" -l "TopLabel/LabelLev1" /tmp/a-mbox-dir
+
+d) Use one of the export type dedicated to a specific tool (dovecot or offlineIMAP)
+
+#> gmvault export -t dovecot /tmp/a-dovecot-dir
 """
 
 LOG = log_utils.LoggerFactory.get_logger('gmv')
 
-class NotSeenAction(argparse.Action): #pylint:disable=R0903
+class NotSeenAction(argparse.Action): #pylint:disable=R0903,w0232
     """
        to differenciate between a seen and non seen command
     """
@@ -116,6 +137,12 @@ class GMVaultLauncher(object):
     SYNC_TYPES    = ['full', 'quick', 'custom']
     RESTORE_TYPES = ['full', 'quick']
     CHECK_TYPES   = ['full']
+    EXPORT_TYPES  = collections_utils.OrderedDict([
+                     ('offlineimap', gmvault_export.OfflineIMAP),
+                     ('dovecot', gmvault_export.Dovecot),
+                     ('maildir', gmvault_export.OfflineIMAP),
+                     ('mbox', gmvault_export.MBox)])
+    EXPORT_TYPE_NAMES = ", ".join(EXPORT_TYPES)
     
     DEFAULT_GMVAULT_DB = "%s/gmvault-db" % (os.getenv("HOME", "."))
     
@@ -124,7 +151,7 @@ class GMVaultLauncher(object):
         super(GMVaultLauncher, self).__init__()
         
     @gmvault_utils.memoized
-    def _create_parser(self):
+    def _create_parser(self): #pylint: disable=R0915
         """
            Create the argument parser
            Return the created parser
@@ -164,8 +191,12 @@ class GMVaultLauncher(object):
                           help="use interactive password authentication. (not recommended)",
                           action= 'store_const' , dest="passwd", const='empty', default='not_seen')
         
+        sync_parser.add_argument("-2", "--2-legged-oauth", \
+                          help="use 2 legged oauth for authentication. (Google Apps Business or Education accounts)",\
+                          action='store_const', dest="two_legged_oauth_token", const='empty', default='not_seen')
+        
         sync_parser.add_argument("--renew-oauth-tok", \
-                          help="renew the stored oauth token via an interactive authentication session.",
+                          help="renew the stored oauth token (two legged or normal) via an interactive authentication session.",
                           action= 'store_const' , dest="oauth_token", const='renew')
          
         sync_parser.add_argument("--renew-passwd", \
@@ -205,7 +236,7 @@ class GMVaultLauncher(object):
                                  action='store_true',dest="encrypt", default=False)
         
         sync_parser.add_argument("-c", "--check-db", metavar = "VAL", \
-                          help="Enable/disable the removal from the gmvault db of the emails "\
+                          help="enable/disable the removal from the gmvault db of the emails "\
                                "that have been deleted from the given gmail account. VAL = yes or no.",\
                           dest="db_cleaning", default=None)
         
@@ -226,7 +257,7 @@ class GMVaultLauncher(object):
                               action='store', help="Gmail imap server port. (default: 993)",\
                               dest="port", default=993)
         
-        sync_parser.add_argument("--debug", \
+        sync_parser.add_argument("--debug", "-debug", \
                               action='store_true', help="Activate debugging info",\
                               dest="debug", default=False)
         
@@ -248,8 +279,8 @@ class GMVaultLauncher(object):
                                  default='full', help='type of restoration: full|quick. (default: full)')
         
         # add a label
-        rest_parser.add_argument('-l', '--label', \
-                                 action='store', dest='label', \
+        rest_parser.add_argument('-a', '--apply-label', \
+                                 action='store', dest='apply_label', \
                                  default=None, help='Apply a label to restored emails')
         
         # activate the resume mode --restart is deprecated
@@ -268,7 +299,7 @@ class GMVaultLauncher(object):
                                  default=False, help= 'Only sync chats.')
         
         rest_parser.add_argument("-d", "--db-dir", \
-                                 action='store', help="Database root directory. (default: ./gmvault-db)",\
+                                 action='store', help="Database root directory. (default: $HOME/gmvault-db)",\
                                  dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
                
         # for both when seen add const empty otherwise not_seen
@@ -281,6 +312,11 @@ class GMVaultLauncher(object):
                           help="use interactive password authentication. (not recommended)",
                           action='store_const', dest="passwd", const='empty', default='not_seen')
         
+        rest_parser.add_argument("-2", "--2-legged-oauth", \
+                          help="use 2 legged oauth for authentication. (Google Apps Business or Education accounts)",\
+                          action='store_const', dest="two_legged_oauth_token", const='empty', default='not_seen')
+        
+        
         rest_parser.add_argument("--server", metavar = "HOSTNAME", \
                               action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
                               dest="host", default="imap.gmail.com")
@@ -289,7 +325,7 @@ class GMVaultLauncher(object):
                               action='store', help="Gmail imap server port. (default: 993)",\
                               dest="port", default=993)
         
-        rest_parser.add_argument("--debug", \
+        rest_parser.add_argument("--debug", "-debug", \
                               action='store_true', help="Activate debugging info",\
                               dest="debug", default=False)
         
@@ -299,14 +335,14 @@ class GMVaultLauncher(object):
         
         # check_db command
         check_parser = subparsers.add_parser('check', \
-                                            help='Check and clean the gmvault-db disk database.')
+                                            help='check and clean the gmvault-db disk database.')
 
         #email argument
         check_parser.add_argument('email', \
                                  action='store', default='empty_$_email', help='gmail account against which to check.')
         
         check_parser.add_argument("-d", "--db-dir", \
-                                 action='store', help="Database root directory. (default: ./gmvault-db)",\
+                                 action='store', help="Database root directory. (default: $HOME/gmvault-db)",\
                                  dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
      
         # for both when seen add const empty otherwise not_seen
@@ -319,6 +355,11 @@ class GMVaultLauncher(object):
                           help="use interactive password authentication. (not recommended)",
                           action='store_const', dest="passwd", const='empty', default='not_seen')
         
+        check_parser.add_argument("-2", "--2-legged-oauth", \
+                          help="use 2 legged oauth for authentication. (Google Apps Business or Education accounts)",\
+                          action='store_const', dest="two_legged_oauth_token", const='empty', default='not_seen')
+        
+        
         check_parser.add_argument("--server", metavar = "HOSTNAME", \
                               action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
                               dest="host", default="imap.gmail.com")
@@ -327,12 +368,39 @@ class GMVaultLauncher(object):
                               action='store', help="Gmail imap server port. (default: 993)",\
                               dest="port", default=993)
         
-        check_parser.add_argument("--debug", \
+        check_parser.add_argument("--debug", "-debug", \
                               action='store_true', help="Activate debugging info",\
                               dest="debug", default=False)
         
         check_parser.set_defaults(verb='check')
         
+        # export command
+        export_parser = subparsers.add_parser('export', \
+                                            help='Export the gmvault-db database to another format.')
+
+        export_parser.add_argument('output_dir', \
+                                   action='store', help='destination directory to export to.')
+
+        export_parser.add_argument("-d", "--db-dir", \
+                                 action='store', help="Database root directory. (default: $HOME/gmvault-db)",\
+                                 dest="db_dir", default= self.DEFAULT_GMVAULT_DB)
+
+        export_parser.add_argument('-t', '-type', '--type', \
+                          action='store', dest='type', \
+                          default='mbox', help='type of export: %s. (default: mbox)' % self.EXPORT_TYPE_NAMES)
+
+        export_parser.add_argument('-l', '--label', \
+                                   action='append', dest='label', \
+                                   default=None,
+                                   help='specify a label to export')
+        export_parser.add_argument("--debug", "-debug", \
+                       action='store_true', help="Activate debugging info",\
+                       dest="debug", default=False)
+
+        export_parser.set_defaults(verb='export')
+        
+        export_parser.epilogue = EXPORT_HELP_EPILOGUE
+
         return parser
       
     @classmethod
@@ -348,11 +416,12 @@ class GMVaultLauncher(object):
         parsed_args['restart']          = options.restart
         
         #user entered both authentication methods
-        if options.passwd == 'empty' and options.oauth_token == 'empty':
-            parser.error('You have to use one authentication method. Please choose between XOAuth and password (recommend XOAuth).')
+        if options.passwd == 'empty' and (options.oauth_token == 'empty' or options.two_legged_oauth_token == 'empty'):
+            parser.error('You have to use one authentication method. '\
+                         'Please choose between XOAuth and password (recommend XOAuth).')
         
         # user entered no authentication methods => go to default oauth
-        if options.passwd == 'not_seen' and options.oauth_token == 'not_seen':
+        if options.passwd == 'not_seen' and options.oauth_token == 'not_seen' and options.two_legged_oauth_token == 'not_seen':
             #default to xoauth
             options.oauth_token = 'empty'
             
@@ -360,14 +429,25 @@ class GMVaultLauncher(object):
         parsed_args['passwd']           = options.passwd
         
         # add oauth tok
-        parsed_args['oauth']            = options.oauth_token
+        if options.oauth_token == 'empty':
+            parsed_args['oauth']      = options.oauth_token
+            parsed_args['two_legged'] = False
+        elif options.oauth_token == 'renew':
+            parsed_args['oauth'] = 'renew'
+            parsed_args['two_legged'] = True if options.two_legged_oauth_token == 'empty' else False          
+        elif options.two_legged_oauth_token == 'empty':
+            parsed_args['oauth']      = options.two_legged_oauth_token
+            parsed_args['two_legged'] = True
         
         #add ops type
         if options.type:
-            if options.type.lower() in list_of_types:
+            tempo_list = ['auto']
+            tempo_list.extend(list_of_types)
+            if options.type.lower() in tempo_list:
                 parsed_args['type'] = options.type.lower()
             else:
-                parser.error('Unknown type for command %s. The type should be one of %s' % (parsed_args['command'], list_of_types))
+                parser.error('Unknown type for command %s. The type should be one of %s' \
+                             % (parsed_args['command'], list_of_types))
         
         #add db_dir
         parsed_args['db-dir']           = options.db_dir
@@ -393,7 +473,7 @@ class GMVaultLauncher(object):
              
         return parsed_args
     
-    def parse_args(self):
+    def parse_args(self): #pylint: disable=R0912
         """ Parse command line arguments 
             
             :returns: a dict that contains the arguments
@@ -469,8 +549,8 @@ class GMVaultLauncher(object):
             # parse common arguments for sync and restore
             self._parse_common_args(options, parser, parsed_args, self.RESTORE_TYPES)
             
-            # add restore label if there is any
-            parsed_args['label'] = options.label
+            # apply restore labels if there is any
+            parsed_args['apply_label'] = options.apply_label
             
             parsed_args['restart'] = options.restart
             
@@ -490,6 +570,16 @@ class GMVaultLauncher(object):
             # parse common arguments for sync and restore
             self._parse_common_args(options, parser, parsed_args, self.CHECK_TYPES)
     
+        elif parsed_args.get('command', '') == 'export':
+            parsed_args['labels']     = options.label
+            parsed_args['db-dir']     = options.db_dir
+            parsed_args['output-dir'] = options.output_dir
+            if options.type.lower() in self.EXPORT_TYPES:
+                parsed_args['type'] = options.type.lower()
+            else:
+                parser.error('Unknown type for command export. The type should be one of %s' % self.EXPORT_TYPE_NAMES)
+            parsed_args['debug'] = options.debug
+
         elif parsed_args.get('command', '') == 'config':
             pass
     
@@ -514,6 +604,15 @@ class GMVaultLauncher(object):
         return request
     
     @classmethod
+    def _export(cls, args):
+        export_type = cls.EXPORT_TYPES[args['type']]
+        output_dir = export_type(args['output-dir'])
+        exporter = gmvault_export.GMVaultExporter(args['db-dir'], output_dir,
+            labels=args['labels'])
+        exporter.export()
+        output_dir.close()
+
+    @classmethod
     def _restore(cls, args, credential):
         """
            Execute All restore operations
@@ -527,8 +626,9 @@ class GMVaultLauncher(object):
         if args.get('type', '') == 'full':
             
             #call restore
-            labels = [args['label']] if args['label'] else []
-            restorer.restore(extra_labels = labels, restart = args['restart'], emails_only = args['emails_only'], chats_only = args['chats_only'])
+            labels = [args['apply_label']] if args['apply_label'] else []
+            restorer.restore(extra_labels = labels, restart = args['restart'], \
+                             emails_only = args['emails_only'], chats_only = args['chats_only'])
             
         elif args.get('type', '') == 'quick':
             
@@ -541,14 +641,15 @@ class GMVaultLauncher(object):
             starting_dir = gmvault_utils.get_ym_from_datetime(begin)
             
             #call restore
-            labels = [args['label']] if args['label'] else []
-            restorer.restore(pivot_dir = starting_dir, extra_labels = labels, restart = args['restart'], emails_only = args['emails_only'], chats_only = args['chats_only'])
+            labels = [args['apply_label']] if args['apply_label'] else []
+            restorer.restore(pivot_dir = starting_dir, extra_labels = labels, restart = args['restart'], \
+                             emails_only = args['emails_only'], chats_only = args['chats_only'])
         
         else:
             raise ValueError("Unknown synchronisation mode %s. Please use full (default), quick.")
         
         #print error report
-        LOG.critical(restorer.get_error_report()) 
+        LOG.critical(restorer.get_operation_report()) 
             
     @classmethod        
     def _sync(cls, args, credential):
@@ -567,13 +668,21 @@ class GMVaultLauncher(object):
         if args.get('type', '') == 'full':
         
             #choose full sync. Ignore the request
-            syncer.sync({ 'type': 'imap', 'req': 'ALL' } , compress_on_disk = args['compression'], \
-                        db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'], restart = args['restart'], \
-                        emails_only = args['emails_only'], chats_only = args['chats_only'])
-            
+            syncer.sync({ 'mode': 'full', 'type': 'imap', 'req': 'ALL' } , compress_on_disk = args['compression'], \
+                        db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'],\
+                        restart = args['restart'], emails_only = args['emails_only'], chats_only = args['chats_only'])
+        
+        elif args.get('type', '') == 'auto':
+        
+            #choose auto sync. imap request = ALL and restart = True
+            syncer.sync({ 'mode': 'auto', 'type': 'imap', 'req': 'ALL' } , compress_on_disk = args['compression'], \
+                        db_cleaning = args['db-cleaning'], ownership_checking = args['ownership_control'],\
+                        restart = True, emails_only = args['emails_only'], chats_only = args['chats_only'])
+              
         elif args.get('type', '') == 'quick':
             
-            #sync only the last x days (taken in defaults) in order to be quick (cleaning is import here because recent days might move again
+            #sync only the last x days (taken in defaults) in order to be quick 
+            #(cleaning is import here because recent days might move again
             
             # today - 2 months
             today = datetime.date.today()
@@ -584,22 +693,26 @@ class GMVaultLauncher(object):
             # today + 1 day
             end   = today + datetime.timedelta(1)
             
-            syncer.sync( { 'type': 'imap', 'req': syncer.get_imap_request_btw_2_dates(begin, end) }, \
-                           compress_on_disk = args['compression'], \
-                           db_cleaning = args['db-cleaning'], \
-                           ownership_checking = args['ownership_control'], restart = args['restart'], \
-                           emails_only = args['emails_only'], chats_only = args['chats_only'])
+            req   = { 'type' : 'imap', \
+                      'req'  : syncer.get_imap_request_btw_2_dates(begin, end), \
+                      'mode' : 'quick'}
+            
+            syncer.sync( req, \
+                         compress_on_disk = args['compression'], \
+                         db_cleaning = args['db-cleaning'], \
+                         ownership_checking = args['ownership_control'], restart = args['restart'], \
+                         emails_only = args['emails_only'], chats_only = args['chats_only'])
             
         elif args.get('type', '') == 'custom':
             
+            #convert args to unicode
+            args['request']['req']     = gmvault_utils.convert_to_unicode(args['request']['req'])
+            args['request']['charset'] = 'utf-8' #for the moment always utf-8
+            args['request']['mode']    = 'custom'
+
             # pass an imap request. Assume that the user know what to do here
-            LOG.critical("Perform custom synchronisation with %s request: %s.\n" % (args['request']['type'], args['request']['req']))
-            
-            #LOG.critical("Deactivate chats syncing and database cleaning when performing a custom synchronisation.\n" )
-            #deactivate everything
-            #args['emails_only'] = True
-            #args['chats_only']  = False
-            #args['db-cleaning'] = False
+            LOG.critical("Perform custom synchronisation with %s request: %s.\n" \
+                         % (args['request']['type'], args['request']['req']))
             
             syncer.sync(args['request'], compress_on_disk = args['compression'], db_cleaning = args['db-cleaning'], \
                         ownership_checking = args['ownership_control'], restart = args['restart'], \
@@ -609,7 +722,7 @@ class GMVaultLauncher(object):
         
         
         #print error report
-        LOG.critical(syncer.get_error_report())
+        LOG.critical(syncer.get_operation_report())
     
     @classmethod
     def _check_db(cls, args, credential):
@@ -634,7 +747,8 @@ class GMVaultLauncher(object):
         
         try:
             
-            credential = CredentialHelper.get_credential(args)
+            if args.get('command') not in ('export'):
+                credential = CredentialHelper.get_credential(args)
             
             if args.get('command', '') == 'sync':
                 
@@ -648,6 +762,10 @@ class GMVaultLauncher(object):
                 
                 self._check_db(args, credential)
                 
+            elif args.get('command', '') == 'export':
+
+                self._export(args)
+
             elif args.get('command', '') == 'config':
                 
                 LOG.critical("Configure something. TBD.\n")
@@ -658,7 +776,8 @@ class GMVaultLauncher(object):
             LOG.critical("\nCRTL^C. Stop all operations.\n")
             on_error = False
         except socket.error:
-            LOG.critical("Error: Network problem. Please check your gmail server hostname, the internet connection or your network setup.\n")
+            LOG.critical("Error: Network problem. Please check your gmail server hostname,"\
+                         " the internet connection or your network setup.\n")
             LOG.critical("=== Exception traceback ===")
             LOG.critical(gmvault_utils.get_exception_traceback())
             LOG.critical("=== End of Exception traceback ===\n")
@@ -666,17 +785,19 @@ class GMVaultLauncher(object):
         except imaplib.IMAP4.error, imap_err:
             #bad login or password
             if str(imap_err) in ['[AUTHENTICATIONFAILED] Invalid credentials (Failure)', \
-                                 '[ALERT] Web login required: http://support.google.com/mail/bin/answer.py?answer=78754 (Failure)', \
+                                 '[ALERT] Web login required: http://support.google.com/'\
+                                 'mail/bin/answer.py?answer=78754 (Failure)', \
                                  '[ALERT] Invalid credentials (Failure)'] :
-                LOG.critical("ERROR: Invalid credentials, cannot login to the gmail server. Please check your login and password or xoauth token.\n")
+                LOG.critical("ERROR: Invalid credentials, cannot login to the gmail server."\
+                             " Please check your login and password or xoauth token.\n")
                 die_with_usage = False
             else:
-                LOG.critical("Error: %s.\n" % (imap_err) )
+                LOG.critical("Error: %s. \n" % (imap_err) )
                 LOG.critical("=== Exception traceback ===")
                 LOG.critical(gmvault_utils.get_exception_traceback())
                 LOG.critical("=== End of Exception traceback ===\n")
         except Exception, err:
-            LOG.critical("Error: %s.\n" % (err) )
+            LOG.critical("Error: %s. \n" % (err) )
             LOG.critical("=== Exception traceback ===")
             LOG.critical(gmvault_utils.get_exception_traceback())
             LOG.critical("=== End of Exception traceback ===\n")
@@ -690,14 +811,15 @@ def init_logging():
        init logging infrastructure
     """       
     #setup application logs: one handler for stdout and one for a log file
-    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=False, file_path="./gmvault.log") 
+    log_utils.LoggerFactory.setup_cli_app_handler(log_utils.STANDALONE, activate_log_file=False, file_path="./gmvault.log") 
     
 def activate_debug_mode():
     """
        Activate debugging logging
     """
     LOG.critical("Debugging logs are going to be saved in file %s/gmvault.log.\n" % os.getenv("HOME","."))
-    log_utils.LoggerFactory.setup_cli_app_handler(activate_log_file=True, console_level= 'DEBUG', file_path="%s/gmvault.log" % os.getenv("HOME","."))
+    log_utils.LoggerFactory.setup_cli_app_handler(log_utils.STANDALONE, activate_log_file=True, \
+                               console_level= 'DEBUG', file_path="%s/gmvault.log" % os.getenv("HOME","."))
 
 def sigusr1_handler(signum, frame): #pylint:disable=W0613
     """
@@ -725,10 +847,10 @@ def setup_default_conf():
 def bootstrap_run():
     """ temporary bootstrap """
     
+    init_logging()
+    
     #force argv[0] to gmvault
     sys.argv[0] = "gmvault"
-    
-    init_logging()
     
     LOG.critical("")
     

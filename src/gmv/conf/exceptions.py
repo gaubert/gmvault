@@ -1,21 +1,21 @@
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
+    You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
 
+'''
 # exception classes
 class Error(Exception):
     """Base class for Conf exceptions."""
@@ -49,7 +49,9 @@ class SubstitutionError(Error):
     """Base class for substitution-related exceptions."""
 
     def __init__(self, lineno, location, msg):
-        Error.__init__(self, 'SubstitutionError on line %d: %s. %s' % (lineno, location, msg) if lineno != - 1 else 'SubstitutionError in %s. %s' % (lineno, location))
+        Error.__init__(self, 'SubstitutionError on line %d: %s. %s' \
+                       % (lineno, location, msg) if lineno != - 1 \
+                       else 'SubstitutionError in %s. %s' % (lineno, location))
         
 class IncludeError(Error):
     """ Raised when an include command is incorrect """

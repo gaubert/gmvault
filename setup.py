@@ -26,14 +26,13 @@ def find_version(path):
     fd = open(path,"r")
 
     for line in fd:
-        index = line.find("GMVAULT_VERSION=\"")
+        index = line.find("GMVAULT_VERSION = \"")
         if index > -1:
-            print(line[index+17:-2])
-            fd.close()
-            return line[index+17:-2]
+            print(line[index+19:-2])
+            res = line[index+19:-2]
+            return res.strip()
 
     raise Exception("Cannot find GMVAULT_VERSION in %s\n" % (path))
-
 
 path=os.path.join(os.path.dirname(__file__),'./src/gmv/gmvault_utils.py')
 print("PATH = %s\n" % (path))
@@ -67,5 +66,5 @@ setup(name='gmvault',
       scripts=['./etc/scripts/gmvault'],
       package_data={'': ['release-note.txt']},
       include_package_data=True,
-      install_requires=['argparse', 'Logbook==0.3', 'IMAPClient==0.9','gdata==2.0.17']
+      install_requires=['argparse', 'Logbook==0.4.1', 'IMAPClient==0.9','gdata==2.0.17']
       )

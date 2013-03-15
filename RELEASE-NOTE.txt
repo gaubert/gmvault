@@ -1,6 +1,63 @@
 Release Notes for the different versions:
 -------------------------------
 -------------------------------
+Version Gmvault-v1.8-beta:
+-------------------------------
+-------------------------------
+Date: 17.03.2013
+
+New Features:
+-------------------
+- Performances: Backup speed increased by 4 (mailbox of 40000+ emails synched in 2.2 hrs instead of 9.5 hrs.
+- Performances: Restore speed increased by 1.5 (mailbox of 40000+ emails restored in 12 hours instead of 18 hrs).
+- Increase support for non english languages: Support for labels tested in Japanese, German, French, Spanish, Danish. Other languages should also be supported.
+- Support Gmail 2-legged OAuth authentication allowing Google Apps Business or Education account owners to use Gmvault [Github feature #105].
+- Experimental export function to create a mbox or maildir mailbox from a gmvault-db allowing offline browsing with a stand mail client (Thunderbird, Dovecot, ...).
+- Handle reserved labels such as Migrated [Github feature #110]
+- Add starting date and time at the beginning of a sync or restore operation [Github feature #106].
+- Introduction of a deferred Logger allowing easier integration with a Graphical User Interface (GUI).
+- Change license to AGPLv3.
+- Enable IMAP Debugging with GMV_IMAP_DEBUG env variable.
+- Add total time spent in synchronising or restoring.
+
+Bug Fixes:
+----------
+- Fix bug preventing the backup of very large emails on windows (more than 20 MB).
+- Fix bug preventing the deletion of encrypted emails in gmvault-db. [Github issue #108, #100, #94, #93].
+- Upgrade Windows version to Python2.7.3 to avoid having potential non existent security issue [Github issue #89].
+- Fix bug preventing Chat backup for non english languages fixed (all languages potentially allowed) [Github issue #76].
+- Fix bug preventing support for labels with spaces, quotes [Github issue #86 #79].
+- Fix bug preventing the support of non ascii character in labels [Github issue #107].
+- Fix bug preventing Gmail searches with non ascii characters (ie support german, norvegian, french letters, ...) [Github issue #99].
+- Fix bug preventing to link the gmvault starting script [Github issue #98 contributed by @jinnko].
+- Fix bug preventing quick sync in some case to update \Seen flag [Github issue #69].
+- Fix bug creating wrong time reportings when chats synchronised [Github issue #75].
+
+Web site Activity:
+------------------
+- Create Google Group Gmvault-Users
+- Add a Gmail Setup part
+- Create a contact page
+- Extend the In Depth page
+
+Shoutouts to: 
+-------------
+
+Special shoutouts to the following githubbers that help me in raising issues, testing intermediate version and help me improving Gmvault.
+
+Github id: @vasi, @kormoc, @burkemw3, @bdkzero, @hebner, @Rragen, @dukaras, @altsyst, @mistofvongola, @jinnko, @konfetov, @martey, @dmd, @jeverling, @poolis, @aseemk, @tazir, @takluyver, @isaakm, @musicjunkieg 
+
+Also shoutouts to all the users that sent me support emails and raised issues by emails.
+
+Gmvault Pantheon:
+-----------------
+
+A million time thank you for the benevolent donors that are forever in the Gmvault Pantheon and All of Fame for their gesture.
+
+Daniel Brass, Fabien Dubois, Stijn Jonker, ADEMARIO ARAUJO JR, Matt Burke, Kraut Computing, Wolfgang Schwaiger, Joanne Kaye, Bernardino Santos.
+
+-------------------------------
+-------------------------------
 Version Gmvault-v1.7.w1-beta:
 -------------------------------
 -------------------------------

@@ -1,36 +1,37 @@
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
+    You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 '''
 import sys
 import os
 import re
+import codecs
 
-                                      
 import gmv.conf.exceptions as exceptions
-import gmv.conf.utils.struct_parser as struct_parser
+import gmv.conf.utils.struct_parser as struct_parser                                      
 
 class ResourceError(Exception):
     """
         Base class for ressource exceptions 
     """
 
-    def __init__(self,aMsg):
+    def __init__(self, a_msg):
         
-        super(ResourceError,self).__init__(aMsg)
+        super(ResourceError, self).__init__(a_msg)
 
 class Resource(object):
     """
@@ -38,45 +39,48 @@ class Resource(object):
         It can be read first from the Command Line, then from the ENV as an env variable and finally from a conf file 
     """
     
-    def __init__(self,CliArgument=None,EnvVariable=None,ConfProperty=None): 
+    def __init__(self, a_cli_argument=None, a_env_variable=None, a_conf_property=None): 
         """ 
           Default Constructor.
           It is important to understand that there is precedence between the different ways to set the ressource:
           - get from the command line if defined otherwise get from the Env variable if defined otherwise get from the conf file otherwise error
        
            Args:
-              CliArgument : The command line argument name
-              EnvVariable : The env variable name used for this ressource
-              ConfProperty: It should be a tuple containing two elements (group,property)
+              a_cli_argument : The command line argument name
+              a_env_variable : The env variable name used for this ressource
+              a_conf_property: It should be a tuple containing two elements (group,property)
         """
       
-        self._cliArg   = CliArgument.lower() if CliArgument is not None else None
-        self._envVar   = EnvVariable.upper() if EnvVariable is not None else None
+        self._cli_arg   = a_cli_argument.lower() if a_cli_argument is not None else None
+        self._env_var   = a_env_variable.upper() if a_env_variable is not None else None
       
-        if ConfProperty is not None:
-            (self._confGroup,self._confProperty) = ConfProperty
+        if a_conf_property is not None:
+            (self._conf_group, self._conf_property) = a_conf_property
         else:
-            self._confGroup    = None
-            self._confProperty = None
+            self._conf_group    = None
+            self._conf_property = None
       
-    def setCliArgument(self,CliArgument):
-        self._cliArg = CliArgument.lower()
+    def set_cli_argument(self, a_cli_argument):
+        """cli_argument setter"""
+        self._cli_arg = a_cli_argument.lower()
         
-    def setEnvVariable(self,EnvVariable):
-        self._envVar = EnvVariable
+    def set_env_variable(self, a_env_variable):
+        """env_variable setter"""
+        self._env_var = a_env_variable
     
-    def _get_srandardized_cli_argument(self,a_tostrip):
+    @classmethod
+    def _get_srandardized_cli_argument(cls, a_tostrip):
         """
            remove -- or - from the command line argument and add a -- prefix to standardize the cli argument 
         """
-        s = a_tostrip
+        the_str = a_tostrip
         
-        while s.startswith('-'):
-            s = s[1:]
+        while the_str.startswith('-'):
+            the_str = the_str[1:]
         
-        return '--%s'%(s)
+        return '--%s' % (the_str)
     
-    def _getValueFromTheCommandLine(self):
+    def _get_value_from_command_line(self):
         """
           internal method for extracting the value from the command line.
           All command line agruments must be lower case (unix style).
@@ -87,27 +91,27 @@ class Resource(object):
         """
           
         # check precondition
-        if self._cliArg == None:
+        if self._cli_arg == None:
             return None
         
 
-        s = self._get_srandardized_cli_argument(self._cliArg)
+        the_s = Resource._get_srandardized_cli_argument(self._cli_arg)
     
         # look for cliArg in sys argv
         for arg in sys.argv:
-            if arg.lower() == s:
+            if arg.lower() == the_s:
                 i = sys.argv.index(arg)
                 #print "i = %d, val = %s\n"%(i,sys.argv[i])
                 if len(sys.argv) <= i:
                     # No more thing to read in the command line so quit
-                    print "Resource: Commandline argument %s has no value\n" % (self._cliArg)
+                    print "Resource: Commandline argument %s has no value\n" % (self._cli_arg)
                     return None 
                 else:
                     #print "i+1 = %d, val = %s\n"%(i+1,sys.argv[i+1])
                     return sys.argv[i+1]
             
 
-    def _getValueFromEnv(self):
+    def _get_value_from_env(self):
         """
           internal method for extracting the value from the env.
           All support ENV Variables should be in uppercase.
@@ -117,23 +121,23 @@ class Resource(object):
         """
       
         # precondition
-        if self._envVar == None:
+        if self._env_var == None:
             return None
      
-        return os.environ.get(self._envVar,None)
+        return os.environ.get(self._env_var, None)
       
-    def _getFromConf(self):
+    def _get_from_conf(self):
         """
            Try to read the info from the Configuration if possible
         """
-        if self._confGroup and self._confProperty:
+        if self._conf_group and self._conf_property:
             if Conf.can_be_instanciated():
-                return Conf.get_instance().get(self._confGroup, self._confProperty)
+                return Conf.get_instance().get(self._conf_group, self._conf_property)
         
         return None
           
         
-    def getValue(self,aRaiseException=True):
+    def get_value(self, a_raise_exception=True):
         """
            Return the value of the Resource as a string.
            - get from the command line if defined otherwise get from the Env variable if defined otherwise get from the conf file otherwise error
@@ -148,46 +152,46 @@ class Resource(object):
         """
        
         # get a value using precedence rule 1) command-line, 2) ENV, 3) Conf
-        val = self._getValueFromTheCommandLine()
+        val = self._get_value_from_command_line()
         if val is None:
-            val = self._getValueFromEnv()
+            val = self._get_value_from_env()
             if val is None:
-                val = self._getFromConf()
-                if (val is None) and aRaiseException:
+                val = self._get_from_conf()
+                if (val is None) and a_raise_exception:
                     
                     the_str = "Cannot find "
                     add_nor = 0
                     
-                    if self._cliArg is not None:
-                        the_str += "commandline argument %s" % (self._cliArg)
+                    if self._cli_arg is not None:
+                        the_str += "commandline argument %s" % (self._cli_arg)
                         add_nor += 1
                     
-                    if self._envVar is not None:
+                    if self._env_var is not None:
                         
                         if add_nor > 0:
                             the_str += ", nor "
                     
-                        the_str += "the Env Variable %s" % (self._envVar)
+                        the_str += "the Env Variable %s" % (self._env_var)
                         add_nor += 1
                     
-                    if self._confGroup is not None:
+                    if self._conf_group is not None:
                         if add_nor > 0:
                             the_str += ", nor "
                         
-                        the_str += "the Conf Group:[%s] and Property=%s" % (self._confGroup, self._confProperty)
+                        the_str += "the Conf Group:[%s] and Property=%s" % (self._conf_group, self._conf_property)
                         add_nor += 1
                         
                     if add_nor == 0:
-                        the_str += " any defined commandline argument, nor any env variable or Conf group and properties. They are all None, fatal error"
+                        the_str += " any defined commandline argument, nor any env variable or"\
+                                   " Conf group and properties. They are all None, fatal error"
                     else:
                         the_str += ". One of them should be defined"
                     
                     raise ResourceError(the_str)
     
-        # we do have a val
         return val
    
-    def _get(self,conv):
+    def _get(self, conv):
         """
            Private _get method used to convert to the right expected type (int,float or boolean).
            Strongly inspired by ConfigParser.py
@@ -198,9 +202,9 @@ class Resource(object):
            Raises:
               exception ValueError if conversion issue
         """
-        return conv(self.getValue())
+        return conv(self.get_value())
 
-    def getValueAsInt(self):
+    def get_value_as_int(self):
         """
            Return the value as an int
               
@@ -212,7 +216,7 @@ class Resource(object):
         """
         return self._get(int)
 
-    def getValueAsFloat(self):
+    def get_value_as_float(self):
         """
            Return the value as a float
               
@@ -227,7 +231,7 @@ class Resource(object):
     _boolean_states = {'1': True, 'yes': True, 'true': True, 'on': True,
                        '0': False, 'no': False, 'false': False, 'off': False}
 
-    def getValueAsBoolean(self):
+    def get_value_as_boolean(self):
         """
            Return the value as a boolean
               
@@ -237,10 +241,10 @@ class Resource(object):
            Raises:
               exception ValueError if conversion issue
         """
-        v = self.getValue()
-        if v.lower() not in self._boolean_states:
-            raise ValueError, 'Not a boolean: %s' % v
-        return self._boolean_states[v.lower()]
+        val = self.get_value()
+        if val.lower() not in self._boolean_states:
+            raise ValueError, 'Not a boolean: %s' % val
+        return self._boolean_states[val.lower()]
 
 class MockConf(object):
     """
@@ -252,12 +256,14 @@ class MockConf(object):
         """
         pass
     
-    def get(self, section, option, default=None, fail_if_missing=False):
+    @classmethod
+    def get(cls, section, option, default=None, fail_if_missing=False): #pylint: disable=W0613
         """ get one option from a section.
         """
         return default
     
-    def print_content(self, substitute_values = True):
+    @classmethod
+    def print_content(cls, substitute_values = True):#pylint: disable=W0613
         """ print all the options variables substituted.
         
             :param a_substitue_vals: bool for substituting values
@@ -265,7 +271,8 @@ class MockConf(object):
         """
         raise exceptions.Error("Not implemented in MockupConf")            
 
-    def items(self, section):
+    @classmethod
+    def items(cls, section):#pylint: disable=W0613
         """ return all items from a section. Items is a list of tuples (option,value)
             
             Args:
@@ -278,40 +285,44 @@ class MockConf(object):
         """
         raise exceptions.Error("Not implemented in MockupConf") 
   
-    def getint(self, section, option, default=0, fail_if_missing=False):
+    @classmethod
+    def getint(cls, section, option, default=0, fail_if_missing=False):#pylint: disable=W0613
         """Return the int value of the option.
         Default value is 0, None value can't be used as default value"""
         return default
 
-    def getfloat(self, section, option, default=0, fail_if_missing=False):
+    @classmethod
+    def getfloat(cls, section, option, default=0, fail_if_missing=False):#pylint: disable=W0613
         """Return the float value of the option. 
         Default value is 0, None value can't be used as default value"""
         return default
 
-    def getboolean(self, section, option, default=False, fail_if_missing=False):
+    @classmethod
+    def getboolean(cls, section, option, default=False, fail_if_missing=False):#pylint: disable=W0613
         """get bool value """
         return default
     
-    def get_list(self, section, option, default=None, fail_if_missing=False):
+    @classmethod
+    def get_list(cls, section, option, default=None, fail_if_missing=False):#pylint: disable=W0613
         """ get a list of string, int  """
         return default
     
-    def getlist(self, section, option, default=None, fail_if_missing=False):
+    @classmethod
+    def getlist(cls, section, option, default=None, fail_if_missing=False):#pylint: disable=W0613
         """ Deprecated, use get_list instead"""
-        return self.get_list(section, option, default, fail_if_missing)
+        return cls.get_list(section, option, default, fail_if_missing)
 
-    def getdict(self, section, option, default=None, fail_if_missing=False):
+    @classmethod
+    def getdict(cls, section, option, default=None, fail_if_missing=False):#pylint: disable=W0613
         """ Deprecated, use get_dict instead"""
-        return self.get_dict(section, option, default, fail_if_missing)
+        return cls.get_dict(section, option, default, fail_if_missing)
         
     
-    def get_dict(self, section, option, default=None, fail_if_missing=False):
+    @classmethod
+    def get_dict(cls, section, option, default=None, fail_if_missing=False):#pylint: disable=W0613
         """ get a dict """
         return default
  
-     
-
-
 class Conf(object):
     """ Configuration Object with a several features:
     
@@ -357,7 +368,7 @@ class Conf(object):
         #No conf info passed to the resource so the Resource will not look into the conf (to avoid recursive search)
         the_res = Resource(cls.CLINAME, cls.ENVNAME)
         
-        filepath = the_res.getValue(aRaiseException=False)
+        filepath = the_res.get_value(a_raise_exception=False)
         
         if (filepath is not None) and os.path.exists(filepath):
             return True
@@ -366,7 +377,9 @@ class Conf(object):
             
     
     def __init__(self, use_resource=True):
-        #TODO docstring ==> use resource ????
+        """
+           Constructor
+        """
         
         # create resource for the conf file
         self._conf_resource = Resource(Conf.CLINAME, Conf.ENVNAME)
@@ -387,12 +400,14 @@ class Conf(object):
         try:  
             # get it from a Resource if not files are passed
             if a_file is None:
-                a_file = self._conf_resource.getValue() 
+                a_file = self._conf_resource.get_value() 
              
             if a_file is None:
                 raise exceptions.Error("Conf. Error, need a configuration file path")
             
-            f_desc = open(a_file, 'r') 
+            #f_desc = open(a_file, 'r') 
+            f_desc = codecs.open(a_file, 'r', 'utf-8') 
+             
                 
             self._read(f_desc, a_file)
             
@@ -406,6 +421,7 @@ class Conf(object):
             
     
     def get_conf_file_path(self):
+        """return conf_file_path"""
         return self._configuration_file_path if self._configuration_file_path != None else "unknown"
        
     def sections(self):
@@ -413,7 +429,8 @@ class Conf(object):
         # self._sections will never have [DEFAULT] in it
         return self._sections.keys()
     
-    def _get_defaults(self, section, option, default, fail_if_missing):
+    @classmethod
+    def _get_defaults(cls, section, option, default, fail_if_missing):
         """ To manage defaults.
             Args:
                default. The default value to return if fail_if_missing is False
@@ -455,11 +472,11 @@ class Conf(object):
             #check if it is a ENV section
             dummy = None
             if section == Conf._ENVGROUP:
-                r = Resource(CliArgument=None, EnvVariable=opt)
-                dummy = r.getValue()
+                the_r = Resource(a_cli_argument=None, a_env_variable=opt)
+                dummy = the_r.get_value()
             elif section == Conf._CLIGROUP:
-                r = Resource(CliArgument=opt, EnvVariable=None)
-                dummy = r.getValue()
+                the_r = Resource(a_cli_argument=opt, a_env_variable=None)
+                dummy = the_r.get_value()
             #return default if dummy is None otherwise return dummy
             return ((self._get_defaults(section, opt, default, fail_if_missing)) if dummy == None else dummy)
         elif opt in self._sections[section]:
@@ -531,7 +548,8 @@ class Conf(object):
             has_section = True
         return has_section
         
-    def _get_closing_bracket_index(self, index, s, location, lineno):
+    @classmethod
+    def _get_closing_bracket_index(cls, index, the_str, location, lineno):
         """ private method used by _replace_vars to count the closing brackets.
             
             Args:
@@ -546,7 +564,7 @@ class Conf(object):
                exception NoSectionError if the section cannot be found
         """
         
-        tolook = s[index + 2:]
+        tolook = the_str[index + 2:]
    
         opening_brack = 1
         closing_brack_index = index + 2
@@ -602,30 +620,35 @@ class Conf(object):
             
             dummy = None
             
-            m     = self._SUBSGROUPRE.match(var)
+            matched = self._SUBSGROUPRE.match(var)
         
-            if m == None:
-                raise exceptions.SubstitutionError(lineno, location, "Cannot match a group[option] in %s but found an opening bracket (. Malformated expression " % (var))
+            if matched == None:
+                raise exceptions.SubstitutionError(lineno, location, \
+                                                   "Cannot match a group[option] in %s "\
+                                                   "but found an opening bracket (. Malformated expression " \
+                                                   % (var))
             else:
             
                 # recursive calls
-                g = self._replace_vars(m.group('group'), location, - 1)
-                o = self._replace_vars(m.group('option'), location, - 1)
+                group = self._replace_vars(matched.group('group'), location, - 1)
+                option = self._replace_vars(matched.group('option'), location, - 1)
             
                 try:
                     # if it is in ENVGROUP then check ENV variables with a Resource object
                     # if it is in CLIGROUP then check CLI argument with a Resource object
                     # otherwise check in standard groups
-                    if g == Conf._ENVGROUP:
-                        r = Resource(CliArgument=None, EnvVariable=o)
-                        dummy = r.getValue()
-                    elif g == Conf._CLIGROUP:
-                        r = Resource(CliArgument=o, EnvVariable=None)
-                        dummy = r.getValue()
+                    if group == Conf._ENVGROUP:
+                        res = Resource(a_cli_argument=None, a_env_variable=option)
+                        dummy = res.get_value()
+                    elif group == Conf._CLIGROUP:
+                        res = Resource(a_cli_argument=option, a_env_variable=None)
+                        dummy = res.get_value()
                     else:
-                        dummy = self._sections[g][self.optionxform(o)]
+                        dummy = self._sections[group][self.optionxform(option)]
                 except KeyError, _: #IGNORE:W0612
-                    raise exceptions.SubstitutionError(lineno, location, "Property %s[%s] doesn't exist in this configuration file \n" % (g, o))
+                    raise exceptions.SubstitutionError(lineno, location, "Property %s[%s] "\
+                                                       "doesn't exist in this configuration file \n" \
+                                                       % (group, option))
             
             toparse = toparse.replace(var, dummy)
             
@@ -642,8 +665,18 @@ class Conf(object):
         """Return the int value of the option.
         Default value is 0, None value can't be used as default value"""
         return self._get(section, int, option, default, fail_if_missing)
+    
+    def get_int(self, section, option, default=0, fail_if_missing=False):
+        """Return the int value of the option.
+        Default value is 0, None value can't be used as default value"""
+        return self._get(section, int, option, default, fail_if_missing)
 
     def getfloat(self, section, option, default=0, fail_if_missing=False):
+        """Return the float value of the option. 
+        Default value is 0, None value can't be used as default value"""
+        return self._get(section, float, option, default, fail_if_missing)
+    
+    def get_float(self, section, option, default=0, fail_if_missing=False):
         """Return the float value of the option. 
         Default value is 0, None value can't be used as default value"""
         return self._get(section, float, option, default, fail_if_missing)
@@ -652,11 +685,18 @@ class Conf(object):
                        '0': False, 'no': False, 'false': False, 'off': False}
 
     def getboolean(self, section, option, default=False, fail_if_missing=False):
-         
-        v = self.get(section, option, default, fail_if_missing)
-        if v.lower() not in self._boolean_states:
-            raise ValueError, 'Not a boolean: %s' % v
-        return self._boolean_states[v.lower()]
+        """getboolean value""" 
+        val = self.get(section, option, default, fail_if_missing)
+        if val.lower() not in self._boolean_states:
+            raise ValueError, 'Not a boolean: %s' % val
+        return self._boolean_states[val.lower()]
+    
+    def get_boolean(self, section, option, default=False, fail_if_missing=False):
+        """get_boolean value"""
+        val = self.get(section, option, default, fail_if_missing)
+        if val.lower() not in self._boolean_states:
+            raise ValueError, 'Not a boolean: %s' % val
+        return self._boolean_states[val.lower()]
     
     def get_list(self, section, option, default=None, fail_if_missing=False):
         """ get a list of string, int  """
@@ -691,8 +731,9 @@ class Conf(object):
         except struct_parser.CompilerError, err: 
             raise exceptions.Error(err.message)
         
-        
-    def optionxform(self, optionstr):
+    @classmethod
+    def optionxform(cls, optionstr):
+        """optionxform"""
         return optionstr.lower()
     
     #
@@ -713,10 +754,12 @@ class Conf(object):
         )
             
     def _read_include(self, lineno, line, origin, depth):
-        
+        """_read_include"""      
         # Error if depth is MAX_INCLUDE_DEPTH 
         if depth >= Conf._MAX_INCLUDE_DEPTH:
-            raise exceptions.IncludeError("Error. Cannot do more than %d nested includes. It is probably a mistake as you might have created a loop of includes" % (Conf._MAX_INCLUDE_DEPTH))
+            raise exceptions.IncludeError("Error. Cannot do more than %d nested includes."\
+                                          " It is probably a mistake as you might have created a loop of includes" \
+                                          % (Conf._MAX_INCLUDE_DEPTH))
         
         # remove %include from the path and we should have a path
         i = line.find('%include')
@@ -730,7 +773,8 @@ class Conf(object):
             dummy = line[i+1:].strip()
             f_i = dummy.find('>')
             if f_i == -1:
-                raise exceptions.IncludeError("Error. > is missing in the include line no %s: %s. It should be %%include<mode:group_name> path" \
+                raise exceptions.IncludeError("Error. > is missing in the include line no %s: %s."\
+                                              " It should be %%include<mode:group_name> path" \
                                                    % (line, lineno), origin )
             else:
                 group_name = None
@@ -765,9 +809,10 @@ class Conf(object):
                 raise exceptions.IncludeError("the config file to include %s does not exits" % (path), origin)
             else:
                 # add include file and populate the section hash
-                self._read(open(path, 'r'), path, depth + 1)
+                self._read(codecs.open(path, 'r', 'utf-8'), path, depth + 1)
+                #self._read(open(path, 'r'), path, depth + 1)
 
-    def _read(self, fp, fpname, depth=0):
+    def _read(self, fpointer, fpname, depth=0): #pylint: disable=R0912
         """Parse a sectioned setup file.
 
         The sections in setup file contains a title line at the top,
@@ -783,7 +828,7 @@ class Conf(object):
         lineno = 0
         err = None                                  # None, or an exception
         while True:
-            line = fp.readline()
+            line = fpointer.readline()
             if not line:
                 break
             lineno = lineno + 1
@@ -805,9 +850,9 @@ class Conf(object):
             # a section header or option header?
             else:
                 # is it a section header?
-                mo = self.SECTCRE.match(line)
-                if mo:
-                    sectname = mo.group('header')
+                matched = self.SECTCRE.match(line)
+                if matched:
+                    sectname = matched.group('header')
                     if sectname in self._sections:
                         cursect = self._sections[sectname]
                     else:
@@ -820,10 +865,10 @@ class Conf(object):
                     raise exceptions.MissingSectionHeaderError(fpname, lineno, line)
                 # an option line?
                 else:
-                    mo = self.OPTCRE.match(line)
-                    if mo:
-                        optname, vi, optval = mo.group('option', 'vi', 'value')
-                        if vi in ('=', ':') and ';' in optval:
+                    matched = self.OPTCRE.match(line)
+                    if matched:
+                        optname, vio, optval = matched.group('option', 'vi', 'value')
+                        if vio in ('=', ':') and ';' in optval:
                             # ';' is a comment delimiter only if it follows
                             # a spacing character
                             pos = optval.find(';')

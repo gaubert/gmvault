@@ -1,38 +1,30 @@
+# -*- coding: utf-8 -*-
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
+    You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
 
+'''
 # unit tests part
 import unittest
-import struct_parser
-from struct_parser import Compiler, CompilerError
+from gmv.conf.utils.struct_parser import Compiler, CompilerError
 
-
-
-
-def tests():
-    suite = unittest.TestLoader().loadTestsFromModule(struct_parser)
-    unittest.TextTestRunner(verbosity=2).run(suite)
-
-
-class TestListParser(unittest.TestCase):
+class TestParser(unittest.TestCase):
+    """ TestParser Class """
     
-    
-    def setUp(self):
+    def setUp(self): #pylint: disable=C0103
         pass
         
     def test_simple_list_test(self):
@@ -65,7 +57,8 @@ class TestListParser(unittest.TestCase):
         
         the_result = compiler.compile_list(the_string)
         
-        self.assertEqual(the_result, ['a','b', [1,2,3,4, [456,6,'absdef'], 234, 2.456 ], 'aqwe', 'done'])
+        self.assertEqual(the_result, ['a', 'b', [1, 2, 3, 4, [456, 6, 'absdef'], 234, 2.456 ]\
+                                      , 'aqwe', 'done'])
   
     def test_list_without_bracket_test(self):
         """ simple list without bracket test """
@@ -76,9 +69,9 @@ class TestListParser(unittest.TestCase):
         
         the_result = compiler.compile_list(the_string)
         
-        self.assertEqual(the_result, ['a','b'])
+        self.assertEqual(the_result, ['a', 'b'])
     
-    def test_list_without_bracket_ztest_2(self):
+    def test_list_without_bracket_test_2(self): #pylint: disable=C0103
         """ list without bracket test with a list inside """
         the_string = " 'a', b, ['a thing', 2]"
                 
@@ -86,7 +79,7 @@ class TestListParser(unittest.TestCase):
         
         the_result = compiler.compile_list(the_string)
         
-        self.assertEqual(the_result, ['a','b', ['a thing', 2] ])
+        self.assertEqual(the_result, ['a', 'b', ['a thing', 2] ])
         
     def test_list_error(self):
         """ list error """
@@ -98,8 +91,23 @@ class TestListParser(unittest.TestCase):
             compiler.compile_list(the_string)
         except CompilerError, err:
             self.assertEqual(err.message, 'Expression "  a ]" cannot be converted as a list.')
-      
-    def test_special_character_in_string(self):
+    
+    def test_list_unicode_val(self):
+        """ list unicode val """
+        the_string = "[ u'[Gmail]/Чаты', 'z' ]".decode('utf-8')
+
+        #to be in the same conditions as the conf object need to decode utf-8 as
+        # it is done automatically with the os.open(...., 'uft-8')
+        
+        compiler = Compiler()
+        
+        compiler.compile_list(the_string)
+        
+        the_result = compiler.compile_list(the_string)
+        
+        self.assertEqual(the_result, [ u'[Gmail]/Чаты', 'z' ])
+        
+    def test_special_character_in_string(self):#pylint: disable=C0103
         """ simple list without bracket test """
         
         the_string = " 'a@', b"
@@ -152,7 +160,7 @@ class TestListParser(unittest.TestCase):
         
         the_result = compiler.compile_dict(the_string)
         
-        self.assertEqual(the_result, {'a':1, 'b':[1,2,3,4,5]})
+        self.assertEqual(the_result, {'a':1, 'b':[1, 2, 3, 4, 5]})
         
     def test_list_with_dict(self):
         """ list with dict """
@@ -174,7 +182,7 @@ class TestListParser(unittest.TestCase):
         
         the_result = compiler.compile_dict(the_string)
         
-        self.assertEqual(the_result,{ 'no12': 'a b' , 'no10':'a'})
+        self.assertEqual(the_result, { 'no12': 'a b' , 'no10':'a'})
         
     def test_everything(self):
         """ everything """
@@ -185,8 +193,15 @@ class TestListParser(unittest.TestCase):
         
         the_result = compiler.compile_list(the_string)
         
-        self.assertEqual(the_result, ['a',1,'b',{2:3,4:[1,'hello', 'no quotes', [1,2,3,{1:2,3:4}]]} ])
+        self.assertEqual(the_result, ['a', 1, 'b', \
+                                      {2 : 3, \
+                                       4: [1, 'hello', 'no quotes', [1, 2, 3, {1:2, 3:4 }]]} ])
         
+def tests():
+    """ Global test method """
+    #suite = unittest.TestLoader().loadTestsFromModule(struct_parser)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestParser)
+    unittest.TextTestRunner(verbosity=2).run(suite)
         
         
 if __name__ == '__main__':
