@@ -4,16 +4,16 @@ Release Notes for the different versions:
 Version Gmvault-v1.8-beta:
 -------------------------------
 -------------------------------
-Date: 17.03.2013
+Date: 21.03.2013
 
 New Features:
 -------------------
 - Performances: Backup speed increased by 4 (mailbox of 40000+ emails synched in 2.2 hrs instead of 9.5 hrs.
 - Performances: Restore speed increased by 1.5 (mailbox of 40000+ emails restored in 12 hours instead of 18 hrs).
 - Increase support for non english languages: Support for labels tested in Japanese, German, French, Spanish, Danish. Other languages should also be supported.
-- Support Gmail 2-legged OAuth authentication allowing Google Apps Business or Education account owners to use Gmvault [Github feature #105].
 - Experimental export function to create a mbox or maildir mailbox from a gmvault-db allowing offline browsing with a stand mail client (Thunderbird, Dovecot, ...).
-- Handle reserved labels such as Migrated [Github feature #110]
+- Support Gmail 2-legged OAuth authentication allowing Google Apps Business or Education account owners to use Gmvault [Github feature #105].
+- Handle labels reserved by Gmail such as Migrated while restoring [Github feature #110].
 - Add starting date and time at the beginning of a sync or restore operation [Github feature #106].
 - Introduction of a deferred Logger allowing easier integration with a Graphical User Interface (GUI).
 - Change license to AGPLv3.
@@ -35,10 +35,8 @@ Bug Fixes:
 
 Web site Activity:
 ------------------
-- Create Google Group Gmvault-Users
-- Add a Gmail Setup part
-- Create a contact page
-- Extend the In Depth page
+- Extend the In Depth page with export documentation.
+- add contributor file and donator Gmvault pantheon.
 
 Shoutouts to: 
 -------------
