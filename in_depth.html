@@ -871,9 +871,10 @@ d) Use one of the export type dedicated to a specific tool (dovecot or offlineIM
 </pre>
 </p>
 <h5>Create a Default mbox Export</h5>
-<p>By default the export function will create a mbox mailbox storage. 
+<p>By default the export function will create a mbox mailbox storage which is compliant with <a href="www.mozilla.org/EN/thunderbird/">Thunderbird</a>. 
 <pre>$>gmvault export /tmp/my-mbox-export -d /home/myuser/gmvault-db/
 
+Export gmvault-db as mbox mailbox.
 Start emails export for default labels.
 == Processed 200 emails in 3s, 11746 left (time estimate 2m 56s). ==
 
@@ -890,6 +891,54 @@ Start emails export for default labels.
 Export complete in 4m48s.
 Start chats export for default labels.
 Export complete in less than a second.
+$>
+</pre>
+</p>
+<h5>Change the format of exported mailbox</h5>
+<p>Using the option <b>-t, --type</b>, different formats for the exported mailbox can be chosen. The gmvault-db mailbox can be exported as maildir, mbox in their standard form or as dedicated variant of these formats that can be used with dovecot or offlineimap. 
+<pre>$>gmvault export /tmp/my-mbox-export -d /home/myuser/gmvault-db/ -t offlineimap
+
+Export gmvault-db as offlineimap mailbox.
+Start emails export for default labels.
+== Processed 200 emails in 3s, 11746 left (time estimate 2m 56s). ==
+
+== Processed 400 emails in 9s, 11546 left (time estimate 4m 20s). ==
+
+== Processed 600 emails in 17s, 11346 left (time estimate 5m 21s). ==
+
+....
+
+== Processed 11200 emails in 4m 23s, 146 left (time estimate 24s). ==
+
+== Processed 11346 emails in 4m 47s, 0 left (time estimate 0s). ==
+
+Export completed in 4m48s.
+Start chats export for default labels.
+Export completed in less than a second.
+$>
+</pre>
+</p>
+<h5>Export specific labels</h5>
+<p>Using the option <b>-l, --label</b>, it is possible to only export specific labels. If you wish to export nested label such as "lev1/lev2" use that syntax. Repeat the option -l to export more than one label. 
+<pre>$>gmvault export /tmp/my-mbox-export -d /home/myuser/gmvault-db/ -l "lev1/lev2" -l "work
+
+Export gmvault-db as mbox mailbox.
+Start emails export for labels lev1/lev2; work.
+== Processed 200 emails in 3s, 11746 left (time estimate 2m 56s). ==
+
+== Processed 400 emails in 9s, 11546 left (time estimate 4m 20s). ==
+
+== Processed 600 emails in 17s, 11346 left (time estimate 5m 21s). ==
+
+....
+
+== Processed 11200 emails in 4m 23s, 146 left (time estimate 24s). ==
+
+== Processed 11346 emails in 4m 47s, 0 left (time estimate 0s). ==
+
+Export completed in 4m48s.
+Start chats export for labels lev1/lev2; work.
+Export completed in less than a second.
 $>
 </pre>
 </p>
