@@ -41,6 +41,8 @@ Web site Activity:
 Shoutouts to: 
 -------------
 
+Many thanks to @vasi for contributing to Gmvault and writing the Export functionality.
+
 Special shoutouts to the following githubbers that help me in raising issues, testing intermediate version and help me improving Gmvault.
 
 Github id: @vasi, @kormoc, @burkemw3, @bdkzero, @hebner, @Rragen, @dukaras, @altsyst, @mistofvongola, @jinnko, @konfetov, @martey, @dmd, @jeverling, @poolis, @aseemk, @tazir, @takluyver, @isaakm, @musicjunkieg 
@@ -52,7 +54,7 @@ Gmvault Pantheon:
 
 A million time thank you for the benevolent donors that are forever in the Gmvault Pantheon and All of Fame for their gesture.
 
-Daniel Brass, Fabien Dubois, Stijn Jonker, ADEMARIO ARAUJO JR, Matt Burke, Kraut Computing, Wolfgang Schwaiger, Joanne Kaye, Bernardino Santos.
+Jason Stangroome, Mathieu Pinson, Mathieu Clavel, Stijn Jonker, Douglas Carter, Steven Moschidis, GoVelvet LLC, Daniel Brass , Joseph Colburn, Joanne Kaye, Bernie Santos, Wolfgang Schwaiger, Kraut Computing, Matt Burke, Ademario Araujo Jr, Roque Pinel, George Armhold, Randi Veiberg, Gregory Szilagyi, Antony Moore, Filip Moerman, Axel Amigo Arnold, Jonathan Sarasin, Kirby Moyers, Alberto Cottica, Richard Lee, Suneel Kanuri, Owen Phelps, Clint Chapman, Donmez Ismail, Tomas Bäckman, Keith Petersen, Holden Karau, James Mcfarland, Clayton Stanley, Stefan Habetz, Francesco Bellomo, Brian Yanosik, Bjarte Aune Olsen, Joel Sylvester, Billy Amon, Alexander Halperin, John Zendano, Alex Van't Hof, JJ Tiziou Photography, Sally Carr, Jacek Szczech, Baden Holt, Eleonora Borelli, Patrick Van Humbeeck
 
 -------------------------------
 -------------------------------
