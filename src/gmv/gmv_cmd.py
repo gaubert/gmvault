@@ -607,6 +607,7 @@ class GMVaultLauncher(object):
     def _export(cls, args):
         export_type = cls.EXPORT_TYPES[args['type']]
         output_dir = export_type(args['output-dir'])
+        LOG.critical("Export gmvault-db as a %s mailbox." % (args['type']))
         exporter = gmvault_export.GMVaultExporter(args['db-dir'], output_dir,
             labels=args['labels'])
         exporter.export()

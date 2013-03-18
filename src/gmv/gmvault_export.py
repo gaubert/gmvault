@@ -111,7 +111,7 @@ class GMVaultExporter(object):
                     (done, kind, timer.seconds_to_human_time(elapsed), \
                      left, timer.estimate_time_left(done, elapsed, left)))
 
-        LOG.critical("Export complete in %s." % (timer.elapsed_human_time(),))
+        LOG.critical("Export completed in %s." % (timer.elapsed_human_time(),))
 
 
 class Mailbox(object):
