@@ -42,7 +42,8 @@ quick_days=10
 # it is 10 days but currently it will always be the current month or the last 2 months
 # the notion of days is not yet apparent in restore (only months).
 quick_days=10
-reserved_labels = [ u'migrated' ]
+reserved_labels     = [ u'migrated', u'\muted' ]
+reserved_labels_map = { u'migrated' : u'gmv-migrated', u'\muted' : u'gmv-muted' }
 
 [General]
 limit_per_chat_dir=2000
@@ -60,7 +61,7 @@ chat_folder=[ u'[Google Mail]/Чаты', u'[Gmail]/Чаты' ]
 
 #Do not touch any parameters below as it could force an overwrite of this file
 [VERSION]
-conf_version=1.8-beta
+conf_version=1.8.1
 
 #set environment variables for the program locally
 #they will be read only once the conf file has been loaded
