@@ -589,16 +589,21 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         listed_folders   = set([ directory.lower() for (_, _, directory) in self.list_all_folders() ])
         existing_folders = listed_folders.union(existing_folders)
         reserved_labels  = gmvault_utils.get_conf_defaults().get_list("Restore", "reserved_labels", \
-                                                                      [ u'migrated' ])
+                                                                      [ u'migrated', u'\\muted'])
         
 
         LOG.debug("Labels to create: [%s]" % (labels))
             
         for lab in labels:
+            #LOG.info("Reserved labels = %s\n" % (reserved_labels))
+            #LOG.info("lab.lower = %s\n" % (lab.lower()))
             if lab.lower() in reserved_labels: #exclude creation of migrated label
+                translation_map = gmvault_utils.get_conf_defaults().get_dict("Restore", "reserved_labels_map", {})
+                n_lab = translation_map.get(lab.lower(),"gmv-default-label")
                 LOG.info("Warning ! label '%s' (lower or uppercase) is reserved by Gmail and cannot be used."\
-                         "Use gmv-migrated instead" % (lab)) 
-                lab = u"gmv-migrated"
+                         "Use %s instead" % (lab, n_lab)) 
+                lab = n_lab
+                LOG.info("translated lab = %s\n" % (lab))
            
             #split all labels
             labs = self._get_dir_from_labels(lab) 

@@ -907,7 +907,7 @@ class GMVaulter(object):
         LOG.critical("Got all chats id left to restore. Still %s chats to do.\n" % (total_nb_emails_to_restore) )
         
         existing_labels     = set() #set of existing labels to not call create_gmail_labels all the time
-        reserved_labels     = gmvault_utils.get_conf_defaults().get_list("Restore", "reserved_labels", [ u'migrated' ])
+        reserved_labels     = gmvault_utils.get_conf_defaults().get_list("Restore", "reserved_labels", [ u'migrated', u'\\muted'])
         nb_emails_restored  = 0  #to count nb of emails restored
         labels_to_apply     = collections_utils.SetMultimap()
 
@@ -972,12 +972,14 @@ class GMVaulter(object):
                 self.src.select_folder('ALLMAIL') #go to ALL MAIL to make STORE usable
                 for label in labels_to_apply.keys():
                     if label.lower() in reserved_labels: #exclude creation of migrated label
-                        LOG.info("Apply label 'gmv-migrated' instead of '%s' (lower or uppercase)"\
-                                 " because it is a Gmail reserved label." % (label)) 
+                        translation_map = gmvault_utils.get_conf_defaults().get_dict("Restore", "reserved_labels_map", {})
+                        n_label = translation_map.get(lab.lower(), "gmv-default-label")
+                        LOG.info("Apply label '%s' instead of '%s' (lower or uppercase)"\
+                                 " because it is a Gmail reserved label." % (n_label, label)) 
                         #need ot change labels_to_apply
                         ids = labels_to_apply[label]
                         del labels_to_apply[label]
-                        label = "gmv-migrated"
+                        label = n_label
                         labels_to_apply[label] = ids
                     self.src.apply_labels_to(labels_to_apply[label], [label]) 
             except Exception, err:
@@ -1037,7 +1039,7 @@ class GMVaulter(object):
         LOG.critical("Got all emails id left to restore. Still %s emails to do.\n" % (total_nb_emails_to_restore) )
         
         existing_labels     = set() #set of existing labels to not call create_gmail_labels all the time
-        reserved_labels     = gmvault_utils.get_conf_defaults().get_list("Restore", "reserved_labels", [ u'migrated' ])
+        reserved_labels     = gmvault_utils.get_conf_defaults().get_list("Restore", "reserved_labels", [ u'migrated', u'\\muted' ])
         nb_emails_restored  = 0  #to count nb of emails restored
         labels_to_apply     = collections_utils.SetMultimap()
 
@@ -1078,18 +1080,19 @@ class GMVaulter(object):
                 
                     #labels for this email => real_labels U extra_labels
                     labels = set(email_meta[self.gstorer.LABELS_K])
-                    
+
                     # add in the labels_to_create struct
                     for label in labels:
                         if label != "\\Starred":
                             #LOG.debug("label = %s\n" % (label.encode('utf-8')))
                             LOG.debug("label = %s\n" % (label))
                             if label.lower() in reserved_labels: #exclude creation of migrated label
-                                LOG.debug("Apply label 'gmv-migrated' instead of '%s' (lower or uppercase)"\
-                                          " because it is a Gmail reserved label."\
-                                          % (label) ) 
-                                label = "gmv-migrated"
-                            labels_to_apply[label] = imap_id
+                                translation_map = gmvault_utils.get_conf_defaults().get_dict("Restore", "reserved_labels_map", {})
+                                n_label = translation_map.get(label.lower(), "gmv-default-label")
+                                LOG.info("Apply label '%s' instead of '%s' (lower or uppercase)"\
+                                 " because it is a Gmail reserved label." % (n_label, label)) 
+                                label = n_label
+                                labels_to_apply[label] = imap_id
             
                     # get list of labels to create (do a union with labels to create)
                     labels_to_create.update([ label for label in labels if label not in existing_labels])                  
