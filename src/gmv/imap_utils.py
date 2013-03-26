@@ -300,8 +300,11 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
             self.server.select_folder(self.current_folder, readonly = self.readonly_folder)
             
         #enable compression
-        self.enable_compression()
-        LOG.debug("After Enabling compression")
+        if gmvault_utils.get_conf_defaults().get_boolean('General', 'enable_imap_compression', True):
+            self.enable_compression()
+            LOG.debug("After Enabling compression.")
+        else:
+            LOG.debug("Do not enable imap compression.") 
             
     def disconnect(self):
         """

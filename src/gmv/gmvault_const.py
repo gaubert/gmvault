@@ -42,7 +42,6 @@ quick_days=10
 # it is 10 days but currently it will always be the current month or the last 2 months
 # the notion of days is not yet apparent in restore (only months).
 quick_days=10
-reserved_labels     = [ u'migrated', u'\muted' ]
 reserved_labels_map = { u'migrated' : u'gmv-migrated', u'\muted' : u'gmv-muted' }
 
 [General]
@@ -52,6 +51,7 @@ nb_messages_per_batch=500
 nb_messages_per_restore_batch=80
 restore_default_location=DRAFTS
 keep_in_bin=False
+enable_imap_compression=True
 
 [Localisation]
 #example with Russian
