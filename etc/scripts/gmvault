@@ -8,10 +8,19 @@ umask 002
 #################################
 ## GMVAULT Distribution home directory
 #################################
-#to be used on linux in case perl is not present ?
-#CDIR=`dirname "$(readlink -f $0)"`
-ABSPATH="$(perl -e "use Cwd 'abs_path'; print abs_path('$0')")"
-CDIR=`dirname "$ABSPATH"`
+#use perl by default. if perl is not there, default to readlink
+PERL_EXISTS=`which perl`
+RET_CODE=$?
+if [[ $RET_CODE -eq 0 ]]; then
+   echo "use perl"
+   ABSPATH="$(perl -e "use Cwd 'abs_path'; print abs_path('$0')")"
+   CDIR=`dirname "$ABSPATH"`
+else
+   echo "use readlink"
+   # perl doesn't exist so try to use readlink
+   CDIR=`dirname "$(readlink -f $0)"`
+fi
+
 HERE=$(unset CDPATH; cd "$CDIR"; pwd)
 GMVAULT_HOME=$(unset CDPATH; cd "$HERE/.."; pwd)
 
