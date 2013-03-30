@@ -11,14 +11,26 @@ umask 002
 #use perl by default. if perl is not there, default to readlink
 PERL_EXISTS=`which perl`
 RET_CODE=$?
-if [[ $RET_CODE -eq 0 ]]; then
-   echo "use perl"
+if [ $RET_CODE -eq 0 ]; then
    ABSPATH="$(perl -e "use Cwd 'abs_path'; print abs_path('$0')")"
    CDIR=`dirname "$ABSPATH"`
 else
-   echo "use readlink"
-   # perl doesn't exist so try to use readlink
-   CDIR=`dirname "$(readlink -f $0)"`
+   # perl doesn't exist so try to use readlink with -f option
+   res_readlink="$(readlink -f $0 2>&1)"
+   RET_CODE=$?
+   if [ $RET_CODE -eq 0 ]; then
+      CDIR=`dirname "$res_readlink"`
+   else
+      #try readlink without -f
+      res_readlink="$(readlink $0 2>&1)"
+      RET_CODE=$?
+      if [ $RET_CODE -eq 0 ]; then
+         CDIR=`dirname "$res_readlink"`
+      else
+         #do not use readlink default to a version that doesn't support symbolic link
+         CDIR=`dirname "$0"` 
+      fi
+   fi
 fi
 
 HERE=$(unset CDPATH; cd "$CDIR"; pwd)
