@@ -19,7 +19,7 @@
 
 #quick and dirty scrapper to get number of downloads
 
-import re
+import datetime
 import mechanize
 import BeautifulSoup as bs
 
@@ -128,13 +128,30 @@ if __name__ == "__main__":
     res.update(get_from_pypi("https://pypi.python.org/pypi/gmvault/1.8-beta"))
     res.update(get_from_pypi("https://pypi.python.org/pypi/gmvault/1.7-beta"))
 
-    #print("res = %s\n" %(res))
-
     print("name , nb_downloads") 
     total = 0
+    win_total = 0
+    lin_total = 0
+    mac_total = 0
+    v17_total = 0
+    v18_total = 0 
     for key in res.keys():
-        print("%s, %s\n" % (key, res[key]))
+        if key.endswith(".exe"):
+           win_total += res[key] 
+        elif "macosx" in key:
+           mac_total += res[key]
+        else:
+           lin_total += res[key]
+
+        if "v1.8" in key:
+           v18_total += res[key]
+        elif "v1.7" in key:
+           v17_total += res[key]
+
+        #print("%s, %s\n" % (key, res[key]))
         total += res[key]
 
-    print("total of downloads (v1.7 and v1.8) = %s.\n" %(total))
+    print("as of today %s, total of downloads (v1.7 and v1.8) = %s." %(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),total))
+    print("win total = %s,\nmac total = %s,\nlin total = %s." % (win_total, mac_total, lin_total))
+    print("v1.7x total = %s since (17-12-2012), v1.8x = %s since (19-03-2013)" % (v17_total, v18_total))
 
