@@ -130,12 +130,15 @@ if __name__ == "__main__":
 
     print("name , nb_downloads") 
     total = 0
-    win_total = 0
-    lin_total = 0
-    mac_total = 0
-    v17_total = 0
-    v18_total = 0 
+    win_total  = 0
+    lin_total  = 0
+    mac_total  = 0
+    v17_total  = 0
+    v18_total  = 0 
+    pypi_total = 0
+    src_total  = 0
     for key in res.keys():
+        #print("key= %s: (%s)\n" %(key, res[key]))
         if key.endswith(".exe"):
            win_total += res[key] 
         elif "macosx" in key:
@@ -148,10 +151,16 @@ if __name__ == "__main__":
         elif "v1.7" in key:
            v17_total += res[key]
 
+        if "src" in key:
+           src_total += res[key]
+        elif "pypi" in key:
+           pypi_total += res[key]
+
         #print("%s, %s\n" % (key, res[key]))
         total += res[key]
 
     print("as of today %s, total of downloads (v1.7 and v1.8) = %s." %(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),total))
     print("win total = %s,\nmac total = %s,\nlin total = %s." % (win_total, mac_total, lin_total))
     print("v1.7x total = %s since (17-12-2012), v1.8x = %s since (19-03-2013)" % (v17_total, v18_total))
+    print("pypi (v1.7x and v1.8x) total = %s, src (v1.7x and v1.8x) total = %s since (17-12-2013)" % (pypi_total, src_total))
 
