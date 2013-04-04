@@ -127,8 +127,31 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
         # it could be used without the compression 
         # (maybe make 2 set of methods without compression and with compression)
         #self.file   = self.sslobj.makefile('rb')
-    
+
     def read(self, size):
+        """
+            Read 'size' bytes from remote.
+            Call _intern_read that takes care of the compression
+        """
+        
+        chunks = cStringIO.StringIO() #use cStringIO.cStringIO to avoir too much fragmentation
+        read = 0
+        ragged_eof_try = 4
+        while read < size:
+            data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
+            if not data: 
+                if ragged_eof_try == 0:#ignore empty object the first 4 times
+                   #to avoid infinite looping due to empty string returned
+                   raise self.abort('Gmvault ssl socket error: EOF') 
+                else:
+                   ragged_eof_try -= 1
+            ragged_eof_try = 4
+            read += len(data)
+            chunks.write(data)
+        
+        return chunks.getvalue() #return the cStringIO content
+    
+    def old_read(self, size):
         """
             Read 'size' bytes from remote.
             Call _intern_read that takes care of the compression
