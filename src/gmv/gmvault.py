@@ -1103,6 +1103,7 @@ class GMVaulter(object):
                 
             # associate labels with emails
             LOG.critical("Applying labels to the current batch of emails.")
+
             try:
                 LOG.debug("Changing directory. Going into ALLMAIL")
                 the_timer = gmvault_utils.Timer()
