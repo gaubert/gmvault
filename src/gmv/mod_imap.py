@@ -129,7 +129,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
         # (maybe make 2 set of methods without compression and with compression)
         #self.file   = self.sslobj.makefile('rb')
 
-    def read(self, size):
+    def new_read(self, size):
         """
             Read 'size' bytes from remote.
             Call _intern_read that takes care of the compression
@@ -140,7 +140,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
         while read < size:
             try:
                 data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
-            except SSLError, err:
+            except ssl.SSLError, err:
                 print("************* SSLError received %s" % (err)) 
                 raise self.abort('Gmvault ssl socket error: EOF. Connection lost, reconnect.')
             read += len(data)
@@ -148,7 +148,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
         
         return chunks.getvalue() #return the cStringIO content
     
-    def old_read(self, size):
+    def read(self, size):
         """
             Read 'size' bytes from remote.
             Call _intern_read that takes care of the compression
