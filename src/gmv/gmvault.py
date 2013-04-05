@@ -961,7 +961,7 @@ class GMVaulter(object):
             
                     # get list of labels to create (do a union with labels to create)
                     #labels_to_create.update([ label for label in labels if label not in existing_labels]) 
-                    labels_to_create.update([ label for label in labels_to_apply if label not in existing_labels])                  
+                    labels_to_create.update([ label for label in labels_to_apply.keys() if label not in existing_labels])                  
                 
                 except Exception, err:
                     handle_restore_imap_error(err, gm_id, db_gmail_ids_info, self)
