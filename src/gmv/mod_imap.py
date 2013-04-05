@@ -120,7 +120,8 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
 
         #self.sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1) #try to set TCP NO DELAY to increase performances
 
-        self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
+        #self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
+        self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile, suppress_ragged_eofs = False)
         
         # This is the last correction added to avoid memory fragmentation in imaplib
         # makefile creates a file object that makes use of cStringIO to avoid mem fragmentation
@@ -136,16 +137,12 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
         
         chunks = cStringIO.StringIO() #use cStringIO.cStringIO to avoir too much fragmentation
         read = 0
-        ragged_eof_try = 2
         while read < size:
-            data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
-            if not data: 
-                if ragged_eof_try == 0:#ignore empty object the first 4 times
-                   #to avoid infinite looping due to empty string returned
-                   raise self.abort('Gmvault ssl socket error: EOF') 
-                else:
-                   ragged_eof_try -= 1
-            ragged_eof_try = 2
+            try:
+                data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
+            except SSLError, err:
+                print("************* SSLError received %s" % (err)) 
+                raise self.abort('Gmvault ssl socket error: EOF. Connection lost, reconnect.')
             read += len(data)
             chunks.write(data)
         
@@ -163,7 +160,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
             data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
             if not data: 
                 #to avoid infinite looping due to empty string returned
-                raise self.abort('Gmvault ssl socket error: EOF') 
+                raise self.abort('Gmvault ssl socket error: EOF. Connection lost, reconnect.') 
             read += len(data)
             chunks.write(data)
         
