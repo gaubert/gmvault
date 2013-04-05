@@ -136,7 +136,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
         
         chunks = cStringIO.StringIO() #use cStringIO.cStringIO to avoir too much fragmentation
         read = 0
-        ragged_eof_try = 4
+        ragged_eof_try = 2
         while read < size:
             data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
             if not data: 
@@ -145,7 +145,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
                    raise self.abort('Gmvault ssl socket error: EOF') 
                 else:
                    ragged_eof_try -= 1
-            ragged_eof_try = 4
+            ragged_eof_try = 2
             read += len(data)
             chunks.write(data)
         
