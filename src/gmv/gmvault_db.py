@@ -510,6 +510,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         the_dir = self.get_directory_from_id(a_id)
         
         data = self.DATA_FNAME % (the_dir, a_id)
+        meta = self.METADATA_FNAME % (the_dir, a_id)
         
         # check if encrypted and compressed or not
         if os.path.exists('%s.crypt.gz' % (data)):
@@ -519,8 +520,6 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         elif os.path.exists('%s.crypt' % (data)):
             data = '%s.crypt' % (data)
         
-        meta = self.METADATA_FNAME % (the_dir, a_id)
-
         #remove files if already quarantined
         q_data_path = os.path.join(self._quarantine_dir, os.path.basename(data))
         q_meta_path = os.path.join(self._quarantine_dir, os.path.basename(meta))
@@ -531,8 +530,15 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         if os.path.exists(q_meta_path):
             os.remove(q_meta_path)
 
-        shutil.move(data, self._quarantine_dir)
-        shutil.move(meta, self._quarantine_dir)
+        if os.path.exists(data):
+            shutil.move(data, self._quarantine_dir)
+        else:
+            LOG.info("Warning: %s file doesn't exist." % (data))
+        
+        if os.path.exists(meta):
+            shutil.move(meta, self._quarantine_dir)
+        else:
+            LOG.info("Warning: %s file doesn't exist." % (meta))
         
     def email_encrypted(self, a_email_fn):
         """

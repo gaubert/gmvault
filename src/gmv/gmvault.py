@@ -33,7 +33,7 @@ LOG = log_utils.LoggerFactory.get_logger('gmvault')
 
 def handle_restore_imap_error(the_exception, gm_id, db_gmail_ids_info, gmvaulter):
     """
-       function to handle restore IMAPError in restore functions 
+       function to handle restore IMAPError and OSError([Errno 2] No such file or directory) in restore functions 
     """
     if isinstance(the_exception, imaplib.IMAP4.abort):
         # if this is a Gmvault SSL Socket error quarantine the email and continue the restore
@@ -46,7 +46,14 @@ def handle_restore_imap_error(the_exception, gm_id, db_gmail_ids_info, gmvaulter
             gmvaulter.src.reconnect() #reconnect
         else:
             raise the_exception
-        
+    elif isinstance(the_exception, IOError) and str(the_exception).find('[Errno 2] No such file or directory:') >=0:
+           LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
+                         " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(the_exception)))  
+           gmvaulter.gstorer.quarantine_email(gm_id)
+           gmvaulter.error_report['emails_in_quarantine'].append(gm_id)
+           LOG.critical("Disconnecting and reconnecting to restart cleanly.")
+           gmvaulter.src.reconnect() #reconnect      
+           
     elif isinstance(the_exception, imaplib.IMAP4.error): 
         LOG.error("Catched IMAP Error %s" % (str(the_exception)))
         LOG.exception(the_exception)
@@ -936,11 +943,12 @@ class GMVaulter(object):
             
             # unbury the metadata for all these emails
             for gm_id in group_imap_ids:    
-                email_meta, email_data = self.gstorer.unbury_email(gm_id)
-                
-                LOG.critical("Pushing chat content with id %s." % (gm_id))
-                LOG.debug("Subject = %s." % (email_meta[self.gstorer.SUBJECT_K]))
                 try:
+                    email_meta, email_data = self.gstorer.unbury_email(gm_id)
+                    
+                    LOG.critical("Pushing chat content with id %s." % (gm_id))
+                    LOG.debug("Subject = %s." % (email_meta[self.gstorer.SUBJECT_K]))
+                    
                     # push data in gmail account and get uids
                     imap_id = self.src.push_data(all_mail_name, email_data, \
                                     email_meta[self.gstorer.FLAGS_K] , \
@@ -1064,11 +1072,12 @@ class GMVaulter(object):
             
             # unbury the metadata for all these emails
             for gm_id in group_imap_ids:    
-                email_meta, email_data = self.gstorer.unbury_email(gm_id)
-                
-                LOG.critical("Pushing email body with id %s." % (gm_id))
-                LOG.debug("Subject = %s." % (email_meta[self.gstorer.SUBJECT_K]))
                 try:
+                    email_meta, email_data = self.gstorer.unbury_email(gm_id)
+                    
+                    LOG.critical("Pushing email body with id %s." % (gm_id))
+                    LOG.debug("Subject = %s." % (email_meta[self.gstorer.SUBJECT_K]))
+                    
                     # push data in gmail account and get uids
                     imap_id = self.src.push_data(all_mail_name, email_data, \
                                     email_meta[self.gstorer.FLAGS_K] , \

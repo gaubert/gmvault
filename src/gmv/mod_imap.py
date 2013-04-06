@@ -120,8 +120,8 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
 
         #self.sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1) #try to set TCP NO DELAY to increase performances
 
-        #self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
-        self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile, suppress_ragged_eofs = False)
+        self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
+        #self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile, suppress_ragged_eofs = False)
         
         # This is the last correction added to avoid memory fragmentation in imaplib
         # makefile creates a file object that makes use of cStringIO to avoid mem fragmentation
