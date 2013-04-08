@@ -47,12 +47,12 @@ def handle_restore_imap_error(the_exception, gm_id, db_gmail_ids_info, gmvaulter
         else:
             raise the_exception
     elif isinstance(the_exception, IOError) and str(the_exception).find('[Errno 2] No such file or directory:') >=0:
-           LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
+        LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
                          " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(the_exception)))  
-           gmvaulter.gstorer.quarantine_email(gm_id)
-           gmvaulter.error_report['emails_in_quarantine'].append(gm_id)
-           LOG.critical("Disconnecting and reconnecting to restart cleanly.")
-           gmvaulter.src.reconnect() #reconnect      
+        gmvaulter.gstorer.quarantine_email(gm_id)
+        gmvaulter.error_report['emails_in_quarantine'].append(gm_id)
+        LOG.critical("Disconnecting and reconnecting to restart cleanly.")
+        gmvaulter.src.reconnect() #reconnect      
            
     elif isinstance(the_exception, imaplib.IMAP4.error): 
         LOG.error("Catched IMAP Error %s" % (str(the_exception)))
@@ -914,7 +914,8 @@ class GMVaulter(object):
         LOG.critical("Got all chats id left to restore. Still %s chats to do.\n" % (total_nb_emails_to_restore) )
         
         existing_labels     = set() #set of existing labels to not call create_gmail_labels all the time
-        reserved_labels_map = gmvault_utils.get_conf_defaults().get_dict("Restore", "reserved_labels_map", { u'migrated' : u'gmv-migrated', u'\muted' : u'gmv-muted' })
+        reserved_labels_map = gmvault_utils.get_conf_defaults().get_dict("Restore", "reserved_labels_map",\
+                              { u'migrated' : u'gmv-migrated', u'\muted' : u'gmv-muted' })
         nb_emails_restored  = 0  #to count nb of emails restored
         labels_to_apply     = collections_utils.SetMultimap()
 
@@ -969,7 +970,8 @@ class GMVaulter(object):
             
                     # get list of labels to create (do a union with labels to create)
                     #labels_to_create.update([ label for label in labels if label not in existing_labels]) 
-                    labels_to_create.update([ label for label in labels_to_apply.keys() if label not in existing_labels])                  
+                    labels_to_create.update([ label for label in labels_to_apply.keys() \
+                                              if label not in existing_labels])                  
                 
                 except Exception, err:
                     handle_restore_imap_error(err, gm_id, db_gmail_ids_info, self)
@@ -1100,7 +1102,8 @@ class GMVaulter(object):
             
                     # get list of labels to create (do a union with labels to create)
                     #labels_to_create.update([ label for label in labels if label not in existing_labels]) 
-                    labels_to_create.update([ label for label in labels_to_apply.keys() if label not in existing_labels])                      
+                    labels_to_create.update([ label for label in labels_to_apply.keys() \
+                                              if label not in existing_labels])                      
                 
                 except Exception, err:
                     handle_restore_imap_error(err, gm_id, db_gmail_ids_info, self)
