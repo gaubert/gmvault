@@ -258,6 +258,7 @@ class GMVaulter(object):
         self.src.connect()
         
         LOG.debug("Connected")
+        LOG.notice("NOTICE Connected")
         
         self.use_encryption = use_encryption
         

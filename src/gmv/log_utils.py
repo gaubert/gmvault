@@ -48,6 +48,15 @@ point to the old one.
 #default log file
 DEFAULT_LOG = "%s/gmvault.log" % (os.getenv("HOME", "."))
 
+
+class MyLogger(logbook.Logger):
+
+    def process_record(self, record):
+        logbook.Logger.process_record(self, record)
+        if record.level_name == "NOTICE":
+            print("record %s" % (record) )
+        #record.extra['cwd'] = os.getcwd()
+
 class LogbookLoggerFactory(object):
     """
        Factory for creating the right logbook handler
@@ -124,7 +133,8 @@ class LogbookLoggerFactory(object):
         """
            Return a logbook logger
         """
-        return logbook.Logger(name)
+        #return logbook.Logger(name)
+        return MyLogger(name)
 
 class LoggerFactory(object):
     '''
