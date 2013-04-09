@@ -49,12 +49,12 @@ class GMVaultExporter(object):
     GM_SEEN = '\\Seen'
     GM_FLAGGED = '\\Flagged'
 
-    def __init__(self, db_dir, mailbox, labels = None):
+    def __init__(self, db_dir, a_mailbox, labels = None):
         """
            constructor
         """
         self.storer = gmvault_db.GmailStorer(db_dir)
-        self.mailbox = mailbox
+        self.mailbox = a_mailbox
         self.labels = labels
 
     def want_label(self, label):
