@@ -158,9 +158,9 @@ def check_remote_mailbox_identical_to_local(the_self, gmvaulter, extra_labels = 
         for label in disk_labels:
             #change label Migrated (lower and uppercase) to gmv-migrated because reserved by Gmail
             if label.lower() == "migrated":
-               label = "gmv-migrated"
-            elif label.lower() == "\muted":
-               label = "gmv-muted"
+                label = "gmv-migrated"
+            elif label.lower() == r"\muted":
+                label = "gmv-muted"
             if label not in online_labels:
                 the_self.fail("label %s should be in online_labels %s as"\
                               " it is in disk_labels %s" % (label, online_labels, disk_labels))
