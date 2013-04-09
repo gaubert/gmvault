@@ -29,7 +29,7 @@ import gmv.gmvault_db as gmvault_db
 import gmv.gmvault_utils    as gmvault_utils
 
 
-def check_remote_mailbox_identical_to_local(the_self, gmvaulter): #pylint: disable=C0103,R0912,R0914,R0915
+def check_remote_mailbox_identical_to_local(the_self, gmvaulter, extra_labels = []): #pylint: disable=C0103,R0912,R0914,R0915
     """
        Check that the remote mailbox is identical to the local one attached
        to gmvaulter
@@ -138,6 +138,10 @@ def check_remote_mailbox_identical_to_local(the_self, gmvaulter): #pylint: disab
 
         #check labels
         disk_labels   = disk_metadata.get('labels', None)
+        #add extra labels
+        for x_lab in extra_labels:
+            disk_labels.append(x_lab)
+
         online_labels = imap_utils.decode_labels(online_metadata[imap_id].get('X-GM-LABELS', None)) 
 
         #clean potential labels with multiple spaces

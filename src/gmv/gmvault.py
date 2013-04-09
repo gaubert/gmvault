@@ -937,8 +937,7 @@ class GMVaulter(object):
             #remove all None elements from group_imap_ids
             group_imap_ids = itertools.ifilter(lambda x: x != None, group_imap_ids)
            
-            labels_to_create    = set() #create label set
-            labels_to_create.update(extra_labels) # add extra labels to applied to all emails
+            labels_to_create    = set(extra_labels) #create label set, add xtra labels in set
             
             LOG.critical("Processing next batch of %s chats.\n" % (nb_items))
             
@@ -972,6 +971,9 @@ class GMVaulter(object):
                     #labels_to_create.update([ label for label in labels if label not in existing_labels]) 
                     labels_to_create.update([ label for label in labels_to_apply.keys() \
                                               if label not in existing_labels])                  
+
+                    for ex_label in extra_labels: 
+                        labels_to_apply[ex_label] = imap_id
                 
                 except Exception, err:
                     handle_restore_imap_error(err, gm_id, db_gmail_ids_info, self)
@@ -1067,8 +1069,7 @@ class GMVaulter(object):
             #remove all None elements from group_imap_ids
             group_imap_ids = itertools.ifilter(lambda x: x != None, group_imap_ids)
            
-            labels_to_create    = set() #create label set
-            labels_to_create.update(extra_labels) # add extra labels to applied to all emails
+            labels_to_create    = set(extra_labels) #create label set and add extra labels to apply to all emails
             
             LOG.critical("Processing next batch of %s emails.\n" % (nb_items))
             
@@ -1104,6 +1105,9 @@ class GMVaulter(object):
                     #labels_to_create.update([ label for label in labels if label not in existing_labels]) 
                     labels_to_create.update([ label for label in labels_to_apply.keys() \
                                               if label not in existing_labels])                      
+
+                    for ex_label in extra_labels: 
+                        labels_to_apply[ex_label] = imap_id
                 
                 except Exception, err:
                     handle_restore_imap_error(err, gm_id, db_gmail_ids_info, self)
