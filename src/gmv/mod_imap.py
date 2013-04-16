@@ -78,7 +78,7 @@ def mod_convert_INTERNALDATE(date_string, normalise_times=True):#pylint: disable
     return the_dt
 
 #monkey patching is done here
-imapclient.response_parser._convert_INTERNALDATE = mod_convert_INTERNALDATE
+imapclient.response_parser._convert_INTERNALDATE = mod_convert_INTERNALDATE #pylint: disable=W0212
 
 #monkey patching add compress in COMMANDS of imap
 imaplib.Commands['COMPRESS'] = ('AUTH', 'SELECTED')
@@ -245,7 +245,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
         self._checkok('authenticate', typ, data)
         return data[0]  
     
-    def search(self, criteria):
+    def search(self, criteria): #pylint: disable=W0221
         """
            Perform a imap search or gmail search
         """
