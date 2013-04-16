@@ -287,7 +287,7 @@ class TestConf(unittest.TestCase): #pylint: disable=R0904
          
         self.fail('Should never reach that point')
         
-class TestResource(unittest.TestCase):
+class TestResource(unittest.TestCase): #pylint: disable=R0904
     """
        Test Class for the Resource object
     """   
