@@ -50,6 +50,17 @@ DEFAULT_LOG = "%s/gmvault.log" % (os.getenv("HOME", "."))
 
 
 class MyLogger(logbook.Logger):
+    """
+       Work on a GUI Logger. We want message for the console and control message.
+       Control message can be:
+       - short information to be added and printable
+       - progress information
+       - short error message
+       Process record => if notice get extension and format message:
+       [gmv-msg]: the message
+       [gmv-progress]: x over y
+       [gmv-error]: the error
+    """
 
     def process_record(self, record):
         logbook.Logger.process_record(self, record)
