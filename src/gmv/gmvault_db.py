@@ -23,6 +23,8 @@ import os
 import itertools
 import fnmatch
 import shutil
+import io
+import zipfile
 import zlib
 
 import gmv.blowfish as blowfish
@@ -32,6 +34,38 @@ import gmv.collections_utils as collections_utils
 import gmv.gmvault_utils as gmvault_utils
 import gmv.imap_utils as imap_utils
 import gmv.credential_utils as credential_utils
+
+class GzipWrap(object):
+    # input is a filelike object that feeds the input
+    def __init__(self, input, filename = None):
+        self.input = input
+        self.buffer = ''
+        self.zipper = GzipFile(filename, mode = 'wb', fileobj = self)
+
+    def read(self, size=-1):
+        if (size < 0) or len(self.buffer) < size:
+            for s in self.input:
+                self.zipper.write(s)
+                if size > 0 and len(self.buffer) >= size:
+                    self.zipper.flush()
+                    break
+            else:
+                self.zipper.close()
+            if size < 0:
+                ret = self.buffer
+                self.buffer = ''
+        else:
+            ret, self.buffer = self.buffer[:size], self.buffer[size:]
+        return ret
+
+    def flush(self):
+        pass
+
+    def write(self, data):
+        self.buffer += data
+
+    def close(self):
+        self.input.close()
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_db')
             
@@ -422,9 +456,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         
         if compress:
             data_path = '%s.zip' % (data_path)
+            iob = io.BytesIO()
             
-            z = zlib.compressobj()
-            data = z.compress(data)
+            data = zlib.compress(data)
         
         if self._encrypt_data:
             data_path = '%s.crypt' % (data_path)
@@ -505,8 +539,6 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         # check if encrypted and compressed or not
         if os.path.exists('%s.crypt.gz' % (data_p)):
             data_fd = gzip.open('%s.crypt.gz' % (data_p), 'r')
-        elif os.path.exists('%s.zip' % (data_p)):
-            #data_fd = zlib. do something
         elif os.path.exists('%s.gz' % (data_p)):
             data_fd = gzip.open('%s.gz' % (data_p), 'r')
         elif os.path.exists('%s.crypt' % (data_p)):
@@ -578,8 +610,20 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
            Return a tuple (meta, data)
         """
         the_dir = self.get_directory_from_id(a_id)
-
-        data_fd = self._get_data_file_from_id(the_dir, a_id)
+   
+        data_p = self.DATA_FNAME % (the_dir, a_id)
+        
+        # check if encrypted and compressed or not
+        if os.path.exists('%s.crypt.gz' % (data_p)):
+            data_fd = gzip.open('%s.crypt.gz' % (data_p), 'r')
+        elif os.path.exists('%s.zip' % (data_p)):
+            data_fd = gzip.open('%s.zip' % (data_p), 'r')
+        elif os.path.exists('%s.gz' % (data_p)):
+            data_fd = gzip.open('%s.gz' % (data_p), 'r')
+        elif os.path.exists('%s.crypt' % (data_p)):
+            data_fd = open('%s.crypt' % (data_p), 'r')
+        else:
+            data_fd = open(data_p)
         
         if self.email_encrypted(data_fd.name):
             LOG.debug("Restore encrypted email %s" % (a_id))
