@@ -23,6 +23,7 @@ import os
 import itertools
 import fnmatch
 import shutil
+import zlib
 
 import gmv.blowfish as blowfish
 import gmv.log_utils as log_utils
@@ -417,7 +418,26 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         
         data_path = self.DATA_FNAME % (the_dir, email_info[imap_utils.GIMAPFetcher.GMAIL_ID])
         
-        # if the data has to be encrypted
+        data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
+        
+        if compress:
+            data_path = '%s.zip' % (data_path)
+            
+            z = zlib.compressobj()
+            data = z.compress(data)
+        
+        if self._encrypt_data:
+            data_path = '%s.crypt' % (data_path)
+            
+            cipher = self.get_encryption_cipher()
+            cipher.initCTR()
+            data     = cipher.encryptCTR(data)
+            
+        data_desc = open(data_path, 'wb')
+        gmvault_utils.buffered_write(data_desc, data) if len(data) > 4194304 else data_desc.write(data)
+         
+        
+        """# if the data has to be encrypted
         if self._encrypt_data:
             data_path = '%s.crypt' % (data_path)
         
@@ -438,7 +458,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
             #data_desc.write(data)
             gmvault_utils.buffered_write(data_desc, data) if len(data) > 4194304 else data_desc.write(data)
- 
+        """
  
         self.bury_metadata(email_info, local_dir, extra_labels)
             
