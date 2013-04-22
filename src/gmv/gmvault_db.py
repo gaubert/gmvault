@@ -505,6 +505,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         # check if encrypted and compressed or not
         if os.path.exists('%s.crypt.gz' % (data_p)):
             data_fd = gzip.open('%s.crypt.gz' % (data_p), 'r')
+        elif os.path.exists('%s.zip' % (data_p)):
+            #data_fd = zlib. do something
         elif os.path.exists('%s.gz' % (data_p)):
             data_fd = gzip.open('%s.gz' % (data_p), 'r')
         elif os.path.exists('%s.crypt' % (data_p)):
