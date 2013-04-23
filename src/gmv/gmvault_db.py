@@ -458,9 +458,11 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             data_path = '%s.zip' % (data_path)
             iob = io.BytesIO()
             
-            zf = zipfile.Zipfile(iob, mode='w', compression=zipfile.ZIP_DEFLATE)
-            zf.writestr(data)
+            zf = zipfile.ZipFile(iob, mode='w', compression=zipfile.ZIP_DEFLATED)
+            #get filename without .zip
+            zf.writestr(os.path.basename(data_path)[:-4], data)
             zf.close()
+            data = iob.getvalue()
         
         if self._encrypt_data:
             data_path = '%s.crypt' % (data_path)
@@ -605,6 +607,16 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             return True
         else:
             return False
+    
+    def _decrypt(self, a_data):
+        """
+           decrypt a data buffer
+        """
+        # need to be done for every encryption
+        cipher = self.get_encryption_cipher()
+        cipher.initCTR()
+        
+        return cipher.decryptCTR(a_data)
         
     def unbury_email(self, a_id):
         """
@@ -615,26 +627,39 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
    
         data_p = self.DATA_FNAME % (the_dir, a_id)
         
+        data = None
         # check if encrypted and compressed or not
         if os.path.exists('%s.crypt.gz' % (data_p)):
             data_fd = gzip.open('%s.crypt.gz' % (data_p), 'r')
+            #gzip encrypted
+            data = self._decrypt(data_fd.read())
+        
+        #only zipped    
         elif os.path.exists('%s.zip' % (data_p)):
-            data_fd = gzip.open('%s.zip' % (data_p), 'r')
+            
+            data_fd = zipfile.ZipFile('%s.zip' % (data_p), 'r')
+            data = data_fd.read(os.path.basename(data_p))
+        
+        # zipped and crypted    
+        elif os.path.exists('%s.zip.crypt' % (data_p)):
+        
+            data_fd = open('%s.zip.crypt' % (data_p))
+            data    = self._decrypt(data_fd.read())
+            data_fd = io.BytesIO(data)
+            
+            data_fd = zipfile.ZipFile(data_fd, 'r')
+            data = data_fd.read(os.path.basename(data_p))
+            
         elif os.path.exists('%s.gz' % (data_p)):
             data_fd = gzip.open('%s.gz' % (data_p), 'r')
+            data = data_fd.read()
+            
         elif os.path.exists('%s.crypt' % (data_p)):
             data_fd = open('%s.crypt' % (data_p), 'r')
+            data = self._decrypt(data_fd.read())
         else:
             data_fd = open(data_p)
-        
-        if self.email_encrypted(data_fd.name):
-            LOG.debug("Restore encrypted email %s" % (a_id))
-            # need to be done for every encryption
-            cipher = self.get_encryption_cipher()
-            cipher.initCTR()
-            data = cipher.decryptCTR(data_fd.read())
-        else:
-            data = data_fd.read()
+            data    = data_fd.read()
         
         return (self.unbury_metadata(a_id, the_dir), data)
     
