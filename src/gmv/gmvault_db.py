@@ -25,6 +25,7 @@ import fnmatch
 import shutil
 import io
 import zipfile
+import gzip
 
 
 import gmv.blowfish as blowfish
@@ -40,7 +41,7 @@ class GzipWrap(object):
     def __init__(self, input, filename = None):
         self.input = input
         self.buffer = ''
-        self.zipper = GzipFile(filename, mode = 'wb', fileobj = self)
+        self.zipper = gzip.GzipFile(filename, mode = 'wb', fileobj = self)
 
     def read(self, size=-1):
         if (size < 0) or len(self.buffer) < size:
@@ -455,14 +456,19 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
         
         if compress:
-            data_path = '%s.zip' % (data_path)
-            iob = io.BytesIO()
-            
-            zf = zipfile.ZipFile(iob, mode='w', compression=zipfile.ZIP_DEFLATED)
-            #get filename without .zip
-            zf.writestr(os.path.basename(data_path)[:-4], data)
-            zf.close()
-            data = iob.getvalue()
+            if gmvault_utils.get_conf_defaults().get("General","file_compression", "gzip") == "gzip":
+                data_path = '%s.gz' % (data_path) 
+                gz  = GzipWrap(data)
+                data = gz.read()
+            else: #zip
+                data_path = '%s.zip' % (data_path)
+                iob = io.BytesIO()
+                
+                zf = zipfile.ZipFile(iob, mode='w', compression=zipfile.ZIP_DEFLATED)
+                #get filename without .zip
+                zf.writestr(os.path.basename(data_path)[:-4], data)
+                zf.close()
+                data = iob.getvalue()
         
         if self._encrypt_data:
             data_path = '%s.crypt' % (data_path)
@@ -648,6 +654,16 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             data_fd = io.BytesIO(data)
             
             data_fd = zipfile.ZipFile(data_fd, 'r')
+            data = data_fd.read(os.path.basename(data_p))
+        
+        # zipped and crypted    
+        elif os.path.exists('%s.gz.crypt' % (data_p)):
+        
+            data_fd = open('%s.gz.crypt' % (data_p))
+            data    = self._decrypt(data_fd.read())
+            data_fd = io.BytesIO(data)
+            
+            data_fd = gzip.GzipFile(filename=None, mode='r', compresslevel=9, fileobj=data_fd)
             data = data_fd.read(os.path.basename(data_p))
             
         elif os.path.exists('%s.gz' % (data_p)):
