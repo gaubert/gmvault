@@ -25,7 +25,7 @@ import fnmatch
 import shutil
 import io
 import zipfile
-import zlib
+
 
 import gmv.blowfish as blowfish
 import gmv.log_utils as log_utils
@@ -439,9 +439,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         """
            store all email info in 2 files (.meta and .eml files)
            Arguments:
-             email_info: the email content
-             local_dir : intermdiary dir (month dir)
-             compress  : if compress is True, use gzip compression
+           email_info: the email content
+           local_dir : intermdiary dir (month dir)
+           compress  : if compress is True, use gzip compression
         """
         
         if local_dir:
@@ -458,7 +458,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             data_path = '%s.zip' % (data_path)
             iob = io.BytesIO()
             
-            data = zlib.compress(data)
+            zf = zipfile.Zipfile(iob, mode='w', compression=zipfile.ZIP_DEFLATE)
+            zf.writestr(data)
+            zf.close()
         
         if self._encrypt_data:
             data_path = '%s.crypt' % (data_path)
