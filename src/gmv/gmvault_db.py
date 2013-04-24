@@ -458,8 +458,14 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         if compress:
             if gmvault_utils.get_conf_defaults().get("General","file_compression", "gzip") == "gzip":
                 data_path = '%s.gz' % (data_path) 
-                gz  = GzipWrap(data)
-                data = gz.read()
+                iob = io.BytesIO()
+                gz = gzip.GzipFile(filename = None, mode = 'w', compresslevel = 9 , fileobj = iob)
+                
+                gz.write(data)
+                gz.close()
+                
+                data = iob.getvalue()
+                
             else: #zip
                 data_path = '%s.zip' % (data_path)
                 iob = io.BytesIO()
@@ -479,30 +485,6 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             
         data_desc = open(data_path, 'wb')
         gmvault_utils.buffered_write(data_desc, data) if len(data) > 4194304 else data_desc.write(data)
-         
-        
-        """# if the data has to be encrypted
-        if self._encrypt_data:
-            data_path = '%s.crypt' % (data_path)
-        
-        if compress:
-            data_path = '%s.gz' % (data_path)
-            data_desc = gzip.open(data_path, 'wb')
-        else:
-            data_desc = open(data_path, 'wb')
-            
-        if self._encrypt_data:
-            # need to be done for every encryption
-            cipher = self.get_encryption_cipher()
-            cipher.initCTR()
-            data     = cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
-            gmvault_utils.buffered_write(data_desc, data) if len(data) > 4194304 else data_desc.write(data)
-        else:
-            
-            data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
-            #data_desc.write(data)
-            gmvault_utils.buffered_write(data_desc, data) if len(data) > 4194304 else data_desc.write(data)
-        """
  
         self.bury_metadata(email_info, local_dir, extra_labels)
             
