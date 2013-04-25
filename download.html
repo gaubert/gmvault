@@ -143,43 +143,17 @@ a[name] {
     </tbody>
    </table>
    <h3>Release Information</h3>
-   <p>Gmvault v1.8-beta includes the following new features and bug fixes:</p>
-   <h4>Added new Features:</h4>
-   <ul>
-    <li class="icon-plus">Performances: Backup speed increased by 4 (mailbox of 40000+ emails synched in 2.2 hrs instead of 9.5 hrs).</li>
-    <li class="icon-plus">Performances: Restore speed increased by 2 (mailbox of 40000+ emails restored in 6 hours instead of 12 hrs).</li>
-    <li class="icon-plus">Increase support for non english languages: Support for labels tested in Japanese, German, French, Spanish, Danish. Other languages should also be supported.</li>
-    <li class="icon-plus">Experimental export function to create a mbox or maildir mailbox from a gmvault-db allowing offline browsing with a stand mail client (Thunderbird, Dovecot, ...).</li>
-    <li class="icon-plus">Support Gmail 2-legged OAuth authentication allowing Google Apps Business or Education account owners to use Gmvault [Github feature #105].</li>
-    <li class="icon-plus">Handle labels reserved by Gmail such as Migrated while restoring [Github feature #110].</li>
-    <li class="icon-plus">Add starting date and time at the beginning of a sync or restore operation [Github feature #106].</li>
-    <li class="icon-plus">Introduction of a deferred Logger allowing easier integration with a Graphical User Interface (GUI).</li>
-    <li class="icon-plus">Change license to AGPLv3.</li>
-    <li class="icon-plus">Enable IMAP Debugging with GMV_IMAP_DEBUG env variable.</li>
-    <li class="icon-plus">Add total time spent while synchronising or restoring.</li>
-    
-   </ul>
+   <p>Gmvault v1.8.1-beta is a small update created to fix few imperfections left in 1.8-beta:</p>
    <h4>Bug Fixes:</h4>
    <ul>
-    <li class="icon-minus">Fix bug preventing the backup of very large emails on windows.</li>
-    <li class="icon-minus">Fix bug preventing the deletion of encrypted emails in gmvault-db. [Github issue #108, #100, #94, #93].</li>
-    <li class="icon-minus">Upgrade Windows version to Python2.7.3 to avoid having potential non existent security issue [Github issue #89].</li>
-    <li class="icon-minus">Fix bug preventing Chat backup for non english languages fixed (all languages potentially allowed) [Github issue #76].</li>
-    <li class="icon-minus">Fix bug preventing support for labels with spaces, quotes [Github issue #86 #79].</li>
-    <li class="icon-minus">Fix bug preventing the support of non ascii character in labels [Github issue #107].</li>
-    <li class="icon-minus">Fix bug preventing Gmail searches with non ascii characters (ie support german, norvegian, french letters, ...) [Github issue #99].</li>
-    <li class="icon-minus">Fix bug preventing to link the gmvault starting script [Github issue #98 contributed by @jinnko].</li>
-    <li class="icon-minus">Fix bug preventing quick sync in some case to update \Seen flag [Github issue #69].</li>
-    <li class="icon-minus">Fix bug creating wrong time reportings when chats synchronised [Github issue #75].</li>
+    <li class="icon-minus">Fix bug on gmvault bash script failing when perl was not found. [Github issue #116].</li>
+    <li class="icon-minus">Fix bug preventing to restore reserved Gmail label \Muted. [Github issue #117].</li>
+    <li class="icon-minus">Add way to deactivate the IMAP compression from the configuration file.</li>
    </ul>
    <h3>Shout-outs </h3>
-   <p><strong>Thank you all for supporting Gmvault on Twitter, Github and other social media.</strong> </br>
+   <p><strong>Thank you all for supporting Gmvault on Emails, Twitter, Github and other social media.</strong> </br>
     Please keep <strong>buzzing about Gmvault</strong> and let me know if you discover an issue (go <a href="./report_pb.html">here</a> to report the issue). </br>
     </br>
-    Below is a special thank you for all poeple that reported problems, asked for features and helped me testing intermediate versions:</p>
-   <i class="icon-github-sign"></i> <strong>Github id</strong>:
-   <pre>@vasi, @kormoc, @burkemw3, @bdkzero, @hebner, @Rragen, @dukaras, @altsyst, @mistofvongola, @jinnko, @konfetov, @martey, @dmd, @jeverling, @poolis, @aseemk, @tazir, @takluyver, @isaakm, @musicjunkieg</pre>
-   <p>Also shoutouts to all the users that sent me support emails and raised issues by emails.</p>
    <div class="page-header">
     <h2>Gmvault v1.8-beta</h2>
    </div>
