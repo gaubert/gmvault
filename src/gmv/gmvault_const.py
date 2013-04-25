@@ -54,6 +54,8 @@ keep_in_bin=False
 #zip or gzip
 file_compression=gzip
 enable_imap_compression=True
+#STANDALONE or GUI
+logging_type=GUI
 
 [Localisation]
 #example with Russian
