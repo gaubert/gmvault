@@ -658,7 +658,7 @@ class GMVaultLauncher(object):
            Execute All synchronisation operations
         """
         LOG.critical("Connect to Gmail server.\n")
-        LOG.notice("NOTICE CONNECT TO GMAIL SERVER", extra = { 'type' : 'PRO'} )
+        LOG.notice("NOTICE CONNECT TO GMAIL SERVER", extra = { 'type' : 'MSG'} )
         
         # handle credential in all levels
         syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
