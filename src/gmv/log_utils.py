@@ -23,6 +23,7 @@ import logbook
 
 #different types of LoggerFactory
 STANDALONE = "STANDALONE"
+GUI        = "GUI"
 
 
 class StdoutHandler(logbook.StreamHandler):
@@ -48,6 +49,32 @@ point to the old one.
 #default log file
 DEFAULT_LOG = "%s/gmvault.log" % (os.getenv("HOME", "."))
 
+
+class GUILogger(logbook.Logger):
+    """
+       Work on a GUI Logger. We want message for the console and control message.
+       Control message can be:
+       - short information to be added and printable
+       - progress information
+       - short error message
+       Process record => if notice get extension and format message:
+       [gmv-msg]: the message
+       [gmv-progress]: x over y
+       [gmv-error]: the error
+    """
+
+    def process_record(self, record):
+        logbook.Logger.process_record(self, record)
+        if record.level_name == "NOTICE":
+            if record.extra.get('type', 'DEF') == 'MSG':
+                record.msg = '[gmv-msg]:%s' % (record.msg)
+            elif record.extra.get('type', 'DEF') == 'PRO':
+                record.msg = '[gmv-pro]:%s' % (record.msg)
+            elif record.extra.get('type', 'DEF') == 'ERR':
+                record.msg = '[gmv-err]:%s' % (record.msg)
+            else:
+                record.msg = '[gmv-def]:%s' % (record.msg)
+            
 class LogbookLoggerFactory(object):
     """
        Factory for creating the right logbook handler
@@ -125,6 +152,15 @@ class LogbookLoggerFactory(object):
            Return a logbook logger
         """
         return logbook.Logger(name)
+        return GUILogger(name)
+
+class GUILogbookLoggerFactory(LogbookLoggerFactory):
+    """
+       Factory for creating the right logbook handler for the GUI
+    """
+    def get_logger(self, name):
+        """ return GUI Logger """
+        return GUILogger(name)
 
 class LoggerFactory(object):
     '''
@@ -144,6 +180,9 @@ class LoggerFactory(object):
         
         if the_type == STANDALONE:
             cls._factory = LogbookLoggerFactory()
+            cls._created = True
+        elif the_type == GUI:
+            cls._factory = GUILogbookLoggerFactory()
             cls._created = True
         else:
             raise Exception("LoggerFactory type %s is unknown." % (the_type))
@@ -189,4 +228,3 @@ class LoggerFactory(object):
         cls.get_factory(the_type).setup_cli_app_handler(activate_log_file, \
                                                     console_level, \
                                                     file_path, log_file_level)
-        

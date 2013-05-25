@@ -23,6 +23,10 @@ import os
 import itertools
 import fnmatch
 import shutil
+import io
+import zipfile
+import gzip
+
 
 import gmv.blowfish as blowfish
 import gmv.log_utils as log_utils
@@ -31,6 +35,38 @@ import gmv.collections_utils as collections_utils
 import gmv.gmvault_utils as gmvault_utils
 import gmv.imap_utils as imap_utils
 import gmv.credential_utils as credential_utils
+
+class GzipWrap(object):
+    # input is a filelike object that feeds the input
+    def __init__(self, input, filename = None):
+        self.input = input
+        self.buffer = ''
+        self.zipper = gzip.GzipFile(filename, mode = 'wb', fileobj = self)
+
+    def read(self, size=-1):
+        if (size < 0) or len(self.buffer) < size:
+            for s in self.input:
+                self.zipper.write(s)
+                if size > 0 and len(self.buffer) >= size:
+                    self.zipper.flush()
+                    break
+            else:
+                self.zipper.close()
+            if size < 0:
+                ret = self.buffer
+                self.buffer = ''
+        else:
+            ret, self.buffer = self.buffer[:size], self.buffer[size:]
+        return ret
+
+    def flush(self):
+        pass
+
+    def write(self, data):
+        self.buffer += data
+
+    def close(self):
+        self.input.close()
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_db')
             
@@ -404,9 +440,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         """
            store all email info in 2 files (.meta and .eml files)
            Arguments:
-             email_info: the email content
-             local_dir : intermdiary dir (month dir)
-             compress  : if compress is True, use gzip compression
+           email_info: the email content
+           local_dir : intermdiary dir (month dir)
+           compress  : if compress is True, use gzip compression
         """
         
         if local_dir:
@@ -417,28 +453,38 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         
         data_path = self.DATA_FNAME % (the_dir, email_info[imap_utils.GIMAPFetcher.GMAIL_ID])
         
-        # if the data has to be encrypted
-        if self._encrypt_data:
-            data_path = '%s.crypt' % (data_path)
+        data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
         
         if compress:
-            data_path = '%s.gz' % (data_path)
-            data_desc = gzip.open(data_path, 'wb')
-        else:
-            data_desc = open(data_path, 'wb')
-            
+            if gmvault_utils.get_conf_defaults().get("General","file_compression", "gzip") == "gzip":
+                data_path = '%s.gz' % (data_path) 
+                iob = io.BytesIO()
+                gz = gzip.GzipFile(filename = None, mode = 'w', compresslevel = 9 , fileobj = iob)
+                
+                gz.write(data)
+                gz.close()
+                
+                data = iob.getvalue()
+                
+            else: #zip
+                data_path = '%s.zip' % (data_path)
+                iob = io.BytesIO()
+                
+                zf = zipfile.ZipFile(iob, mode='w', compression=zipfile.ZIP_DEFLATED)
+                #get filename without .zip
+                zf.writestr(os.path.basename(data_path)[:-4], data)
+                zf.close()
+                data = iob.getvalue()
+        
         if self._encrypt_data:
-            # need to be done for every encryption
+            data_path = '%s.crypt' % (data_path)
+            
             cipher = self.get_encryption_cipher()
             cipher.initCTR()
-            data     = cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
-            gmvault_utils.buffered_write(data_desc, data) if len(data) > 4194304 else data_desc.write(data)
-        else:
+            data     = cipher.encryptCTR(data)
             
-            data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
-            #data_desc.write(data)
-            gmvault_utils.buffered_write(data_desc, data) if len(data) > 4194304 else data_desc.write(data)
- 
+        data_desc = open(data_path, 'wb')
+        gmvault_utils.buffered_write(data_desc, data) if len(data) > 4194304 else data_desc.write(data)
  
         self.bury_metadata(email_info, local_dir, extra_labels)
             
@@ -549,6 +595,16 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             return True
         else:
             return False
+    
+    def _decrypt(self, a_data):
+        """
+           decrypt a data buffer
+        """
+        # need to be done for every encryption
+        cipher = self.get_encryption_cipher()
+        cipher.initCTR()
+        
+        return cipher.decryptCTR(a_data)
         
     def unbury_email(self, a_id):
         """
@@ -556,17 +612,52 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
            Return a tuple (meta, data)
         """
         the_dir = self.get_directory_from_id(a_id)
-
-        data_fd = self._get_data_file_from_id(the_dir, a_id)
+   
+        data_p = self.DATA_FNAME % (the_dir, a_id)
         
-        if self.email_encrypted(data_fd.name):
-            LOG.debug("Restore encrypted email %s" % (a_id))
-            # need to be done for every encryption
-            cipher = self.get_encryption_cipher()
-            cipher.initCTR()
-            data = cipher.decryptCTR(data_fd.read())
-        else:
+        data = None
+        # check if encrypted and compressed or not
+        if os.path.exists('%s.crypt.gz' % (data_p)):
+            data_fd = gzip.open('%s.crypt.gz' % (data_p), 'r')
+            #gzip encrypted
+            data = self._decrypt(data_fd.read())
+        
+        #only zipped    
+        elif os.path.exists('%s.zip' % (data_p)):
+            
+            data_fd = zipfile.ZipFile('%s.zip' % (data_p), 'r')
+            data = data_fd.read(os.path.basename(data_p))
+        
+        # zipped and crypted    
+        elif os.path.exists('%s.zip.crypt' % (data_p)):
+        
+            data_fd = open('%s.zip.crypt' % (data_p))
+            data    = self._decrypt(data_fd.read())
+            data_fd = io.BytesIO(data)
+            
+            data_fd = zipfile.ZipFile(data_fd, 'r')
+            data = data_fd.read(os.path.basename(data_p))
+        
+        # zipped and crypted    
+        elif os.path.exists('%s.gz.crypt' % (data_p)):
+        
+            data_fd = open('%s.gz.crypt' % (data_p))
+            data    = self._decrypt(data_fd.read())
+            data_fd = io.BytesIO(data)
+            
+            data_fd = gzip.GzipFile(filename=None, mode='r', compresslevel=9, fileobj=data_fd)
+            data = data_fd.read(os.path.basename(data_p))
+            
+        elif os.path.exists('%s.gz' % (data_p)):
+            data_fd = gzip.open('%s.gz' % (data_p), 'r')
             data = data_fd.read()
+            
+        elif os.path.exists('%s.crypt' % (data_p)):
+            data_fd = open('%s.crypt' % (data_p), 'r')
+            data = self._decrypt(data_fd.read())
+        else:
+            data_fd = open(data_p)
+            data    = data_fd.read()
         
         return (self.unbury_metadata(a_id, the_dir), data)
     

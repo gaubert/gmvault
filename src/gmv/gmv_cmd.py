@@ -661,6 +661,7 @@ class GMVaultLauncher(object):
            Execute All synchronisation operations
         """
         LOG.critical("Connect to Gmail server.\n")
+        LOG.notice("NOTICE CONNECT TO GMAIL SERVER", extra = { 'type' : 'MSG'} )
         
         # handle credential in all levels
         syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
@@ -814,8 +815,12 @@ def init_logging():
     """
        init logging infrastructure
     """       
+    
     #setup application logs: one handler for stdout and one for a log file
-    log_utils.LoggerFactory.setup_cli_app_handler(log_utils.STANDALONE, activate_log_file=False, file_path="./gmvault.log") 
+    log_utils.LoggerFactory.setup_cli_app_handler(gmvault_utils.get_conf_defaults().get("General", "logging_type"),\
+                                                  console_level= 'NOTICE', \
+                                                  activate_log_file=False, \
+                                                  file_path="./gmvault.log") 
     
 def activate_debug_mode():
     """
@@ -850,7 +855,7 @@ def setup_default_conf():
 
 def bootstrap_run():
     """ temporary bootstrap """
-    
+     
     init_logging()
     
     #force argv[0] to gmvault

@@ -51,7 +51,11 @@ nb_messages_per_batch=500
 nb_messages_per_restore_batch=80
 restore_default_location=DRAFTS
 keep_in_bin=False
+#zip or gzip
+file_compression=gzip
 enable_imap_compression=True
+#STANDALONE or GUI
+logging_type=GUI
 
 [Localisation]
 #example with Russian
