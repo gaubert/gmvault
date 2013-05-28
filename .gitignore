@@ -6,3 +6,6 @@ gmvault.log
 .DS_Store
 dists/disstoolbox-dist/build
 dists/disstoolbox-dist/build/*
+build/
+gmvault.egg-info/
+
