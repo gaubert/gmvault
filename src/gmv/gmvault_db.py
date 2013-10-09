@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
+import codecs
 import json
 import gzip
 import re
@@ -400,7 +401,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         
         return self.bury_email(chat_info, local_dir, compress, extra_labels)
     
-    def bury_email(self, email_info, local_dir = None, compress = False, extra_labels = []): #pylint:disable=W0102
+    def bury_email(self, email_info, local_dir = None, compress = False, encoding = 'utf-8', extra_labels = []): #pylint:disable=W0102
         """
            store all email info in 2 files (.meta and .eml files)
            Arguments:
@@ -425,7 +426,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             data_path = '%s.gz' % (data_path)
             data_desc = gzip.open(data_path, 'wb')
         else:
-            data_desc = open(data_path, 'wb')
+            data_desc = codecs.open(data_path, 'wb', encoding)
             
         if self._encrypt_data:
             # need to be done for every encryption
