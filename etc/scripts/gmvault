@@ -84,7 +84,12 @@ runner.bootstrap_run()
 EOF
 
 #call gmvault bootstrap
-"$PYTHON_BIN" /tmp/gmvault.bootstrap.$$ "$@"
-res="$?"
+if [ -r /tmp/gmvault.bootstrap.$$ ];then
+	"$PYTHON_BIN" /tmp/gmvault.bootstrap.$$ "$@"
+        res="$?"
+else
+	echo "Could not run gmvault bootstrap."
+	res=1
+fi
 
 exit $res
