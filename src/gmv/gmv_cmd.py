@@ -777,7 +777,7 @@ class GMVaultLauncher(object):
             on_error = False
         
         except KeyboardInterrupt, _:
-            LOG.critical("\nCRTL^C. Stop all operations.\n")
+            LOG.critical("\nCTRL-C. Stop all operations.\n")
             on_error = False
         except socket.error:
             LOG.critical("Error: Network problem. Please check your gmail server hostname,"\
