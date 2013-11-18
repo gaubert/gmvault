@@ -56,6 +56,8 @@ file_compression=gzip
 enable_imap_compression=True
 #STANDALONE or GUI
 logging_type=GUI
+# gmvault-db dir default in $HOME. GMV$EMAIL%DEF means use passed email
+default_gmvault-db=GMV$EMAIL%DEF
 
 [Localisation]
 #example with Russian

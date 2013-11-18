@@ -59,8 +59,9 @@ class GUILogger(logbook.Logger):
        - short error message
        Process record => if notice get extension and format message:
        [gmv-msg]: the message
-       [gmv-progress]: x over y
+       [gmv-pro]: x over y (progress)
        [gmv-error]: the error
+       [gmv-def]: defaults
     """
 
     def process_record(self, record):

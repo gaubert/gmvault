@@ -1,0 +1,23 @@
+TODO:
+----
+- Integrate updates from master branch
+- Fix bug with codecs
+- Fix other bugs
+- Create version with pycrypto
+- Release
+- Add GUI
+- Add default DB that is built from the email 
+
+
+DOING:
+------
+
+1) Add default DB that is built from the email
+
+We could have it by default depending on email but how is it going to work with the multi owned repositories.
+
+First a default should be created from the conf
+default_gmvault_db=GMV$EMAIL%DEF # this is the default to use email
+default_gmvault_db=gmvault-db # this is the default to use email
+
+
