@@ -5,7 +5,7 @@ Release Notes for the different versions:
 Version Gmvault-v1.8.1-beta:
 -------------------------------
 -------------------------------
-Date: 21.04.2013
+Date: 28.04.2013
 
 Release of a small update to fix few imperfections left in 1.8-beta.
 
@@ -14,11 +14,6 @@ Bug Fixes:
 - Fix bug on gmvault bash script failing when perl was not found. [Github issue #116].
 - Fix bug preventing to restore reserved Gmail label \Muted. [Github issue #117].
 - Fix add way to deactivate the IMAP compression from the configuration file.
-
-Web site Activity:
-------------------
-- Extend the In Depth page with export documentation.
-- add contributor file and donator Gmvault pantheon.
 
 -------------------------------
 Version Gmvault-v1.8-beta:

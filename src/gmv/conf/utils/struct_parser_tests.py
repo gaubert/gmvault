@@ -21,7 +21,7 @@
 import unittest
 from gmv.conf.utils.struct_parser import Compiler, CompilerError
 
-class TestParser(unittest.TestCase):
+class TestParser(unittest.TestCase): #pylint: disable=R0904
     """ TestParser Class """
     
     def setUp(self): #pylint: disable=C0103
