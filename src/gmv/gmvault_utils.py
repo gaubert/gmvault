@@ -647,6 +647,8 @@ def get_conf_filepath():
     return home_conf_file
 
 OLD_DEFAULT_GMVAULT_DB = "%s/gmvault-db" % (os.getenv("HOME", "."))
+
+GMVAULT_DB_DIR = "%s/gmvault-db" % (os.getenv("HOME", ".")) 
 GMVAULT_DB_EMAIL_DEFAULT = "GMV$EMAIL%DEF"
 
 def get_default_gmvault_db_path(email):
@@ -654,10 +656,19 @@ def get_default_gmvault_db_path(email):
        Get a default Gmvault db dir based on the user email.
        This utility function takes care of the old default $HOME/gmvault-db
     """
-    default_db_dir = get_conf_defaults().get("General", "default_gmvault-db", )
+    default_db_dir = get_conf_defaults().get("General", "default_gmvault-db", GMVAULT_DB_EMAIL_DEFAULT)
     
+    #check if the old default dir is there.
+    if os.path.exists("%s/%s" %(OLD_DEFAULT_GMVAULT_DB, "db")) and 
+       os.path.exists("%s/%s" % (OLD_DEFAULT_GMVAULT_DB, "quarantine")):
+        #default dir is there
     
-    
+    # if this is GMVAULT_DB_EMAIL_DEFAULT then take the email and change it
+    if default_db_dir == GMVAULT_DB_EMAIL_DEFAULT:
+        #transform email replace @ with _at_
+        n_email = email.replace("@","_at_")
+        return "%s/%s" % (GMVAULT_DB_DIR, n_email)
+    elif default_db
 
     
     
