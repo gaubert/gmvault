@@ -806,10 +806,13 @@ class GMVaultLauncher(object):
             LOG.critical(gmvault_utils.get_exception_traceback())
             LOG.critical("=== End of Exception traceback ===\n")
             die_with_usage = False
-        finally: 
-            if on_error and die_with_usage:
-                args['parser'].die_with_usage()
- 
+        finally:
+            if on_error:
+                if die_with_usage:
+                    args['parser'].die_with_usage()
+                sys.exit(1)
+
+
 def init_logging():
     """
        init logging infrastructure
@@ -884,5 +887,3 @@ if __name__ == '__main__':
     register_traceback_signal()
     
     bootstrap_run()
-    
-    sys.exit(0)
