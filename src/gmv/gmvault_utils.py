@@ -585,20 +585,18 @@ def _create_default_conf_file(home_conf_file):
     """
        Write on disk the default file
     """
-    LOG.critical("Create defaults in %s. Please touch this file only if you know what to do." % (home_conf_file))
+    LOG.critical("Create defaults in %s. Please touch this file only if you know what to do." % home_conf_file)
     try:
-        the_fd = open(home_conf_file, "w+")
-        the_fd.write(gmvault_const.DEFAULT_CONF_FILE)
-        the_fd.close()
+        with open(home_conf_file, "w+") as f:
+            f.write(gmvault_const.DEFAULT_CONF_FILE)
         return home_conf_file
     except Exception, err:
         #catch all error and let run gmvault with defaults if needed
-        LOG.critical("Ignore Error when trying to create conf file for defaults in %s:\n%s.\n" % (get_home_dir_path(), err) )
+        LOG.critical("Ignore Error when trying to create conf file for defaults in %s:\n%s.\n" % (get_home_dir_path(), err))
         LOG.debug("=== Exception traceback ===")
         LOG.debug(get_exception_traceback())
         LOG.debug("=== End of Exception traceback ===\n")
         #return default file instead
-        return         
 
 @memoized
 def get_conf_filepath():

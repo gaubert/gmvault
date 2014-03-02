@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+from contextlib import contextmanager
 import json
 import gzip
 import re
@@ -176,9 +177,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         """
         version_file = '%s/%s' % (self._info_dir, self.GMVAULTDB_VERSION)
         if not os.path.exists(version_file):
-            the_fd = open(version_file, "w+")
-            the_fd.write(gmvault_utils.GMVAULT_VERSION)
-            the_fd.close()
+            with open(version_file, "w+") as f:
+                f.write(gmvault_utils.GMVAULT_VERSION)
 
     def store_db_owner(self, email_owner):
         """
@@ -190,11 +190,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
         if email_owner not in owners:
             owners.append(email_owner)
-            the_fd = open('%s/%s' % (self._info_dir, self.EMAIL_OWNER), "w+")
-            json.dump(owners, the_fd, ensure_ascii = False)
-            the_fd.flush()
-            the_fd.close()
-
+            with open('%s/%s' % (self._info_dir, self.EMAIL_OWNER), "w+") as f:
+                json.dump(owners, f, ensure_ascii=False)
+                f.flush()
 
     def get_db_owners(self):
         """
@@ -203,9 +201,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         """
         fname = '%s/%s' % (self._info_dir, self.EMAIL_OWNER)
         if os.path.exists(fname):    
-            the_fd = open(fname)
-            list_of_owners = json.load(the_fd)
-            the_fd.close()
+            with open(fname, 'r') as f:
+                list_of_owners = json.load(f)
             return list_of_owners
 
         return []
@@ -356,45 +353,45 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         else:
             the_dir = self._db_dir
 
-        meta_path = self.METADATA_FNAME % (the_dir, email_info[imap_utils.GIMAPFetcher.GMAIL_ID])
+        meta_path = self.METADATA_FNAME % (
+            the_dir, email_info[imap_utils.GIMAPFetcher.GMAIL_ID])
 
-        meta_desc = open(meta_path, 'w')
+        with open(meta_path, 'w') as meta_desc:
+            # parse header fields to extract subject and msgid
+            subject, msgid, received = self.parse_header_fields(
+                email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS_KEY])
 
-        # parse header fields to extract subject and msgid
-        subject, msgid, received = self.parse_header_fields(email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS_KEY])
+            # need to convert labels that are number as string
+            # come from imap_lib when label is a number
+            labels = []
+            for label in email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS]:
+                if isinstance(label, (int, long, float, complex)):
+                    label = str(label)
 
-        # need to convert labels that are number as string
-        # come from imap_lib when label is a number
-        labels = []
-        for label in email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS]:
-            if isinstance(label, (int, long, float, complex)):
-                label = str(label)
+                labels.append(unicode(gmvault_utils.remove_consecutive_spaces_and_strip(label)))
 
-            labels.append(unicode(gmvault_utils.remove_consecutive_spaces_and_strip(label)))
+            labels.extend(extra_labels) #add extra labels
 
-        labels.extend(extra_labels) #add extra labels
+            #create json structure for metadata
+            meta_obj = {
+                         self.ID_K         : email_info[imap_utils.GIMAPFetcher.GMAIL_ID],
+                         self.LABELS_K     : labels,
+                         self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
+                         self.THREAD_IDS_K : email_info[imap_utils.GIMAPFetcher.GMAIL_THREAD_ID],
+                         self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]),
+                         self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
+                         self.SUBJECT_K    : subject,
+                         self.MSGID_K      : msgid,
+                         self.XGM_RECV_K   : received
+                       }
 
-        #create json structure for metadata
-        meta_obj = {
-                     self.ID_K         : email_info[imap_utils.GIMAPFetcher.GMAIL_ID],
-                     self.LABELS_K     : labels,
-                     self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
-                     self.THREAD_IDS_K : email_info[imap_utils.GIMAPFetcher.GMAIL_THREAD_ID],
-                     self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]),
-                     self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
-                     self.SUBJECT_K    : subject,
-                     self.MSGID_K      : msgid,
-                     self.XGM_RECV_K   : received
-                   }
+            json.dump(meta_obj, meta_desc)
 
-        json.dump(meta_obj, meta_desc)
-
-        meta_desc.flush()
-        meta_desc.close()
+            meta_desc.flush()
 
         return email_info[imap_utils.GIMAPFetcher.GMAIL_ID]
 
-    def bury_chat(self, chat_info, local_dir = None, compress = False):   
+    def bury_chat(self, chat_info, local_dir=None, compress=False):
         """
             Like bury email but with a special label: gmvault-chats
             Arguments:
@@ -433,22 +430,23 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             data_desc = gzip.open(data_path, 'wb')
         else:
             data_desc = open(data_path, 'wb')
+        try:
+            if self._encrypt_data:
+                # need to be done for every encryption
+                cipher = self.get_encryption_cipher()
+                cipher.initCTR()
+                data = cipher.encryptCTR(
+                    email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
+            else:
+                data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
 
-        if self._encrypt_data:
-            # need to be done for every encryption
-            cipher = self.get_encryption_cipher()
-            cipher.initCTR()
-            data = cipher.encryptCTR(
-                email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
-        else:
-            data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
+            for chunk in gmvault_utils.chunker(data, 32*1024):
+                data_desc.write(chunk.encode(encoding))
 
-        for chunk in gmvault_utils.chunker(data, 32*1024):
-            data_desc.write(chunk.encode(encoding))
-
-        self.bury_metadata(email_info, local_dir, extra_labels)
-        data_desc.flush()
-        data_desc.close()
+            self.bury_metadata(email_info, local_dir, extra_labels)
+            data_desc.flush()
+        finally:
+            data_desc.close()
 
         return email_info[imap_utils.GIMAPFetcher.GMAIL_ID]
 
@@ -477,6 +475,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 for filename in fnmatch.filter(files, filename):
                     return the_dir
 
+    @contextmanager
     def _get_data_file_from_id(self, a_dir, a_id):
         """
            Return data file from the id
@@ -485,23 +484,29 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
         # check if encrypted and compressed or not
         if os.path.exists('%s.crypt.gz' % data_p):
-            data_fd = gzip.open('%s.crypt.gz' % data_p, 'r')
+            f = gzip.open('%s.crypt.gz' % data_p, 'r')
         elif os.path.exists('%s.gz' % data_p):
-            data_fd = gzip.open('%s.gz' % data_p, 'r')
+            f = gzip.open('%s.gz' % data_p, 'r')
         elif os.path.exists('%s.crypt' % data_p):
-            data_fd = open('%s.crypt' % data_p, 'r')
+            f = open('%s.crypt' % data_p, 'r')
         else:
-            data_fd = open(data_p)
+            f = open(data_p)
 
-        return data_fd
+        try:
+            yield f
+        finally:
+            f.close()
 
+    @contextmanager
     def _get_metadata_file_from_id(self, a_dir, a_id):
         """
            metadata file
         """
-        meta_p = self.METADATA_FNAME % (a_dir, a_id)
-
-        return open(meta_p)
+        f = open(self.METADATA_FNAME % (a_dir, a_id))
+        try:
+            yield f
+        finally:
+            f.close()
 
     def quarantine_email(self, a_id):
         """
@@ -555,16 +560,15 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         """
         the_dir = self.get_directory_from_id(a_id)
 
-        data_fd = self._get_data_file_from_id(the_dir, a_id)
-
-        if self.email_encrypted(data_fd.name):
-            LOG.debug("Restore encrypted email %s" % a_id)
-            # need to be done for every encryption
-            cipher = self.get_encryption_cipher()
-            cipher.initCTR()
-            data = cipher.decryptCTR(data_fd.read())
-        else:
-            data = data_fd.read()
+        with self._get_data_file_from_id(the_dir, a_id) as f:
+            if self.email_encrypted(f.name):
+                LOG.debug("Restore encrypted email %s" % a_id)
+                # need to be done for every encryption
+                cipher = self.get_encryption_cipher()
+                cipher.initCTR()
+                data = cipher.decryptCTR(f.read())
+            else:
+                data = f.read()
 
         return self.unbury_metadata(a_id, the_dir), data
 
@@ -575,16 +579,15 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         if not a_id_dir:
             a_id_dir = self.get_directory_from_id(a_id)
 
-        data_fd = self._get_data_file_from_id(a_id_dir, a_id)
-
-        if self.email_encrypted(data_fd.name):
-            LOG.debug("Restore encrypted email %s" % a_id)
-            # need to be done for every encryption
-            cipher = self.get_encryption_cipher()
-            cipher.initCTR()
-            data = cipher.decryptCTR(data_fd.read())
-        else:
-            data = data_fd.read()
+        with self._get_data_file_from_id(a_id_dir, a_id) as f:
+            if self.email_encrypted(f.name):
+                LOG.debug("Restore encrypted email %s" % a_id)
+                # need to be done for every encryption
+                cipher = self.get_encryption_cipher()
+                cipher.initCTR()
+                data = cipher.decryptCTR(f.read())
+            else:
+                data = f.read()
 
         return data    
 

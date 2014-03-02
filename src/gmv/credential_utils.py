@@ -161,17 +161,19 @@ class CredentialHelper(object):
            Get secret key if it is in the file otherwise generate it and save it
         """
         if os.path.exists(a_filepath):
-            secret = open(a_filepath).read()
+            with open(a_filepath).read() as f:
+                secret = f.read()
         else:
             secret = gmvault_utils.make_password()
-            
+
             fdesc = os.open(a_filepath, os.O_CREAT|os.O_WRONLY, 0600)
-            
-            the_bytes = os.write(fdesc, secret)
-            os.close(fdesc) #close anyway
-            
+            try:
+                the_bytes = os.write(fdesc, secret)
+            finally:
+                os.close(fdesc) #close anyway
+
             if the_bytes < len(secret):
-                raise Exception("Error: Cannot write secret in %s" % (a_filepath))
+                raise Exception("Error: Cannot write secret in %s" % a_filepath)
 
         return secret
     
@@ -220,21 +222,20 @@ class CredentialHelper(object):
            Look for file ~/.gmvault/email.passwd
         """
         gmv_dir = gmvault_utils.get_home_dir_path()
-        
+
         #look for email.passwed in GMV_DIR
         user_passwd_file_path = "%s/%s.passwd" % (gmv_dir, email)
 
         password = None
         if os.path.exists(user_passwd_file_path):
-            passwd_file  = open(user_passwd_file_path)
-            
-            password     = passwd_file.read()
+            with open(user_passwd_file_path) as f:
+                password = f.read()
             cipher       = blowfish.Blowfish(cls.get_secret_key(cls.SECRET_FILEPATH % (gmvault_utils.get_home_dir_path())))
             cipher.initCTR()
             password     = cipher.decryptCTR(password)
-        
+
         return password
-    
+
     @classmethod
     def read_oauth_tok_sec(cls, email):
         """
@@ -251,12 +252,11 @@ class CredentialHelper(object):
         secret = None
         type   = None
         if os.path.exists(user_oauth_file_path):
-            LOG.critical("Get XOAuth credential from %s.\n" % (user_oauth_file_path))
-            
-            oauth_file  = open(user_oauth_file_path)
-            
+            LOG.critical("Get XOAuth credential from %s.\n" % user_oauth_file_path)
+
             try:
-                oauth_result = oauth_file.read()
+                with open(user_oauth_file_path) as oauth_file:
+                    oauth_result = oauth_file.read()
                 if oauth_result:
                     oauth_result = oauth_result.split('::')
                     if len(oauth_result) == 2:
@@ -268,27 +268,27 @@ class CredentialHelper(object):
                         secret = oauth_result[1]
                         type   = oauth_result[2]
             except Exception, _: #pylint: disable-msg=W0703              
-                LOG.critical("Cannot read oauth credentials from %s. Force oauth credentials renewal." % (user_oauth_file_path))
+                LOG.critical("Cannot read oauth credentials from %s. Force oauth credentials renewal." % user_oauth_file_path)
                 LOG.critical("=== Exception traceback ===")
                 LOG.critical(gmvault_utils.get_exception_traceback())
                 LOG.critical("=== End of Exception traceback ===\n")
-        
+
         if token: token   = token.strip() #pylint: disable-msg=C0321
         if secret: secret = secret.strip()  #pylint: disable-msg=C0321
         if type: type = type.strip()
-        
+
         return token, secret, type
-            
+
     @classmethod
-    def get_credential(cls, args, test_mode = {'activate': False, 'value' : 'test_password'}): #pylint: disable-msg=W0102
+    def get_credential(cls, args, test_mode={'activate': False, 'value': 'test_password'}): #pylint: disable-msg=W0102
         """
            Deal with the credentials.
            1) Password
            --passwd passed. If --passwd passed and not password given if no password saved go in interactive mode
            2) XOAuth Token
         """
-        credential = { }
-        
+        credential = {}
+
         #first check that there is an email
         if not args.get('email', None):
             raise Exception("No email passed, Need to pass an email")

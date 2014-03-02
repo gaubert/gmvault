@@ -35,17 +35,17 @@ def read_password_file(a_path):
     """
        Read log:pass from a file in my home
     """
-    pass_file = open(a_path)
-    line = pass_file.readline()
-    (login, passwd) = line.split(":")
-    
-    return (deobfuscate_string(login.strip()), deobfuscate_string(passwd.strip()))
+    with open(a_path) as f:
+        line = f.readline()
+    login, passwd = line.split(":")
+
+    return deobfuscate_string(login.strip()), deobfuscate_string(passwd.strip())
 
 def delete_db_dir(a_db_dir):
     """
        delete the db directory
     """
-    gmvault_utils.delete_all_under(a_db_dir, delete_top_dir = True)
+    gmvault_utils.delete_all_under(a_db_dir, delete_top_dir=True)
 
 
 class TestGMVaultValidation(unittest.TestCase): #pylint:disable=R0904
