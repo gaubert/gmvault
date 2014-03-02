@@ -130,31 +130,6 @@ def remove_consecutive_spaces_and_strip(a_str):
     #return re.sub("\s{2,}", " ", a_str, flags=re.U).strip()
     return MULTI_SPACES_RE.sub(u" ", a_str).strip()
 
-def buffered_write(fd, data, buf_size = 1048576):
-    """
-       fd: file descriptor where to write
-       data: data to write
-       buf_size: size of the buffer (default 1MB)
-       buffered write handling case when write returns nb of written bytes
-       and when write returns None (Linux)
-    """
-    #LOG.critical("======= In buffered write")
-    total_size = len(data)
-    wr_bytes = 0
-    while wr_bytes < total_size:
-        written = fd.write(buffer(data, wr_bytes, buf_size))
-        if written:
-            wr_bytes += written
-        else:
-            #if buffer size > left then left else buffer size
-            # else buffer size
-            left = total_size - wr_bytes
-            if left < buf_size:
-                wr_bytes += left
-            else:
-                wr_bytes += buf_size
-        
-             
 
 TIMER_SUFFIXES = ['y', 'w', 'd', 'h', 'm', 's']
 
@@ -453,8 +428,8 @@ def delete_all_under(path, delete_top_dir = False):
     
     if delete_top_dir:
         os.rmdir(path)
-        
-def ordered_dirwalk(a_dir, a_file_wildcards= '*', a_dir_ignore_list = [], sort_func = sorted):#pylint:disable=W0102
+
+def ordered_dirwalk(a_dir, a_file_wildcards='*', a_dir_ignore_list=(), sort_func=sorted):
     """
         Walk a directory tree, using a generator.
         This implementation returns only the files in all the subdirectories.
@@ -464,7 +439,6 @@ def ordered_dirwalk(a_dir, a_file_wildcards= '*', a_dir_ignore_list = [], sort_f
         a_wildcards: Filtering wildcards a la unix
     """
 
-    
     sub_dirs = []
     for the_file in sort_func(os.listdir(a_dir)):
         fullpath = os.path.join(a_dir, the_file)
@@ -472,16 +446,16 @@ def ordered_dirwalk(a_dir, a_file_wildcards= '*', a_dir_ignore_list = [], sort_f
             sub_dirs.append(fullpath) #it is a sub_dir
         elif fnmatch.fnmatch(fullpath, a_file_wildcards):
             yield fullpath
-        
+
     #iterate over sub_dirs
     for sub_dir in sort_func(sub_dirs):
         if os.path.basename(sub_dir) not in a_dir_ignore_list:
             for p_elem in ordered_dirwalk(sub_dir, a_file_wildcards):
                 yield p_elem 
         else:
-            LOG.debug("Ignore subdir %s" % (sub_dir))
-  
-def dirwalk(a_dir, a_wildcards= '*'):
+            LOG.debug("Ignore subdir %s" % sub_dir)
+
+def dirwalk(a_dir, a_wildcards='*'):
     """
        return all files and dirs in a directory
     """
@@ -645,3 +619,8 @@ def get_conf_filepath():
             return _create_default_conf_file(home_conf_file)    
     
     return home_conf_file
+
+
+def chunker(seq, size):
+    """Returns the contents of `seq` in chunks of up to `size` items."""
+    return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
