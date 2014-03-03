@@ -598,9 +598,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         if not a_id_dir:
             a_id_dir = self.get_directory_from_id(a_id)
 
-        meta_fd = self._get_metadata_file_from_id(a_id_dir, a_id)
-
-        metadata = json.load(meta_fd)
+        with self._get_metadata_file_from_id(a_id_dir, a_id) as f:
+            metadata = json.load(f)
 
         metadata[self.INT_DATE_K] = gmvault_utils.e2datetime(
             metadata[self.INT_DATE_K])
