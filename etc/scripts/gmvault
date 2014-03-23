@@ -48,18 +48,18 @@ if [ -f "$GMVAULT_HOME/lib/python-lib/bin/python" ]; then
     export PYTHONPATH="$GMVAULT_HOME/lib:$PYTHONPATH"
     #set pythonhome but it should not be necessary
     export PYTHONHOME="$GMVAULT_HOME/lib/python-lib"
+elif [ -f "$GMVAULT_HOME/bin/python2" ]; then
+    # Installed from src or pip (python bin is in the same dir as gmvault script)
+    # Prioritize the python2 binary to avoid problems on distros where python3 is
+    # installed as the default.
+
+    PYTHON_BIN="$GMVAULT_HOME/bin/python2"
 
 elif [ -f "$GMVAULT_HOME/bin/python" ]; then
-    #installed from src distribution (python bin is in the same dir as gmvault script)
-    
-    # When installed without virtualenv (e.g. to /usr) using python2 to run the setup
-    # command or using pip2, then bin/python may not be the right python version.
-    # Try to force python2 before falling back to bin/python
-    if [ -f "$GMVAULT_HOME/bin/python2" ]; then
-        PYTHON_BIN="$GMVAULT/bin/python2"
-    else
-        PYTHON_BIN="$GMVAULT_HOME/bin/python"
-    fi
+    # No bin/python2 binary fall back to bin/python
+
+    PYTHON_BIN="$GMVAULT_HOME/bin/python"
+
 else
     #look for python2.7 first otherwise try python2.6
     PYTHON_BIN=`which python2.7 2>/dev/null`
@@ -75,6 +75,11 @@ if [ ! "$PYTHON_BIN" ] || [ ! -f "$PYTHON_BIN" ]; then
     echo "Please check where your python binary is."
     exit 1
 fi
+
+###################################
+# Override python-bin (temp - Jarra)
+###################################
+echo $PYTHON_BIN
 
 ###################################
 ## create bootstrap and launch program
