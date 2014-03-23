@@ -51,8 +51,15 @@ if [ -f "$GMVAULT_HOME/lib/python-lib/bin/python" ]; then
 
 elif [ -f "$GMVAULT_HOME/bin/python" ]; then
     #installed from src distribution (python bin is in the same dir as gmvault script)
-    PYTHON_BIN="$GMVAULT_HOME/bin/python"
-
+    
+    # When installed without virtualenv (e.g. to /usr) using python2 to run the setup
+    # command or using pip2, then bin/python may not be the right python version.
+    # Try to force python2 before falling back to bin/python
+    if [ -f "$GMVAULT_HOME/bin/python2" ]; then
+        PYTHON_BIN="$GMVAULT/bin/python2"
+    else
+        PYTHON_BIN="$GMVAULT_HOME/bin/python"
+    fi
 else
     #look for python2.7 first otherwise try python2.6
     PYTHON_BIN=`which python2.7 2>/dev/null`
