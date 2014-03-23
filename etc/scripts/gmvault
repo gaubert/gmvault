@@ -77,11 +77,6 @@ if [ ! "$PYTHON_BIN" ] || [ ! -f "$PYTHON_BIN" ]; then
 fi
 
 ###################################
-# Override python-bin (temp - Jarra)
-###################################
-echo $PYTHON_BIN
-
-###################################
 ## create bootstrap and launch program
 ## the bootstrap is always under
 ## /tmp/rnpicker.bootstrap
