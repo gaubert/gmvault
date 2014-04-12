@@ -18,7 +18,7 @@ For further info go [gmvault.org] (http://gmvault.org)
 
 ## Installation
 
-You can download one of the "binary" distribution from (github.com/download) for the platform of your choice.
+You can download one of the "binary" distribution from (http://gmvault.org/download.html) for the platform of your choice.
 You can also install the software from the source from (github.com/gaubert/gmvault).
 
 ## Windows install
