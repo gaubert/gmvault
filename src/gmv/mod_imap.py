@@ -85,7 +85,7 @@ imaplib.Commands['COMPRESS'] = ('AUTH', 'SELECTED')
 
 class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
     """
-       Add support for compression inspired by inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
+       Add support for compression inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
     """
     SOCK_TIMEOUT = 70 # set a socket timeout of 70 sec to avoid for ever blockage in ssl.read
 
