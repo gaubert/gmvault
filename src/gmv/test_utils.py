@@ -408,11 +408,11 @@ def read_password_file(a_path):
     """
        Read log:pass from a file in my home
     """
-    pass_file = open(a_path)
-    line = pass_file.readline()
-    (login, passwd) = line.split(":")
-    
-    return (deobfuscate_string(login.strip()), deobfuscate_string(passwd.strip()))
+    with open(a_path) as f:
+        line = f.readline()
+    login, passwd = line.split(":")
+
+    return deobfuscate_string(login.strip()), deobfuscate_string(passwd.strip())
 
 def get_oauth_cred(email, cred_path):
     """
@@ -425,27 +425,29 @@ def get_oauth_cred(email, cred_path):
     token  = None
     secret = None
     if os.path.exists(user_oauth_file_path):
-        print("Get XOAuth credential from %s.\n" % (user_oauth_file_path))
-             
-        oauth_file  = open(user_oauth_file_path)
-             
+        print("Get XOAuth credential from %s.\n" % user_oauth_file_path)
+
         try:
-            oauth_result = oauth_file.read()
+            with open(user_oauth_file_path) as oauth_file:
+                oauth_result = oauth_file.read()
             if oauth_result:
                 oauth_result = oauth_result.split('::')
                 if len(oauth_result) == 2:
                     token  = oauth_result[0]
                     secret = oauth_result[1]
         except Exception, _: #pylint: disable-msg=W0703              
-            print("Cannot read oauth credentials from %s. Force oauth credentials renewal." % (user_oauth_file_path))
+            print("Cannot read oauth credentials from %s. Force oauth credentials renewal." % user_oauth_file_path)
             print("=== Exception traceback ===")
             print(gmvault_utils.get_exception_traceback())
             print("=== End of Exception traceback ===\n")
-         
+
         if token: token   = token.strip() #pylint: disable-msg=C0321
         if secret: secret = secret.strip()  #pylint: disable-msg=C0321
- 
-    return { 'type' : 'xoauth', 'value' : cred_utils.generate_xoauth_req(token, secret, email, 'normal'), 'option':None}
+
+    return {'type': 'xoauth',
+            'value': cred_utils.generate_xoauth_req(token, secret, email,
+                                                    'normal'),
+            'option': None}
 
 def delete_db_dir(a_db_dir):
     """

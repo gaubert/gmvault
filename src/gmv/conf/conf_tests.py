@@ -41,16 +41,14 @@ class TestConf(unittest.TestCase): #pylint: disable=R0904
         return test_dir
     
     def setUp(self): #pylint: disable=C0103
-         
         # necessary for the include with the VAR ENV substitution
         os.environ["DIRCONFENV"] = TestConf._get_tests_dir_path()
-         
+
         self.conf = gmv.conf.conf_helper.Conf(use_resource=False)
-    
-        #the_fp = open('%s/%s' % (TestConf._get_tests_dir_path(), "test.config"))
-        the_fp = codecs.open('%s/%s' % (TestConf._get_tests_dir_path(), "test.config"), 'r', 'utf-8')
-    
-        self.conf._read(the_fp,"the file") #pylint: disable=W0212
+
+        with codecs.open('%s/%s' % (TestConf._get_tests_dir_path(),
+                                    "test.config"), 'r', 'utf-8') as f:
+            self.conf._read(f, "the file") #pylint: disable=W0212
 
     def tearDown(self): #pylint: disable=C0103
 
@@ -149,19 +147,17 @@ class TestConf(unittest.TestCase): #pylint: disable=R0904
     def test_include(self):
         """testInclude: test includes """
         val = self.conf.get("IncludedGroup", "hello")
-        
+
         self.assertEqual(val, 'foo')
-        
+
     @classmethod
     def _create_fake_conf_file_in_tmp(cls):
         """Create a fake conf file in tmp"""
-        the_f = open('/tmp/fake_conf.config', 'w')
-        
-        the_f.write('\n[MainDatabaseAccess]\n')
-        the_f.write('driverClassName=oracle.jdbc.driver.OracleDriver')
-        the_f.flush()
-        the_f.close()
-    
+        with open('/tmp/fake_conf.config', 'w') as f:
+            f.write('\n[MainDatabaseAccess]\n')
+            f.write('driverClassName=oracle.jdbc.driver.OracleDriver')
+            f.flush()
+
     def ztest_use_conf_ENVNAME_resource(self): #pylint: disable=C0103
         """testUseConfENVNAMEResource: Use default resource ENVNAME to locate conf file"""
         self._create_fake_conf_file_in_tmp()

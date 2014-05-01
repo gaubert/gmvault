@@ -43,11 +43,11 @@ def read_password_file(a_path):
     """
        Read log:pass from a file in my home
     """
-    pass_file = open(a_path)
-    line = pass_file.readline()
-    (login, passwd) = line.split(":")
-    
-    return (deobfuscate_string(login.strip()), deobfuscate_string(passwd.strip()))
+    with open(a_path) as f:
+        line = f.readline()
+        login, passwd = line.split(":")
+
+    return deobfuscate_string(login.strip()), deobfuscate_string(passwd.strip())
 
 def delete_db_dir(a_db_dir):
     """
@@ -70,12 +70,12 @@ class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
         
         self.gmvault_login  = None
         self.gmvault_passwd = None 
-    
+
     def setUp(self): #pylint:disable-msg=C0103
         self.login, self.passwd = read_password_file('/homespace/gaubert/.ssh/passwd')
-        
+
         self.gsync_login, self.gsync_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
-        
+
     def test_commandline_args(self):
         """
            Test commandline args
