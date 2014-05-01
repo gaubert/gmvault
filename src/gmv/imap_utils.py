@@ -224,7 +224,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
     GET_ALL_BUT_DATA  = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, \
                           IMAP_FLAGS, IMAP_HEADER_PEEK_FIELDS]
     
-    GET_DATA_ONLY     = [GMAIL_ID, IMAP_BODY_PEEK]
+    GET_DATA_ONLY     = [ GMAIL_ID, IMAP_BODY_PEEK]
  
     GET_GMAIL_ID      = [ GMAIL_ID ]
     
@@ -245,7 +245,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         
         self.localized_folders      = { 'ALLMAIL': { 'loc_dir' : None, 'friendly_name' : 'allmail'}, 
                                         'CHATS'  : { 'loc_dir' : None, 'friendly_name' : 'chats'}, 
-                                        'DRAFTS'  :{ 'loc_dir' : None, 'friendly_name' : 'drafts'} }
+                                        'DRAFTS' : { 'loc_dir' : None, 'friendly_name' : 'drafts'} }
         
         # memoize the current folder (All Mail or Chats) for reconnection management
         self.current_folder        = None
@@ -313,7 +313,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         if self.server:
             try:
                 self.server.logout()
-            except Exception, ignored: #ignored exception but still og it in log file if activated
+            except Exception, ignored: #ignored exception but still log it in log file if activated
                 LOG.exception(ignored)
                 
             self.server = None
