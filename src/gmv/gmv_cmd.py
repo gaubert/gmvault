@@ -807,8 +807,10 @@ class GMVaultLauncher(object):
             LOG.critical("=== End of Exception traceback ===\n")
             die_with_usage = False
         finally: 
-            if on_error and die_with_usage:
-                args['parser'].die_with_usage()
+            if on_error:
+                if die_with_usage:
+                    args['parser'].die_with_usage()
+                sys.exit(1)
  
 def init_logging():
     """
@@ -885,4 +887,4 @@ if __name__ == '__main__':
     
     bootstrap_run()
     
-    sys.exit(0)
+    #sys.exit(0)
