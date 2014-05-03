@@ -837,23 +837,16 @@ class GMVaulter(object):
            Save the passed gmid in last_id.restore
            For the moment reopen the file every time
         """
-        
         filename = self.OP_TO_FILENAME.get(op_type, None)
-        
+
         if not filename:
-            raise Exception("Bad Operation (%s) in save_last_id. This should not happen, send the error to the software developers." % (op_type))
-        
-        #filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)  
-        filepath = '%s/%s_%s' % (self.gstorer.get_info_dir(), self.login, filename)  
-        
-        the_fd = open(filepath, 'w')
-        
-        json.dump({
-                    'last_id' : gm_id  
-                  }, the_fd)
-        
-        the_fd.close()
-        
+            raise Exception("Bad Operation (%s) in save_last_id. This should not happen, send the error to the software developers." % op_type)
+
+        filepath = '%s/%s_%s' % (self.gstorer.get_info_dir(), self.login, filename)
+
+        with open(filepath, 'w') as f:
+            json.dump({'last_id' : gm_id}, f)
+
     def get_gmails_ids_left_to_restore(self, op_type, db_gmail_ids_info):
         """
            Get the ids that still needs to be restored
