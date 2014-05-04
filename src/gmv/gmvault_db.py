@@ -404,7 +404,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         return self.bury_email(chat_info, local_dir, compress, extra_labels)
 
     def bury_email(self, email_info, local_dir=None, compress=False,
-                   extra_labels=(), encoding='utf-8'):
+                   extra_labels=()):
         """
            store all email info in 2 files (.meta and .eml files)
            Arguments:
@@ -440,8 +440,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             else:
                 data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
 
-            for chunk in gmvault_utils.chunker(data, 32*1024):
-                data_desc.write(chunk.encode(encoding))
+            # write in chunks of one 1 MB
+            for chunk in gmvault_utils.chunker(data, 1048576):
+                data_desc.write(chunk)
 
             self.bury_metadata(email_info, local_dir, extra_labels)
             data_desc.flush()
