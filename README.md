@@ -9,6 +9,8 @@ For further info go [gmvault.org] (http://gmvault.org)
 
 # Contribute
 
+[![Bountysource](https://www.bountysource.com/badge/tracker?tracker_id=56851)](https://www.bountysource.com/trackers/56851-gaubert-gmvault?utm_source=56851&utm_medium=shield&utm_campaign=TRACKER_BADGE)
+
 - Check for open issues or open a fresh issue to start a discussion around a feature idea or a bug. There will be a Contributor Friendly tag for issues that should be ideal for people who are not very familiar with the codebase yet.
 - Fork the reporsitory on Github to start making your changes to the **master** branch (or branch off of it).
 - Write a test which shows that the bug was fixed or that the feature works as expected.
