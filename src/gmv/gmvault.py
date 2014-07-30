@@ -589,7 +589,7 @@ class GMVaulter(object):
             LOG.critical("Disable compression when storing emails.")
             
         if self.use_encryption:
-            LOG.critical("Encryption activated. All emails will be encrypted before to be stored.")
+            LOG.critical("Encryption activated. All emails will be encrypted before being stored.")
             LOG.critical("Please take care of the encryption key stored in (%s) or all"\
                          " your stored emails will become unreadable." \
                          % (gmvault_db.GmailStorer.get_encryption_key_path(self.db_root_dir)))
