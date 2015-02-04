@@ -807,8 +807,10 @@ class GMVaultLauncher(object):
             LOG.critical("=== End of Exception traceback ===\n")
             die_with_usage = False
         finally: 
-            if on_error and die_with_usage:
-                args['parser'].die_with_usage()
+            if on_error:
+                if die_with_usage:
+                    args['parser'].die_with_usage()
+                sys.exit(1)
  
 def init_logging():
     """
@@ -831,12 +833,12 @@ def sigusr1_handler(signum, frame): #pylint:disable=W0613
     """
 
     filename = './gmvault.traceback.txt'
-    
-    print("GMVAULT: Received SIGUSR1 -- Printing stack trace in %s..." % (os.path.abspath(filename)))
 
-    the_f = open(filename, 'a')
-    traceback.print_stack(file = the_f)
-    the_f.close()
+    print("GMVAULT: Received SIGUSR1 -- Printing stack trace in %s..." %
+          os.path.abspath(filename))
+
+    with open(filename, 'a') as f:
+        traceback.print_stack(file=f)
 
 def register_traceback_signal():
     """ To register a USR1 signal allowing to get stack trace """
@@ -885,4 +887,4 @@ if __name__ == '__main__':
     
     bootstrap_run()
     
-    sys.exit(0)
+    #sys.exit(0)

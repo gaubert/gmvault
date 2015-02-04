@@ -785,66 +785,67 @@ class GMVaulter(object):
         pass
         
     
-    def save_lastid(self, op_type, gm_id, eml_date = None, imap_req = None):#pylint:disable-msg=W0613
+    def save_lastid(self, op_type, gm_id, eml_date=None, imap_req=None):#pylint:disable-msg=W0613
         """
            Save the passed gmid in last_id.restore
            For the moment reopen the file every time
         """
-        
+
         filename = self.OP_TO_FILENAME.get(op_type, None)
-        
+
         if not filename:
-            raise Exception("Bad Operation (%s) in save_last_id. "\
-                            "This should not happen, send the error to the software developers." % (op_type))
-        
-        filepath = '%s/%s_%s' % (self.gstorer.get_info_dir(), self.login, filename)  
-        
-        the_fd = open(filepath, 'w')
-        
-        #json.dump({
-        #            'last_id' : gm_id,
-        #            'date'    : gmvault_utils.datetime2e(eml_date) if eml_date else None,
-        #            'req'     : imap_req 
-        #          }, the_fd)
-        
-        json.dump({
-                    'last_id' : gm_id,
-                  }, the_fd)
-        
-        the_fd.close()
-        
+            raise Exception("Bad Operation (%s) in save_last_id. "
+                            "This should not happen, send the error to the "
+                            "software developers." % op_type)
+
+        filepath = '%s/%s_%s' % (self.gstorer.get_info_dir(), self.login,
+                                 filename)
+
+        with open(filepath, 'w') as f:
+
+            #json.dump({
+            #            'last_id' : gm_id,
+            #            'date'    : gmvault_utils.datetime2e(eml_date) if eml_date else None,
+            #            'req'     : imap_req
+            #          }, the_fd)
+
+            json.dump({
+                'last_id': gm_id,
+            }, f)
+
     def get_gmails_ids_left_to_restore(self, op_type, db_gmail_ids_info):
         """
            Get the ids that still needs to be restored
            Return a dict key = gm_id, val = directory
         """
         filename = self.OP_TO_FILENAME.get(op_type, None)
-        
+
         if not filename:
-            raise Exception("Bad Operation (%s) in save_last_id. This should not happen,"\
-                            " send the error to the software developers." % (op_type))
-        
-        
+            raise Exception("Bad Operation (%s) in save_last_id. This should "
+                            "not happen, send the error to the software "
+                            "developers." % op_type)
+
         #filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)
         filepath = '%s/%s_%s' % (self.gstorer.get_info_dir(), self.login, filename)
-        
+
         if not os.path.exists(filepath):
             LOG.critical("last_id restore file %s doesn't exist.\nRestore the full list of backed up emails." %(filepath))
             return db_gmail_ids_info
-        
-        json_obj = json.load(open(filepath, 'r'))
-        
+
+        with open(filepath, 'r') as f:
+            json_obj = json.load(f)
+
         last_id = json_obj['last_id']
-        
+
         last_id_index = -1
         try:
             keys = db_gmail_ids_info.keys()
             last_id_index = keys.index(last_id)
-            LOG.critical("Restart from gmail id %s." % (last_id))
+            LOG.critical("Restart from gmail id %s." % last_id)
         except ValueError, _:
             #element not in keys return current set of keys
             LOG.error("Cannot restore from last restore gmail id. It is not in the disk database.")
-        
+
         new_gmail_ids_info = collections_utils.OrderedDict()
         if last_id_index != -1:
             for key in db_gmail_ids_info.keys()[last_id_index+1:]:

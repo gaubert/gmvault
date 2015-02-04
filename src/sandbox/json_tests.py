@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Created on Nov 27, 2012
 
 @author: aubert
-'''
+"""
 import json
 
 string_to_test = u"Чаты"
@@ -41,18 +41,13 @@ def data_to_test():
     """
     meta_obj = { 'labels' : labels }
     
-    meta_desc = open("/tmp/test.json", 'w')
-    
-    json.dump(meta_obj, meta_desc)
-        
-    meta_desc.flush()
-    meta_desc.close()
-    
+    with open("/tmp/test.json", 'w') as f:
+        json.dump(meta_obj, f)
+
     print("Data stored")
     
-    meta_desc = open("/tmp/test.json")
-    
-    metadata = json.load(meta_desc)
+    with open("/tmp/test.json") as f:
+        metadata = json.load(f)
     
     new_labels = []
     
@@ -64,7 +59,7 @@ def data_to_test():
     
     metadata['labels'] = new_labels
     
-    print("metadata = %s\n" % (metadata))
+    print("metadata = %s\n" % metadata)
     
     print("type(metadata['labels'][0]) = %s" % (type(metadata['labels'][0])))  
     

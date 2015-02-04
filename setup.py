@@ -1,4 +1,4 @@
-'''
+"""
     Gmvault: a tool to backup and restore your gmail account.
     Copyright (C) <2011-2012>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
@@ -14,37 +14,37 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
+"""
 
 import os
-from setuptools import setup, find_packages
+from setuptools import setup
 
 #function to find the version in gmv_cmd
 
 def find_version(path):
+    with open(path, 'r') as f:
+        for line in f:
+            index = line.find('GMVAULT_VERSION = "')
+            if index > -1:
+                print(line[index+19:-2])
+                res = line[index+19:-2]
+                return res.strip()
 
-    fd = open(path,"r")
+    raise Exception("Cannot find GMVAULT_VERSION in %s\n" % path)
 
-    for line in fd:
-        index = line.find("GMVAULT_VERSION = \"")
-        if index > -1:
-            print(line[index+19:-2])
-            res = line[index+19:-2]
-            return res.strip()
+path = os.path.join(os.path.dirname(__file__), './src/gmv/gmvault_utils.py')
+print("PATH = %s\n" % path)
 
-    raise Exception("Cannot find GMVAULT_VERSION in %s\n" % (path))
+version = find_version(os.path.join(os.path.dirname(__file__),
+                                    './src/gmv/gmvault_utils.py'))
 
-path=os.path.join(os.path.dirname(__file__),'./src/gmv/gmvault_utils.py')
-print("PATH = %s\n" % (path))
-
-version = find_version(os.path.join(os.path.dirname(__file__),'./src/gmv/gmvault_utils.py'))
-
-print("Gmvault version = %s\n" % (version))
+print("Gmvault version = %s\n" % version)
 README = os.path.join(os.path.dirname(__file__), './README.md')
 if os.path.exists(README):
-	long_description = open(README).read() + 'nn'
+    with open(README, 'r') as f:
+        long_description = f.read() + 'nn'
 else:
-   long_description = "Gmvault"
+    long_description = 'Gmvault'
 
 setup(name='gmvault',
       version=version,
@@ -61,8 +61,8 @@ setup(name='gmvault',
       author_email='guillaume.aubert@gmail.com',
       url='http://www.gmvault.org',
       license='AGPLv3',
-      packages=['gmv','gmv.conf','gmv.conf.utils'],
-      package_dir = {'gmv':'./src/gmv'},
+      packages=['gmv','gmv.conf', 'gmv.conf.utils'],
+      package_dir = {'gmv': './src/gmv'},
       scripts=['./etc/scripts/gmvault'],
       package_data={'': ['release-note.txt']},
       include_package_data=True,

@@ -51,7 +51,7 @@ nb_messages_per_batch=500
 nb_messages_per_restore_batch=80
 restore_default_location=DRAFTS
 keep_in_bin=False
-enable_imap_compression=True
+enable_imap_compression=False
 
 [Localisation]
 #example with Russian
