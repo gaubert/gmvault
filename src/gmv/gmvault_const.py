@@ -61,7 +61,7 @@ chat_folder=[ u'[Google Mail]/Чаты', u'[Gmail]/Чаты' ]
 
 #Do not touch any parameters below as it could force an overwrite of this file
 [VERSION]
-conf_version=1.8.1
+conf_version=1.8.2
 
 #set environment variables for the program locally
 #they will be read only once the conf file has been loaded
