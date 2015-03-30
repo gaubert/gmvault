@@ -13,7 +13,8 @@ parser = argparse.ArgumentParser(parents=[argparser])
 flags = parser.parse_args()
 
 # Path to the client_secret.json file downloaded from the Developer Console
-CLIENT_SECRET_FILE = 'h:/.client_secret.json'
+#CLIENT_SECRET_FILE = 'h:/.client_secret.json'
+CLIENT_SECRET_FILE = '/home/gmv/.client_secret.json'
 
 # Check https://developers.google.com/gmail/api/auth/scopes
 # for all available scopes
