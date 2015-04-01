@@ -46,7 +46,82 @@ def get_2_legged_oauth_tok_sec():
     sec = raw_input('Enter your domain\'s OAuth consumer secret: ')
       
     return tok, sec, "two_legged"
-    
+
+#GMVAULT IDENTIFIER
+GMVAULT_CLIENT_ID="1070918343777-0eecradokiu8i77qfo8e3stbi0mkrtog.apps.googleusercontent.com"
+GMVAULT_CIENT_SECRET="IVkl_pglv5cXzugpmnRNqtT7"
+
+def get_oauth2_tok_sec(email, use_webbrowser = False, debug=False):
+    '''
+       Generate token and secret
+    '''
+
+    scopes = ['https://mail.google.com/', # IMAP/SMTP client access
+              'https://www.googleapis.com/auth/userinfo#email'] # Email address access (verify token authorized by correct account
+
+    gdata_serv = gdata.service.GDataService()
+    gdata_serv.debug = debug
+    gdata_serv.source = 'gmvault '
+
+    gdata_serv.SetOAuthInputParameters(gdata.auth.OAuthSignatureMethod.HMAC_SHA1, \
+                                       consumer_key = 'anonymous', consumer_secret = 'anonymous')
+
+    params = {'xoauth_displayname':'Gmvault - Backup your Gmail account'}
+    try:
+        request_token = gdata_serv.FetchOAuthRequestToken(scopes=scopes, extra_parameters = params)
+    except gdata.service.FetchingOAuthRequestTokenFailed, err:
+        if str(err).find('Timestamp') != -1:
+            LOG.critical('Is your system clock up to date? See the FAQ http://code.google.com/p/googlecl/wiki/FAQ'\
+                         '#Timestamp_too_far_from_current_time\n')
+
+        LOG.critical("Received Error: %s.\n" % (err) )
+        LOG.critical("=== Exception traceback ===")
+        LOG.critical(gmvault_utils.get_exception_traceback())
+        LOG.critical("=== End of Exception traceback ===\n")
+
+        return (None, None)
+
+    url_params = {}
+    domain = email[email.find('@')+1:]
+    if domain.lower() != 'gmail.com' and domain.lower() != 'googlemail.com':
+        url_params = {'hd': domain}
+
+    auth_url = gdata_serv.GenerateOAuthAuthorizationURL(request_token=request_token, extra_params=url_params)
+
+    #message to indicate that a browser will be opened
+    raw_input('gmvault will now open a web browser page in order for you to grant gmvault access to your Gmail.\n'\
+              'Please make sure you\'re logged into the correct Gmail account (%s) before granting access.\n'\
+              'Press ENTER to open the browser. Once you\'ve granted access you can switch back to gmvault.' % (email))
+
+    # run web browser otherwise print message with url
+    if use_webbrowser:
+        try:
+            webbrowser.open(str(auth_url))
+        except Exception, err: #pylint: disable-msg=W0703
+            LOG.critical("Error: %s.\n" % (err) )
+            LOG.critical("=== Exception traceback ===")
+            LOG.critical(gmvault_utils.get_exception_traceback())
+            LOG.critical("=== End of Exception traceback ===\n")
+
+        raw_input("You should now see the web page on your browser now.\n"\
+                  "If you don\'t, you can manually open:\n\n%s\n\nOnce you've granted"\
+                  " gmvault access, press the Enter key.\n" % (auth_url))
+
+    else:
+        raw_input('Please log in and/or grant access via your browser at %s '
+                  'then hit enter.' % (auth_url))
+
+    try:
+        final_token = gdata_serv.UpgradeToOAuthAccessToken(request_token)
+    except gdata.service.TokenUpgradeFailed:
+        LOG.critical('Token upgrade failed! Could not get OAuth access token.\n Did you grant gmvault access in your browser ?')
+        LOG.critical("=== Exception traceback ===")
+        LOG.critical(gmvault_utils.get_exception_traceback())
+        LOG.critical("=== End of Exception traceback ===\n")
+
+        return (None, None)
+
+    return (final_token.key, final_token.secret, "normal")
 
 def get_oauth_tok_sec(email, use_webbrowser = False, debug=False):
     '''
@@ -373,7 +448,7 @@ class CredentialHelper(object):
            
             if not token or args['oauth2'] == 'renew':
                 
-                if args['oauth'] == 'renew':
+                if args['oauth2'] == 'renew':
                     LOG.critical("Renew OAuth2 token (normal). Initiate interactive session to get it from Gmail.\n")
                 else:
                     LOG.critical("Initiate interactive session to get OAuth2 token from Gmail.\n")
