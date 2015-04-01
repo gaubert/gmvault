@@ -7,6 +7,7 @@ gmvault.log
 dists/disstoolbox-dist/build
 dists/disstoolbox-dist/build/*
 .idea/
+.idea/*
 build/
 gmvault.egg-info/
 
