@@ -280,6 +280,49 @@ class CredentialHelper(object):
         return token, secret, type
 
     @classmethod
+    def read_oauth2_tok_sec(cls, email):
+        """
+           Read oauth token secret credential
+           Look by default to ~/.gmvault
+           Look for file ~/.gmvault/email.oauth2
+        """
+        gmv_dir = gmvault_utils.get_home_dir_path()
+
+        #look for email.passwed in GMV_DIR
+        user_oauth_file_path = "%s/%s.oauth2" % (gmv_dir, email)
+
+        token  = None
+        secret = None
+        type   = None
+        if os.path.exists(user_oauth_file_path):
+            LOG.critical("Get OAuth2 credential from %s.\n" % user_oauth_file_path)
+
+            try:
+                with open(user_oauth_file_path) as oauth_file:
+                    oauth_result = oauth_file.read()
+                if oauth_result:
+                    oauth_result = oauth_result.split('::')
+                    if len(oauth_result) == 2:
+                        token  = oauth_result[0]
+                        secret = oauth_result[1]
+                        type   = "normal"
+                    elif len(oauth_result) == 3:
+                        token  = oauth_result[0]
+                        secret = oauth_result[1]
+                        type   = oauth_result[2]
+            except Exception, _: #pylint: disable-msg=W0703
+                LOG.critical("Cannot read oauth credentials from %s. Force oauth credentials renewal." % user_oauth_file_path)
+                LOG.critical("=== Exception traceback ===")
+                LOG.critical(gmvault_utils.get_exception_traceback())
+                LOG.critical("=== End of Exception traceback ===\n")
+
+        if token: token   = token.strip() #pylint: disable-msg=C0321
+        if secret: secret = secret.strip()  #pylint: disable-msg=C0321
+        if type: type = type.strip()
+
+        return token, secret, type
+
+    @classmethod
     def get_credential(cls, args, test_mode={'activate': False, 'value': 'test_password'}): #pylint: disable-msg=W0102
         """
            Deal with the credentials.
@@ -319,36 +362,64 @@ class CredentialHelper(object):
                 LOG.critical("Use password stored in $HOME/.gmvault dir (Storing your password here is not recommended).")
                 credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read' }
                                
-        #elif args['passwd'] == 'not_seen' and args['oauth']:
-        elif args['passwd'] in ('not_seen', None) and args['oauth'] in (None, 'empty', 'renew', 'not_seen'):
+        # use oauth2
+        elif args['passwd'] in ('not_seen', None) and args['oauth2'] in (None, 'empty', 'renew', 'not_seen'):
             # get token secret
             # if they are in a file then no need to call get_oauth_tok_sec
             # will have to add 2 legged 
-            LOG.critical("Authentication performed with Gmail XOAuth token.\n")
-            
-            two_legged = args.get('two_legged', False) # 2 legged oauth
-            
+            LOG.critical("Authentication performed with Gmail OAuth2 access token.\n")
+
             token, secret, type = cls.read_oauth_tok_sec(args['email'])
            
-            if not token or args['oauth'] == 'renew':
+            if not token or args['oauth2'] == 'renew':
                 
                 if args['oauth'] == 'renew':
-                    LOG.critical("Renew XOAuth token (normal or 2-legged). Initiate interactive session to get it from Gmail.\n")
+                    LOG.critical("Renew OAuth2 token (normal). Initiate interactive session to get it from Gmail.\n")
                 else:
-                    LOG.critical("Initiate interactive session to get XOAuth normal or 2-legged token from Gmail.\n")
-                
-                if two_legged:
-                    token, secret, type = get_2_legged_oauth_tok_sec()
-                else:
-                    token, secret, type = get_oauth_tok_sec(args['email'], use_webbrowser = True)
+                    LOG.critical("Initiate interactive session to get OAuth2 token from Gmail.\n")
+
+                 token, secret, type = get_oauth_tok_sec(args['email'], use_webbrowser = True)
                 
                 if not token:
-                    raise Exception("Cannot get XOAuth token from Gmail. See Gmail error message")
+                    raise Exception("Cannot get OAuth2 token from Gmail. See Gmail error message")
                 #store newly created token
                 cls.store_oauth_credentials(args['email'], token, secret, type)
                
             xoauth_req = generate_xoauth_req(token, secret, args['email'], type)
             
+            LOG.critical("Successfully read oauth credentials.\n")
+
+            credential = { 'type' : 'xoauth', 'value' : xoauth_req, 'option':None }
+        # use oauth1
+        elif args['passwd'] in ('not_seen', None) and args['oauth'] in (None, 'empty', 'renew', 'not_seen'):
+            # get token secret
+            # if they are in a file then no need to call get_oauth_tok_sec
+            # will have to add 2 legged
+            LOG.critical("Authentication performed with Gmail XOAuth token.\n")
+
+            two_legged = args.get('two_legged', False) # 2 legged oauth
+
+            token, secret, type = cls.read_oauth_tok_sec(args['email'])
+
+            if not token or args['oauth'] == 'renew':
+
+                if args['oauth'] == 'renew':
+                    LOG.critical("Renew XOAuth token (normal or 2-legged). Initiate interactive session to get it from Gmail.\n")
+                else:
+                    LOG.critical("Initiate interactive session to get XOAuth normal or 2-legged token from Gmail.\n")
+
+                if two_legged:
+                    token, secret, type = get_2_legged_oauth_tok_sec()
+                else:
+                    token, secret, type = get_oauth_tok_sec(args['email'], use_webbrowser = True)
+
+                if not token:
+                    raise Exception("Cannot get XOAuth token from Gmail. See Gmail error message")
+                #store newly created token
+                cls.store_oauth_credentials(args['email'], token, secret, type)
+
+            xoauth_req = generate_xoauth_req(token, secret, args['email'], type)
+
             LOG.critical("Successfully read oauth credentials.\n")
 
             credential = { 'type' : 'xoauth', 'value' : xoauth_req, 'option':None }

@@ -181,7 +181,10 @@ class GMVaultLauncher(object):
                
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
-        
+
+        sync_parser.add_argument("-y", "--oauth2", \
+                          help="use oauth for authentication. (default recommended method)",\
+                          action='store_const', dest="oauth2_token", const='empty', default='not_seen')
         
         sync_parser.add_argument("-o", "--oauth", \
                           help="use oauth for authentication. (default recommended method)",\
@@ -194,7 +197,11 @@ class GMVaultLauncher(object):
         sync_parser.add_argument("-2", "--2-legged-oauth", \
                           help="use 2 legged oauth for authentication. (Google Apps Business or Education accounts)",\
                           action='store_const', dest="two_legged_oauth_token", const='empty', default='not_seen')
-        
+
+        sync_parser.add_argument("--renew-oauth2-tok", \
+                          help="renew the stored oauth token (two legged or normal) via an interactive authentication session.",
+                          action= 'store_const' , dest="oauth2_token", const='renew')
+
         sync_parser.add_argument("--renew-oauth-tok", \
                           help="renew the stored oauth token (two legged or normal) via an interactive authentication session.",
                           action= 'store_const' , dest="oauth_token", const='renew')
@@ -421,13 +428,19 @@ class GMVaultLauncher(object):
                          'Please choose between XOAuth and password (recommend XOAuth).')
         
         # user entered no authentication methods => go to default oauth
-        if options.passwd == 'not_seen' and options.oauth_token == 'not_seen' and options.two_legged_oauth_token == 'not_seen':
+        if options.passwd == 'not_seen' and options.oauth2_token == 'not_seen':
             #default to xoauth
-            options.oauth_token = 'empty'
+            options.oauth2_token = 'empty'
             
         # add passwd
         parsed_args['passwd']           = options.passwd
-        
+
+        # add oauth2 tok
+        if options.oauth2_token == 'empty':
+            parsed_args['oauth2']      = options.oauth2_token
+        elif options.oauth2_token == 'renew':
+            parsed_args['oauth2'] = 'renew'
+
         # add oauth tok
         if options.oauth_token == 'empty':
             parsed_args['oauth']      = options.oauth_token
