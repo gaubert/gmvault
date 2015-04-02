@@ -179,7 +179,7 @@ def generate_oauth2_string(username, access_token, base64_encode=True):
     auth_string = base64.b64encode(auth_string)
   return auth_string
 
-def get_oauth2_acc_tok_from_ref_tok(client_id, client_secret, refresh_token):
+def get_oauth2_acc_tok_from_ref_tok(refresh_token):
   """Obtains a new token given a refresh token.
 
   See https://developers.google.com/accounts/docs/OAuth2InstalledApp#refresh
@@ -193,16 +193,18 @@ def get_oauth2_acc_tok_from_ref_tok(client_id, client_secret, refresh_token):
     fields include 'access_token', 'expires_in', and 'refresh_token'.
   """
   params = {}
-  params['client_id'] = client_id
-  params['client_secret'] = client_secret
+  params['client_id'] = GMVAULT_CLIENT_ID
+  params['client_secret'] = GMVAULT_CIENT_SECRET
   params['refresh_token'] = refresh_token
   params['grant_type'] = 'refresh_token'
   request_url = get_accounts_url('o/oauth2/token')
 
   response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
-  json_rep = json.loads(response)
+  json_resp = json.loads(response)
 
-  return response['access_token'], response['refresh'], "normal"
+  LOG.critical("json_resp = %s" % (json_resp))
+
+  return json_resp['access_token'], "normal"
 
 def get_oauth2_tokens(email, use_webbrowser = False, debug=False):
     '''
@@ -299,7 +301,7 @@ class CredentialHelper(object):
         """
            store oauth_credentials
         """
-        oauth_file = '%s/%s.oauth' % (gmvault_utils.get_home_dir_path(), email)
+        oauth_file = '%s/%s.oauth2' % (gmvault_utils.get_home_dir_path(), email)
 
         fdesc = os.open(oauth_file, os.O_CREAT|os.O_WRONLY, 0600)
 
@@ -355,7 +357,7 @@ class CredentialHelper(object):
                 if oauth_result:
                     oauth_result = oauth_result.split('::')
                     if len(oauth_result) == 2:
-                        refresh_token  = oauth_result[0]
+                        refresh_tok  = oauth_result[0]
                         type   = "normal"
             except Exception, _: #pylint: disable-msg=W0703
                 LOG.critical("Cannot read oauth credentials from %s. Force oauth credentials renewal." % user_oauth_file_path)
@@ -414,6 +416,8 @@ class CredentialHelper(object):
             LOG.critical("Authentication performed with Gmail OAuth2 access token.\n")
 
             refresh_token, type = cls.read_oauth2_tok_sec(args['email'])
+
+            LOG.critical("Refresh Token = %s, args[oauth2] = %s" % (refresh_token, args['oauth2']))
            
             if not refresh_token or args['oauth2'] == 'renew':
                 # No refresh token so perform a new request
@@ -427,13 +431,15 @@ class CredentialHelper(object):
                 if not access_token or not refresh_token:
                     raise Exception("Cannot get OAuth2 access token from Gmail. See Gmail error message")
                 #store newly created token
-                if refresh_token: cls.store_oauth2_credentials(args['email'], refresh_token, type)
+                if refresh_token:
+                    cls.store_oauth2_credentials(args['email'], refresh_token, type)
             else:
                 # get access token based on refresh_token
-                access_token, refresh_token, type = get_oauth2_acc_tok_from_ref_tok()
+                access_token, type = get_oauth2_acc_tok_from_ref_tok(refresh_token)
 
             auth_str = generate_authentication_string(args['email'], access_token, base64_encode=False)
-            
+
+            LOG.critical("auth_str generated: %s" % (auth_str))
             LOG.critical("Successfully read oauth2 credentials.\n")
 
             credential = { 'type' : 'xoauth2', 'value' : auth_str, 'option':None }

@@ -461,17 +461,19 @@ class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
 
         credential = credential_utils.CredentialHelper.get_credential(args)
 
-        syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
-                                       args['email'], credential)
+        print("CREDENTIALS:%s" % (credential))
 
-        print("First connection \n")
-        syncer.src.connect()
+        #syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
+        #                               args['email'], credential)
 
-        import time
-        time.sleep(60*10)
+        #print("First connection \n")
+        #syncer.src.connect()
 
-        print("Connection 10 min later")
-        syncer.src.connect()
+        #import time
+        #time.sleep(60*10)
+
+        #print("Connection 10 min later")
+        #syncer.src.connect()
         
     def ztest_debug_restore(self):
         """
