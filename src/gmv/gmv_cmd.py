@@ -181,31 +181,18 @@ class GMVaultLauncher(object):
                
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
-
         sync_parser.add_argument("-y", "--oauth2", \
                           help="use oauth for authentication. (default recommended method)",\
                           action='store_const', dest="oauth2_token", const='empty', default='not_seen')
-        
-        sync_parser.add_argument("-o", "--oauth", \
-                          help="use oauth for authentication. (default recommended method)",\
-                          action='store_const', dest="oauth_token", const='empty', default='not_seen')
-        
+
         sync_parser.add_argument("-p", "--passwd", \
                           help="use interactive password authentication. (not recommended)",
                           action= 'store_const' , dest="passwd", const='empty', default='not_seen')
-        
-        sync_parser.add_argument("-2", "--2-legged-oauth", \
-                          help="use 2 legged oauth for authentication. (Google Apps Business or Education accounts)",\
-                          action='store_const', dest="two_legged_oauth_token", const='empty', default='not_seen')
 
         sync_parser.add_argument("--renew-oauth2-tok", \
                           help="renew the stored oauth token (two legged or normal) via an interactive authentication session.",
                           action= 'store_const' , dest="oauth2_token", const='renew')
 
-        sync_parser.add_argument("--renew-oauth-tok", \
-                          help="renew the stored oauth token (two legged or normal) via an interactive authentication session.",
-                          action= 'store_const' , dest="oauth_token", const='renew')
-         
         sync_parser.add_argument("--renew-passwd", \
                           help="renew the stored password via an interactive authentication session. (not recommended)",
                           action= 'store_const' , dest="passwd", const='renew')
@@ -311,19 +298,18 @@ class GMVaultLauncher(object):
                
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
-        rest_parser.add_argument("-o", "--oauth", \
-                          help="use oauth for authentication. (default method)",\
-                          action='store_const', dest="oauth_token", const='empty', default='not_seen')
-        
+        rest_parser.add_argument("-y", "--oauth2", \
+                          help="use oauth for authentication. (default recommended method)",\
+                          action='store_const', dest="oauth2_token", const='empty', default='not_seen')
+
         rest_parser.add_argument("-p", "--passwd", \
                           help="use interactive password authentication. (not recommended)",
-                          action='store_const', dest="passwd", const='empty', default='not_seen')
-        
-        rest_parser.add_argument("-2", "--2-legged-oauth", \
-                          help="use 2 legged oauth for authentication. (Google Apps Business or Education accounts)",\
-                          action='store_const', dest="two_legged_oauth_token", const='empty', default='not_seen')
-        
-        
+                          action= 'store_const' , dest="passwd", const='empty', default='not_seen')
+
+        rest_parser.add_argument("--renew-oauth2-tok", \
+                          help="renew the stored oauth token (two legged or normal) via an interactive authentication session.",
+                          action= 'store_const' , dest="oauth2_token", const='renew')
+
         rest_parser.add_argument("--server", metavar = "HOSTNAME", \
                               action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
                               dest="host", default="imap.gmail.com")
@@ -354,19 +340,18 @@ class GMVaultLauncher(object):
      
         # for both when seen add const empty otherwise not_seen
         # this allow to distinguish between an empty value and a non seen option
-        check_parser.add_argument("-o", "--oauth", \
-                          help="use oauth for authentication. (default method)",\
-                          action='store_const', dest="oauth_token", const='empty', default='not_seen')
-        
+        check_parser.add_argument("-y", "--oauth2", \
+                          help="use oauth for authentication. (default recommended method)",\
+                          action='store_const', dest="oauth2_token", const='empty', default='not_seen')
+
         check_parser.add_argument("-p", "--passwd", \
                           help="use interactive password authentication. (not recommended)",
-                          action='store_const', dest="passwd", const='empty', default='not_seen')
-        
-        check_parser.add_argument("-2", "--2-legged-oauth", \
-                          help="use 2 legged oauth for authentication. (Google Apps Business or Education accounts)",\
-                          action='store_const', dest="two_legged_oauth_token", const='empty', default='not_seen')
-        
-        
+                          action= 'store_const' , dest="passwd", const='empty', default='not_seen')
+
+        check_parser.add_argument("--renew-oauth2-tok", \
+                          help="renew the stored oauth token (two legged or normal) via an interactive authentication session.",
+                          action= 'store_const' , dest="oauth2_token", const='renew')
+
         check_parser.add_argument("--server", metavar = "HOSTNAME", \
                               action='store', help="Gmail imap server hostname. (default: imap.gmail.com)",\
                               dest="host", default="imap.gmail.com")
@@ -423,9 +408,9 @@ class GMVaultLauncher(object):
         parsed_args['restart']          = options.restart
         
         #user entered both authentication methods
-        if options.passwd == 'empty' and (options.oauth_token == 'empty' or options.two_legged_oauth_token == 'empty'):
+        if options.passwd == 'empty' and (options.oauth2_token == 'empty'):
             parser.error('You have to use one authentication method. '\
-                         'Please choose between XOAuth and password (recommend XOAuth).')
+                         'Please choose between OAuth2 and password (recommend OAuth2).')
         
         # user entered no authentication methods => go to default oauth
         if options.passwd == 'not_seen' and options.oauth2_token == 'not_seen':
@@ -441,17 +426,6 @@ class GMVaultLauncher(object):
         elif options.oauth2_token == 'renew':
             parsed_args['oauth2'] = 'renew'
 
-        # add oauth tok
-        if options.oauth_token == 'empty':
-            parsed_args['oauth']      = options.oauth_token
-            parsed_args['two_legged'] = False
-        elif options.oauth_token == 'renew':
-            parsed_args['oauth'] = 'renew'
-            parsed_args['two_legged'] = True if options.two_legged_oauth_token == 'empty' else False          
-        elif options.two_legged_oauth_token == 'empty':
-            parsed_args['oauth']      = options.two_legged_oauth_token
-            parsed_args['two_legged'] = True
-        
         #add ops type
         if options.type:
             tempo_list = ['auto']
@@ -494,7 +468,6 @@ class GMVaultLauncher(object):
             :except Exception Error
             
         """
-        
         parser = self._create_parser()
           
         options = parser.parse_args()
@@ -597,7 +570,7 @@ class GMVaultLauncher(object):
             pass
     
         #add parser
-        parsed_args['parser']           = parser
+        parsed_args['parser'] = parser
         
         return parsed_args
     
@@ -677,10 +650,8 @@ class GMVaultLauncher(object):
         
         # handle credential in all levels
         syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
-                                       args['email'], credential, read_only_access = True, use_encryption = args['encrypt'])
-        
-        
-        
+                                   args['email'], credential, read_only_access = True, \
+                                   use_encryption = args['encrypt'])
         #full sync is the first one
         if args.get('type', '') == 'full':
         
@@ -763,12 +734,10 @@ class GMVaultLauncher(object):
         die_with_usage = True
         
         try:
-            
             if args.get('command') not in ('export'):
                 credential = CredentialHelper.get_credential(args)
             
             if args.get('command', '') == 'sync':
-                
                 self._sync(args, credential)
                 
             elif args.get('command', '') == 'restore':
