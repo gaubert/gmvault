@@ -240,7 +240,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
         :return:
         """
         print("In _create_IMAP4")
-        imapclient.IMAPClient._create_IMAP4(self)
+        return imapclient.IMAPClient._create_IMAP4(self)
 
 
     def xoauth_login(self, xoauth_cred ):

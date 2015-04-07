@@ -283,7 +283,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
                 self.credential['value'] = credential_utils.CredentialHelper.get_xoauth_req_from_email(self.login)
                 
             self.server.xoauth_login(self.credential['value'])
-        elif self.credential['type'] == 'xoauth2':
+        elif self.credential['type'] == 'oauth2':
             #connect with oauth2
             #if self.once_connected:
             # TODO IMPLEMENT RECONNECTION BASED on AUTH Token and if expired from the refresh token
