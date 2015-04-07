@@ -228,13 +228,21 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
         """
         super(MonkeyIMAPClient, self).__init__(host, port, use_uid, need_ssl)
     
-    def _create_IMAP4(self): #pylint:disable=C0103
+    def _old_create_IMAP4(self): #pylint:disable=C0103
         """
            Factory method creating an IMAPCOMPSSL or a standard IMAP4 Class
         """
         imap_class = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
         return imap_class(self.host, self.port)
-    
+
+    def _create_IMAP4(self): #pylint:disable=C0103
+        """
+        :return:
+        """
+        print("In _create_IMAP4")
+        imapclient.IMAPClient._create_IMAP4(self)
+
+
     def xoauth_login(self, xoauth_cred ):
         """
            Connect with xoauth

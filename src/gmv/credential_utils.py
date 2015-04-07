@@ -426,7 +426,7 @@ class CredentialHelper(object):
                 else:
                     LOG.critical("Initiate interactive session to get OAuth2 token from Gmail.\n")
 
-                    access_token, refresh_token, type = get_oauth2_tokens(args['email'], use_webbrowser = True)
+                access_token, refresh_token, type = get_oauth2_tokens(args['email'], use_webbrowser = True)
                 
                 if not access_token or not refresh_token:
                     raise Exception("Cannot get OAuth2 access token from Gmail. See Gmail error message")
@@ -442,9 +442,29 @@ class CredentialHelper(object):
             LOG.critical("auth_str generated: %s" % (auth_str))
             LOG.critical("Successfully read oauth2 credentials.\n")
 
-            credential = { 'type' : 'xoauth2', 'value' : auth_str, 'option':None }
-                        
-        return credential
+        return { 'type' : 'oauth2', 'value' : auth_str, 'option':None }
+
+    @classmethod
+    def get_oauth2_credential_from_refresh_token(cls, email):
+        """
+        Used once the connection has been lost.
+        :param email: user email used to load refresh token from peristent file
+        :return: credential { 'type' : 'oauth2', 'value' : auth_str, 'option':None }
+        """
+        refresh_token, type = cls.read_oauth2_tok_sec(args['email'])
+
+        LOG.debug("Refresh Token = %s, args[oauth2] = %s" % (refresh_token, args['oauth2']))
+
+        # get access token based on refresh_token
+        access_token, type = get_oauth2_acc_tok_from_ref_tok(refresh_token)
+
+        auth_str = generate_authentication_string(args['email'], access_token, base64_encode=False)
+
+        LOG.debug("auth_str generated: %s" % (auth_str))
+        LOG.debug("Successfully read oauth2 credentials.\n")
+
+        return { 'type' : 'oauth2', 'value' : auth_str, 'option':None }
+
 
     @classmethod
     def get_xoauth_req_from_email(cls, email):
