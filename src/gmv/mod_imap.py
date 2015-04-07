@@ -243,7 +243,17 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
 
         typ, data = self._imap.authenticate('XOAUTH', lambda x: xoauth_cred)
         self._checkok('authenticate', typ, data)
-        return data[0]  
+        return data[0]
+
+    def oauth2_login(self, oauth2_cred):
+        """
+        Connect using oauth2
+        :param oauth2_cred:
+        :return:
+        """
+        typ, data = self._imap.authenticate('XOAUTH2', lambda x: oauth2_cred)
+        self._checkok('authenticate', typ, data)
+        return data[0]
     
     def search(self, criteria): #pylint: disable=W0221
         """

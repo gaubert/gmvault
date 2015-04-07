@@ -463,6 +463,12 @@ class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
 
         print("CREDENTIALS:%s" % (credential))
 
+        syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
+                                       args['email'], credential)
+
+        print("First connection \n")
+        syncer.src.connect()
+
         #syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
         #                               args['email'], credential)
 
