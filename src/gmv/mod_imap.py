@@ -83,6 +83,26 @@ imapclient.response_parser._convert_INTERNALDATE = mod_convert_INTERNALDATE #pyl
 #monkey patching add compress in COMMANDS of imap
 imaplib.Commands['COMPRESS'] = ('AUTH', 'SELECTED')
 
+def datetime_to_imap(dt):
+    """Convert a datetime instance to a IMAP datetime string.
+
+    If timezone information is missing the current system
+    timezone is used.
+    """
+    if not dt.tzinfo:
+        dt = dt.replace(tzinfo=imapclient.fixed_offset.FixedOffset.for_system())
+    return dt.strftime("%d-%b-%Y %H:%M:%S %z")
+
+def to_unicode(s):
+    if isinstance(s, imapclient.six.binary_type):
+        return s.decode('ascii')
+    return s
+
+def to_bytes(s):
+    if isinstance(s, imapclient.six.text_type):
+        return s.encode('ascii')
+    return s
+
 class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
     """
        Add support for compression inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
@@ -304,7 +324,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
 
         return [ long(i) for i in data[0].split() ]
     
-    def append(self, folder, msg, flags=(), msg_time=None):
+    def old_append(self, folder, msg, flags=(), msg_time=None):
         """Append a message to *folder*.
 
         *msg* should be a string contains the full message including
@@ -328,11 +348,40 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
 
         flags_list = seq_to_parenlist(flags)
 
-        typ, data = self._imap.append(self._encode_folder_name(folder) if folder else None,
+        typ, data = self._imap.append(self._normalize_folder(folder) if folder else None,
                                       flags_list, time_val, msg)
         self._checkok('append', typ, data)
 
         return data[0]
+
+    def append(self, folder, msg, flags=(), msg_time=None):
+        """Append a message to *folder*.
+
+        *msg* should be a string contains the full message including
+        headers.
+
+        *flags* should be a sequence of message flags to set. If not
+        specified no flags will be set.
+
+        *msg_time* is an optional datetime instance specifying the
+        date and time to set on the message. The server will set a
+        time if it isn't specified. If *msg_time* contains timezone
+        information (tzinfo), this will be honoured. Otherwise the
+        local machine's time zone sent to the server.
+
+        Returns the APPEND response as returned by the server.
+        """
+        if msg_time:
+            time_val = '"%s"' % datetime_to_imap(msg_time)
+            time_val = to_bytes(time_val)
+        else:
+            time_val = None
+        return self._command_and_check('append',
+                                       self._normalise_folder(folder),
+                                       imapclient.imapclient.seq_to_parenstr(flags),
+                                       time_val,
+                                       to_bytes(msg),
+                                       unpack=True)
     
     def enable_compression(self):
         """
