@@ -336,8 +336,9 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         """
            Try to enable the compression
         """
-        self.server.enable_compression()
-        
+        #self.server.enable_compression()
+        pass
+
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def find_folder_names(self):
         """

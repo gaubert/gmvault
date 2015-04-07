@@ -72,12 +72,12 @@ class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
         self.gmvault_passwd = None 
 
     def setUp(self): #pylint:disable-msg=C0103
-        #self.login, self.passwd = read_password_file('/homespace/gaubert/.ssh/passwd')
-        self.login, self.passwd = read_password_file('/home/gmv/.ssh/passwd')
+        self.login, self.passwd = read_password_file('/homespace/gaubert/.ssh/passwd')
+        #self.login, self.passwd = read_password_file('/home/gmv/.ssh/passwd')
         #self.login, self.passwd = read_password_file('H:/.ssh/passwd')
 
-        #self.gsync_login, self.gsync_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
-        self.gsync_login, self.gsync_passwd = read_password_file('/home/gmv/.ssh/gsync_passwd')
+        self.gsync_login, self.gsync_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
+        #self.gsync_login, self.gsync_passwd = read_password_file('/home/gmv/.ssh/gsync_passwd')
         #self.gsync_login, self.gsync_passwd = read_password_file('H:/.ssh/gsync_passwd')
 
     def ztest_commandline_args(self):
