@@ -472,6 +472,6 @@ class CredentialHelper(object):
         auth_str = generate_authentication_string(email, access_token, base64_encode=False)
 
         LOG.debug("auth_str generated: %s" % (auth_str))
-        LOG.debug("Successfully read oauth2 credentials.\n")
+        LOG.debug("Successfully read oauth2 credentials with get_oauth2_credential_from_refresh_token\n")
 
         return { 'type' : 'oauth2', 'value' : auth_str, 'option':None }
