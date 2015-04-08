@@ -382,12 +382,12 @@ class CredentialHelper(object):
             renew = True if args['oauth2'] == 'renew' else False
 
             #get the oauth2 credential
-            cls.get_oauth2_credential(args['email'], renew)
+            credential = cls.get_oauth2_credential(args['email'], renew)
 
-        return { 'type' : 'oauth2', 'value' : auth_str, 'option':None }
+        return credential
 
     @classmethod
-    def _get_oauth2_acc_tok_from_ref_tok(refresh_token):
+    def _get_oauth2_acc_tok_from_ref_tok(cls, refresh_token):
       """Obtains a new token given a refresh token.
 
       See https://developers.google.com/accounts/docs/OAuth2InstalledApp#refresh

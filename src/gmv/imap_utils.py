@@ -279,7 +279,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         elif self.credential['type'] == 'oauth2':
             #connect with oauth2
             if self.once_connected:
-                self.credential = credential_utils.CredentialHelper.get_oauth2_credential_from_refresh_token(self.login)
+                self.credential = credential_utils.CredentialHelper.get_oauth2_credential(self.login, renew_cred = False)
 
             LOG.debug("credential['value'] = %s" % (self.credential['value']))
             #try to login
