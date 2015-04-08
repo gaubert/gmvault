@@ -49,18 +49,6 @@ GOOGLE_ACCOUNTS_BASE_URL = 'https://accounts.google.com'
 REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
 OAUTH2_URL="https://accounts.google.com/o/oauth2/auth?client_id=%s&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&scope=https%3A%2F%2Fmail.google.com%2F"
 
-def get_accounts_url(command):
-  """Generates the Google Accounts URL.
-
-  Args:
-    command: The command to execute.
-
-  Returns:
-    A URL for the given command.
-  """
-  return '%s/%s' % (GOOGLE_ACCOUNTS_BASE_URL, command)
-
-
 def escape_url(text):
   """
   Escape characters as expected in OAUTH 5.1
@@ -124,8 +112,8 @@ def generate_permission_url():
   params['redirect_uri'] = REDIRECT_URI
   params['scope'] = SCOPE
   params['response_type'] = 'code'
-  return '%s?%s' % (get_accounts_url('o/oauth2/auth'),
-                    format_url_params(params))
+
+  return '%s/%s?%s' % (GOOGLE_ACCOUNTS_BASE_URL, 'o/oauth2/auth', format_url_params(params))
 
 def get_authorization_tokens(authorization_code):
   """Obtains OAuth access token and refresh token.
@@ -148,7 +136,7 @@ def get_authorization_tokens(authorization_code):
   params['code'] = authorization_code
   params['redirect_uri'] = REDIRECT_URI
   params['grant_type'] = 'authorization_code'
-  request_url = get_accounts_url('o/oauth2/token')
+  request_url = '%s/%s' % (GOOGLE_ACCOUNTS_BASE_URL, 'o/oauth2/token')
 
   response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
   return json.loads(response)
@@ -405,7 +393,7 @@ class CredentialHelper(object):
       params['client_secret'] = GMVAULT_CIENT_SECRET
       params['refresh_token'] = refresh_token
       params['grant_type'] = 'refresh_token'
-      request_url = get_accounts_url('o/oauth2/token')
+      request_url = '%s/%s' % (GOOGLE_ACCOUNTS_BASE_URL, 'o/oauth2/token')
 
       response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
       json_resp = json.loads(response)
