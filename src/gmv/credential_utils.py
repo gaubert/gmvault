@@ -38,17 +38,6 @@ import gmv.gmvault_utils as gmvault_utils
 
 LOG = log_utils.LoggerFactory.get_logger('oauth')
 
-
-def get_2_legged_oauth_tok_sec():
-    '''
-       Get 2 legged token and secret
-    '''
-    tok = raw_input('Enter your domain\'s OAuth consumer key: ')
-  
-    sec = raw_input('Enter your domain\'s OAuth consumer secret: ')
-      
-    return tok, sec, "two_legged"
-
 #GMVAULT IDENTIFIER
 GMVAULT_CLIENT_ID="1070918343777-0eecradokiu8i77qfo8e3stbi0mkrtog.apps.googleusercontent.com"
 GMVAULT_CIENT_SECRET="IVkl_pglv5cXzugpmnRNqtT7"
@@ -58,7 +47,6 @@ SCOPE='https://mail.google.com/'
 GOOGLE_ACCOUNTS_BASE_URL = 'https://accounts.google.com'
 # Hardcoded dummy redirect URI for non-web apps.
 REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
-
 OAUTH2_URL="https://accounts.google.com/o/oauth2/auth?client_id=%s&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&scope=https%3A%2F%2Fmail.google.com%2F"
 
 def get_accounts_url(command):
@@ -74,28 +62,32 @@ def get_accounts_url(command):
 
 
 def escape_url(text):
-  # See OAUTH 5.1 for a definition of which characters need to be escaped.
+  """
+  Escape characters as expected in OAUTH 5.1
+  :param text: the escaped url
+  :return:
+  """
   return urllib.quote(text, safe='~-._')
 
 
 def unescape_url(text):
-  # See OAUTH 5.1 for a definition of which characters need to be escaped.
+  """
+  Unescape characters when needed
+  :param text:
+  :return:
+  """
   return urllib.unquote(text)
 
-
 def format_url_params(params):
-  """Formats parameters into a URL query string.
-
-  Args:
-    params: A key-value map.
-
-  Returns:
-    A URL query string version of the given parameters.
   """
-  param_fragments = []
+  Formats given parameters as URL query string.
+  :param params: a python dict
+  :return: A URL query string version of the given dict.
+  """
+  param_elements = []
   for param in sorted(params.iteritems(), key=lambda x: x[0]):
-    param_fragments.append('%s=%s' % (param[0], escape_url(param[1])))
-  return '&'.join(param_fragments)
+    param_elements.append('%s=%s' % (param[0], escape_url(param[1])))
+  return '&'.join(param_elements)
 
 def generate_authentication_string(username, access_token, base64_encode=True):
   """Generates an IMAP OAuth2 authentication string.
@@ -178,33 +170,6 @@ def generate_oauth2_string(username, access_token, base64_encode=True):
   if base64_encode:
     auth_string = base64.b64encode(auth_string)
   return auth_string
-
-def get_oauth2_acc_tok_from_ref_tok(refresh_token):
-  """Obtains a new token given a refresh token.
-
-  See https://developers.google.com/accounts/docs/OAuth2InstalledApp#refresh
-
-  Args:
-    client_id: Client ID obtained by registering your app.
-    client_secret: Client secret obtained by registering your app.
-    refresh_token: A previously-obtained refresh token.
-  Returns:
-    The decoded response from the Google Accounts server, as a dict. Expected
-    fields include 'access_token', 'expires_in', and 'refresh_token'.
-  """
-  params = {}
-  params['client_id'] = GMVAULT_CLIENT_ID
-  params['client_secret'] = GMVAULT_CIENT_SECRET
-  params['refresh_token'] = refresh_token
-  params['grant_type'] = 'refresh_token'
-  request_url = get_accounts_url('o/oauth2/token')
-
-  response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
-  json_resp = json.loads(response)
-
-  LOG.critical("json_resp = %s" % (json_resp))
-
-  return json_resp['access_token'], "normal"
 
 def get_oauth2_tokens(email, use_webbrowser = False, debug=False):
     '''
@@ -414,38 +379,43 @@ class CredentialHelper(object):
             # get access token and refresh token
             LOG.critical("Authentication performed with Gmail OAuth2 access token.\n")
 
-            oauth2_creds = cls.read_oauth2_tok_sec(args['email'])
+            renew = True if args['oauth2'] == 'renew' else False
 
-            LOG.critical("Tokens = %s, args[oauth2] = %s" % (oauth2_creds, args['oauth2']))
-           
-            #workflow when you connect for the first time or want to renew the oauth2 credentials
-            if not oauth2_creds or args['oauth2'] == 'renew':
-                # No refresh token so perform a new request
-                if args['oauth2'] == 'renew':
-                    LOG.critical("Renew OAuth2 token (normal). Initiate interactive session to get it from Gmail.\n")
-                else:
-                    LOG.critical("Initiate interactive session to get OAuth2 token from Gmail.\n")
-
-                access_token, refresh_token, validity, type = get_oauth2_tokens(args['email'], use_webbrowser = True)
-                
-                if not access_token or not refresh_token:
-                    raise Exception("Cannot get OAuth2 access token from Gmail. See Gmail error message")
-                #store newly created token
-                if refresh_token:
-                    cls.store_oauth2_credentials(args['email'], access_token, refresh_token, validity, type)
-            else:
-                # workflow when you reconnect on issues, or after a while (1 hour, 1 day)
-                access_token, type = get_oauth2_acc_tok_from_ref_tok(oauth2_creds["refresh_token"])
-
-            auth_str = generate_authentication_string(args['email'], access_token, base64_encode=False)
-
-            LOG.critical("auth_str generated: %s" % (auth_str))
-            LOG.critical("Successfully read oauth2 credentials.\n")
+            #get the oauth2 credential
+            cls.get_oauth2_credential(args['email'], renew)
 
         return { 'type' : 'oauth2', 'value' : auth_str, 'option':None }
 
     @classmethod
-    def get_oauth2_credential_from_refresh_token(cls, email):
+    def _get_oauth2_acc_tok_from_ref_tok(refresh_token):
+      """Obtains a new token given a refresh token.
+
+      See https://developers.google.com/accounts/docs/OAuth2InstalledApp#refresh
+
+      Args:
+        client_id: Client ID obtained by registering your app.
+        client_secret: Client secret obtained by registering your app.
+        refresh_token: A previously-obtained refresh token.
+      Returns:
+        The decoded response from the Google Accounts server, as a dict. Expected
+        fields include 'access_token', 'expires_in', and 'refresh_token'.
+      """
+      params = {}
+      params['client_id'] = GMVAULT_CLIENT_ID
+      params['client_secret'] = GMVAULT_CIENT_SECRET
+      params['refresh_token'] = refresh_token
+      params['grant_type'] = 'refresh_token'
+      request_url = get_accounts_url('o/oauth2/token')
+
+      response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
+      json_resp = json.loads(response)
+
+      LOG.critical("json_resp = %s" % (json_resp))
+
+      return json_resp['access_token'], "normal"
+
+    @classmethod
+    def get_oauth2_credential(cls, email, renew_cred = False):
         """
         Used once the connection has been lost. Return an auth_str obtained from a refresh token or
         with the current access token if it is still valid
@@ -454,22 +424,42 @@ class CredentialHelper(object):
         """
         oauth2_creds = cls.read_oauth2_tok_sec(email)
 
-        now = gmvault_utils.get_utcnow_epoch() #now time as epoch seconds
-        tok_creation = oauth2_creds['access_creation'] #creation time as epoch seconds
-        validity     = oauth2_creds['validity']
+        #workflow when you connect for the first time or want to renew the oauth2 credentials
+        if not oauth2_creds or renew_cred:
+                # No refresh token in stored so perform a new request
+                if renew_cred:
+                    LOG.critical("Renew OAuth2 token (normal). Initiate interactive session to get it from Gmail.\n")
+                else:
+                    LOG.critical("Initiate interactive session to get OAuth2 token from Gmail.\n")
 
-        LOG.debug("oauth2 creds = %s" % (oauth2_creds['refresh_token']))
+                #interactive session with default browser initiated
+                access_token, refresh_token, validity, type = get_oauth2_tokens(email, use_webbrowser = True)
 
-        #access token is still valid then use it
-        if  now < tok_creation + validity:
-            LOG.debug("Access Token is still valid")
-            access_token = oauth2_creds['access_token']
+                if not access_token or not refresh_token:
+                    raise Exception("Cannot get OAuth2 access token from Gmail. See Gmail error message")
+
+                #store newly created token
+                cls.store_oauth2_credentials(email, access_token, refresh_token, validity, type)
         else:
-            LOG.debug("Access Token is expired. Renew it")
-            # get a new access token based on refresh_token
-            access_token, type = get_oauth2_acc_tok_from_ref_tok(oauth2_creds['refresh_token'])
-            # update stored information
-            cls.store_oauth2_credentials(email, access_token, oauth2_creds['refresh_token'], validity, type)
+
+            # check if the access token is still valid otherwise renew it from the refresh token
+            now = gmvault_utils.get_utcnow_epoch() #now time as epoch seconds
+            tok_creation = oauth2_creds['access_creation'] #creation time as epoch seconds
+            validity     = oauth2_creds['validity']
+
+            LOG.debug("oauth2 creds = %s" % (oauth2_creds['refresh_token']))
+
+            #access token is still valid then use it
+            if  now < tok_creation + validity:
+                LOG.debug("Access Token is still valid")
+                access_token = oauth2_creds['access_token']
+            else:
+                #expired so request a new access token and store it
+                LOG.debug("Access Token is expired. Renew it")
+                # get a new access token based on refresh_token
+                access_token, type = cls._get_oauth2_acc_tok_from_ref_tok(oauth2_creds['refresh_token'])
+                # update stored information
+                cls.store_oauth2_credentials(email, access_token, oauth2_creds['refresh_token'], validity, type)
 
         auth_str = generate_authentication_string(email, access_token, base64_encode=False)
 
