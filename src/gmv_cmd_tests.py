@@ -450,7 +450,7 @@ class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
         print("Connection 10 min later")
         syncer.src.connect()
 
-    def test_oauth2_login(self):
+    def ztest_oauth2_login(self):
         """
            oauth2 login test
         """
@@ -470,6 +470,47 @@ class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
 
         print("First connection \n")
         syncer.src.connect()
+
+        #syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
+        #                               args['email'], credential)
+
+        #print("First connection \n")
+        #syncer.src.connect()
+
+        #import time
+        #time.sleep(60*10)
+
+        #print("Connection 10 min later")
+        #syncer.src.connect()
+
+    def test_oauth2_reconnect(self):
+        """
+           oauth2 login test
+        """
+        # now read the password
+        sys.argv = ['gmvault.py', 'sync', '--db-dir', '/tmp/new-db-1', self.login]
+
+        gmvault_launcher = gmv_cmd.GMVaultLauncher()
+
+        args = gmvault_launcher.parse_args()
+
+        credential = credential_utils.CredentialHelper.get_credential(args)
+
+        print("CREDENTIALS:%s" % (credential))
+
+        syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
+                                       args['email'], credential)
+
+        print("First connection \n")
+
+        syncer.src.connect()
+
+        import time
+        time.sleep(5)
+
+        syncer.src.connect()
+
+        syncer.reconnect()
 
         #syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
         #                               args['email'], credential)

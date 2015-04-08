@@ -311,7 +311,7 @@ class CredentialHelper(object):
         the_obj = { "access_token"    : access_token,
                     "refresh_token"   : refresh_token,
                     "validity"        : validity,
-                    "access_creation" : gmvault_utils.get_now_epoch(),
+                    "access_creation" : gmvault_utils.get_utcnow_epoch(),
                     "type"            : type}
 
         json.dump(the_obj, fobj)
@@ -446,34 +446,32 @@ class CredentialHelper(object):
     @classmethod
     def get_oauth2_credential_from_refresh_token(cls, email):
         """
-        Used once the connection has been lost.
+        Used once the connection has been lost. Return an auth_str obtained from a refresh token or
+        with the current access token if it is still valid
         :param email: user email used to load refresh token from peristent file
         :return: credential { 'type' : 'oauth2', 'value' : auth_str, 'option':None }
         """
-        refresh_token, type = cls.read_oauth2_tok_sec(args['email'])
+        oauth2_creds = cls.read_oauth2_tok_sec(email)
 
-        LOG.debug("Refresh Token = %s, args[oauth2] = %s" % (refresh_token, args['oauth2']))
+        now = gmvault_utils.get_utcnow_epoch() #now time as epoch seconds
+        tok_creation = oauth2_creds['access_creation'] #creation time as epoch seconds
+        validity     = oauth2_creds['validity']
 
-        # get access token based on refresh_token
-        access_token, type = get_oauth2_acc_tok_from_ref_tok(refresh_token)
+        #access token is still valid then use it
+        if  now < tok_creation + validity:
+            LOG.debug("Access Token is still valid")
+            access_token = oauth2_creds['access_token']
+        else:
+            LOG.debug("Refresh Token = %s, args[oauth2] = %s" % (oauth2_creds['refresh_token'], args['oauth2']))
 
-        auth_str = generate_authentication_string(args['email'], access_token, base64_encode=False)
+            # get a new access token based on refresh_token
+            access_token, type = get_oauth2_acc_tok_from_ref_tok(oauth2_creds['refresh_token'])
+            # update stored information
+            cls.store_oauth2_credentials(email, access_token, oauth2_creds['refresh_token'], validity, type)
+
+        auth_str = generate_authentication_string(email, access_token, base64_encode=False)
 
         LOG.debug("auth_str generated: %s" % (auth_str))
         LOG.debug("Successfully read oauth2 credentials.\n")
 
         return { 'type' : 'oauth2', 'value' : auth_str, 'option':None }
-
-
-    @classmethod
-    def get_xoauth_req_from_email(cls, email):
-        """
-           This will be used to reconnect after a timeout
-        """
-        token, secret, type = cls.read_oauth_tok_sec(email)
-        if not token: 
-            raise Exception("Error cannot read token, secret from")
-        
-        xoauth_req = generate_xoauth_req(token, secret, email, type)
-        
-        return xoauth_req

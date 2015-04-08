@@ -374,7 +374,7 @@ def e2datetime(a_epoch):
 
     return new_date
 
-def get_now_epoch():
+def get_utcnow_epoch():
     return datetime2e(datetime.datetime.utcnow())
 
 def datetime2e(a_date):
