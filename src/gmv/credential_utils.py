@@ -418,6 +418,7 @@ class CredentialHelper(object):
 
             LOG.critical("Tokens = %s, args[oauth2] = %s" % (oauth2_creds, args['oauth2']))
            
+            #workflow when you connect for the first time or want to renew the oauth2 credentials
             if not oauth2_creds or args['oauth2'] == 'renew':
                 # No refresh token so perform a new request
                 if args['oauth2'] == 'renew':
@@ -433,7 +434,7 @@ class CredentialHelper(object):
                 if refresh_token:
                     cls.store_oauth2_credentials(args['email'], access_token, refresh_token, validity, type)
             else:
-                # get access token based on refresh_token
+                # workflow when you reconnect on issues, or after a while (1 hour, 1 day)
                 access_token, type = get_oauth2_acc_tok_from_ref_tok(oauth2_creds["refresh_token"])
 
             auth_str = generate_authentication_string(args['email'], access_token, base64_encode=False)
@@ -457,13 +458,14 @@ class CredentialHelper(object):
         tok_creation = oauth2_creds['access_creation'] #creation time as epoch seconds
         validity     = oauth2_creds['validity']
 
+        LOG.debug("oauth2 creds = %s" % (oauth2_creds['refresh_token']))
+
         #access token is still valid then use it
         if  now < tok_creation + validity:
             LOG.debug("Access Token is still valid")
             access_token = oauth2_creds['access_token']
         else:
-            LOG.debug("Refresh Token = %s, args[oauth2] = %s" % (oauth2_creds['refresh_token'], args['oauth2']))
-
+            LOG.debug("Access Token is expired. Renew it")
             # get a new access token based on refresh_token
             access_token, type = get_oauth2_acc_tok_from_ref_tok(oauth2_creds['refresh_token'])
             # update stored information

@@ -505,25 +505,17 @@ class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
 
         syncer.src.connect()
 
+        print("Sleep 1 sec and connect again")
         import time
-        time.sleep(5)
+        time.sleep(1)
 
         syncer.src.connect()
 
-        syncer.reconnect()
+        print("Sleep 1 sec and reconnect again")
+        time.sleep(1)
 
-        #syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
-        #                               args['email'], credential)
+        syncer.src.reconnect()
 
-        #print("First connection \n")
-        #syncer.src.connect()
-
-        #import time
-        #time.sleep(60*10)
-
-        #print("Connection 10 min later")
-        #syncer.src.connect()
-        
     def ztest_debug_restore(self):
         """
            double login
