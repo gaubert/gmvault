@@ -31,6 +31,7 @@ import sys
 import traceback
 import random 
 import locale
+import urllib
 
 import gmv.log_utils as log_utils
 import gmv.conf.conf_helper
@@ -625,3 +626,32 @@ def get_conf_filepath():
 def chunker(seq, size):
     """Returns the contents of `seq` in chunks of up to `size` items."""
     return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
+
+
+def escape_url(text):
+  """
+  Escape characters as expected in OAUTH 5.1
+  :param text: the escaped url
+  :return: escaped url
+  """
+  return urllib.quote(text, safe='~-._')
+
+
+def unescape_url(text):
+  """
+  Unescaped characters when needed (see OAUTH 5.1)
+  :param text:
+  :return: unescaped url
+  """
+  return urllib.unquote(text)
+
+def format_url_params(params):
+  """
+  Formats given parameters as URL query string.
+  :param params: a python dict
+  :return: A URL query string version of the given dict.
+  """
+  param_elements = []
+  for param in sorted(params.iteritems(), key=lambda x: x[0]):
+    param_elements.append('%s=%s' % (param[0], escape_url(param[1])))
+  return '&'.join(param_elements)
