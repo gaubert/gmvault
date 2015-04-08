@@ -42,12 +42,13 @@ LOG = log_utils.LoggerFactory.get_logger('oauth')
 GMVAULT_CLIENT_ID="1070918343777-0eecradokiu8i77qfo8e3stbi0mkrtog.apps.googleusercontent.com"
 GMVAULT_CIENT_SECRET="IVkl_pglv5cXzugpmnRNqtT7"
 
-SCOPE='https://mail.google.com/'
+SCOPE = gmvault_utils.get_conf_defaults().get("GoogleOauth2","scope",'https://mail.google.com/')
 # The URL root for accessing Google Accounts.
-GOOGLE_ACCOUNTS_BASE_URL = 'https://accounts.google.com'
+GOOGLE_ACCOUNTS_BASE_URL = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "google_accounts_base_url", 'https://accounts.google.com')
 # Hardcoded dummy redirect URI for non-web apps.
-REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
-OAUTH2_URL="https://accounts.google.com/o/oauth2/auth?client_id=%s&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&scope=https%3A%2F%2Fmail.google.com%2F"
+REDIRECT_URI = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "redirect_uri", 'urn:ietf:wg:oauth:2.0:oob')
+
+OAUTH2_URL = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "oauth2_url", "https://accounts.google.com/o/oauth2/auth?client_id=%s&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&scope=https%3A%2F%2Fmail.google.com%2F")
 
 def escape_url(text):
   """
@@ -110,7 +111,7 @@ def generate_permission_url():
   params = {}
   params['client_id'] = GMVAULT_CLIENT_ID
   params['redirect_uri'] = REDIRECT_URI
-  params['scope'] = SCOPE
+  params['scope'] =
   params['response_type'] = 'code'
 
   return '%s/%s?%s' % (GOOGLE_ACCOUNTS_BASE_URL, 'o/oauth2/auth', format_url_params(params))

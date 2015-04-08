@@ -63,6 +63,15 @@ chat_folder=[ u'[Google Mail]/Чаты', u'[Gmail]/Чаты' ]
 [VERSION]
 conf_version=1.8.1
 
+[GoogleOauth2]
+scope=https://mail.google.com/
+# The URL root for accessing Google Accounts.
+google_accounts_base_url=https://accounts.google.com
+# Hardcoded dummy redirect URI for non-web apps.
+redirect_uri=urn:ietf:wg:oauth:2.0:oob
+oauth2_url=https://accounts.google.com/o/oauth2/auth?client_id=%s&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&scope=https%3A%2F%2Fmail.google.com%2F
+
+
 #set environment variables for the program locally
 #they will be read only once the conf file has been loaded
 [ENV]
