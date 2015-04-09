@@ -21,9 +21,6 @@
 
 '''
 import webbrowser
-import random
-import time
-import atom
 import json
 import base64
 import urllib
@@ -46,6 +43,7 @@ SCOPE = gmvault_utils.get_conf_defaults().get("GoogleOauth2","scope",'https://ma
 GOOGLE_ACCOUNTS_BASE_URL = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "google_accounts_base_url", 'https://accounts.google.com')
 # Hardcoded dummy redirect URI for non-web apps.
 REDIRECT_URI = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "redirect_uri", 'urn:ietf:wg:oauth:2.0:oob')
+
 
 def generate_permission_url():
   """Generates the URL for authorizing access.
@@ -347,6 +345,22 @@ class CredentialHelper(object):
         return access_tok, refresh_tok, validity, "normal"
 
     @classmethod
+    def _generate_oauth2_auth_string(cls, username, access_token, base64_encode=True):
+        """Generates an IMAP OAuth2 authentication string.
+        See https://developers.google.com/google-apps/gmail/oauth2_overview
+        Args:
+        username: the username (email address) of the account to authenticate
+        access_token: An OAuth2 access token.
+        base64_encode: Whether to base64-encode the output.
+        Returns:
+        The SASL argument for the OAuth2 mechanism.
+        """
+        auth_string = 'user=%s\1auth=Bearer %s\1\1' % (username, access_token)
+        if base64_encode:
+            auth_string = base64.b64encode(auth_string)
+        return auth_string
+
+    @classmethod
     def get_oauth2_credential(cls, email, renew_cred = False):
         """
         Used once the connection has been lost. Return an auth_str obtained from a refresh token or
@@ -393,7 +407,7 @@ class CredentialHelper(object):
                 # update stored information
                 cls.store_oauth2_credentials(email, access_token, oauth2_creds['refresh_token'], validity, type)
 
-        auth_str = generate_oauth2_auth_string(email, access_token, base64_encode=False)
+        auth_str = cls._generate_oauth2_auth_string(email, access_token, base64_encode=False)
 
         LOG.debug("auth_str generated: %s" % (auth_str))
         LOG.debug("Successfully read oauth2 credentials with get_oauth2_credential_from_refresh_token\n")

@@ -20,7 +20,6 @@
 
 '''
 import zlib
-import time
 import datetime
 import re
 import socket
@@ -247,30 +246,6 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
            constructor
         """
         super(MonkeyIMAPClient, self).__init__(host, port, use_uid, need_ssl)
-    
-    def _old_create_IMAP4(self): #pylint:disable=C0103
-        """
-           Factory method creating an IMAPCOMPSSL or a standard IMAP4 Class
-        """
-        imap_class = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
-        return imap_class(self.host, self.port)
-
-    def _create_IMAP4(self): #pylint:disable=C0103
-        """
-        :return:
-        """
-        return imapclient.IMAPClient._create_IMAP4(self)
-
-
-    def xoauth_login(self, xoauth_cred ):
-        """
-           Connect with xoauth
-           Redefine this method to suppress dependency to oauth2 (non-necessary)
-        """
-
-        typ, data = self._imap.authenticate('XOAUTH', lambda x: xoauth_cred)
-        self._checkok('authenticate', typ, data)
-        return data[0]
 
     def oauth2_login(self, oauth2_cred):
         """
@@ -322,36 +297,6 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
             return [ ]
 
         return [ long(i) for i in data[0].split() ]
-    
-    def old_append(self, folder, msg, flags=(), msg_time=None):
-        """Append a message to *folder*.
-
-        *msg* should be a string contains the full message including
-        headers.
-
-        *flags* should be a sequence of message flags to set. If not
-        specified no flags will be set.
-
-        *msg_time* is an optional datetime instance specifying the
-        date and time to set on the message. The server will set a
-        time if it isn't specified. If *msg_time* contains timezone
-        information (tzinfo), this will be honoured. Otherwise the
-        local machine's time zone sent to the server.
-
-        Returns the APPEND response as returned by the server.
-        """
-        if msg_time:
-            time_val = time.mktime(msg_time.timetuple())
-        else:
-            time_val = None
-
-        flags_list = seq_to_parenlist(flags)
-
-        typ, data = self._imap.append(self._normalize_folder(folder) if folder else None,
-                                      flags_list, time_val, msg)
-        self._checkok('append', typ, data)
-
-        return data[0]
 
     def append(self, folder, msg, flags=(), msg_time=None):
         """Append a message to *folder*.
