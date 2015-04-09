@@ -259,7 +259,6 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
         """
         :return:
         """
-        print("In _create_IMAP4")
         return imapclient.IMAPClient._create_IMAP4(self)
 
 
