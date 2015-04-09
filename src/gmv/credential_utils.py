@@ -47,24 +47,6 @@ GOOGLE_ACCOUNTS_BASE_URL = gmvault_utils.get_conf_defaults().get("GoogleOauth2",
 # Hardcoded dummy redirect URI for non-web apps.
 REDIRECT_URI = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "redirect_uri", 'urn:ietf:wg:oauth:2.0:oob')
 
-def generate_oauth2_auth_string(username, access_token, base64_encode=True):
-  """Generates an IMAP OAuth2 authentication string.
-
-  See https://developers.google.com/google-apps/gmail/oauth2_overview
-
-  Args:
-    username: the username (email address) of the account to authenticate
-    access_token: An OAuth2 access token.
-    base64_encode: Whether to base64-encode the output.
-
-  Returns:
-    The SASL argument for the OAuth2 mechanism.
-  """
-  auth_string = 'user=%s\1auth=Bearer %s\1\1' % (username, access_token)
-  if base64_encode:
-    auth_string = base64.b64encode(auth_string)
-  return auth_string
-
 def generate_permission_url():
   """Generates the URL for authorizing access.
 
@@ -278,10 +260,15 @@ class CredentialHelper(object):
       params['grant_type'] = 'refresh_token'
       request_url = '%s/%s' % (GOOGLE_ACCOUNTS_BASE_URL, 'o/oauth2/token')
 
-      response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
+      try:
+        response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
+      except Exception, err: #pylint: disable-msg=W0703
+        LOG.critical("Error: Problems when trying to connect to Google oauth2 endpoint: %s.\n" % (request_url))
+        raise err
+
       json_resp = json.loads(response)
 
-      LOG.critical("json_resp = %s" % (json_resp))
+      LOG.debug("json_resp = %s" % (json_resp))
 
       return json_resp['access_token'], "normal"
 
@@ -309,7 +296,12 @@ class CredentialHelper(object):
         params['grant_type'] = 'authorization_code'
         request_url = '%s/%s' % (GOOGLE_ACCOUNTS_BASE_URL, 'o/oauth2/token')
 
-        response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
+        try:
+            response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
+        except Exception, err: #pylint: disable-msg=W0703
+            LOG.critical("Error: Problems when trying to connect to Google oauth2 endpoint: %s." % (request_url))
+            raise err
+
         return json.loads(response)
 
     @classmethod
@@ -339,16 +331,14 @@ class CredentialHelper(object):
             verification_code = raw_input("You should now see the web page on your browser now.\n"\
                       "If you don\'t, you can manually open:\n\n%s\n\nOnce you've granted"\
                       " gmvault access, enter the verification code and press enter:\n" % (permission_url))
-
         else:
             verification_code = raw_input('Please log in and/or grant access via your browser at %s '
                       'then enter the verification code and press enter:' % (permission_url))
 
-
         #request access and refresh token with the obtained verification code
         response = cls._get_authorization_tokens(verification_code)
 
-        LOG.critical("Response %s" % (response))
+        LOG.debug("get_authorization_tokens response %s" % (response))
 
         access_tok  = response['access_token']
         refresh_tok = response['refresh_token']
