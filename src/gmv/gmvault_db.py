@@ -442,7 +442,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
             # write in chunks of one 1 MB
             for chunk in gmvault_utils.chunker(data, 1048576):
-                data_desc.write(chunk)
+                data_desc.write(chunk.encode('utf-8'))
 
             self.bury_metadata(email_info, local_dir, extra_labels)
             data_desc.flush()
