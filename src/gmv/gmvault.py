@@ -470,7 +470,7 @@ class GMVaulter(object):
                     eml_date = new_data[the_id].get(imap_utils.GIMAPFetcher.IMAP_INTERNALDATE, None)
 
                     if gid is None or eml_date is None:
-                        LOG.info("Ignore email with id %s. No %s nor %s found in %s." % (the_id, imap_utils.GIMAPFetcher.GMAIL_ID, imap_utils.GIMAPFetcher.IMAP_INTERNALDATE, new_data[the_id])
+                        LOG.info("Ignore email with id %s. No %s nor %s found in %s." % (the_id, imap_utils.GIMAPFetcher.GMAIL_ID, imap_utils.GIMAPFetcher.IMAP_INTERNALDATE, new_data[the_id]))
                         self.error_report['empty'].append((the_id, gid if gid else None))
                         pass #ignore this email and process the next one
                     

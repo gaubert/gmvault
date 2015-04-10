@@ -24,6 +24,8 @@ import os
 import itertools
 import fnmatch
 import shutil
+import codecs
+import chardet
 
 import gmv.blowfish as blowfish
 import gmv.log_utils as log_utils
@@ -442,7 +444,22 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
             # write in chunks of one 1 MB
             for chunk in gmvault_utils.chunker(data, 1048576):
-                data_desc.write(chunk.encode('utf-8'))
+               # data_desc.write(chunk)
+               try:
+                  detection = chardet.detect(chunk)
+                  #LOG.critical("the data %s\n" % (chunk)) 
+                  #LOG.critical("====== PRINT Type of string %s" %(type(chunk)))
+                  #try to convert to unicode with ascii 
+                  u_chunk = unicode(chunk, encoding= detection['encoding'])
+               except Exception, e:
+                  LOG.critical(e)
+                  #try utf-8
+                  u_chunk = chunk
+
+               if u_chunk:
+                  data_desc.write(u_chunk.encode('utf-8'))
+               else:
+                  raise Exception("error cannot write %s" % (chunk))
 
             self.bury_metadata(email_info, local_dir, extra_labels)
             data_desc.flush()
@@ -569,6 +586,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 cipher.initCTR()
                 data = cipher.decryptCTR(f.read())
             else:
+                #data = codecs.decode(f.read(), "utf-8" )
                 data = f.read()
 
         return self.unbury_metadata(a_id, the_dir), data
