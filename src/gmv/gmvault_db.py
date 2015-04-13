@@ -453,8 +453,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                   u_chunk = unicode(chunk, encoding= detection['encoding'])
                except Exception, e:
                   LOG.critical(e)
+                  LOG.critical("guessed encoding = %s" % (detection))
                   #try utf-8
-                  u_chunk = chunk
+                  u_chunk = unicode(chunk, encoding="utf-8", errors='replace')
 
                if u_chunk:
                   data_desc.write(u_chunk.encode('utf-8'))
