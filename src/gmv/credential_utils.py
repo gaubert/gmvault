@@ -38,13 +38,6 @@ LOG = log_utils.LoggerFactory.get_logger('oauth')
 GMVAULT_CLIENT_ID="1070918343777-0eecradokiu8i77qfo8e3stbi0mkrtog.apps.googleusercontent.com"
 GMVAULT_CIENT_SECRET="IVkl_pglv5cXzugpmnRNqtT7"
 
-SCOPE = gmvault_utils.get_conf_defaults().get("GoogleOauth2","scope",'https://mail.google.com/')
-# The URL root for accessing Google Accounts.
-GOOGLE_ACCOUNTS_BASE_URL = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "google_accounts_base_url", 'https://accounts.google.com')
-# Hardcoded dummy redirect URI for non-web apps.
-REDIRECT_URI = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "redirect_uri", 'urn:ietf:wg:oauth:2.0:oob')
-
-
 def generate_permission_url():
   """Generates the URL for authorizing access.
 
@@ -59,17 +52,19 @@ def generate_permission_url():
   """
   params = {}
   params['client_id']     = GMVAULT_CLIENT_ID
-  params['redirect_uri']  = REDIRECT_URI
-  params['scope']         = SCOPE
+  params['redirect_uri']  = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "redirect_uri", 'urn:ietf:wg:oauth:2.0:oob')
+  params['scope']         = gmvault_utils.get_conf_defaults().get("GoogleOauth2","scope",'https://mail.google.com/')
   params['response_type'] = 'code'
 
-  return '%s/%s?%s' % (GOOGLE_ACCOUNTS_BASE_URL, 'o/oauth2/auth', gmvault_utils.format_url_params(params))
+  account_base_url = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "google_accounts_base_url", 'https://accounts.google.com')
+
+  return '%s/%s?%s' % (account_base_url, 'o/oauth2/auth', gmvault_utils.format_url_params(params))
 
 class CredentialHelper(object):
     """
        Helper handling all credentials
     """
-    SECRET_FILEPATH = '%s/token.sec' 
+    SECRET_FILEPATH = '%s/token.sec'
     
     @classmethod
     def get_secret_key(cls, a_filepath):
@@ -256,7 +251,10 @@ class CredentialHelper(object):
       params['client_secret'] = GMVAULT_CIENT_SECRET
       params['refresh_token'] = refresh_token
       params['grant_type'] = 'refresh_token'
-      request_url = '%s/%s' % (GOOGLE_ACCOUNTS_BASE_URL, 'o/oauth2/token')
+
+      account_base_url = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "google_accounts_base_url", 'https://accounts.google.com')
+
+      request_url = '%s/%s' % (account_base_url, 'o/oauth2/token')
 
       try:
         response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
@@ -290,9 +288,12 @@ class CredentialHelper(object):
         params['client_id'] = GMVAULT_CLIENT_ID
         params['client_secret'] = GMVAULT_CIENT_SECRET
         params['code'] = authorization_code
-        params['redirect_uri'] = REDIRECT_URI
+        params['redirect_uri'] = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "redirect_uri", 'urn:ietf:wg:oauth:2.0:oob')
         params['grant_type'] = 'authorization_code'
-        request_url = '%s/%s' % (GOOGLE_ACCOUNTS_BASE_URL, 'o/oauth2/token')
+
+        account_base_url = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "google_accounts_base_url", 'https://accounts.google.com')
+
+        request_url = '%s/%s' % (account_base_url, 'o/oauth2/token')
 
         try:
             response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
