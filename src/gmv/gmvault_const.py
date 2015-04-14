@@ -70,6 +70,9 @@ scope=https://mail.google.com/
 google_accounts_base_url=https://accounts.google.com
 # Hardcoded dummy redirect URI for non-web apps.
 redirect_uri=urn:ietf:wg:oauth:2.0:oob
+#identifier and secret in app mode for gmvault
+gmvault_client_id=1070918343777-0eecradokiu8i77qfo8e3stbi0mkrtog.apps.googleusercontent.com
+gmvault_client_secret=IVkl_pglv5cXzugpmnRNqtT7
 
 #set environment variables for the program locally
 #they will be read only once the conf file has been loaded
