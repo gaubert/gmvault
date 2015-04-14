@@ -62,7 +62,7 @@ chat_folder=[ u'[Google Mail]/Чаты', u'[Gmail]/Чаты' ]
 
 #Do not touch any parameters below as it could force an overwrite of this file
 [VERSION]
-conf_version=1.8.1
+conf_version=1.9
 
 [GoogleOauth2]
 scope=https://mail.google.com/
