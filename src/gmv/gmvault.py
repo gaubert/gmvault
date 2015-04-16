@@ -111,7 +111,7 @@ def handle_sync_imap_error(the_exception, the_id, error_report, src):
             src.connect()
             
         if curr:
-            gmail_id = curr[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
+            gmail_id = curr[the_id].get(imap_utils.GIMAPFetcher.GMAIL_ID)
         else:
             gmail_id = None
             
@@ -139,7 +139,7 @@ def handle_sync_imap_error(the_exception, the_id, error_report, src):
                 curr = None
             
             if curr:
-                gmail_id = curr[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
+                gmail_id = curr[the_id].get(imap_utils.GIMAPFetcher.GMAIL_ID)
             else:
                 gmail_id = None
             
@@ -654,7 +654,7 @@ class GMVaulter(object):
             
             # syntax for 2.7 set comprehension { data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data }
             # need to create a list for 2.6
-            db_gmail_ids.difference_update([data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data ])
+            db_gmail_ids.difference_update([data[key].get(imap_utils.GIMAPFetcher.GMAIL_ID) for key in data if data[key].get(imap_utils.GIMAPFetcher.GMAIL_ID)])
             
             if len(db_gmail_ids) == 0:
                 break
