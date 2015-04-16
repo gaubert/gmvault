@@ -2,6 +2,22 @@ Release Notes for the different versions:
 -------------------------------
 
 -------------------------------
+Version Gmvault-v1.9-beta:
+-------------------------------
+-------------------------------
+Date: 16.04.2015
+
+Release enable authentication via OAuth2. OAuth1 is not supported anymore by Gmail and Gmvault.
+
+Bug Fixes:
+----------
+- Fix bug preventing to install gmvault from pypi using pip. [Github issue #191].
+- Fix bug related to the encoding. Now when storing email try to guess the encoding otherwise ignore faulty characters [Github issue #189, #184, #173, #158].
+- Fix bug related to Oauth1 authentication. Now based on OAuth2 [Github issue #187]
+- Fix bug related to not finding the X-GM-MSGID in the stored message metadata [Github issue #179]
+
+
+-------------------------------
 Version Gmvault-v1.8.1-beta:
 -------------------------------
 -------------------------------
