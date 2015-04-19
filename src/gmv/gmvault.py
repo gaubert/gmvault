@@ -654,7 +654,7 @@ class GMVaulter(object):
             
             # syntax for 2.7 set comprehension { data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data }
             # need to create a list for 2.6
-            db_gmail_ids.difference_update([data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data ])
+            db_gmail_ids.difference_update([data[key].get(imap_utils.GIMAPFetcher.GMAIL_ID) for key in data if data[key].get(imap_utils.GIMAPFetcher.GMAIL_ID)])
             
             if len(db_gmail_ids) == 0:
                 break
