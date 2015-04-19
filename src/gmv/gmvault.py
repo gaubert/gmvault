@@ -111,7 +111,7 @@ def handle_sync_imap_error(the_exception, the_id, error_report, src):
             src.connect()
             
         if curr:
-            gmail_id = curr[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
+            gmail_id = curr[the_id].get(imap_utils.GIMAPFetcher.GMAIL_ID)
         else:
             gmail_id = None
             
@@ -139,7 +139,7 @@ def handle_sync_imap_error(the_exception, the_id, error_report, src):
                 curr = None
             
             if curr:
-                gmail_id = curr[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
+                gmail_id = curr[the_id].get(imap_utils.GIMAPFetcher.GMAIL_ID)
             else:
                 gmail_id = None
             
