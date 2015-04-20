@@ -10,7 +10,7 @@ from setuptools import setup
 #APP = ['./gmv/gmv_cmd.py']
 APP = ['./gmv_runner.py']
 DATA_FILES = []
-OPTIONS = {'argv_emulation': True, 'includes':['logbook','imapclient','gdata'],}
+OPTIONS = {'argv_emulation': True, 'includes':['argparse', 'logbook','imapclient','chardet'],}
 
 setup(
     app=APP,
