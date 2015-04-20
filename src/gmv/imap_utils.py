@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <since 2011>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -120,7 +120,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1): #pylint:disable=R0912
                     LOG.debug("error message = %s. traceback:%s" % (p_err, gmvault_utils.get_exception_traceback()))
                     
                     if nb_tries[0] < a_nb_tries:
-                        LOG.critical("Cannot reach the Gmail server. Wait %s seconds and retrying." % (m_sleep_time[0]))
+                        LOG.critical("Cannot reach the Gmail server. Wait %s second(s) and retrying." % (m_sleep_time[0]))
                     else:
                         LOG.critical("Stop retrying, tried too many times ...")
                     
@@ -131,7 +131,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1): #pylint:disable=R0912
                     LOG.debug("IMAP (abort) error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
                     
                     if nb_tries[0] < a_nb_tries:
-                        LOG.critical("Received an IMAP abort error. Wait %s seconds and retrying." % (m_sleep_time[0]))
+                        LOG.critical("Received an IMAP abort error. Wait %s second(s) and retrying." % (m_sleep_time[0]))
                     else:
                         LOG.critical("Stop retrying, tried too many times ...")
                         
@@ -142,7 +142,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1): #pylint:disable=R0912
                     LOG.debug("error message = %s. traceback:%s" % (sock_err, gmvault_utils.get_exception_traceback()))
                     
                     if nb_tries[0] < a_nb_tries:
-                        LOG.critical("Cannot reach the Gmail server. Wait %s seconds and retrying." % (m_sleep_time[0]))
+                        LOG.critical("Cannot reach the Gmail server. Wait %s second(s) and retrying." % (m_sleep_time[0]))
                     else:
                         LOG.critical("Stop retrying, tried too many times ...")
                         
@@ -152,7 +152,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1): #pylint:disable=R0912
                     LOG.debug("error message = %s. traceback:%s" % (ssl_err, gmvault_utils.get_exception_traceback()))
                     
                     if nb_tries[0] < a_nb_tries:
-                        LOG.critical("Cannot reach the Gmail server. Wait %s seconds and retrying." % (m_sleep_time[0]))
+                        LOG.critical("Cannot reach the Gmail server. Wait %s second(s) and retrying." % (m_sleep_time[0]))
                     else:
                         LOG.critical("Stop retrying, tried too many times ...")
                         
@@ -164,7 +164,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1): #pylint:disable=R0912
                     LOG.debug("IMAP (normal) error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
                     
                     if nb_tries[0] < a_nb_tries:
-                        LOG.critical("Error when reaching Gmail server. Wait %s seconds and retry up to 2 times." \
+                        LOG.critical("Error when reaching Gmail server. Wait %s second(s) and retry up to 2 times." \
                                      % (m_sleep_time[0]))
                     else:
                         LOG.critical("Stop retrying, tried too many times ...")
@@ -276,13 +276,14 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         # connect with password or xoauth
         if self.credential['type'] == 'passwd':
             self.server.login(self.login, self.credential['value'])
-        elif self.credential['type'] == 'xoauth':
-            #connect with xoauth 
+        elif self.credential['type'] == 'oauth2':
+            #connect with oauth2
             if self.once_connected:
-                #already connected once so renew xoauth req because it can expire
-                self.credential['value'] = credential_utils.CredentialHelper.get_xoauth_req_from_email(self.login)
-                
-            self.server.xoauth_login(self.credential['value']) 
+                self.credential = credential_utils.CredentialHelper.get_oauth2_credential(self.login, renew_cred = False)
+
+            LOG.debug("credential['value'] = %s" % (self.credential['value']))
+            #try to login
+            self.server.oauth2_login(self.credential['value'])
         else:
             raise Exception("Unknown authentication method %s. Please use xoauth or passwd authentication " \
                             % (self.credential['type']))
@@ -329,8 +330,9 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         """
            Try to enable the compression
         """
-        self.server.enable_compression()
-        
+        #self.server.enable_compression()
+        pass
+
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def find_folder_names(self):
         """
@@ -502,30 +504,6 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
            Return all attributes associated to each message
         """
         return self.server.fetch(a_ids, a_attributes)
-                
-    
-    @classmethod
-    def _old_build_labels_str(cls, a_labels):
-        """
-           Create IMAP label string from list of given labels. 
-           Convert the labels to utf7
-           a_labels: List of labels
-        """
-        # add GMAIL LABELS
-        labels_str = None
-        if a_labels and len(a_labels) > 0:
-            labels_str = '('
-            for label in a_labels:
-                if gmvault_utils.contains_any(label, ' "*'):
-                    label = label.replace('"', '\\"') #replace quote with escaped quotes
-                    labels_str += '\"%s\" ' % (label)
-                else:
-                    labels_str += '%s ' % (label)
-                    #labels_str += '\"%s\" ' % (label) #check if this is always ok or not
-            
-            labels_str = '%s%s' % (labels_str[:-1],')')
-        
-        return labels_str
 
     @classmethod
     def _build_labels_str(cls, a_labels):

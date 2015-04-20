@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <since 2011>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -20,7 +20,6 @@
 
 '''
 import zlib
-import time
 import datetime
 import re
 import socket
@@ -83,9 +82,29 @@ imapclient.response_parser._convert_INTERNALDATE = mod_convert_INTERNALDATE #pyl
 #monkey patching add compress in COMMANDS of imap
 imaplib.Commands['COMPRESS'] = ('AUTH', 'SELECTED')
 
+def datetime_to_imap(dt):
+    """Convert a datetime instance to a IMAP datetime string.
+
+    If timezone information is missing the current system
+    timezone is used.
+    """
+    if not dt.tzinfo:
+        dt = dt.replace(tzinfo=imapclient.fixed_offset.FixedOffset.for_system())
+    return dt.strftime("%d-%b-%Y %H:%M:%S %z")
+
+def to_unicode(s):
+    if isinstance(s, imapclient.six.binary_type):
+        return s.decode('ascii')
+    return s
+
+def to_bytes(s):
+    if isinstance(s, imapclient.six.text_type):
+        return s.encode('ascii')
+    return s
+
 class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
     """
-       Add support for compression inspired by inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
+       Add support for compression inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
     """
     SOCK_TIMEOUT = 70 # set a socket timeout of 70 sec to avoid for ever blockage in ssl.read
 
@@ -227,23 +246,16 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
            constructor
         """
         super(MonkeyIMAPClient, self).__init__(host, port, use_uid, need_ssl)
-    
-    def _create_IMAP4(self): #pylint:disable=C0103
-        """
-           Factory method creating an IMAPCOMPSSL or a standard IMAP4 Class
-        """
-        imap_class = self.ssl and IMAP4COMPSSL or imaplib.IMAP4
-        return imap_class(self.host, self.port)
-    
-    def xoauth_login(self, xoauth_cred ):
-        """
-           Connect with xoauth
-           Redefine this method to suppress dependency to oauth2 (non-necessary)
-        """
 
-        typ, data = self._imap.authenticate('XOAUTH', lambda x: xoauth_cred)
+    def oauth2_login(self, oauth2_cred):
+        """
+        Connect using oauth2
+        :param oauth2_cred:
+        :return:
+        """
+        typ, data = self._imap.authenticate('XOAUTH2', lambda x: oauth2_cred)
         self._checkok('authenticate', typ, data)
-        return data[0]  
+        return data[0]
     
     def search(self, criteria): #pylint: disable=W0221
         """
@@ -285,7 +297,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
             return [ ]
 
         return [ long(i) for i in data[0].split() ]
-    
+
     def append(self, folder, msg, flags=(), msg_time=None):
         """Append a message to *folder*.
 
@@ -304,17 +316,16 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
         Returns the APPEND response as returned by the server.
         """
         if msg_time:
-            time_val = time.mktime(msg_time.timetuple())
+            time_val = '"%s"' % datetime_to_imap(msg_time)
+            time_val = to_bytes(time_val)
         else:
             time_val = None
-
-        flags_list = seq_to_parenlist(flags)
-
-        typ, data = self._imap.append(self._encode_folder_name(folder) if folder else None,
-                                      flags_list, time_val, msg)
-        self._checkok('append', typ, data)
-
-        return data[0]
+        return self._command_and_check('append',
+                                       self._normalise_folder(folder),
+                                       imapclient.imapclient.seq_to_parenstr(flags),
+                                       time_val,
+                                       to_bytes(msg),
+                                       unpack=True)
     
     def enable_compression(self):
         """

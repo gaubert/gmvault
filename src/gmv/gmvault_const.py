@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <since 2011>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -25,6 +25,7 @@ GMAIL_UNLOCAL_CHATS = [
                      u'[Gmail]/Chat', u'[Google Mail]/Chat', #it
                      u'[Google Mail]/Tous les chats', u'[Gmail]/Tous les chats', # french
                      u'[Gmail]/Чаты', u'[Google Mail]/Чаты', # russian
+                     u'[Gmail]/チャット', u'[Google Mail]/チャット', # japanese
                      u'[Google Mail]/Czat', u'[Gmail]/Czat', # polish
                      u'[Google Mail]/Bate-papos', u'[Gmail]/Bate-papos', #portuguese brazil
                     ]   # unlocalised Chats names
@@ -51,7 +52,7 @@ nb_messages_per_batch=500
 nb_messages_per_restore_batch=80
 restore_default_location=DRAFTS
 keep_in_bin=False
-enable_imap_compression=True
+enable_imap_compression=False
 
 [Localisation]
 #example with Russian
@@ -61,7 +62,17 @@ chat_folder=[ u'[Google Mail]/Чаты', u'[Gmail]/Чаты' ]
 
 #Do not touch any parameters below as it could force an overwrite of this file
 [VERSION]
-conf_version=1.8.1
+conf_version=1.9
+
+[GoogleOauth2]
+scope=https://mail.google.com/
+# The URL root for accessing Google Accounts.
+google_accounts_base_url=https://accounts.google.com
+# Hardcoded dummy redirect URI for non-web apps.
+redirect_uri=urn:ietf:wg:oauth:2.0:oob
+#identifier and secret in app mode for gmvault
+gmvault_client_id=1070918343777-0eecradokiu8i77qfo8e3stbi0mkrtog.apps.googleusercontent.com
+gmvault_client_secret=IVkl_pglv5cXzugpmnRNqtT7
 
 #set environment variables for the program locally
 #they will be read only once the conf file has been loaded

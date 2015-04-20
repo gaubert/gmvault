@@ -2,6 +2,42 @@ Release Notes for the different versions:
 -------------------------------
 
 -------------------------------
+Version Gmvault-v1.9-beta:
+-------------------------------
+-------------------------------
+Date: 16.04.2015
+
+Release enable authentication via OAuth2. OAuth1 is not supported anymore by Gmail and Gmvault.
+
+New Features:
+-------------
+- Support OAuth2 authentication
+- Increase support for non english languages. Support chats sync for japanese.
+- Convert in unicode to support more languages. Detect encoding with chardet and if it fails ignore non readable characters.
+
+Bug Fixes:
+----------
+- Fix bug preventing to install gmvault from pypi using pip. [Github issue #191].
+- Fix bug related to the encoding. Now when storing email try to guess the encoding otherwise ignore faulty characters [Github issue #189, #184, #173, #158].
+- Fix bug related to Oauth1 authentication. Now based on OAuth2 [Github issue #187]
+- Fix bug related to not finding the X-GM-MSGID in the stored message metadata [Github issue #179]
+
+Shoutouts to: 
+-------------
+
+Shout out to everybody who continued supporting the project while I was away.
+
+Also shoutouts to all the users that sent me support emails and raised issues by emails.
+
+Gmvault Pantheon:
+-----------------
+
+A million time thank you for the benevolent donors that are forever in the Gmvault Pantheon and All of Fame for their gesture.
+
+Jason Stangroome, Mathieu Pinson, Mathieu Clavel, Stijn Jonker, Douglas Carter, Steven Moschidis, GoVelvet LLC, Daniel Brass , Joseph Colburn, Joanne Kaye, Bernie Santos, Wolfgang Schwaiger, Kraut Computing, Matt Burke, Ademario Araujo Jr, Roque Pinel, George Armhold, Randi Veiberg, Gregory Szilagyi, Antony Moore, Filip Moerman, Axel Amigo Arnold, Jonathan Sarasin, Kirby Moyers, Alberto Cottica, Richard Lee, Suneel Kanuri, Owen Phelps, Clint Chapman, Donmez Ismail, Tomas Bäckman, Keith Petersen, Holden Karau, James Mcfarland, Clayton Stanley, Stefan Habetz, Francesco Bellomo, Brian Yanosik, Bjarte Aune Olsen, Joel Sylvester, Billy Amon, Alexander Halperin, John Zendano, Alex Van't Hof, JJ Tiziou Photography, Sally Carr, Jacek Szczech, Baden Holt, Eleonora Borelli, Patrick Van Humbeeck
+
+
+-------------------------------
 Version Gmvault-v1.8.1-beta:
 -------------------------------
 -------------------------------

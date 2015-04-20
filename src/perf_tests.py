@@ -1,6 +1,6 @@
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <since 2011>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,21 +46,19 @@ class TestPerf(unittest.TestCase): #pylint:disable-msg=R0904
         
         for nb in xrange(0, nb_dirs):
             #make dir
-            the_dir = '%s/%s' % (working_dir, dirname % (nb))
+            the_dir = '%s/%s' % (working_dir, dirname % nb)
             gmvault_utils.makedirs(the_dir)
-            
+
             for file_id in xrange(0,nb_files_per_dir):
                 #create data file
-                fd = open('%s/%s_%s' % (the_dir, dirname % (nb) , data_file % (file_id)), 'w')
-                fd.write("something")
-                fd.close()
+                with open('%s/%s_%s' % (the_dir, dirname % nb,
+                                        data_file % file_id), 'w') as f:
+                    f.write("something")
                 #create metadata file
-                fd = open('%s/%s_%s' % (the_dir, dirname % (nb) , meta_file % (file_id)), 'w')
-                fd.write("another info something")
-                fd.close()
-                
-            
-    
+                with open('%s/%s_%s' % (the_dir, dirname % nb,
+                                        meta_file % file_id), 'w') as f:
+                    f.write("another info something")
+
     def test_read_lots_of_files(self):
         """
            Test to mesure how long it takes to list over 100 000 files

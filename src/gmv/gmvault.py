@@ -1,6 +1,6 @@
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <since 2011>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -111,7 +111,7 @@ def handle_sync_imap_error(the_exception, the_id, error_report, src):
             src.connect()
             
         if curr:
-            gmail_id = curr[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
+            gmail_id = curr[the_id].get(imap_utils.GIMAPFetcher.GMAIL_ID)
         else:
             gmail_id = None
             
@@ -139,7 +139,7 @@ def handle_sync_imap_error(the_exception, the_id, error_report, src):
                 curr = None
             
             if curr:
-                gmail_id = curr[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
+                gmail_id = curr[the_id].get(imap_utils.GIMAPFetcher.GMAIL_ID)
             else:
                 gmail_id = None
             
@@ -466,8 +466,13 @@ class GMVaulter(object):
                 if new_data.get(the_id, None):
                     LOG.debug("\nProcess imap id %s" % ( the_id ))
                         
-                    gid      = new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_ID]
-                    eml_date = new_data[the_id][imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]
+                    gid      = new_data[the_id].get(imap_utils.GIMAPFetcher.GMAIL_ID, None)
+                    eml_date = new_data[the_id].get(imap_utils.GIMAPFetcher.IMAP_INTERNALDATE, None)
+
+                    if gid is None or eml_date is None:
+                        LOG.info("Ignore email with id %s. No %s nor %s found in %s." % (the_id, imap_utils.GIMAPFetcher.GMAIL_ID, imap_utils.GIMAPFetcher.IMAP_INTERNALDATE, new_data[the_id]))
+                        self.error_report['empty'].append((the_id, gid if gid else None))
+                        pass #ignore this email and process the next one
                     
                     if a_type == "email":
                         the_dir = gmvault_utils.get_ym_from_datetime(eml_date)
@@ -649,7 +654,7 @@ class GMVaulter(object):
             
             # syntax for 2.7 set comprehension { data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data }
             # need to create a list for 2.6
-            db_gmail_ids.difference_update([data[key][imap_utils.GIMAPFetcher.GMAIL_ID] for key in data ])
+            db_gmail_ids.difference_update([data[key].get(imap_utils.GIMAPFetcher.GMAIL_ID) for key in data if data[key].get(imap_utils.GIMAPFetcher.GMAIL_ID)])
             
             if len(db_gmail_ids) == 0:
                 break
@@ -785,66 +790,67 @@ class GMVaulter(object):
         pass
         
     
-    def save_lastid(self, op_type, gm_id, eml_date = None, imap_req = None):#pylint:disable-msg=W0613
+    def save_lastid(self, op_type, gm_id, eml_date=None, imap_req=None):#pylint:disable-msg=W0613
         """
            Save the passed gmid in last_id.restore
            For the moment reopen the file every time
         """
-        
+
         filename = self.OP_TO_FILENAME.get(op_type, None)
-        
+
         if not filename:
-            raise Exception("Bad Operation (%s) in save_last_id. "\
-                            "This should not happen, send the error to the software developers." % (op_type))
-        
-        filepath = '%s/%s_%s' % (self.gstorer.get_info_dir(), self.login, filename)  
-        
-        the_fd = open(filepath, 'w')
-        
-        #json.dump({
-        #            'last_id' : gm_id,
-        #            'date'    : gmvault_utils.datetime2e(eml_date) if eml_date else None,
-        #            'req'     : imap_req 
-        #          }, the_fd)
-        
-        json.dump({
-                    'last_id' : gm_id,
-                  }, the_fd)
-        
-        the_fd.close()
-        
+            raise Exception("Bad Operation (%s) in save_last_id. "
+                            "This should not happen, send the error to the "
+                            "software developers." % op_type)
+
+        filepath = '%s/%s_%s' % (self.gstorer.get_info_dir(), self.login,
+                                 filename)
+
+        with open(filepath, 'w') as f:
+
+            #json.dump({
+            #            'last_id' : gm_id,
+            #            'date'    : gmvault_utils.datetime2e(eml_date) if eml_date else None,
+            #            'req'     : imap_req
+            #          }, the_fd)
+
+            json.dump({
+                'last_id': gm_id,
+            }, f)
+
     def get_gmails_ids_left_to_restore(self, op_type, db_gmail_ids_info):
         """
            Get the ids that still needs to be restored
            Return a dict key = gm_id, val = directory
         """
         filename = self.OP_TO_FILENAME.get(op_type, None)
-        
+
         if not filename:
-            raise Exception("Bad Operation (%s) in save_last_id. This should not happen,"\
-                            " send the error to the software developers." % (op_type))
-        
-        
+            raise Exception("Bad Operation (%s) in save_last_id. This should "
+                            "not happen, send the error to the software "
+                            "developers." % op_type)
+
         #filepath = '%s/%s_%s' % (gmvault_utils.get_home_dir_path(), self.login, filename)
         filepath = '%s/%s_%s' % (self.gstorer.get_info_dir(), self.login, filename)
-        
+
         if not os.path.exists(filepath):
             LOG.critical("last_id restore file %s doesn't exist.\nRestore the full list of backed up emails." %(filepath))
             return db_gmail_ids_info
-        
-        json_obj = json.load(open(filepath, 'r'))
-        
+
+        with open(filepath, 'r') as f:
+            json_obj = json.load(f)
+
         last_id = json_obj['last_id']
-        
+
         last_id_index = -1
         try:
             keys = db_gmail_ids_info.keys()
             last_id_index = keys.index(last_id)
-            LOG.critical("Restart from gmail id %s." % (last_id))
+            LOG.critical("Restart from gmail id %s." % last_id)
         except ValueError, _:
             #element not in keys return current set of keys
             LOG.error("Cannot restore from last restore gmail id. It is not in the disk database.")
-        
+
         new_gmail_ids_info = collections_utils.OrderedDict()
         if last_id_index != -1:
             for key in db_gmail_ids_info.keys()[last_id_index+1:]:

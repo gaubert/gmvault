@@ -1,6 +1,6 @@
 '''
     Gmvault: a tool to backup and restore your gmail account.
-    Copyright (C) <2011-2013>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
+    Copyright (C) <since 2011>  <guillaume Aubert (guillaume dot aubert at gmail do com)>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -392,34 +392,28 @@ class Conf(object):
         # create config object 
         if use_resource:       
             self._load_config()
-        
 
-   
-    def _load_config(self, a_file = None):
+    def _load_config(self, a_file=None):
         """ _load the configuration file """
         try:  
             # get it from a Resource if not files are passed
             if a_file is None:
                 a_file = self._conf_resource.get_value() 
-             
+
             if a_file is None:
                 raise exceptions.Error("Conf. Error, need a configuration file path")
-            
-            #f_desc = open(a_file, 'r') 
-            f_desc = codecs.open(a_file, 'r', 'utf-8') 
-             
-                
-            self._read(f_desc, a_file)
-            
+
+            with codecs.open(a_file, 'r', 'utf-8') as f:
+                self._read(f, a_file)
+
             # memorize conf file path
             self._configuration_file_path = a_file
-            
+
         except Exception, exce:
-            print "Can't read the config file %s" % (a_file)
-            print "Current executing from dir = %s\n" % (os.getcwd())
+            print "Can't read the config file %s" % a_file
+            print "Current executing from dir = %s\n" % os.getcwd()
             raise exce
-            
-    
+
     def get_conf_file_path(self):
         """return conf_file_path"""
         return self._configuration_file_path if self._configuration_file_path != None else "unknown"
