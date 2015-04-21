@@ -73,6 +73,95 @@ a[name] {
  <div class="row-fluid">
   <div class="span12">
    <div class="page-header">
+    <h2>Gmvault v1.9</h2>
+   </div>
+   <h4>Release Date: 21 of April 2015 (2015-04-21).</h4>
+   </br>
+   <h3>Distributions:</h3>
+   <p>Select the right version according to your platform from the table below:</p>
+   </br>
+   <!--<table class="table table-striped table-bordered ">-->
+   <table class="table table-bordered">
+    <tbody>
+     <tr>
+      <th class="black-background" colspan="2">Windows 7, Vista, XP</th>
+     </tr>
+     <tr>
+      <td width="70%">Gmvault Installer for all Windows platforms.</td>
+      <td width="30%"><a href="https://bitbucket.org/gaubert/gmvault-official-download/downloads/gmvault_installer_v1.9.exe">gmvault_installer_v1.9.exe</a></td>
+     </tr>
+    </tbody>
+   </table>
+   </br>
+   <table class="table table-bordered">
+    <tbody>
+     <tr>
+      <th class="black-background" colspan="2">Mac OSX 10.8, 10.7, 10.6 Intel 32/64 bits</th>
+     </tr>
+     <tr>
+      <td width="70%">Mac OSX tarball installer tested with intel 32/64 bits. For older version have a try or use the Python source distribution.</td>
+      <td width="30%"><a href="https://bitbucket.org/gaubert/gmvault-official-download/downloads/gmvault-v1.9-macosx-intel.tar.gz">gmvault-v1.9-macosx-intel.tar.gz</a></td>
+     </tr>
+    </tbody>
+   </table>
+   </br>
+   <table class="table table-bordered">
+    <tbody>
+     <tr>
+      <th class="black-background" colspan="2">Python Source distribution</th>
+     </tr>
+     <tr>
+      <td width="70%">Valid for all platforms (Linux, Mac OSX, Windows) if you have a Python 2.7.x or 2.6.x preinstalled. </br>
+       This is the installation recommended for Linux. </td>
+      <td width="30%"><a href="https://bitbucket.org/gaubert/gmvault-official-download/downloads/gmvault-v1.9-src.tar.gz">gmvault-v1.9-src.tar.gz</a></td>
+     </tr>
+    </tbody>
+   </table>
+   </br>
+   <table class="table table-bordered">
+    <tbody>
+     <tr>
+      <th class="black-background" colspan="2">Gmvault Source distribution on Pypi</th>
+     </tr>
+     <tr>
+      <td width="70%">Gmvault can also be installed from <a href="http://pypi.python.org/pypi">Pypi</a> with pip. </br>
+       Consult the <a href="./install.html#install">Gmvault installation documentation</a> for more information. </td>
+      <td width="30%"><a href="http://pypi.python.org/pypi/gmvault/1.9">gmvault-v1.9 on PyPi</a></td>
+     </tr>
+    </tbody>
+   </table>
+   </br>
+   <table class="table table-bordered">
+    <tbody>
+     <tr>
+      <th class="black-background" colspan="2">Github Repository (for developers, not for installing)</th>
+     </tr>
+     <tr>
+      <td width="70%">The source code is also available on Github. Ready, Set, <strong>Fork</strong> !!</td>
+      <td width="30%"><a href="https://github.com/gaubert/gmvault/tree/v1.9-20150421">Gmvault-v1.9 release tag</a></td>
+     </tr>
+    </tbody>
+   </table>
+   <h3>Release Information</h3>
+   <p>Gmvault v1.9 includes the following new features and bug fixes:</p>
+   <h4>Added new Features:</h4>
+   <ul>
+    <li class="icon-plus">Support Google OAUTH2 authentication (dropped the deprecated OAUTH1 authentication)</li>
+    <li class="icon-plus">Increase support for non english languages. Support chats synchronisation for japanese.</li>
+    <li class="icon-plus">Convert and store message in UTF-8 when possible to increase the support of more language with special characters.</li>
+   </ul>
+   <h4>Bug Fixes:</h4>
+   <ul>
+    <li class="icon-minus">Fix bug preventing to install gmvault from pypi using pip. [Github issue #191].</li>
+    <li class="icon-minus">Fix bug related to the encoding. Now when storing email try to guess the encoding otherwise ignore faulty characters [Github issue #189, #184, #173, #158].</li>
+    <li class="icon-minus">Fix bug related to Oauth1 authentication. Now based on OAuth2 [Github issue #187].</li>
+    <li class="icon-minus">Fix bug related to not finding the X-GM-MSGID in the stored message metadata [Github issue #179].</li>
+   </ul>
+   <h3>Shout-outs </h3>
+   <p><strong>Thank you all for supporting Gmvault on Emails, Twitter, Github and other social media.</strong> </br>
+    Please keep <strong>buzzing about Gmvault</strong> and let me know if you discover an issue (go <a href="./report_pb.html">here</a> to report the issue). </br>
+    </br>
+   <div class="page-header">
     <h2>Gmvault v1.8.1-beta</h2>
    </div>
    <h4>Release Date: 28 of April 2013 (2013-04-28).</h4>
