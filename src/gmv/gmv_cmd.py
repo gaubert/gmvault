@@ -836,6 +836,9 @@ def bootstrap_run():
     """ temporary bootstrap """
     
     init_logging()
+
+    import sys
+    print("sys.argv=[%s]" %(sys.argv))
     
     #force argv[0] to gmvault
     sys.argv[0] = "gmvault"
