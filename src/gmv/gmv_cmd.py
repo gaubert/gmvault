@@ -23,6 +23,7 @@ import datetime
 import os
 import signal
 import traceback
+import chardet
 
 import argparse
 import imaplib
@@ -132,7 +133,9 @@ class NotSeenAction(argparse.Action): #pylint:disable=R0903,w0232
 def get_unicode_commandline_arg(bytestring):
     print("in get unicode " + sys.getfilesystemencoding())
     try:
-       unicode_str = bytestring.decode("LATIN-1")
+       detection = chardet.detect(bytestring)
+       print("Detection = %s" % (detection))
+       unicode_str = bytestring.decode("utf-8")
     except Exception, err:
        print("Err = %s" % (err))
        sys.exit(1)
@@ -703,7 +706,8 @@ class GMVaultLauncher(object):
         elif args.get('type', '') == 'custom':
             
             #convert args to unicode
-            args['request']['req']     = gmvault_utils.convert_to_unicode(args['request']['req'])
+            u_str = gmvault_utils.convert_to_unicode(args['request']['req'])
+            args['request']['req']     = u_str
             args['request']['charset'] = 'utf-8' #for the moment always utf-8
             args['request']['mode']    = 'custom'
 

@@ -493,6 +493,10 @@ def convert_to_unicode(a_str):
        Try to get the stdin encoding and use it to convert the input string into unicode.
        It is dependent on the platform (mac osx,linux, windows 
     """
+    #if str is already unicode do nothing and return the str
+    if type(a_str) == type(unicode()):
+        return a_str
+
     #encoding can be forced from conf
     term_encoding = get_conf_defaults().get('Localisation', 'term_encoding', None)
     if not term_encoding:
