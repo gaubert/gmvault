@@ -128,6 +128,15 @@ class NotSeenAction(argparse.Action): #pylint:disable=R0903,w0232
             setattr(namespace, self.dest, 'empty')
         else:
             setattr(namespace, self.dest, values)
+        
+def get_unicode_commandline_arg(bytestring):
+    print("in get unicode " + sys.getfilesystemencoding())
+    try:
+       unicode_str = bytestring.decode("LATIN-1")
+    except Exception, err:
+       print("Err = %s" % (err))
+       sys.exit(1)
+    return unicode_str
 
 class GMVaultLauncher(object):
     """
@@ -149,7 +158,7 @@ class GMVaultLauncher(object):
     def __init__(self):
         """ constructor """
         super(GMVaultLauncher, self).__init__()
-        
+
     @gmvault_utils.memoized
     def _create_parser(self): #pylint: disable=R0915
         """
@@ -201,11 +210,11 @@ class GMVaultLauncher(object):
                           help="use interactive password authentication, encrypt and store the password. (not recommended)",
                           action= 'store_const' , dest="passwd", const='store')
         
-        sync_parser.add_argument("-r", "--imap-req", metavar = "REQ", \
+        sync_parser.add_argument("-r", "--imap-req", type = get_unicode_commandline_arg, metavar = "REQ", \
                                  help="Imap request to restrict sync.",\
                                  dest="imap_request", default=None)
         
-        sync_parser.add_argument("-g", "--gmail-req", metavar = "REQ", \
+        sync_parser.add_argument("-g", "--gmail-req", type = get_unicode_commandline_arg, metavar = "REQ", \
                                  help="Gmail search request to restrict sync as defined in"\
                                       "https://support.google.com/mail/bin/answer.py?hl=en&answer=7190",\
                                  dest="gmail_request", default=None)
@@ -273,7 +282,7 @@ class GMVaultLauncher(object):
                                  default='full', help='type of restoration: full|quick. (default: full)')
         
         # add a label
-        rest_parser.add_argument('-a', '--apply-label', \
+        rest_parser.add_argument('-a', '--apply-label', type = get_unicode_commandline_arg , \
                                  action='store', dest='apply_label', \
                                  default=None, help='Apply a label to restored emails')
         
@@ -837,7 +846,6 @@ def bootstrap_run():
     
     init_logging()
 
-    import sys
     print("sys.argv=[%s]" %(sys.argv))
     
     #force argv[0] to gmvault
@@ -848,6 +856,8 @@ def bootstrap_run():
     gmvlt = GMVaultLauncher()
     
     args = gmvlt.parse_args()
+
+    print("parsed args = [%s]" % (args))
     
     #activate debug if enabled
     if args['debug']:
