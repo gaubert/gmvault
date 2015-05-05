@@ -487,6 +487,85 @@ def profile_this(fn):
         prof.dump_stats(fpath)
         return ret
     return profiled_fn
+
+
+def get_unicode_commandline_arg(bytestring):
+    print("in get unicode " + sys.getfilesystemencoding())
+    try:
+       detection = chardet.detect(bytestring)
+       print("Detection = %s" % (detection))
+       #unicode_str = bytestring.decode(detection['encoding'])
+       unicode_str = bytestring.decode('ISO-8859-1')
+    except Exception, err:
+       print("Err = %s" % (err))
+       sys.exit(1)
+    return unicode_str
+
+def guess_encoding(byte_str):
+    """
+       Try to guess the encoding of byte_str
+    """
+
+    if type(a_str) == type(unicode()):
+       raise Exception("Error. The passed string is a unicode string and not a byte string")
+
+    encoding_list = ['ascii','iso-8859-1','iso-8859-2','windows-1250','windows-1252','utf-8']
+
+    encoding = None
+
+    for enc in guess_list:
+       try:
+          unicode(byte_str ,best_enc,"strict")
+          encoding = enc 
+       except:
+          pass
+       else:
+          break
+
+    if not encoding:
+       enc = chardet.detect(a_str)
+       if enc and enc.get("encoding", None) != None:
+	      encoding = enc.get("encoding") 
+       else:
+          LOG.debug("Force encoding to utf-8")
+          encoding = "utf-8"
+
+    return encoding
+
+def convert_argv_to_unicode(a_str):
+    """
+       Convert command line individual arguments (argv to unicode)
+    """
+    #if str is already unicode do nothing and return the str
+    if type(a_str) == type(unicode()):
+        return a_str
+
+    #encoding can be forced from conf
+    term_encoding = get_conf_defaults().get('Localisation', 'term_encoding', None)
+    if not term_encoding:
+        term_encoding = locale.getpreferredencoding() #use it to find the encoding for text terminal
+        LOG.debug("encoding found with locale.getpreferredencoding()")
+        if not term_encoding:
+            loc = locale.getdefaultlocale() #try to get defaultlocale()
+            if loc and len(loc) == 2:
+                LOG.debug("encoding found with locale.getdefaultlocale()")
+                term_encoding = loc[1]
+            else:
+                LOG.debug("Cannot Terminal encoding using locale.getpreferredencoding() and locale.getdefaultlocale(), loc = %s. Use chardet to try guessing the encoding." % (loc if loc else "None"))
+                term_encoding = guess_encoding(a_str)
+    
+    try:
+       LOG.debug("raw unicode     = %s." % (u_str))
+       LOG.debug("terminal encoding = %s." % (term_encoding))
+       #decode byte string to unicode and fails in case of error
+       u_str = a_str.decode(term_encoding)
+       LOG.debug("unicode_escape val = %s." % (u_str.encode('unicode_escape')))
+    except Exception, err: 
+       LOG.error(err)
+       get_exception_traceback()
+       LOG.info("Convertion of %s from %s to a unicode failed. Will now convert to unicode ignoring errors (non utf-8 characters will be eaten)." % (u_str, term_encoding)) 
+       LOG.info("Please set properly the Terminal encoding or use the [Localisation]:term_encoding property to set it.")
+       u_str = unicode(a_str, encoding='utf-8', errors='ignore')
                 
 def convert_to_unicode(a_str):
     """
