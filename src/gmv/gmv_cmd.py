@@ -135,7 +135,8 @@ def get_unicode_commandline_arg(bytestring):
     try:
        detection = chardet.detect(bytestring)
        print("Detection = %s" % (detection))
-       unicode_str = bytestring.decode("utf-8")
+       #unicode_str = bytestring.decode(detection['encoding'])
+       unicode_str = bytestring.decode('ISO-8859-1')
     except Exception, err:
        print("Err = %s" % (err))
        sys.exit(1)
@@ -213,7 +214,11 @@ class GMVaultLauncher(object):
                           help="use interactive password authentication, encrypt and store the password. (not recommended)",
                           action= 'store_const' , dest="passwd", const='store')
         
-        sync_parser.add_argument("-r", "--imap-req", type = get_unicode_commandline_arg, metavar = "REQ", \
+        #sync_parser.add_argument("-r", "--imap-req", type = get_unicode_commandline_arg, metavar = "REQ", \
+        #                         help="Imap request to restrict sync.",\
+        #                         dest="imap_request", default=None)
+
+        sync_parser.add_argument("-r", "--imap-req", metavar = "REQ", \
                                  help="Imap request to restrict sync.",\
                                  dest="imap_request", default=None)
         
@@ -285,7 +290,7 @@ class GMVaultLauncher(object):
                                  default='full', help='type of restoration: full|quick. (default: full)')
         
         # add a label
-        rest_parser.add_argument('-a', '--apply-label', type = get_unicode_commandline_arg , \
+        rest_parser.add_argument('-a', '--apply-label' , \
                                  action='store', dest='apply_label', \
                                  default=None, help='Apply a label to restored emails')
         

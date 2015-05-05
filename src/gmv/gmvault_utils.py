@@ -490,8 +490,8 @@ def profile_this(fn):
                 
 def convert_to_unicode(a_str):
     """
-       Try to get the stdin encoding and use it to convert the input string into unicode.
-       It is dependent on the platform (mac osx,linux, windows 
+       Try to get the commandline arguments encoding and use it to convert the input string into unicode.
+       It is dependent on the platform (mac osx,linux, windows) 
     """
     #if str is already unicode do nothing and return the str
     if type(a_str) == type(unicode()):
@@ -510,17 +510,18 @@ def convert_to_unicode(a_str):
     else:
         LOG.debug("Encoding forced. Read it from [Localisation]:term_encoding=%s" % (term_encoding))
         
-    try: #encode
-        u_str = unicode(a_str, term_encoding, errors='ignore')
+    try: 
+        #encode
+        u_str = a_str.decode(term_encoding)
            
         LOG.debug("raw unicode     = %s." % (u_str))
-        LOG.debug("chosen encoding = %s." % (term_encoding))
+        LOG.debug("terminal encoding = %s." % (term_encoding))
         LOG.debug("unicode_escape val = %s." % ( u_str.encode('unicode_escape')))
     except Exception, err:
         LOG.error(err)
         get_exception_traceback()
-        LOG.debug("Cannot convert to unicode from encoding:%s" % (term_encoding)) #add error
-        u_str = unicode(a_str, errors='ignore')
+        LOG.info("Cannot convert to unicode from encoding %s. Convert to unicode ignoring erros (characters will be eaten)." % (term_encoding)) #add error
+        u_str = unicode(a_str, encoding='utf-8', errors='replace')
 
     LOG.debug("hexval %s" % (ascii_hex(u_str)))
     
