@@ -496,13 +496,12 @@ def guess_encoding(byte_str, use_encoding_list=True):
        Try to guess the encoding of byte_str
        if encoding cannot be found return utf-8
     """
-    if type(a_str) == type(unicode()):
+    if type(byte_str) == type(unicode()):
        raise Exception("Error. The passed string is a unicode string and not a byte string")
 
     encoding_list = ['ascii','iso-8859-1','iso-8859-2','windows-1250','windows-1252','utf-8']
 
     encoding = None
-
     if use_encoding_list:
         for enc in encoding_list:
            try:
@@ -514,7 +513,7 @@ def guess_encoding(byte_str, use_encoding_list=True):
               break
 
     if not encoding:
-       enc = chardet.detect(a_str)
+       enc = chardet.detect(byte_str)
        if enc and enc.get("encoding", None) != None:
 	      encoding = enc.get("encoding") 
        else:
