@@ -544,19 +544,22 @@ def convert_argv_to_unicode(a_str):
             else:
                 LOG.debug("Cannot Terminal encoding using locale.getpreferredencoding() and locale.getdefaultlocale(), loc = %s. Use chardet to try guessing the encoding." % (loc if loc else "None"))
                 term_encoding = guess_encoding(a_str)
-    
+    else:
+       LOG.debug("Use terminal encoding forced from the configuration file.") 
     try:
-       LOG.debug("raw unicode     = %s." % (u_str))
        LOG.debug("terminal encoding = %s." % (term_encoding))
        #decode byte string to unicode and fails in case of error
        u_str = a_str.decode(term_encoding)
        LOG.debug("unicode_escape val = %s." % (u_str.encode('unicode_escape')))
+       LOG.debug("raw unicode     = %s." % (u_str))
     except Exception, err: 
        LOG.error(err)
        get_exception_traceback()
-       LOG.info("Convertion of %s from %s to a unicode failed. Will now convert to unicode ignoring errors (non utf-8 characters will be eaten)." % (u_str, term_encoding)) 
+       LOG.info("Convertion of %s from %s to a unicode failed. Will now convert to unicode using utf-8 encoding and ignoring errors (non utf-8 characters will be eaten)." % (a_str, term_encoding)) 
        LOG.info("Please set properly the Terminal encoding or use the [Localisation]:term_encoding property to set it.")
        u_str = unicode(a_str, encoding='utf-8', errors='ignore')
+
+    return u_str
 
 @memoized
 def get_home_dir_path():
