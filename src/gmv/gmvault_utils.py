@@ -32,6 +32,7 @@ import traceback
 import random 
 import locale
 import urllib
+import chardet
 
 import gmv.log_utils as log_utils
 import gmv.conf.conf_helper
@@ -488,24 +489,13 @@ def profile_this(fn):
         return ret
     return profiled_fn
 
-
-def get_unicode_commandline_arg(bytestring):
-    print("in get unicode " + sys.getfilesystemencoding())
-    try:
-       detection = chardet.detect(bytestring)
-       print("Detection = %s" % (detection))
-       #unicode_str = bytestring.decode(detection['encoding'])
-       unicode_str = bytestring.decode('ISO-8859-1')
-    except Exception, err:
-       print("Err = %s" % (err))
-       sys.exit(1)
-    return unicode_str
-
-def guess_encoding(byte_str):
+def guess_encoding(byte_str, use_encoding_list=True):
     """
+       byte_str: byte string
+       use_encoding_list: To try or not to brut force guess with the predefined list
        Try to guess the encoding of byte_str
+       if encoding cannot be found return utf-8
     """
-
     if type(a_str) == type(unicode()):
        raise Exception("Error. The passed string is a unicode string and not a byte string")
 
@@ -513,14 +503,15 @@ def guess_encoding(byte_str):
 
     encoding = None
 
-    for enc in guess_list:
-       try:
-          unicode(byte_str ,best_enc,"strict")
-          encoding = enc 
-       except:
-          pass
-       else:
-          break
+    if use_encoding_list:
+        for enc in encoding_list:
+           try:
+              unicode(byte_str ,best_enc,"strict")
+              encoding = enc
+           except:
+              pass
+           else:
+              break
 
     if not encoding:
        enc = chardet.detect(a_str)
@@ -566,46 +557,7 @@ def convert_argv_to_unicode(a_str):
        LOG.info("Convertion of %s from %s to a unicode failed. Will now convert to unicode ignoring errors (non utf-8 characters will be eaten)." % (u_str, term_encoding)) 
        LOG.info("Please set properly the Terminal encoding or use the [Localisation]:term_encoding property to set it.")
        u_str = unicode(a_str, encoding='utf-8', errors='ignore')
-                
-def convert_to_unicode(a_str):
-    """
-       Try to get the commandline arguments encoding and use it to convert the input string into unicode.
-       It is dependent on the platform (mac osx,linux, windows) 
-    """
-    #if str is already unicode do nothing and return the str
-    if type(a_str) == type(unicode()):
-        return a_str
 
-    #encoding can be forced from conf
-    term_encoding = get_conf_defaults().get('Localisation', 'term_encoding', None)
-    if not term_encoding:
-        term_encoding = locale.getpreferredencoding() #use it to find the encoding for text terminal
-        if not term_encoding:
-            loc = locale.getdefaultlocale() #try to get defaultlocale()
-            if loc and len(loc) == 2:
-                term_encoding = loc[1]
-            else:
-                LOG.debug("Odd. loc = %s. Do not specify the encoding, let Python do its own investigation" % (loc))
-    else:
-        LOG.debug("Encoding forced. Read it from [Localisation]:term_encoding=%s" % (term_encoding))
-        
-    try: 
-        #encode
-        u_str = a_str.decode(term_encoding)
-           
-        LOG.debug("raw unicode     = %s." % (u_str))
-        LOG.debug("terminal encoding = %s." % (term_encoding))
-        LOG.debug("unicode_escape val = %s." % ( u_str.encode('unicode_escape')))
-    except Exception, err:
-        LOG.error(err)
-        get_exception_traceback()
-        LOG.info("Cannot convert to unicode from encoding %s. Convert to unicode ignoring erros (characters will be eaten)." % (term_encoding)) #add error
-        u_str = unicode(a_str, encoding='utf-8', errors='replace')
-
-    LOG.debug("hexval %s" % (ascii_hex(u_str)))
-    
-    return u_str
-                
 @memoized
 def get_home_dir_path():
     """

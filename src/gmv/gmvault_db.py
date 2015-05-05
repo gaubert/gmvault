@@ -25,7 +25,6 @@ import itertools
 import fnmatch
 import shutil
 import codecs
-import chardet
 
 import gmv.blowfish as blowfish
 import gmv.log_utils as log_utils
@@ -446,14 +445,14 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             for chunk in gmvault_utils.chunker(data, 1048576):
                # data_desc.write(chunk)
                try:
-                  detection = chardet.detect(chunk)
+                  encoding = gmvault_utils.guess_encoding(chunk, use_encoding_list = False)
                   #LOG.critical("the data %s\n" % (chunk)) 
                   #LOG.critical("====== PRINT Type of string %s" %(type(chunk)))
                   #try to convert to unicode with ascii 
-                  u_chunk = unicode(chunk, encoding= detection['encoding'])
+                  u_chunk = unicode(chunk, encoding= encoding)
                except Exception, e:
                   LOG.critical(e)
-                  LOG.critical("Warning: Guessed encoding = (%s). Ignore those characters" % (detection if detection else "Not found"))
+                  LOG.critical("Warning: Guessed encoding = (%s). Ignore those characters" % (encoding))
                   #try utf-8
                   u_chunk = unicode(chunk, encoding="utf-8", errors='replace')
 

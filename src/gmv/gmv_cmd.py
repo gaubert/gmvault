@@ -23,7 +23,6 @@ import datetime
 import os
 import signal
 import traceback
-import chardet
 
 import argparse
 import imaplib
@@ -129,18 +128,6 @@ class NotSeenAction(argparse.Action): #pylint:disable=R0903,w0232
             setattr(namespace, self.dest, 'empty')
         else:
             setattr(namespace, self.dest, values)
-        
-def get_unicode_commandline_arg(bytestring):
-    print("in get unicode " + sys.getfilesystemencoding())
-    try:
-       detection = chardet.detect(bytestring)
-       print("Detection = %s" % (detection))
-       #unicode_str = bytestring.decode(detection['encoding'])
-       unicode_str = bytestring.decode('ISO-8859-1')
-    except Exception, err:
-       print("Err = %s" % (err))
-       sys.exit(1)
-    return unicode_str
 
 class GMVaultLauncher(object):
     """
@@ -222,7 +209,7 @@ class GMVaultLauncher(object):
                                  help="Imap request to restrict sync.",\
                                  dest="imap_request", default=None)
         
-        sync_parser.add_argument("-g", "--gmail-req", type = get_unicode_commandline_arg, metavar = "REQ", \
+        sync_parser.add_argument("-g", "--gmail-req", metavar = "REQ", \
                                  help="Gmail search request to restrict sync as defined in"\
                                       "https://support.google.com/mail/bin/answer.py?hl=en&answer=7190",\
                                  dest="gmail_request", default=None)
@@ -711,7 +698,7 @@ class GMVaultLauncher(object):
         elif args.get('type', '') == 'custom':
             
             #convert args to unicode
-            u_str = gmvault_utils.convert_to_unicode(args['request']['req'])
+            u_str = gmvault_utils.convert_argv_to_unicode(args['request']['req'])
             args['request']['req']     = u_str
             args['request']['charset'] = 'utf-8' #for the moment always utf-8
             args['request']['mode']    = 'custom'
