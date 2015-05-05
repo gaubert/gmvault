@@ -842,8 +842,6 @@ def bootstrap_run():
     
     init_logging()
 
-    print("sys.argv=[%s]" %(sys.argv))
-    
     #force argv[0] to gmvault
     sys.argv[0] = "gmvault"
     
@@ -853,8 +851,6 @@ def bootstrap_run():
     
     args = gmvlt.parse_args()
 
-    print("parsed args = [%s]" % (args))
-    
     #activate debug if enabled
     if args['debug']:
         LOG.critical("Activate debugging information.")
