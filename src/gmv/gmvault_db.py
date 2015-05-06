@@ -247,7 +247,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
     @classmethod
     def parse_header_fields(cls, header_fields):
         """
-           extract subject and message ids from the given header fields 
+           extract subject and message ids from the given header fields.
+           Additionally, convert subject byte string to unicode and then encode in utf-8
         """
         subject = None
         msgid   = None
@@ -256,7 +257,21 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         # look for subject
         matched = GmailStorer.HF_SUB_RE.search(header_fields)
         if matched:
-            subject = matched.group('subject').strip()
+            tempo = matched.group('subject').strip()
+            #guess encoding and convert to utf-8
+            u_tempo  = None
+            encoding = "not found"
+            try:
+                encoding = gmvault_utils.guess_encoding(tempo, use_encoding_list = False)
+                u_tempo = unicode(tempo, encoding= encoding)
+            except Exception, e:
+                  LOG.critical(e)
+                  LOG.critical("Warning: Guessed encoding = (%s). Ignore those characters" % (encoding))
+                  #try utf-8
+                  u_tempo = unicode(tempo, encoding="utf-8", errors='replace')
+
+            if u_tempo:
+                subject = u_tempo.encode('utf-8')
 
         # look for a msg id
         matched = GmailStorer.HF_MSGID_RE.search(header_fields)
@@ -380,7 +395,6 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                          self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
                          self.THREAD_IDS_K : email_info[imap_utils.GIMAPFetcher.GMAIL_THREAD_ID],
                          self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]),
-                         self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
                          self.SUBJECT_K    : subject,
                          self.MSGID_K      : msgid,
                          self.XGM_RECV_K   : received
@@ -446,9 +460,6 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                # data_desc.write(chunk)
                try:
                   encoding = gmvault_utils.guess_encoding(chunk, use_encoding_list = False)
-                  #LOG.critical("the data %s\n" % (chunk)) 
-                  #LOG.critical("====== PRINT Type of string %s" %(type(chunk)))
-                  #try to convert to unicode with ascii 
                   u_chunk = unicode(chunk, encoding= encoding)
                except Exception, e:
                   LOG.critical(e)

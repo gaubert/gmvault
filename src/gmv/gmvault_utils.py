@@ -515,7 +515,7 @@ def guess_encoding(byte_str, use_encoding_list=True):
     if not encoding:
        enc = chardet.detect(byte_str)
        if enc and enc.get("encoding", None) != None:
-	      encoding = enc.get("encoding") 
+          encoding = enc.get("encoding")
        else:
           LOG.debug("Force encoding to utf-8")
           encoding = "utf-8"
