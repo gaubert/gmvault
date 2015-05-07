@@ -501,7 +501,7 @@ class GMVaulter(object):
                             LOG.error("Error when trying to fetch again information for email id %s. id_info = %s. exception" % (the_id, id_info, str(err)))
                             import sys
                             sys.exit(1)
-
+                            continue
 
                     LOG.debug("metadata info collected: %s\n" % (new_data[the_id]))
                 
