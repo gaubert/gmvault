@@ -1,8 +1,9 @@
 python gmv_runner.py sync guillaume.aubert@gmail.com -g "label:èévader"
 
 - todo
-=> Solve requests with accent and utf-8
-=> issues when data is not returned key errors
+=> Solve requests with accent and utf8 => Fixed to be tested
+=> issues when data is not returned key errors => Solution implemented to be tested
+=> encoding errors in subject => fixed to be tested
 => encryption broken
 => tests to be improved
 => Add support for google apps
