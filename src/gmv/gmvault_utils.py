@@ -40,7 +40,7 @@ import gmv.gmvault_const as gmvault_const
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
-GMVAULT_VERSION = "1.9"
+GMVAULT_VERSION = "1.9.1"
 
 class memoized(object): #pylint: disable=C0103
     """Decorator that caches a function's return value each time it is called.
@@ -489,6 +489,8 @@ def profile_this(fn):
         return ret
     return profiled_fn
 
+DEFAULT_ENC_LIST = ['ascii','iso-8859-1','iso-8859-2','windows-1250','windows-1252','utf-8']
+
 def guess_encoding(byte_str, use_encoding_list=True):
     """
        byte_str: byte string
@@ -499,13 +501,12 @@ def guess_encoding(byte_str, use_encoding_list=True):
     if type(byte_str) == type(unicode()):
        raise Exception("Error. The passed string is a unicode string and not a byte string")
 
-    encoding_list = ['ascii','iso-8859-1','iso-8859-2','windows-1250','windows-1252','utf-8']
-
     encoding = None
     if use_encoding_list:
+        encoding_list = get_conf_defaults().get('Localisation', 'encoding_guess_list', DEFAULT_ENC_LIST)
         for enc in encoding_list:
            try:
-              unicode(byte_str ,best_enc,"strict")
+              unicode(byte_str ,enc,"strict")
               encoding = enc
            except:
               pass
@@ -513,8 +514,9 @@ def guess_encoding(byte_str, use_encoding_list=True):
               break
 
     if not encoding:
+       #detect encoding with chardet
        enc = chardet.detect(byte_str)
-       if enc and enc.get("encoding", None) != None:
+       if enc and enc.get("encoding") != None:
           encoding = enc.get("encoding")
        else:
           LOG.debug("Force encoding to utf-8")
@@ -531,31 +533,31 @@ def convert_argv_to_unicode(a_str):
         return a_str
 
     #encoding can be forced from conf
-    term_encoding = get_conf_defaults().get('Localisation', 'term_encoding', None)
-    if not term_encoding:
-        term_encoding = locale.getpreferredencoding() #use it to find the encoding for text terminal
+    terminal_encoding = get_conf_defaults().get('Localisation', 'terminal_encoding', None)
+    if not terminal_encoding:
+        terminal_encoding = locale.getpreferredencoding() #use it to find the encoding for text terminal
         LOG.debug("encoding found with locale.getpreferredencoding()")
-        if not term_encoding:
+        if not terminal_encoding:
             loc = locale.getdefaultlocale() #try to get defaultlocale()
             if loc and len(loc) == 2:
                 LOG.debug("encoding found with locale.getdefaultlocale()")
-                term_encoding = loc[1]
+                terminal_encoding = loc[1]
             else:
                 LOG.debug("Cannot Terminal encoding using locale.getpreferredencoding() and locale.getdefaultlocale(), loc = %s. Use chardet to try guessing the encoding." % (loc if loc else "None"))
-                term_encoding = guess_encoding(a_str)
+                terminal_encoding = guess_encoding(a_str)
     else:
        LOG.debug("Use terminal encoding forced from the configuration file.") 
     try:
-       LOG.debug("terminal encoding = %s." % (term_encoding))
+       LOG.debug("terminal encoding = %s." % (terminal_encoding))
        #decode byte string to unicode and fails in case of error
-       u_str = a_str.decode(term_encoding)
+       u_str = a_str.decode(terminal_encoding)
        LOG.debug("unicode_escape val = %s." % (u_str.encode('unicode_escape')))
        LOG.debug("raw unicode     = %s." % (u_str))
     except Exception, err: 
        LOG.error(err)
        get_exception_traceback()
-       LOG.info("Convertion of %s from %s to a unicode failed. Will now convert to unicode using utf-8 encoding and ignoring errors (non utf-8 characters will be eaten)." % (a_str, term_encoding)) 
-       LOG.info("Please set properly the Terminal encoding or use the [Localisation]:term_encoding property to set it.")
+       LOG.info("Convertion of %s from %s to a unicode failed. Will now convert to unicode using utf-8 encoding and ignoring errors (non utf-8 characters will be eaten)." % (a_str, terminal_encoding))
+       LOG.info("Please set properly the Terminal encoding or use the [Localisation]:terminal_encoding property to set it.")
        u_str = unicode(a_str, encoding='utf-8', errors='ignore')
 
     return u_str

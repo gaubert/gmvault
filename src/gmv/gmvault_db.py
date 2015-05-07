@@ -455,12 +455,18 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             else:
                 data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
 
+            #if email encoding is forced no more guessing
+            email_encoding = get_conf_defaults().get('Localisation', 'email_encoding', None)
+
             # write in chunks of one 1 MB
             for chunk in gmvault_utils.chunker(data, 1048576):
-               # data_desc.write(chunk)
                try:
-                  encoding = gmvault_utils.guess_encoding(chunk, use_encoding_list = False)
-                  u_chunk = unicode(chunk, encoding= encoding)
+                  if email_encoding:
+                      encoding = email_encoding
+                  else:
+                        encoding = gmvault_utils.guess_encoding(chunk, use_encoding_list = False)
+
+                  u_chunk = unicode(chunk, encoding= encoding) #convert to unicode with given encoding
                except Exception, e:
                   LOG.critical(e)
                   LOG.critical("Warning: Guessed encoding = (%s). Ignore those characters" % (encoding))

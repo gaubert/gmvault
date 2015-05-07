@@ -57,12 +57,17 @@ enable_imap_compression=False
 [Localisation]
 #example with Russian
 chat_folder=[ u'[Google Mail]/Чаты', u'[Gmail]/Чаты' ]
-#uncomment if you need to force the term_encoding
-#term_encoding='utf-8'
+#uncomment if you need to force the terminal_encoding
+#terminal_encoding='utf-8'
+#encoding list used to guess heuristicly the encoding
+encoding_guess_list=['ascii','iso-8859-1','iso-8859-2','windows-1250','windows-1252','utf-8']
+#uncomment if you need to force the data email encoding when it is stored
+#email_encoding='utf-8'
+
 
 #Do not touch any parameters below as it could force an overwrite of this file
 [VERSION]
-conf_version=1.9
+conf_version=1.9.1
 
 [GoogleOauth2]
 scope=https://mail.google.com/
