@@ -484,8 +484,14 @@ class GMVaulter(object):
                     LOG.critical("Process %s num %d (imap_id:%s) from %s." % (a_type, nb_msgs_processed, the_id, the_dir))
                     
                     #decode the labels that are received as utf7 => unicode
-                    new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
-                    imap_utils.decode_labels(new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS])
+                    try:
+                        new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
+                        imap_utils.decode_labels(new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS])
+                    except KeyError, ke:
+                        LOG.error("KeyError, reason: %s" % (str(ke)))
+                        LOG.info("new_data[%s]=%s" % (the_id, new_data[the_id]))
+                        import sys
+                        sys.exit(1)
 
                     LOG.debug("metadata info collected: %s\n" % (new_data[the_id]))
                 
