@@ -102,7 +102,7 @@ def handle_sync_imap_error(the_exception, the_id, error_report, src):
         except Exception, _: #pylint:disable-msg=W0703
             curr = None
             LOG.critical("Error when trying to get gmail id for message with imap id %s." % (the_id))
-            LOG.critical("Disconnect, wait for 20 sec then reconnect.")
+            LOG.critical("Disconnect, wait for 10 sec then reconnect.")
             src.disconnect()
             #could not fetch the gm_id so disconnect and sleep
             #sleep 10 sec
@@ -486,12 +486,22 @@ class GMVaulter(object):
                     #decode the labels that are received as utf7 => unicode
                     try:
                         new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
-                        imap_utils.decode_labels(new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS])
+                             imap_utils.decode_labels(new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS])
                     except KeyError, ke:
                         LOG.error("KeyError, reason: %s" % (str(ke)))
                         LOG.info("new_data[%s]=%s" % (the_id, new_data[the_id]))
+                        # try to fetch it individually and replace current info if it fails then raise error.
                         import sys
                         sys.exit(1)
+                        try:
+                            id_info = batch_fetcher.individual_fetch(the_id)
+                            new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
+                                imap_utils.decode_labels(id_info[imap_utils.GIMAPFetcher.GMAIL_LABELS])
+                        except Exception, err:
+                            LOG.error("Error when trying to fetch again information for email id %s. id_info = %s. exception" % (the_id, id_info, str(err)))
+                            import sys
+                            sys.exit(1)
+
 
                     LOG.debug("metadata info collected: %s\n" % (new_data[the_id]))
                 
