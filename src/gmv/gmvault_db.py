@@ -456,7 +456,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
 
             #if email encoding is forced no more guessing
-            email_encoding = get_conf_defaults().get('Localisation', 'email_encoding', None)
+            email_encoding = gmvault_utils.get_conf_defaults().get('Localisation', 'email_encoding', None)
 
             # write in chunks of one 1 MB
             for chunk in gmvault_utils.chunker(data, 1048576):
