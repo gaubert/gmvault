@@ -291,8 +291,8 @@ class GMVaulter(object):
                   "%s operation performed in %s.\n" \
                   "Number of reconnections: %d.\nNumber of emails quarantined: %d.\n" \
                   "Number of emails that could not be fetched: %d.\n" \
-                  "Number of emails that were returned empty by gmail: %d\n"\
-                  "Number of emails without label information returned by gmail: %d\n"\
+                  "Number of emails that were returned empty by gmail: %d.\n"\
+                  "Number of emails without label information returned by gmail: %d.\n"\
                   "================================================================" \
               % (self.error_report['operation'], \
                  self.error_report['operation_time'], \
