@@ -488,19 +488,17 @@ class GMVaulter(object):
                         new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
                              imap_utils.decode_labels(new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS])
                     except KeyError, ke:
-                        LOG.error("KeyError, reason: %s" % (str(ke)))
-                        LOG.info("new_data[%s]=%s" % (the_id, new_data[the_id]))
+                        LOG.debug("KeyError, reason: %s. new_data[%s]=%s" % (str(ke), the_id, new_data.get(the_id)))
                         # try to fetch it individually and replace current info if it fails then raise error.
-                        import sys
-                        sys.exit(1)
                         try:
                             id_info = batch_fetcher.individual_fetch(the_id)
                             new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
                                 imap_utils.decode_labels(id_info[imap_utils.GIMAPFetcher.GMAIL_LABELS])
                         except Exception, err:
-                            LOG.error("Error when trying to fetch again information for email id %s. id_info = %s. exception" % (the_id, id_info, str(err)))
-                            import sys
-                            sys.exit(1)
+                            LOG.debug("Error when trying to fetch again information for email id %s. id_info = %s. exception" \
+                                      % (the_id, id_info, str(err)))
+                            LOG.info("Missing labels information for email id %s. Ignore it\n" % (the_id))
+                            self.error_report['key_error'].append((the_id, new_data.get(the_id)))
                             continue
 
                     LOG.debug("metadata info collected: %s\n" % (new_data[the_id]))
