@@ -265,7 +265,8 @@ class GMVaulter(object):
         self.error_report = { 'empty' : [] ,
                               'cannot_be_fetched'  : [],
                               'emails_in_quarantine' : [],
-                              'reconnections' : 0}
+                              'reconnections' : 0,
+                              'key_error' : []}
         
         #instantiate gstorer
         self.gstorer =  gmvault_db.GmailStorer(self.db_root_dir, self.use_encryption)
@@ -291,13 +292,15 @@ class GMVaulter(object):
                   "Number of reconnections: %d.\nNumber of emails quarantined: %d.\n" \
                   "Number of emails that could not be fetched: %d.\n" \
                   "Number of emails that were returned empty by gmail: %d\n"\
+                  "Number of emails without label information returned by gmail: %d\n"\
                   "================================================================" \
               % (self.error_report['operation'], \
                  self.error_report['operation_time'], \
                  self.error_report['reconnections'], \
                  len(self.error_report['emails_in_quarantine']), \
                  len(self.error_report['cannot_be_fetched']), \
-                 len(self.error_report['empty'])
+                 len(self.error_report['empty']), \
+                 len(self.error_report['key_error'])
                 )
               
         LOG.debug("error_report complete structure = %s" % (self.error_report))
