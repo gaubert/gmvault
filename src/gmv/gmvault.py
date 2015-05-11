@@ -493,6 +493,7 @@ class GMVaulter(object):
                     except KeyError, ke:
                         LOG.debug("KeyError, reason: %s. new_data[%s]=%s" % (str(ke), the_id, new_data.get(the_id)))
                         # try to fetch it individually and replace current info if it fails then raise error.
+                        id_info = None
                         try:
                             id_info = batch_fetcher.individual_fetch(the_id)
                             new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
