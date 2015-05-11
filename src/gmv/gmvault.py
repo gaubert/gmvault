@@ -499,7 +499,7 @@ class GMVaulter(object):
                             new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
                                 imap_utils.decode_labels(id_info[imap_utils.GIMAPFetcher.GMAIL_LABELS])
                         except Exception, err:
-                            LOG.debug("Error when trying to fetch again information for email id %s. id_info = %s. exception" \
+                            LOG.debug("Error when trying to fetch again information for email id %s. id_info = %s. exception:(%s)" \
                                       % (the_id, id_info, str(err)))
                             LOG.info("Missing labels information for email id %s. Ignore it\n" % (the_id))
                             self.error_report['key_error'].append((the_id, new_data.get(the_id)))
