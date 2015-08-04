@@ -265,7 +265,8 @@ class GMVaulter(object):
         self.error_report = { 'empty' : [] ,
                               'cannot_be_fetched'  : [],
                               'emails_in_quarantine' : [],
-                              'reconnections' : 0}
+                              'reconnections' : 0,
+                              'key_error' : []}
         
         #instantiate gstorer
         self.gstorer =  gmvault_db.GmailStorer(self.db_root_dir, self.use_encryption)
@@ -290,14 +291,16 @@ class GMVaulter(object):
                   "%s operation performed in %s.\n" \
                   "Number of reconnections: %d.\nNumber of emails quarantined: %d.\n" \
                   "Number of emails that could not be fetched: %d.\n" \
-                  "Number of emails that were returned empty by gmail: %d\n"\
+                  "Number of emails that were returned empty by gmail: %d.\n"\
+                  "Number of emails without label information returned by gmail: %d.\n"\
                   "================================================================" \
               % (self.error_report['operation'], \
                  self.error_report['operation_time'], \
                  self.error_report['reconnections'], \
                  len(self.error_report['emails_in_quarantine']), \
                  len(self.error_report['cannot_be_fetched']), \
-                 len(self.error_report['empty'])
+                 len(self.error_report['empty']), \
+                 len(self.error_report['key_error'])
                 )
               
         LOG.debug("error_report complete structure = %s" % (self.error_report))
@@ -488,19 +491,18 @@ class GMVaulter(object):
                         new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
                              imap_utils.decode_labels(new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS])
                     except KeyError, ke:
-                        LOG.error("KeyError, reason: %s" % (str(ke)))
-                        LOG.info("new_data[%s]=%s" % (the_id, new_data[the_id]))
+                        LOG.info("KeyError, reason: %s. new_data[%s]=%s" % (str(ke), the_id, new_data.get(the_id)))
                         # try to fetch it individually and replace current info if it fails then raise error.
-                        import sys
-                        sys.exit(1)
+                        id_info = None
                         try:
                             id_info = batch_fetcher.individual_fetch(the_id)
                             new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
                                 imap_utils.decode_labels(id_info[imap_utils.GIMAPFetcher.GMAIL_LABELS])
                         except Exception, err:
-                            LOG.error("Error when trying to fetch again information for email id %s. id_info = %s. exception" % (the_id, id_info, str(err)))
-                            import sys
-                            sys.exit(1)
+                            LOG.debug("Error when trying to fetch again information for email id %s. id_info = %s. exception:(%s)" \
+                                      % (the_id, id_info, str(err)))
+                            LOG.info("Missing labels information for email id %s. Ignore it\n" % (the_id))
+                            self.error_report['key_error'].append((the_id, new_data.get(the_id)))
                             continue
 
                     LOG.debug("metadata info collected: %s\n" % (new_data[the_id]))

@@ -438,6 +438,24 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         data_path = self.DATA_FNAME % (
             the_dir, email_info[imap_utils.GIMAPFetcher.GMAIL_ID])
 
+        # TODO: First compress then encrypt
+        # create a compressed CIOString  and encrypt it
+
+        if compress:
+           data_path = '%s.gz' % data_path
+           data_desc = StringIO.StringIO()
+        else:
+            data_desc = open(data_path, 'wb')
+
+        if self._encrypt_data:
+            data_path = '%s.crypt2' % data_path
+
+        #TODO create a wrapper fileobj that compress in io string
+        #then chunk write
+        #then compress
+        #then encrypt if it is required
+        
+
         # if the data has to be encrypted
         if self._encrypt_data:
             data_path = '%s.crypt' % data_path
