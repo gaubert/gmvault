@@ -427,6 +427,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
              local_dir : intermediary dir (month dir)
              compress  : if compress is True, use gzip compression
         """
+        LOG.debug("1")
+
         if local_dir:
             the_dir = '%s/%s' % (self._db_dir, local_dir)
             gmvault_utils.makedirs(the_dir)
@@ -446,37 +448,25 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         else:
             data_desc = open(data_path, 'wb')
         try:
+            LOG.debug("2")
+
+            #convert email content to unicode
+            data = gmvault_utils.convert_to_unicode(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
+
+            LOG.debug("3. after unicode")
             if self._encrypt_data:
                 # need to be done for every encryption
                 cipher = self.get_encryption_cipher()
+                LOG.debug("4")
                 cipher.initCTR()
-                data = cipher.encryptCTR(
-                    email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
-            else:
-                data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
+                LOG.debug("5")
+                data = cipher.encryptCTR(data)
 
-            #if email encoding is forced no more guessing
-            email_encoding = gmvault_utils.get_conf_defaults().get('Localisation', 'email_encoding', None)
+            LOG.debug("10")
 
             # write in chunks of one 1 MB
             for chunk in gmvault_utils.chunker(data, 1048576):
-               try:
-                  if email_encoding:
-                      encoding = email_encoding
-                  else:
-                        encoding = gmvault_utils.guess_encoding(chunk, use_encoding_list = False)
-
-                  u_chunk = unicode(chunk, encoding= encoding) #convert to unicode with given encoding
-               except Exception, e:
-                  LOG.critical(e)
-                  LOG.critical("Warning: Guessed encoding = (%s). Ignore those characters" % (encoding))
-                  #try utf-8
-                  u_chunk = unicode(chunk, encoding="utf-8", errors='replace')
-
-               if u_chunk:
-                  data_desc.write(u_chunk.encode('utf-8'))
-               else:
-                  raise Exception("error cannot write %s" % (chunk))
+                data_desc.write(chunk.encode('utf-8'))
 
             self.bury_metadata(email_info, local_dir, extra_labels)
             data_desc.flush()

@@ -4,7 +4,7 @@ python gmv_runner.py sync guillaume.aubert@gmail.com -g "label:èévader"
 => Solve requests with accent and utf8 => Fixed to be tested
 => issues when data is not returned key errors => Solution implemented to be tested
 => encoding errors in subject => fixed to be tested
-=> encryption broken
+=> encryption broken => why ? 
 => tests to be improved
 => Add support for google apps
 => generate exe with pyinstaller

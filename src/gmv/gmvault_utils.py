@@ -524,6 +524,31 @@ def guess_encoding(byte_str, use_encoding_list=True):
 
     return encoding
 
+
+def convert_to_unicode(a_str):
+    """
+    Convert a string to unicode (except terminal strings)
+    :param a_str:
+    :return: unicode string
+    """
+    #if email encoding is forced no more guessing
+    email_encoding = get_conf_defaults().get('Localisation', 'email_encoding', None)
+
+    try:
+        if email_encoding:
+            encoding = email_encoding
+        else:
+            encoding = guess_encoding(a_str, use_encoding_list = False)
+
+        u_str = unicode(a_str, encoding=encoding) #convert to unicode with given encoding
+    except Exception, e:
+        LOG.critical(e)
+        LOG.critical("Warning: Guessed encoding = (%s). Ignore those characters" % (encoding if encoding else "Not defined"))
+        #try utf-8
+        u_str = unicode(a_str, encoding="utf-8", errors='replace')
+
+    return u_str
+
 def convert_argv_to_unicode(a_str):
     """
        Convert command line individual arguments (argv to unicode)
