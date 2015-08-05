@@ -25,6 +25,7 @@ import itertools
 import fnmatch
 import shutil
 import codecs
+import StringIO
 
 import gmv.blowfish as blowfish
 import gmv.log_utils as log_utils
@@ -74,7 +75,6 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
     SUB_CHAT_AREA              = 'chats/%s'
     INFO_AREA                  = '.info'  # contains metadata concerning the database
     ENCRYPTION_KEY_FILENAME    = '.storage_key.sec'
-    OLD_EMAIL_OWNER            = '.email_account.info' #deprecated
     EMAIL_OWNER                = '.owner_account.info'
     GMVAULTDB_VERSION          = '.gmvault_db_version.info'   
 
@@ -441,20 +441,19 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         # TODO: First compress then encrypt
         # create a compressed CIOString  and encrypt it
 
-        if compress:
-           data_path = '%s.gz' % data_path
-           data_desc = StringIO.StringIO()
-        else:
-            data_desc = open(data_path, 'wb')
+        #if compress:
+        #   data_path = '%s.gz' % data_path
+        #   data_desc = StringIO.StringIO()
+        #else:
+        #    data_desc = open(data_path, 'wb')
 
-        if self._encrypt_data:
-            data_path = '%s.crypt2' % data_path
+        #if self._encrypt_data:
+        #    data_path = '%s.crypt2' % data_path
 
         #TODO create a wrapper fileobj that compress in io string
         #then chunk write
         #then compress
         #then encrypt if it is required
-        
 
         # if the data has to be encrypted
         if self._encrypt_data:
@@ -468,26 +467,34 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         try:
             LOG.debug("2")
 
-            #convert email content to unicode
-            data = gmvault_utils.convert_to_unicode(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
-
-            LOG.debug("3. after unicode")
             if self._encrypt_data:
                 # need to be done for every encryption
                 cipher = self.get_encryption_cipher()
                 LOG.debug("4")
                 cipher.initCTR()
                 LOG.debug("5")
-                data = cipher.encryptCTR(data)
+                data = cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
 
-            LOG.debug("10")
+                LOG.debug("6")
+                #write encrypted data without encoding
+                data_desc.write(data)
+                LOG.debug("7")
 
-            # write in chunks of one 1 MB
-            for chunk in gmvault_utils.chunker(data, 1048576):
-                data_desc.write(chunk.encode('utf-8'))
+            #no encryption then utf-8 encode and write
+            else:
+                LOG.debug("10")
+                #convert email content to unicode
+                data = gmvault_utils.convert_to_unicode(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
+                LOG.debug("3. after unicode")
+      
+                # write in chunks of one 1 MB
+                for chunk in gmvault_utils.chunker(data, 1048576):
+                    data_desc.write(chunk.encode('utf-8'))
 
+            #store metadata info
             self.bury_metadata(email_info, local_dir, extra_labels)
             data_desc.flush()
+
         finally:
             data_desc.close()
 

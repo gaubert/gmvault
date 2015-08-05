@@ -538,8 +538,11 @@ def convert_to_unicode(a_str):
         if email_encoding:
             encoding = email_encoding
         else:
-            encoding = guess_encoding(a_str, use_encoding_list = False)
+            LOG.debug("Guess encoding")
+            #guess encoding based on the beginning of the string up to 128K character
+            encoding = guess_encoding(a_str[:20000], use_encoding_list = False)
 
+        LOG.debug("Convert to %s" % (encoding))
         u_str = unicode(a_str, encoding=encoding) #convert to unicode with given encoding
     except Exception, e:
         LOG.critical(e)
