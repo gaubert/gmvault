@@ -5,6 +5,7 @@ python gmv_runner.py sync guillaume.aubert@gmail.com -g "label:èévader"
 => issues when data is not returned key errors => Solution implemented to be tested
 => encoding errors in subject => fixed to be tested
 => encryption broken => blowfish encryption could only be applied to non unicode python strings. Fixed by removing encoding when encrypting. Need more tests and need to remove debugging info.
-=> generate exe with pyinstaller
-=> tests to be improved
 => Add support for google apps
+=> generate exe with pyinstaller
+=> look at bug when storing the credentials
+=> tests to be improved
