@@ -118,7 +118,7 @@ class CredentialHelper(object):
         os.lseek(fdesc, 0, os.SEEK_SET)
 
         #write new content
-        fobj = os.fdopen(fdesc, "w+")
+        fobj = os.fdopen(fdesc, "w")
 
         the_obj = { "access_token"    : access_token,
                     "refresh_token"   : refresh_token,
