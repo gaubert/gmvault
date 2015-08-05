@@ -8,4 +8,5 @@ python gmv_runner.py sync guillaume.aubert@gmail.com -g "label:èévader"
 => Add support for google apps
 => generate exe with pyinstaller
 => look at bug when storing the credentials
+=> add encrypt with rsa.bigfile
 => tests to be improved

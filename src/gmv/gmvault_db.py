@@ -427,8 +427,6 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
              local_dir : intermediary dir (month dir)
              compress  : if compress is True, use gzip compression
         """
-        LOG.debug("1")
-
         if local_dir:
             the_dir = '%s/%s' % (self._db_dir, local_dir)
             gmvault_utils.makedirs(the_dir)
@@ -465,27 +463,20 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         else:
             data_desc = open(data_path, 'wb')
         try:
-            LOG.debug("2")
-
             if self._encrypt_data:
                 # need to be done for every encryption
                 cipher = self.get_encryption_cipher()
-                LOG.debug("4")
                 cipher.initCTR()
-                LOG.debug("5")
                 data = cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
+                LOG.debug("Encrypt data.")
 
-                LOG.debug("6")
                 #write encrypted data without encoding
                 data_desc.write(data)
-                LOG.debug("7")
 
             #no encryption then utf-8 encode and write
             else:
-                LOG.debug("10")
                 #convert email content to unicode
                 data = gmvault_utils.convert_to_unicode(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
-                LOG.debug("3. after unicode")
       
                 # write in chunks of one 1 MB
                 for chunk in gmvault_utils.chunker(data, 1048576):
@@ -612,10 +603,11 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
         with self._get_data_file_from_id(the_dir, a_id) as f:
             if self.email_encrypted(f.name):
-                LOG.debug("Restore encrypted email %s" % a_id)
+                LOG.debug("Restore encrypted email %s." % a_id)
                 # need to be done for every encryption
                 cipher = self.get_encryption_cipher()
                 cipher.initCTR()
+                LOG.debug("Decrypt data.")
                 data = cipher.decryptCTR(f.read())
             else:
                 #data = codecs.decode(f.read(), "utf-8" )
