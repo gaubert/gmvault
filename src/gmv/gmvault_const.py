@@ -27,6 +27,7 @@ GMAIL_UNLOCAL_CHATS = [
                      u'[Gmail]/Чаты', u'[Google Mail]/Чаты', # russian
                      u'[Gmail]/チャット', u'[Google Mail]/チャット', # japanese
                      u'[Google Mail]/Czat', u'[Gmail]/Czat', # polish
+                     u'[Google Mail]/聊天', u'[Gmail]/聊天' , # chinese
                      u'[Google Mail]/Bate-papos', u'[Gmail]/Bate-papos', #portuguese brazil
                     ]   # unlocalised Chats names
 
