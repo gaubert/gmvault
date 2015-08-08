@@ -26,6 +26,8 @@ PYTHONBIN=python #MacOSX machine
 PYTHONWINBIN=/c/Python27/python.exe #windows laptop
 PYTHONVERSION=2.7
 
+PYINSTALLERMAC=/Library/Frameworks/Python.framework/Versions/2.7/bin/pyinstaller
+
 #MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
 MAKENSIS=/c/Program\ Files/NSIS/makensis.exe #windows laptop
 
@@ -123,15 +125,9 @@ gmv-linux-dist: clean init
 	@echo "=================================================================="
 
 gmv-mac-dist: clean init
-	cp -R $(BASEDIR)/src/gmv $(GMVDIST)
-	cp -R $(BASEDIR)/src/gmv_runner.py $(GMVDIST)
-	cp $(BASEDIR)/src/setup_mac.py $(GMVDIST)
-	cd $(GMVDIST); $(PYTHONBIN) setup_mac.py py2app --arch=intel
-	mkdir -p $(GMVDIST)/$(GMVDISTNAME)/bin ; mkdir -p $(GMVDIST)/$(GMVDISTNAME)/lib
-	cp $(BASEDIR)/etc/scripts/gmvault_mac $(GMVDIST)/$(GMVDISTNAME)/bin/gmvault
-	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/bin/README.txt
-	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/$(GMVDISTNAME)/bin/RELEASE-NOTE.txt
-	cp -R $(GMVDIST)/dist/gmv_runner.app $(GMVDIST)/$(GMVDISTNAME)/lib
+	$(PYINSTALLERMAC) --onefile --name gmvault --distpath=$(GMVDIST)/$(GMVDISTNAME)  $(BASEDIR)/src/gmv_runner.py
+	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/README.txt
+	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/$(GMVDISTNAME)/RELEASE-NOTE.txt
 	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-macosx-intel.tar.gz ./$(GMVDISTNAME)
 	@echo ""
 	@echo "========================================="
@@ -168,12 +164,11 @@ gmv-win-installer: gmv-win-dist
 
 clean: clean-build
 	mkdir -p $(GMVDIST)
-	cd $(GMVDIST); rm -Rf ./etc; rm -f MANIFEST.in; rm -f RELEASE-NOTE.txt; rm -Rf build; rm -Rf gmvault.egg-info; rm -f setup*.py ; rm -Rf dist ; rm -Rf src; rm -f README* ;rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
+#	cd $(GMVDIST); rm -Rf ./etc; rm -f MANIFEST.in; rm -f RELEASE-NOTE.txt; rm -Rf build; rm -Rf gmvault.egg-info; rm -f setup*.py ; rm -Rf dist ; rm -Rf src; rm -f README* ;rm -Rf GMVault.egg-info; rm -Rf gmv; rm -Rf scripts; rm -f *.tar.gz
+	cd $(GMVDIST); rm -Rf ./*
 
 clean-build:
 	mkdir -p $(GMVBUILD)
 	cd $(GMVBUILD); rm -Rf egg-dist; 
 	rm -Rf $(GMVDIST)/$(GMVDISTNAME)
 	rm -Rf $(GMVWINBUILDDIST)
-
-    
