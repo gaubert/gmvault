@@ -19,7 +19,6 @@ BUILDDIST=$(BUILD)/egg-dist
 ETC=$(BASEDIR)/etc
 
 #PYTHONBIN=/homespace/gaubert/python2.7/bin/python #TCE machine
-#$(PYINSTALLERWIN) --onefile --name gmvault --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/src/gmv_runner.py
 PYTHONBIN=python #MacOSX machine
 #PYTHONWINBIN=python
 #PYTHONWINBIN=/drives/d/Programs/python2.7/python.exe #for my windows machine at work
