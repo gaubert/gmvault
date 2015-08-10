@@ -545,8 +545,8 @@ def convert_to_unicode(a_str):
         LOG.debug("Convert to %s" % (encoding))
         u_str = unicode(a_str, encoding=encoding) #convert to unicode with given encoding
     except Exception, e:
-        LOG.critical(e)
-        LOG.critical("Warning: Guessed encoding = (%s). Ignore those characters" % (encoding if encoding else "Not defined"))
+        LOG.debug("Exception: %s" % (e))
+        LOG.info("Warning: Guessed encoding = (%s). Ignore those characters" % (encoding if encoding else "Not defined"))
         #try utf-8
         u_str = unicode(a_str, encoding="utf-8", errors='replace')
 
