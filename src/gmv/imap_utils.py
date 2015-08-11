@@ -53,6 +53,21 @@ class PushEmailError(Exception):
         """ Get email to quarantine """
         return self._in_quarantine
 
+class LabelError(Exception):
+    """
+       LabelError. Exception send when there is an error when adding labels to message
+    """
+    def __init__(self, a_msg, ignore = False):
+        """
+           Constructor
+        """
+        super(LabelError, self).__init__(a_msg)
+        self._ignore = ignore
+    
+    def ignore(self):
+        """ ignore """
+        return self._ignore
+
 #retry decorator with nb of tries and sleep_time and backoff
 def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1): #pylint:disable=R0912
     """
@@ -632,10 +647,25 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         if labels_str:  
             #has labels so update email  
             the_timer.start()
-            #LOG.debug("Before to store labels %s" % (labels_str))
+            LOG.debug("Before to store labels %s" % (labels_str))
             id_list = ",".join(map(str, imap_ids))
             #+X-GM-LABELS.SILENT to have not returned data
-            ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', labels_str) #pylint: disable=W0212
+            try:
+                ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', labels_str) #pylint: disable=W0212
+            except imaplib.IMAP4.error, original_err:
+                LOG.info("Error in apply_labels_to. See exception traceback")
+                LOG.debug(gmvault_utils.get_exception_traceback())
+                # try to add labels to each individual ids
+                faulty_ids = []
+                for the_id in imap_ids:
+                    try:
+                       ret_code, data = self.server._imap.uid('STORE', the_id, '+X-GM-LABELS.SILENT', labels_str) #pylint: disable=W0212
+                    except imaplib.IMAP4.error, store_err:
+                       LOG.debug("Error when trying to apply labels %s to emails with imap_id %s. Error:%s" % (labels_str, the_id, store_err))
+                       faulty_ids.append(the_id)
+                
+                #raise an error to ignore faulty emails       
+                raise LabelError("Cannot add Labels %s to emails with uids %s. Error:%s" % (labels_str, faulty_ids, original_err), ignore = True) 
 
             #ret_code, data = self.server._imap.uid('COPY', id_list, labels[0])
             LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" \
@@ -646,7 +676,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
                 # Try again to code the error message (do not use .SILENT)
                 ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS', labels_str) #pylint: disable=W0212
                 if ret_code != 'OK':
-                    raise PushEmailError("Cannot add Labels %s to emails with uids %s. Error:%s" % (labels_str, imap_ids, data))
+                    raise LabelError("Cannot add Labels %s to emails with uids %s. Error:%s" % (labels_str, imap_ids, data), ignore = False)
             else:
                 LOG.debug("Stored Labels %s for gm_ids %s" % (labels_str, imap_ids))
        
