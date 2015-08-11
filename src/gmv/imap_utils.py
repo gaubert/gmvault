@@ -646,7 +646,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
                 # Try again to code the error message (do not use .SILENT)
                 ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS', labels_str) #pylint: disable=W0212
                 if ret_code != 'OK':
-                    raise PushEmailError("Cannot add Labels %s to emails with uids %d. Error:%s" % (labels_str, imap_ids, data))
+                    raise PushEmailError("Cannot add Labels %s to emails with uids %s. Error:%s" % (labels_str, imap_ids, data))
             else:
                 LOG.debug("Stored Labels %s for gm_ids %s" % (labels_str, imap_ids))
        
