@@ -113,12 +113,14 @@ class CredentialHelper(object):
 
         # Open a file
         fdesc = os.open(oauth_file, os.O_RDWR|os.O_CREAT )
-        #empty file
-        os.ftruncate(fdesc,0)
-        os.lseek(fdesc, 0, os.SEEK_SET)
 
         #write new content
         fobj = os.fdopen(fdesc, "w")
+
+        #empty file
+        fobj.truncate()
+        fobj.seek(0, os.SEEK_SET)
+
 
         the_obj = { "access_token"    : access_token,
                     "refresh_token"   : refresh_token,
