@@ -1017,7 +1017,8 @@ class GMVaulter(object):
             except Exception, err:
                 LOG.error("Problem when applying labels %s to the following ids: %s" %(label, labels_to_apply[label]), err)
                 if isinstance(err, imap_utils.LabelError) and err.ignore() == True:
-                    LOG.critical("Ignore labelling and continue to restore")
+                    LOG.critical("Ignore labelling: %s" % (err))
+                    LOG.critical("Disconnecting and reconnecting to restart cleanly.")
                     self.src.reconnect() #reconnect
                 elif isinstance(err, imaplib.IMAP4.abort) and str(err).find("=> Gmvault ssl socket error: EOF") >= 0:
                     # if this is a Gmvault SSL Socket error ignore labelling and continue the restore
@@ -1146,7 +1147,6 @@ class GMVaulter(object):
                 
             # associate labels with emails
             LOG.critical("Applying labels to the current batch of emails.")
-
             try:
                 LOG.debug("Changing directory. Going into ALLMAIL")
                 the_timer = gmvault_utils.Timer()
@@ -1158,7 +1158,8 @@ class GMVaulter(object):
             except Exception, err:
                 LOG.error("Problem when applying labels %s to the following ids: %s" %(label, labels_to_apply[label]), err)
                 if isinstance(err, imap_utils.LabelError) and err.ignore() == True:
-                    LOG.critical("Ignore labelling and continue to restore")
+                    LOG.critical("Ignore labelling: %s" % (err))
+                    LOG.critical("Disconnecting and reconnecting to restart cleanly.")
                     self.src.reconnect() #reconnect
                 elif isinstance(err, imaplib.IMAP4.abort) and str(err).find("=> Gmvault ssl socket error: EOF") >= 0:
                     # if this is a Gmvault SSL Socket error ignore labelling and continue the restore
