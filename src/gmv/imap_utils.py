@@ -673,10 +673,16 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
 
             # check if it is ok otherwise exception
             if ret_code != 'OK':
-                # Try again to code the error message (do not use .SILENT)
-                ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS', labels_str) #pylint: disable=W0212
-                if ret_code != 'OK':
-                    raise LabelError("Cannot add Labels %s to emails with uids %s. Error:%s" % (labels_str, imap_ids, data), ignore = False)
+                #update individuals emails
+                faulty_ids = []
+                for the_id in imap_ids:
+                    try:
+                       ret_code, data = self.server._imap.uid('STORE', the_id, '+X-GM-LABELS.SILENT', labels_str) #pylint: disable=W0212
+                    except imaplib.IMAP4.error, store_err:
+                       LOG.debug("Error when trying to apply labels %s to emails with imap_id %s. Error:%s" % (labels_str, the_id, store_err))
+                       faulty_ids.append(the_id)
+
+                raise LabelError("Cannot add Labels %s to emails with uids %s. Error:%s" % (labels_str, faulty_ids, data), ignore = True)
             else:
                 LOG.debug("Stored Labels %s for gm_ids %s" % (labels_str, imap_ids))
        
