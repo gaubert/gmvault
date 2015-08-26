@@ -491,6 +491,8 @@ def profile_this(fn):
 
 DEFAULT_ENC_LIST = ['ascii','iso-8859-1','iso-8859-2','windows-1250','windows-1252','utf-8']
 
+class GuessEncoding(Exception): pass    # Guess encoding error
+
 def guess_encoding(byte_str, use_encoding_list=True):
     """
        byte_str: byte string
@@ -499,7 +501,7 @@ def guess_encoding(byte_str, use_encoding_list=True):
        if encoding cannot be found return utf-8
     """
     if type(byte_str) == type(unicode()):
-       raise Exception("Error. The passed string is a unicode string and not a byte string")
+       raise GuessEncoding("Error. The passed string is a unicode string and not a byte string")
 
     encoding = None
     if use_encoding_list:
