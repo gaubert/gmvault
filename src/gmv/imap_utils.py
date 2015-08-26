@@ -814,6 +814,13 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
             raise PushEmailError("No email id returned by IMAP APPEND command. Quarantine this email.", quarantined = True)
         
         return result_uid          
+
+    def _clean_email_body(a_body):
+        """
+           Clean the body of the email
+        """
+        #for the moment just try to remove the null character brut force. In the future will have to parse the email and clean it
+        return a_body.replace("\0", '')
          
     @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec
     def push_email(self, a_body, a_flags, a_internal_time, a_labels):
@@ -827,8 +834,15 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         the_t = gmvault_utils.Timer()
         the_t.start()
         LOG.debug("Before to Append email contents")
-        #res = self.server.append(self.current_folder, a_body, a_flags, a_internal_time)
-        res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
+
+
+        try:
+           res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
+        except imaplib.IMAP4.abort, err:
+           # handle issue when there are invalid characters (This is do to the presence of null characters)
+           if str(err).find("APPEND => Invalid character in literal") >= 0:
+              a_body = self._clean_email_body(a_body)
+              res    = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
     
         LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" \
                   % (a_flags, a_internal_time, the_t.elapsed_ms(), res))
