@@ -796,7 +796,16 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         #msg = "a_folder = %s" % (a_folder.encode('utf-8'))
         #msg = msg.encode('utf-8')
         #print(msg)
-        res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
+        try:
+           #a_body = self._clean_email_body(a_body)
+           res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
+        except imaplib.IMAP4.abort, err:
+           # handle issue when there are invalid characters (This is do to the presence of null characters)
+           if str(err).find("APPEND => Invalid character in literal") >= 0:
+              LOG.critical("Invalid character detected. Try to clean the email and reconnect.")
+              a_body = self._clean_email_body(a_body)
+              self.reconnect()
+              res    = self.server.append(a_folder, a_body, a_flags, a_internal_time)
     
         LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" \
                   % (a_flags, a_internal_time, the_timer.elapsed_ms(), res))
@@ -815,7 +824,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         
         return result_uid          
 
-    def _clean_email_body(a_body):
+    def _clean_email_body(self, a_body):
         """
            Clean the body of the email
         """
@@ -823,7 +832,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         return a_body.replace("\0", '')
          
     @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec
-    def push_email(self, a_body, a_flags, a_internal_time, a_labels):
+    def deprecated_push_email(self, a_body, a_flags, a_internal_time, a_labels):
         """
            Push a complete email body 
         """
