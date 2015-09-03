@@ -500,10 +500,11 @@ def guess_encoding(byte_str, use_encoding_list=True):
        Try to guess the encoding of byte_str
        if encoding cannot be found return utf-8
     """
+    encoding = None
+
     if type(byte_str) == type(unicode()):
        raise GuessEncoding("Error. The passed string is a unicode string and not a byte string")
 
-    encoding = None
     if use_encoding_list:
         encoding_list = get_conf_defaults().get('Localisation', 'encoding_guess_list', DEFAULT_ENC_LIST)
         for enc in encoding_list:
@@ -533,6 +534,8 @@ def convert_to_unicode(a_str):
     :param a_str:
     :return: unicode string
     """
+    encoding = None
+
     #if email encoding is forced no more guessing
     email_encoding = get_conf_defaults().get('Localisation', 'email_encoding', None)
 
@@ -545,7 +548,7 @@ def convert_to_unicode(a_str):
             encoding = guess_encoding(a_str[:20000], use_encoding_list = False)
 
         LOG.debug("Convert to %s" % (encoding))
-        u_str = unicode(a_str, encoding=encoding) #convert to unicode with given encoding
+        u_str = unicode(a_str, encoding = encoding) #convert to unicode with given encoding
     except Exception, e:
         LOG.debug("Exception: %s" % (e))
         LOG.info("Warning: Guessed encoding = (%s). Ignore those characters" % (encoding if encoding else "Not defined"))

@@ -260,16 +260,16 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             tempo = matched.group('subject').strip()
             #guess encoding and convert to utf-8
             u_tempo  = None
-            encoding = "not found"
+            encod    = "not found"
             try:
-                encoding = gmvault_utils.guess_encoding(tempo, use_encoding_list = False)
-                u_tempo = unicode(tempo, encoding= encoding)
+                encod  = gmvault_utils.guess_encoding(tempo, use_encoding_list = False)
+                u_tempo = unicode(tempo, encoding = encod)
             except gmvault_utils.GuessEncoding, enc_err:
                   #it is already in unicode so ignore encoding
                   u_tempo = tempo
             except Exception, e:
                   LOG.critical(e)
-                  LOG.critical("Warning: Guessed encoding = (%s). Ignore those characters" % (encoding))
+                  LOG.critical("Warning: Guessed encoding = (%s). Ignore those characters" % (encod))
                   #try utf-8
                   u_tempo = unicode(tempo, encoding="utf-8", errors='replace')
 
