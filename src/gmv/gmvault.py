@@ -430,12 +430,12 @@ class GMVaulter(object):
         """
         # get all imap ids in All Mail
         imap_ids = self.src.search(imap_req)
-        
+       
+        last_id_file =  self.OP_EMAIL_SYNC if a_type == "email" else self.OP_CHAT_SYNC
         # check if there is a restart
         if restart:
             LOG.critical("Restart mode activated for emails. Need to find information in Gmail, be patient ...")
-            imap_ids = self.get_gmails_ids_left_to_sync(self.OP_EMAIL_SYNC if a_type == "email" \
-                                                        else self.OP_CHAT_SYNC, imap_ids, imap_req)
+            imap_ids = self.get_gmails_ids_left_to_sync(last_id_file, imap_ids, imap_req)
         
         total_nb_msgs_to_process = len(imap_ids) # total number of emails to get
         
@@ -542,7 +542,7 @@ class GMVaulter(object):
                     # save id every 10 restored emails
                     if (nb_msgs_processed % 10) == 0:
                         if gid:
-                            self.save_lastid(self.OP_EMAIL_SYNC, gid, eml_date, imap_req)
+                            self.save_lastid(last_id_file, gid, eml_date, imap_req)
                 else:
                     LOG.info("Could not process message with id %s. Ignore it\n" % (the_id))
                     self.error_report['empty'].append((the_id, gid if gid else None))
