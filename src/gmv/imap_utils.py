@@ -796,6 +796,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         #msg = "a_folder = %s" % (a_folder.encode('utf-8'))
         #msg = msg.encode('utf-8')
         #print(msg)
+        res = None
         try:
            #a_body = self._clean_email_body(a_body)
            res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
