@@ -1105,6 +1105,9 @@ class GMVaulter(object):
             # unbury the metadata for all these emails
             for gm_id in group_imap_ids:    
                 try:
+
+                    LOG.debug("Unbury email with gm_id %s." % (gm_id))
+
                     email_meta, email_data = self.gstorer.unbury_email(gm_id)
                     
                     LOG.critical("Pushing email body with id %s." % (gm_id))
