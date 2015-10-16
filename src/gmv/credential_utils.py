@@ -69,7 +69,7 @@ class CredentialHelper(object):
            Get secret key if it is in the file otherwise generate it and save it
         """
         if os.path.exists(a_filepath):
-            with open(a_filepath).read() as f:
+            with open(a_filepath) as f:
                 secret = f.read()
         else:
             secret = gmvault_utils.make_password()
