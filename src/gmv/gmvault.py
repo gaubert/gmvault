@@ -102,7 +102,7 @@ def handle_sync_imap_error(the_exception, the_id, error_report, src):
         except Exception, _: #pylint:disable-msg=W0703
             curr = None
             LOG.critical("Error when trying to get gmail id for message with imap id %s." % (the_id))
-            LOG.critical("Disconnect, wait for 20 sec then reconnect.")
+            LOG.critical("Disconnect, wait for 10 sec then reconnect.")
             src.disconnect()
             #could not fetch the gm_id so disconnect and sleep
             #sleep 10 sec
@@ -265,7 +265,8 @@ class GMVaulter(object):
         self.error_report = { 'empty' : [] ,
                               'cannot_be_fetched'  : [],
                               'emails_in_quarantine' : [],
-                              'reconnections' : 0}
+                              'reconnections' : 0,
+                              'key_error' : []}
         
         #instantiate gstorer
         self.gstorer =  gmvault_db.GmailStorer(self.db_root_dir, self.use_encryption)
@@ -290,14 +291,16 @@ class GMVaulter(object):
                   "%s operation performed in %s.\n" \
                   "Number of reconnections: %d.\nNumber of emails quarantined: %d.\n" \
                   "Number of emails that could not be fetched: %d.\n" \
-                  "Number of emails that were returned empty by gmail: %d\n"\
+                  "Number of emails that were returned empty by gmail: %d.\n"\
+                  "Number of emails without label information returned by gmail: %d.\n"\
                   "================================================================" \
               % (self.error_report['operation'], \
                  self.error_report['operation_time'], \
                  self.error_report['reconnections'], \
                  len(self.error_report['emails_in_quarantine']), \
                  len(self.error_report['cannot_be_fetched']), \
-                 len(self.error_report['empty'])
+                 len(self.error_report['empty']), \
+                 len(self.error_report['key_error'])
                 )
               
         LOG.debug("error_report complete structure = %s" % (self.error_report))
@@ -430,8 +433,9 @@ class GMVaulter(object):
         """
         # get all imap ids in All Mail
         imap_ids = self.src.search(imap_req)
-       
-        last_id_file =  self.OP_EMAIL_SYNC if a_type == "email" else self.OP_CHAT_SYNC
+
+        last_id_file = self.OP_EMAIL_SYNC if a_type == "email" else self.OP_CHAT_SYNC
+        
         # check if there is a restart
         if restart:
             LOG.critical("Restart mode activated for emails. Need to find information in Gmail, be patient ...")
@@ -484,8 +488,23 @@ class GMVaulter(object):
                     LOG.critical("Process %s num %d (imap_id:%s) from %s." % (a_type, nb_msgs_processed, the_id, the_dir))
                     
                     #decode the labels that are received as utf7 => unicode
-                    new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
-                    imap_utils.decode_labels(new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS])
+                    try:
+                        new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
+                             imap_utils.decode_labels(new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS])
+                    except KeyError, ke:
+                        LOG.info("KeyError, reason: %s. new_data[%s]=%s" % (str(ke), the_id, new_data.get(the_id)))
+                        # try to fetch it individually and replace current info if it fails then raise error.
+                        id_info = None
+                        try:
+                            id_info = batch_fetcher.individual_fetch(the_id)
+                            new_data[the_id][imap_utils.GIMAPFetcher.GMAIL_LABELS] = \
+                                imap_utils.decode_labels(id_info[imap_utils.GIMAPFetcher.GMAIL_LABELS])
+                        except Exception, err:
+                            LOG.debug("Error when trying to fetch again information for email id %s. id_info = %s. exception:(%s)" \
+                                      % (the_id, id_info, str(err)))
+                            LOG.info("Missing labels information for email id %s. Ignore it\n" % (the_id))
+                            self.error_report['key_error'].append((the_id, new_data.get(the_id)))
+                            continue
 
                     LOG.debug("metadata info collected: %s\n" % (new_data[the_id]))
                 
@@ -998,7 +1017,11 @@ class GMVaulter(object):
                     self.src.apply_labels_to(labels_to_apply[label], [label]) 
             except Exception, err:
                 LOG.error("Problem when applying labels %s to the following ids: %s" %(label, labels_to_apply[label]), err)
-                if isinstance(err, imaplib.IMAP4.abort) and str(err).find("=> Gmvault ssl socket error: EOF") >= 0:
+                if isinstance(err, imap_utils.LabelError) and err.ignore() == True:
+                    LOG.critical("Ignore labelling: %s" % (err))
+                    LOG.critical("Disconnecting and reconnecting to restart cleanly.")
+                    self.src.reconnect() #reconnect
+                elif isinstance(err, imaplib.IMAP4.abort) and str(err).find("=> Gmvault ssl socket error: EOF") >= 0:
                     # if this is a Gmvault SSL Socket error ignore labelling and continue the restore
                     LOG.critical("Ignore labelling")
                     LOG.critical("Disconnecting and reconnecting to restart cleanly.")
@@ -1082,6 +1105,9 @@ class GMVaulter(object):
             # unbury the metadata for all these emails
             for gm_id in group_imap_ids:    
                 try:
+
+                    LOG.debug("Unbury email with gm_id %s." % (gm_id))
+
                     email_meta, email_data = self.gstorer.unbury_email(gm_id)
                     
                     LOG.critical("Pushing email body with id %s." % (gm_id))
@@ -1125,7 +1151,6 @@ class GMVaulter(object):
                 
             # associate labels with emails
             LOG.critical("Applying labels to the current batch of emails.")
-
             try:
                 LOG.debug("Changing directory. Going into ALLMAIL")
                 the_timer = gmvault_utils.Timer()
@@ -1136,8 +1161,11 @@ class GMVaulter(object):
                     self.src.apply_labels_to(labels_to_apply[label], [label]) 
             except Exception, err:
                 LOG.error("Problem when applying labels %s to the following ids: %s" %(label, labels_to_apply[label]), err)
-                LOG.error("Problem when applying labels.", err)
-                if isinstance(err, imaplib.IMAP4.abort) and str(err).find("=> Gmvault ssl socket error: EOF") >= 0:
+                if isinstance(err, imap_utils.LabelError) and err.ignore() == True:
+                    LOG.critical("Ignore labelling: %s" % (err))
+                    LOG.critical("Disconnecting and reconnecting to restart cleanly.")
+                    self.src.reconnect() #reconnect
+                elif isinstance(err, imaplib.IMAP4.abort) and str(err).find("=> Gmvault ssl socket error: EOF") >= 0:
                     # if this is a Gmvault SSL Socket error ignore labelling and continue the restore
                     LOG.critical("Ignore labelling")
                     LOG.critical("Disconnecting and reconnecting to restart cleanly.")

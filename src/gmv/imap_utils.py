@@ -53,6 +53,21 @@ class PushEmailError(Exception):
         """ Get email to quarantine """
         return self._in_quarantine
 
+class LabelError(Exception):
+    """
+       LabelError. Exception send when there is an error when adding labels to message
+    """
+    def __init__(self, a_msg, ignore = False):
+        """
+           Constructor
+        """
+        super(LabelError, self).__init__(a_msg)
+        self._ignore = ignore
+    
+    def ignore(self):
+        """ ignore """
+        return self._ignore
+
 #retry decorator with nb of tries and sleep_time and backoff
 def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1): #pylint:disable=R0912
     """
@@ -632,10 +647,25 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         if labels_str:  
             #has labels so update email  
             the_timer.start()
-            #LOG.debug("Before to store labels %s" % (labels_str))
+            LOG.debug("Before to store labels %s" % (labels_str))
             id_list = ",".join(map(str, imap_ids))
             #+X-GM-LABELS.SILENT to have not returned data
-            ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', labels_str) #pylint: disable=W0212
+            try:
+                ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS.SILENT', labels_str) #pylint: disable=W0212
+            except imaplib.IMAP4.error, original_err:
+                LOG.info("Error in apply_labels_to. See exception traceback")
+                LOG.debug(gmvault_utils.get_exception_traceback())
+                # try to add labels to each individual ids
+                faulty_ids = []
+                for the_id in imap_ids:
+                    try:
+                       ret_code, data = self.server._imap.uid('STORE', the_id, '+X-GM-LABELS.SILENT', labels_str) #pylint: disable=W0212
+                    except imaplib.IMAP4.error, store_err:
+                       LOG.debug("Error when trying to apply labels %s to emails with imap_id %s. Error:%s" % (labels_str, the_id, store_err))
+                       faulty_ids.append(the_id)
+                
+                #raise an error to ignore faulty emails       
+                raise LabelError("Cannot add Labels %s to emails with uids %s. Error:%s" % (labels_str, faulty_ids, original_err), ignore = True) 
 
             #ret_code, data = self.server._imap.uid('COPY', id_list, labels[0])
             LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" \
@@ -643,10 +673,16 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
 
             # check if it is ok otherwise exception
             if ret_code != 'OK':
-                # Try again to code the error message (do not use .SILENT)
-                ret_code, data = self.server._imap.uid('STORE', id_list, '+X-GM-LABELS', labels_str) #pylint: disable=W0212
-                if ret_code != 'OK':
-                    raise PushEmailError("Cannot add Labels %s to emails with uids %d. Error:%s" % (labels_str, imap_ids, data))
+                #update individuals emails
+                faulty_ids = []
+                for the_id in imap_ids:
+                    try:
+                       ret_code, data = self.server._imap.uid('STORE', the_id, '+X-GM-LABELS.SILENT', labels_str) #pylint: disable=W0212
+                    except imaplib.IMAP4.error, store_err:
+                       LOG.debug("Error when trying to apply labels %s to emails with imap_id %s. Error:%s" % (labels_str, the_id, store_err))
+                       faulty_ids.append(the_id)
+
+                raise LabelError("Cannot add Labels %s to emails with uids %s. Error:%s" % (labels_str, faulty_ids, data), ignore = True)
             else:
                 LOG.debug("Stored Labels %s for gm_ids %s" % (labels_str, imap_ids))
        
@@ -760,7 +796,17 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         #msg = "a_folder = %s" % (a_folder.encode('utf-8'))
         #msg = msg.encode('utf-8')
         #print(msg)
-        res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
+        res = None
+        try:
+           #a_body = self._clean_email_body(a_body)
+           res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
+        except imaplib.IMAP4.abort, err:
+           # handle issue when there are invalid characters (This is do to the presence of null characters)
+           if str(err).find("APPEND => Invalid character in literal") >= 0:
+              LOG.critical("Invalid character detected. Try to clean the email and reconnect.")
+              a_body = self._clean_email_body(a_body)
+              self.reconnect()
+              res    = self.server.append(a_folder, a_body, a_flags, a_internal_time)
     
         LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" \
                   % (a_flags, a_internal_time, the_timer.elapsed_ms(), res))
@@ -778,9 +824,16 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
             raise PushEmailError("No email id returned by IMAP APPEND command. Quarantine this email.", quarantined = True)
         
         return result_uid          
+
+    def _clean_email_body(self, a_body):
+        """
+           Clean the body of the email
+        """
+        #for the moment just try to remove the null character brut force. In the future will have to parse the email and clean it
+        return a_body.replace("\0", '')
          
     @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec
-    def push_email(self, a_body, a_flags, a_internal_time, a_labels):
+    def deprecated_push_email(self, a_body, a_flags, a_internal_time, a_labels):
         """
            Push a complete email body 
         """
@@ -791,8 +844,15 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         the_t = gmvault_utils.Timer()
         the_t.start()
         LOG.debug("Before to Append email contents")
-        #res = self.server.append(self.current_folder, a_body, a_flags, a_internal_time)
-        res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
+
+
+        try:
+           res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
+        except imaplib.IMAP4.abort, err:
+           # handle issue when there are invalid characters (This is do to the presence of null characters)
+           if str(err).find("APPEND => Invalid character in literal") >= 0:
+              a_body = self._clean_email_body(a_body)
+              res    = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
     
         LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" \
                   % (a_flags, a_internal_time, the_t.elapsed_ms(), res))

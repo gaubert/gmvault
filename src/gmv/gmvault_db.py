@@ -25,7 +25,7 @@ import itertools
 import fnmatch
 import shutil
 import codecs
-import chardet
+import StringIO
 
 import gmv.blowfish as blowfish
 import gmv.log_utils as log_utils
@@ -75,7 +75,6 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
     SUB_CHAT_AREA              = 'chats/%s'
     INFO_AREA                  = '.info'  # contains metadata concerning the database
     ENCRYPTION_KEY_FILENAME    = '.storage_key.sec'
-    OLD_EMAIL_OWNER            = '.email_account.info' #deprecated
     EMAIL_OWNER                = '.owner_account.info'
     GMVAULTDB_VERSION          = '.gmvault_db_version.info'   
 
@@ -248,7 +247,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
     @classmethod
     def parse_header_fields(cls, header_fields):
         """
-           extract subject and message ids from the given header fields 
+           extract subject and message ids from the given header fields.
+           Additionally, convert subject byte string to unicode and then encode in utf-8
         """
         subject = None
         msgid   = None
@@ -257,7 +257,24 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         # look for subject
         matched = GmailStorer.HF_SUB_RE.search(header_fields)
         if matched:
-            subject = matched.group('subject').strip()
+            tempo = matched.group('subject').strip()
+            #guess encoding and convert to utf-8
+            u_tempo  = None
+            encod    = "not found"
+            try:
+                encod  = gmvault_utils.guess_encoding(tempo, use_encoding_list = False)
+                u_tempo = unicode(tempo, encoding = encod)
+            except gmvault_utils.GuessEncoding, enc_err:
+                  #it is already in unicode so ignore encoding
+                  u_tempo = tempo
+            except Exception, e:
+                  LOG.critical(e)
+                  LOG.critical("Warning: Guessed encoding = (%s). Ignore those characters" % (encod))
+                  #try utf-8
+                  u_tempo = unicode(tempo, encoding="utf-8", errors='replace')
+
+            if u_tempo:
+                subject = u_tempo.encode('utf-8')
 
         # look for a msg id
         matched = GmailStorer.HF_MSGID_RE.search(header_fields)
@@ -381,7 +398,6 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                          self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
                          self.THREAD_IDS_K : email_info[imap_utils.GIMAPFetcher.GMAIL_THREAD_ID],
                          self.INT_DATE_K   : gmvault_utils.datetime2e(email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE]),
-                         self.FLAGS_K      : email_info[imap_utils.GIMAPFetcher.IMAP_FLAGS],
                          self.SUBJECT_K    : subject,
                          self.MSGID_K      : msgid,
                          self.XGM_RECV_K   : received
@@ -423,6 +439,23 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         data_path = self.DATA_FNAME % (
             the_dir, email_info[imap_utils.GIMAPFetcher.GMAIL_ID])
 
+        # TODO: First compress then encrypt
+        # create a compressed CIOString  and encrypt it
+
+        #if compress:
+        #   data_path = '%s.gz' % data_path
+        #   data_desc = StringIO.StringIO()
+        #else:
+        #    data_desc = open(data_path, 'wb')
+
+        #if self._encrypt_data:
+        #    data_path = '%s.crypt2' % data_path
+
+        #TODO create a wrapper fileobj that compress in io string
+        #then chunk write
+        #then compress
+        #then encrypt if it is required
+
         # if the data has to be encrypted
         if self._encrypt_data:
             data_path = '%s.crypt' % data_path
@@ -437,33 +470,25 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 # need to be done for every encryption
                 cipher = self.get_encryption_cipher()
                 cipher.initCTR()
-                data = cipher.encryptCTR(
-                    email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
+                data = cipher.encryptCTR(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
+                LOG.debug("Encrypt data.")
+
+                #write encrypted data without encoding
+                data_desc.write(data)
+
+            #no encryption then utf-8 encode and write
             else:
-                data = email_info[imap_utils.GIMAPFetcher.EMAIL_BODY]
+                #convert email content to unicode
+                data = gmvault_utils.convert_to_unicode(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
+      
+                # write in chunks of one 1 MB
+                for chunk in gmvault_utils.chunker(data, 1048576):
+                    data_desc.write(chunk.encode('utf-8'))
 
-            # write in chunks of one 1 MB
-            for chunk in gmvault_utils.chunker(data, 1048576):
-               # data_desc.write(chunk)
-               try:
-                  detection = chardet.detect(chunk)
-                  #LOG.critical("the data %s\n" % (chunk)) 
-                  #LOG.critical("====== PRINT Type of string %s" %(type(chunk)))
-                  #try to convert to unicode with ascii 
-                  u_chunk = unicode(chunk, encoding= detection['encoding'])
-               except Exception, e:
-                  LOG.critical(e)
-                  LOG.critical("Warning: Guessed encoding = %s. Ignore those characters" % (detection))
-                  #try utf-8
-                  u_chunk = unicode(chunk, encoding="utf-8", errors='replace')
-
-               if u_chunk:
-                  data_desc.write(u_chunk.encode('utf-8'))
-               else:
-                  raise Exception("error cannot write %s" % (chunk))
-
+            #store metadata info
             self.bury_metadata(email_info, local_dir, extra_labels)
             data_desc.flush()
+
         finally:
             data_desc.close()
 
@@ -581,10 +606,11 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
         with self._get_data_file_from_id(the_dir, a_id) as f:
             if self.email_encrypted(f.name):
-                LOG.debug("Restore encrypted email %s" % a_id)
+                LOG.debug("Restore encrypted email %s." % a_id)
                 # need to be done for every encryption
                 cipher = self.get_encryption_cipher()
                 cipher.initCTR()
+                LOG.debug("Decrypt data.")
                 data = cipher.decryptCTR(f.read())
             else:
                 #data = codecs.decode(f.read(), "utf-8" )

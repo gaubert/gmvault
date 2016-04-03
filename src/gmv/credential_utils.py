@@ -23,7 +23,7 @@
 import webbrowser
 import json
 import base64
-import urllib
+import urllib #for urlencode
 import urllib2
 
 import os
@@ -69,7 +69,7 @@ class CredentialHelper(object):
            Get secret key if it is in the file otherwise generate it and save it
         """
         if os.path.exists(a_filepath):
-            with open(a_filepath).read() as f:
+            with open(a_filepath) as f:
                 secret = f.read()
         else:
             secret = gmvault_utils.make_password()
@@ -114,7 +114,14 @@ class CredentialHelper(object):
 
         # Open a file
         fdesc = os.open(oauth_file, os.O_RDWR|os.O_CREAT )
-        fobj = os.fdopen(fdesc, "w+")
+
+        #write new content
+        fobj = os.fdopen(fdesc, "w")
+
+        #empty file
+        fobj.truncate()
+        fobj.seek(0, os.SEEK_SET)
+
 
         the_obj = { "access_token"    : access_token,
                     "refresh_token"   : refresh_token,
@@ -293,7 +300,7 @@ class CredentialHelper(object):
         request_url = '%s/%s' % (account_base_url, 'o/oauth2/token')
 
         try:
-            response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
+            response = urllib2.urlopen(request_url, urllib.urlencode(params)).read()
         except Exception, err: #pylint: disable-msg=W0703
             LOG.critical("Error: Problems when trying to connect to Google oauth2 endpoint: %s." % (request_url))
             raise err

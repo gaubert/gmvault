@@ -32,6 +32,7 @@ import traceback
 import random 
 import locale
 import urllib
+import chardet
 
 import gmv.log_utils as log_utils
 import gmv.conf.conf_helper
@@ -39,7 +40,7 @@ import gmv.gmvault_const as gmvault_const
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
-GMVAULT_VERSION = "1.9"
+GMVAULT_VERSION = "1.9.1"
 
 class memoized(object): #pylint: disable=C0103
     """Decorator that caches a function's return value each time it is called.
@@ -487,41 +488,113 @@ def profile_this(fn):
         prof.dump_stats(fpath)
         return ret
     return profiled_fn
-                
+
+DEFAULT_ENC_LIST = ['ascii','iso-8859-1','iso-8859-2','windows-1250','windows-1252','utf-8']
+
+class GuessEncoding(Exception): pass    # Guess encoding error
+
+def guess_encoding(byte_str, use_encoding_list=True):
+    """
+       byte_str: byte string
+       use_encoding_list: To try or not to brut force guess with the predefined list
+       Try to guess the encoding of byte_str
+       if encoding cannot be found return utf-8
+    """
+    encoding = None
+
+    if type(byte_str) == type(unicode()):
+       raise GuessEncoding("Error. The passed string is a unicode string and not a byte string")
+
+    if use_encoding_list:
+        encoding_list = get_conf_defaults().get('Localisation', 'encoding_guess_list', DEFAULT_ENC_LIST)
+        for enc in encoding_list:
+           try:
+              unicode(byte_str ,enc,"strict")
+              encoding = enc
+           except:
+              pass
+           else:
+              break
+
+    if not encoding:
+       #detect encoding with chardet
+       enc = chardet.detect(byte_str)
+       if enc and enc.get("encoding") != None:
+          encoding = enc.get("encoding")
+       else:
+          LOG.debug("Force encoding to utf-8")
+          encoding = "utf-8"
+
+    return encoding
+
+
 def convert_to_unicode(a_str):
     """
-       Try to get the stdin encoding and use it to convert the input string into unicode.
-       It is dependent on the platform (mac osx,linux, windows 
+    Convert a string to unicode (except terminal strings)
+    :param a_str:
+    :return: unicode string
     """
+    encoding = None
+
+    #if email encoding is forced no more guessing
+    email_encoding = get_conf_defaults().get('Localisation', 'email_encoding', None)
+
+    try:
+        if email_encoding:
+            encoding = email_encoding
+        else:
+            LOG.debug("Guess encoding")
+            #guess encoding based on the beginning of the string up to 128K character
+            encoding = guess_encoding(a_str[:20000], use_encoding_list = False)
+
+        LOG.debug("Convert to %s" % (encoding))
+        u_str = unicode(a_str, encoding = encoding) #convert to unicode with given encoding
+    except Exception, e:
+        LOG.debug("Exception: %s" % (e))
+        LOG.info("Warning: Guessed encoding = (%s). Ignore those characters" % (encoding if encoding else "Not defined"))
+        #try utf-8
+        u_str = unicode(a_str, encoding="utf-8", errors='replace')
+
+    return u_str
+
+def convert_argv_to_unicode(a_str):
+    """
+       Convert command line individual arguments (argv to unicode)
+    """
+    #if str is already unicode do nothing and return the str
+    if type(a_str) == type(unicode()):
+        return a_str
+
     #encoding can be forced from conf
-    term_encoding = get_conf_defaults().get('Localisation', 'term_encoding', None)
-    if not term_encoding:
-        term_encoding = locale.getpreferredencoding() #use it to find the encoding for text terminal
-        if not term_encoding:
+    terminal_encoding = get_conf_defaults().get('Localisation', 'terminal_encoding', None)
+    if not terminal_encoding:
+        terminal_encoding = locale.getpreferredencoding() #use it to find the encoding for text terminal
+        LOG.debug("encoding found with locale.getpreferredencoding()")
+        if not terminal_encoding:
             loc = locale.getdefaultlocale() #try to get defaultlocale()
             if loc and len(loc) == 2:
-                term_encoding = loc[1]
+                LOG.debug("encoding found with locale.getdefaultlocale()")
+                terminal_encoding = loc[1]
             else:
-                LOG.debug("Odd. loc = %s. Do not specify the encoding, let Python do its own investigation" % (loc))
+                LOG.debug("Cannot Terminal encoding using locale.getpreferredencoding() and locale.getdefaultlocale(), loc = %s. Use chardet to try guessing the encoding." % (loc if loc else "None"))
+                terminal_encoding = guess_encoding(a_str)
     else:
-        LOG.debug("Encoding forced. Read it from [Localisation]:term_encoding=%s" % (term_encoding))
-        
-    try: #encode
-        u_str = unicode(a_str, term_encoding, errors='ignore')
-           
-        LOG.debug("raw unicode     = %s." % (u_str))
-        LOG.debug("chosen encoding = %s." % (term_encoding))
-        LOG.debug("unicode_escape val = %s." % ( u_str.encode('unicode_escape')))
-    except Exception, err:
-        LOG.error(err)
-        get_exception_traceback()
-        LOG.debug("Cannot convert to unicode from encoding:%s" % (term_encoding)) #add error
-        u_str = unicode(a_str, errors='ignore')
+       LOG.debug("Use terminal encoding forced from the configuration file.") 
+    try:
+       LOG.debug("terminal encoding = %s." % (terminal_encoding))
+       #decode byte string to unicode and fails in case of error
+       u_str = a_str.decode(terminal_encoding)
+       LOG.debug("unicode_escape val = %s." % (u_str.encode('unicode_escape')))
+       LOG.debug("raw unicode     = %s." % (u_str))
+    except Exception, err: 
+       LOG.error(err)
+       get_exception_traceback()
+       LOG.info("Convertion of %s from %s to a unicode failed. Will now convert to unicode using utf-8 encoding and ignoring errors (non utf-8 characters will be eaten)." % (a_str, terminal_encoding))
+       LOG.info("Please set properly the Terminal encoding or use the [Localisation]:terminal_encoding property to set it.")
+       u_str = unicode(a_str, encoding='utf-8', errors='ignore')
 
-    LOG.debug("hexval %s" % (ascii_hex(u_str)))
-    
     return u_str
-                
+
 @memoized
 def get_home_dir_path():
     """

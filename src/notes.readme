@@ -1,0 +1,16 @@
+python gmv_runner.py sync guillaume.aubert@gmail.com -g "label:èévader"
+
+- Todo
+=> Add support for google apps =>
+=> add encrypt with rsa.bigfile
+=> Tests to be improved
+=> Update documentation to explain the app password have to be use with --passwd (see issue: https://github.com/gaubert/gmvault/issues/215 for more info).
+=> Update documentation for Google Apps connections. 
+
+- Done
+=> Solve requests with accent and utf8 => Fixed to be tested
+=> issues when data is not returned key errors => Solution implemented to be tested
+=> encoding errors in subject => fixed to be tested
+=> encryption broken => blowfish encryption could only be applied to non unicode python strings. Fixed by removing encoding when encrypting. Need more tests and need to remove debugging info.
+=> look at bug when storing the credentials => fixed by truncating the file
+=> generate exe with pyinstaller => fixed (VM for Win Dev, pyinstaller tested on Windows and Mac)

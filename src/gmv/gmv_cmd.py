@@ -149,7 +149,7 @@ class GMVaultLauncher(object):
     def __init__(self):
         """ constructor """
         super(GMVaultLauncher, self).__init__()
-        
+
     @gmvault_utils.memoized
     def _create_parser(self): #pylint: disable=R0915
         """
@@ -201,6 +201,10 @@ class GMVaultLauncher(object):
                           help="use interactive password authentication, encrypt and store the password. (not recommended)",
                           action= 'store_const' , dest="passwd", const='store')
         
+        #sync_parser.add_argument("-r", "--imap-req", type = get_unicode_commandline_arg, metavar = "REQ", \
+        #                         help="Imap request to restrict sync.",\
+        #                         dest="imap_request", default=None)
+
         sync_parser.add_argument("-r", "--imap-req", metavar = "REQ", \
                                  help="Imap request to restrict sync.",\
                                  dest="imap_request", default=None)
@@ -273,7 +277,7 @@ class GMVaultLauncher(object):
                                  default='full', help='type of restoration: full|quick. (default: full)')
         
         # add a label
-        rest_parser.add_argument('-a', '--apply-label', \
+        rest_parser.add_argument('-a', '--apply-label' , \
                                  action='store', dest='apply_label', \
                                  default=None, help='Apply a label to restored emails')
         
@@ -694,7 +698,8 @@ class GMVaultLauncher(object):
         elif args.get('type', '') == 'custom':
             
             #convert args to unicode
-            args['request']['req']     = gmvault_utils.convert_to_unicode(args['request']['req'])
+            u_str = gmvault_utils.convert_argv_to_unicode(args['request']['req'])
+            args['request']['req']     = u_str
             args['request']['charset'] = 'utf-8' #for the moment always utf-8
             args['request']['mode']    = 'custom'
 
@@ -836,7 +841,7 @@ def bootstrap_run():
     """ temporary bootstrap """
     
     init_logging()
-    
+
     #force argv[0] to gmvault
     sys.argv[0] = "gmvault"
     
@@ -845,7 +850,7 @@ def bootstrap_run():
     gmvlt = GMVaultLauncher()
     
     args = gmvlt.parse_args()
-    
+
     #activate debug if enabled
     if args['debug']:
         LOG.critical("Activate debugging information.")

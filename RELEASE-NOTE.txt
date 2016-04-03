@@ -2,6 +2,37 @@ Release Notes for the different versions:
 -------------------------------
 
 -------------------------------
+Version Gmvault-v1.9.1-beta:
+-------------------------------
+-------------------------------
+Date: 31.03.2016
+
+Release fixing many bugs left in 1.0-beta and improving deployment on Mac OS X and Windows (use now pyinstaller).
+
+Bug Fixes:
+----------
+- Fix bug preventing to use encryption [Github issue #84]
+- Fix many character encoding bugs in emails [Github issue #211, #213, #152, #218, ] 
+- Fix encoding bug in labels [Github issue #180] 
+- Fix encoding bug in commandline parameters [Github issue #195]
+- Fix bug preventing email containing null characters to be restored [Github #212]
+- Fix bug corrupting oauth2 credential when saved in file [Github #209]
+
+Shoutouts to: 
+-------------
+
+Shout out to everybody who continued supporting the project while I was away.
+
+Also shoutouts to all the users that sent me support emails and raised issues by emails.
+
+Gmvault Pantheon:
+-----------------
+
+A million time thank you for the benevolent donors that are forever in the Gmvault Pantheon and All of Fame for their gesture.
+
+Jason Stangroome, Mathieu Pinson, Mathieu Clavel, Stijn Jonker, Douglas Carter, Steven Moschidis, GoVelvet LLC, Daniel Brass , Joseph Colburn, Joanne Kaye, Bernie Santos, Wolfgang Schwaiger, Kraut Computing, Matt Burke, Ademario Araujo Jr, Roque Pinel, George Armhold, Randi Veiberg, Gregory Szilagyi, Antony Moore, Filip Moerman, Axel Amigo Arnold, Jonathan Sarasin, Kirby Moyers, Alberto Cottica, Richard Lee, Suneel Kanuri, Owen Phelps, Clint Chapman, Donmez Ismail, Tomas Bäckman, Keith Petersen, Holden Karau, James Mcfarland, Clayton Stanley, Stefan Habetz, Francesco Bellomo, Brian Yanosik, Bjarte Aune Olsen, Joel Sylvester, Billy Amon, Alexander Halperin, John Zendano, Alex Van't Hof, JJ Tiziou Photography, Sally Carr, Jacek Szczech, Baden Holt, Eleonora Borelli, Patrick Van Humbeeck
+
+-------------------------------
 Version Gmvault-v1.9-beta:
 -------------------------------
 -------------------------------
