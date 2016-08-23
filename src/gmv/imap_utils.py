@@ -812,7 +812,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
                   % (a_flags, a_internal_time, the_timer.elapsed_ms(), res))
         
         # check res otherwise Exception
-        if '(Success)' not in res:
+        if res is None or '(Success)' not in res:
             raise PushEmailError("GIMAPFetcher cannot restore email in %s account." %(self.login))
         
         match = GIMAPFetcher.APPENDUID_RE.match(res)
