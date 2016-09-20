@@ -210,7 +210,7 @@ class GMVaultLauncher(object):
                                  dest="imap_request", default=None)
         
         sync_parser.add_argument("-g", "--gmail-req", metavar = "REQ", \
-                                 help="Gmail search request to restrict sync as defined in"\
+                                 help="Gmail search request to restrict sync as defined in "\
                                       "https://support.google.com/mail/bin/answer.py?hl=en&answer=7190",\
                                  dest="gmail_request", default=None)
         
