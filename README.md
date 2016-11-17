@@ -48,7 +48,7 @@ or
 
 ## gmvault 2 mins start 
 
-Gmvault is a user-frendly command-line tool. It tries to set all the necessary defaults to be self explanatory.
+Gmvault is a user-friendly command-line tool. It tries to set all the necessary defaults to be self explanatory.
 
 ### Authentication
 
