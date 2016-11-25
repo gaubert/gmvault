@@ -650,7 +650,8 @@ class GMVaultLauncher(object):
         """
            Execute All synchronisation operations
         """
-        LOG.critical("Connect to Gmail server.\n")
+        now = datetime.datetime.now()
+        LOG.critical("Connect to Gmail server at %s.\n" % (now.isoformat()))
         
         # handle credential in all levels
         syncer = gmvault.GMVaulter(args['db-dir'], args['host'], args['port'], \
