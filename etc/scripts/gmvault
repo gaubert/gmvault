@@ -48,9 +48,16 @@ if [ -f "$GMVAULT_HOME/lib/python-lib/bin/python" ]; then
     export PYTHONPATH="$GMVAULT_HOME/lib:$PYTHONPATH"
     #set pythonhome but it should not be necessary
     export PYTHONHOME="$GMVAULT_HOME/lib/python-lib"
+elif [ -f "$GMVAULT_HOME/bin/python2" ]; then
+    # Installed from src or pip (python bin is in the same dir as gmvault script)
+    # Prioritize the python2 binary to avoid problems on distros where python3 is
+    # installed as the default.
+
+    PYTHON_BIN="$GMVAULT_HOME/bin/python2"
 
 elif [ -f "$GMVAULT_HOME/bin/python" ]; then
-    #installed from src distribution (python bin is in the same dir as gmvault script)
+    # No bin/python2 binary fall back to bin/python
+
     PYTHON_BIN="$GMVAULT_HOME/bin/python"
 
 else
