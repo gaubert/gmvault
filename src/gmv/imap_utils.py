@@ -799,7 +799,11 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         res = None
         try:
            #a_body = self._clean_email_body(a_body)
-           res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
+           if b'\xc2\x89PNG' in a_body:
+               raise PushEmailError("Skip bad email with binary data. Quarantine this email.", quarantined = True)
+           else:
+               res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
+
         except imaplib.IMAP4.abort, err:
            # handle issue when there are invalid characters (This is do to the presence of null characters)
            if str(err).find("APPEND => Invalid character in literal") >= 0:
