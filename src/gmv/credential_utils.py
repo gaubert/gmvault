@@ -25,6 +25,7 @@ import json
 import base64
 import urllib #for urlencode
 import urllib2
+import ssl # to disable default certificate context
 
 import os
 import getpass
@@ -35,6 +36,25 @@ import gmv.gmvault_utils as gmvault_utils
 
 LOG = log_utils.LoggerFactory.get_logger('credential_utils')
 
+def check_to_disable_certificate_verification():
+  """
+     Check from the configuration if certificate verification needs to be disabled.
+     Have to use monkey patching strategy while version older than 2.7.9 are still supported.
+  """
+  #solve ssl context issue for some users
+  if hasattr('ssl', 'SSLContext') == False:
+      disable_cert_verification = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "disable_cert_verification", False)
+      if disable_cert_verification == True:
+         #loc_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+         #for the moment monkey patch later on will use the line above
+         LOG.critical("Beware as asked Gmvault is going to disable the SSL Certificate Verification.")
+         ssl._create_default_https_context = ssl._create_unverified_context
+      else:
+         LOG.critical("Use Default certificate context.")
+         #loc_context = ssl.create_default_https_context()
+  else:
+     LOG.debug("Ignore check_to_disable_certificate_verification. No SSLContext Object in ssl, probably using a python version < to 2.7.9")
+    
 def generate_permission_url():
   """Generates the URL for authorizing access.
 
@@ -260,6 +280,9 @@ class CredentialHelper(object):
 
       request_url = '%s/%s' % (account_base_url, 'o/oauth2/token')
 
+      #call that global function to potentially disable the cert verification
+      check_to_disable_certificate_verification()
+
       try:
         response = urllib2.urlopen(request_url, urllib.urlencode(params)).read()
       except Exception, err: #pylint: disable-msg=W0703
@@ -299,6 +322,9 @@ class CredentialHelper(object):
 
         request_url = '%s/%s' % (account_base_url, 'o/oauth2/token')
 
+        #call that global function to potentially disable the cert verification
+        check_to_disable_certificate_verification()
+ 
         try:
             response = urllib2.urlopen(request_url, urllib.urlencode(params)).read()
         except Exception, err: #pylint: disable-msg=W0703
