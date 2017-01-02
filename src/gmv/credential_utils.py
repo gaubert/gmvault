@@ -43,7 +43,7 @@ def check_to_disable_certificate_verification():
   """
   #solve ssl context issue for some users
   if hasattr('ssl', 'SSLContext') == False:
-      disable_cert_verification = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "disable_cert_verification", False)
+      disable_cert_verification = gmvault_utils.get_conf_defaults().getboolean("GoogleOauth2", "disable_cert_verification", default=True, fail_if_missing = True)
       if disable_cert_verification == True:
          #loc_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
          #for the moment monkey patch later on will use the line above
