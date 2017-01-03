@@ -811,11 +811,8 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" \
                   % (a_flags, a_internal_time, the_timer.elapsed_ms(), res))
         
-        # if res is None set it to an iterable
-        res = "" if res == None
-
         # check res otherwise Exception
-        if "(Success)" not in res:
+        if res == None or "(Success)" not in res:
             raise PushEmailError("GIMAPFetcher cannot restore email in %s account." %(self.login))
         
         match = GIMAPFetcher.APPENDUID_RE.match(res)
