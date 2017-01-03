@@ -11,4 +11,4 @@ dists/disstoolbox-dist/build/*
 .idea/*
 build/
 gmvault.egg-info/
-
+.cache
