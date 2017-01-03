@@ -26,7 +26,7 @@ PYTHONBIN=python #MacOSX machine
 PYTHONWINBIN=/c/Python27/python.exe #windows laptop
 PYTHONVERSION=2.7
 
-PYINSTALLERMAC=/Library/Frameworks/Python.framework/Versions/2.7/bin/pyinstaller
+PYINSTALLERMAC=/usr/local/bin/pyinstaller
 PYINSTALLERWIN=c:/Python27/Scripts/pyinstaller.exe
 
 #MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work

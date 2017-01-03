@@ -26,6 +26,7 @@ import socket
 import ssl
 import cStringIO
 import os
+import six
 
 import imaplib  #for the exception
 import imapclient
@@ -92,13 +93,13 @@ def datetime_to_imap(dt):
         dt = dt.replace(tzinfo=imapclient.fixed_offset.FixedOffset.for_system())
     return dt.strftime("%d-%b-%Y %H:%M:%S %z")
 
-def to_unicode(s):
-    if isinstance(s, imapclient.six.binary_type):
+#def to_unicode(s):
+    if isinstance(s, six.binary_type):
         return s.decode('ascii')
     return s
 
 def to_bytes(s):
-    if isinstance(s, imapclient.six.text_type):
+    if isinstance(s, six.text_type):
         return s.encode('ascii')
     return s
 
