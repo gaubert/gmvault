@@ -796,7 +796,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         #msg = "a_folder = %s" % (a_folder.encode('utf-8'))
         #msg = msg.encode('utf-8')
         #print(msg)
-        res = None
+        res = "" #change to an iterable default (empty string)
         try:
            #a_body = self._clean_email_body(a_body)
            res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
@@ -811,8 +811,11 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" \
                   % (a_flags, a_internal_time, the_timer.elapsed_ms(), res))
         
+        # if res is None set it to an iterable
+        res = "" if res == None
+
         # check res otherwise Exception
-        if '(Success)' not in res:
+        if "(Success)" not in res:
             raise PushEmailError("GIMAPFetcher cannot restore email in %s account." %(self.login))
         
         match = GIMAPFetcher.APPENDUID_RE.match(res)
@@ -832,67 +835,6 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         #for the moment just try to remove the null character brut force. In the future will have to parse the email and clean it
         return a_body.replace("\0", '')
          
-    @retry(4,1,2) # try 4 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 8 sec
-    def deprecated_push_email(self, a_body, a_flags, a_internal_time, a_labels):
-        """
-           Push a complete email body 
-        """
-        #protection against myself
-        if self.login == 'guillaume.aubert@gmail.com':
-            raise Exception("Cannot push to this account")
-    
-        the_t = gmvault_utils.Timer()
-        the_t.start()
-        LOG.debug("Before to Append email contents")
-
-
-        try:
-           res = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
-        except imaplib.IMAP4.abort, err:
-           # handle issue when there are invalid characters (This is do to the presence of null characters)
-           if str(err).find("APPEND => Invalid character in literal") >= 0:
-              a_body = self._clean_email_body(a_body)
-              res    = self.server.append(u'[Google Mail]/All Mail', a_body, a_flags, a_internal_time)
-    
-        LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" \
-                  % (a_flags, a_internal_time, the_t.elapsed_ms(), res))
-        
-        # check res otherwise Exception
-        if '(Success)' not in res:
-            raise PushEmailError("GIMAPFetcher cannot restore email in %s account." %(self.login))
-        
-        match = GIMAPFetcher.APPENDUID_RE.match(res)
-        if match:
-            result_uid = int(match.group(1))
-            LOG.debug("result_uid = %s" %(result_uid))
-        else:
-            # do not quarantine it because it seems to be done by Google Mail to forbid data uploading.
-            raise PushEmailError("No email id returned by IMAP APPEND command. Quarantine this email.", quarantined = True)
-        
-        labels_str = self._build_labels_str(a_labels)
-        
-        if labels_str:  
-            #has labels so update email  
-            the_t.start()
-            LOG.debug("Before to store labels %s" % (labels_str))
-            self.server.select_folder(u'[Google Mail]/All Mail', readonly = self.readonly_folder) # go to current folder
-            LOG.debug("Changing folders. elapsed %s s\n" % (the_t.elapsed_ms()))
-            the_t.start()
-            ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str) #pylint: disable=W0212
-            #ret_code = self.server._store('+X-GM-LABELS', [result_uid],labels_str)
-            LOG.debug("After storing labels %s. Operation time = %s s.\nret = %s\ndata=%s" \
-                      % (labels_str, the_t.elapsed_ms(),ret_code, data))
-            
-            LOG.debug("Stored Labels %s in gm_id %s" % (labels_str, result_uid))
-
-            self.server.select_folder(u'[Google Mail]/Drafts', readonly = self.readonly_folder) # go to current folder
-        
-            # check if it is ok otherwise exception
-            if ret_code != 'OK':
-                raise PushEmailError("Cannot add Labels %s to email with uid %d. Error:%s" % (labels_str, result_uid, data))
-        
-        return result_uid
-
 def decode_labels(labels):
     """
        Decode labels when they are received as utf7 entities or numbers
