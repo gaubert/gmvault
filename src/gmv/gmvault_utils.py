@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
+from __future__ import absolute_import, print_function
+
 import os
 
 import re
@@ -26,17 +28,20 @@ import calendar
 import fnmatch
 import functools
 
-import StringIO
+import io
 import sys
 import traceback
-import random 
+import random
 import locale
 import urllib
 import chardet
 
-import gmv.log_utils as log_utils
-import gmv.conf.conf_helper
-import gmv.gmvault_const as gmvault_const
+from . import gmvault_const
+from . import log_utils
+from .conf import conf_helper
+
+import six
+from six.moves import range
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
@@ -67,7 +72,7 @@ class memoized(object): #pylint: disable=C0103
     def __get__(self, obj, objtype):
         """Support instance methods."""
         return functools.partial(self.__call__, obj)
-    
+
 class Curry:
     """ Class used to implement the currification (functional programming technic) :
         Create a function from another one by instanciating some of its parameters.
@@ -77,7 +82,7 @@ class Curry:
         self.fun = fun
         self.pending = args[:]
         self.kwargs = kwargs.copy()
-        
+
     def __call__(self, *args, **kwargs):
         if kwargs and self.kwargs:
             the_kw = self.kwargs.copy()
@@ -91,33 +96,33 @@ class Curry:
 LETTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 DIGITS = '0123456789'
 
-def make_password(minlength=8, maxlength=16):  
+def make_password(minlength=8, maxlength=16):
     """
        generate randomw password
     """
     length = random.randint(minlength, maxlength)
-    letters = LETTERS + DIGITS 
-    return ''.join([random.choice(letters) for _ in range(length)])  
+    letters = LETTERS + DIGITS
+    return ''.join([random.choice(letters) for _ in range(length)])
 
 
 
 def get_exception_traceback():
     """
             return the exception traceback (stack info and so on) in a string
-        
+
             Args:
                None
-               
+
             Returns:
                return a string that contains the exception traceback
-        
+
             Raises:
-               
+
     """
-   
-    the_file = StringIO.StringIO()
+
+    the_file = io.StringIO()
     exception_type, exception_value, exception_traceback = sys.exc_info() #IGNORE:W0702
-    traceback.print_exception(exception_type, exception_value, exception_traceback, file = the_file)
+    traceback.print_exception(exception_type, exception_value, exception_traceback, file=the_file)
     return the_file.getvalue()
 
 
@@ -140,44 +145,44 @@ class Timer(object):
        Timer Class to mesure time.
        Possess also few time utilities
     """
-    
- 
+
+
     def __init__(self):
-        
+
         self._start = None
-        
+
     def start(self):
         """
            start the timer
         """
         self._start = time.time()
-        
+
     def reset(self):
         """
            reset the timer to 0
         """
         self._start = time.time()
-    
+
     def elapsed(self):
         """
            return elapsed time in sec
         """
         now = time.time()
-        
+
         return int(round(now - self._start))
-    
+
     def elapsed_ms(self):
         """
           return elapsed time up to micro second
         """
         return time.time() - self._start
-    
+
     def elapsed_human_time(self, suffixes=TIMER_SUFFIXES, add_s=False, separator=' '):#pylint:disable=W0102
         """
         Takes an amount of seconds and turns it into a human-readable amount of time.
         """
         seconds = self.elapsed()
-        
+
         return self.seconds_to_human_time(seconds, suffixes, add_s, separator)
 
     @classmethod
@@ -189,7 +194,7 @@ class Timer(object):
             return cls.seconds_to_human_time(int(round(float(still_to_be_done * in_sec)/nb_elem_done)))
         else:
             return int(round(float(still_to_be_done * in_sec)/nb_elem_done))
-    
+
     @classmethod
     def seconds_to_human_time(cls, seconds, suffixes=TIMER_SUFFIXES, add_s=False, separator=' '):#pylint:disable=W0102
         """
@@ -197,7 +202,7 @@ class Timer(object):
         """
         # the formatted time string to be returned
         the_time = []
-        
+
         # the pieces of time to iterate over (days, hours, minutes, etc)
         # - the first piece in each tuple is the suffix (d, h, w)
         # - the second piece is the length in seconds (a day is 60s * 60m * 24h)
@@ -207,10 +212,10 @@ class Timer(object):
               (suffixes[3], 60 * 60),
               (suffixes[4], 60),
               (suffixes[5], 1)]
-        
+
         if seconds < 1: #less than a second case
             return "less than a second"
-        
+
         # for each time piece, grab the value and remaining seconds, and add it to
         # the time string
         for suffix, length in parts:
@@ -221,27 +226,27 @@ class Timer(object):
                                (suffix, (suffix, suffix + 's')[value > 1])[add_s]))
             if seconds < 1:
                 break
-        
+
         return separator.join(the_time)
 
-ZERO = datetime.timedelta(0) 
-# A UTC class.    
-class UTC(datetime.tzinfo):    
-    """UTC Timezone"""    
-    
-    def utcoffset(self, a_dt): #pylint: disable=W0613
-        ''' return utcoffset '''  
-        return ZERO    
-    
-    def tzname(self, a_dt): #pylint: disable=W0613
-        ''' return tzname '''    
-        return "UTC"    
-        
-    def dst(self, a_dt): #pylint: disable=W0613 
-        ''' return dst '''      
-        return ZERO  
+ZERO = datetime.timedelta(0)
+# A UTC class.
+class UTC(datetime.tzinfo):
+    """UTC Timezone"""
 
-# pylint: enable-msg=W0613    
+    def utcoffset(self, a_dt): #pylint: disable=W0613
+        ''' return utcoffset '''
+        return ZERO
+
+    def tzname(self, a_dt): #pylint: disable=W0613
+        ''' return tzname '''
+        return "UTC"
+
+    def dst(self, a_dt): #pylint: disable=W0613
+        ''' return dst '''
+        return ZERO
+
+# pylint: enable-msg=W0613
 UTC_TZ = UTC()
 
 def get_ym_from_datetime(a_datetime):
@@ -250,7 +255,7 @@ def get_ym_from_datetime(a_datetime):
     """
     if a_datetime:
         return a_datetime.strftime('%Y-%m')
-    
+
     return None
 
 MONTH_CONV = { 1: 'Jan', 4: 'Apr', 6: 'Jun', 7: 'Jul', 10: 'Oct' , 12: 'Dec',
@@ -272,34 +277,34 @@ def compare_yymm_dir(first, second):
               0 if equal
               -1 if second > first
     """
-    
+
     matched = MONTH_YEAR_RE.match(first)
-    
+
     if matched:
         first_year  = int(matched.group('year'))
         first_month = int(matched.group('month'))
-        
+
         first_val   = (first_year * 1000) + first_month
     else:
         raise Exception("Invalid Year-Month expression (%s). Please correct it to be yyyy-mm" % (first))
-        
+
     matched = MONTH_YEAR_RE.match(second)
-    
+
     if matched:
         second_year  = int(matched.group('year'))
         second_month = int(matched.group('month'))
-        
+
         second_val   = (second_year * 1000) + second_month
     else:
         raise Exception("Invalid Year-Month expression (%s). Please correct it" % (second))
-    
+
     if first_val > second_val:
         return 1
     elif first_val == second_val:
         return 0
     else:
         return -1
-    
+
 def cmp_to_key(mycmp):
     """
         Taken from functools. Not in all python versions so had to redefine it
@@ -324,13 +329,13 @@ def cmp_to_key(mycmp):
         def __hash__(self):
             raise TypeError('hash not implemented')
     return Key
-    
+
 def get_all_dirs_posterior_to(a_dir, dirs):
     """
            get all directories posterior
     """
     #sort the passed dirs list and return all dirs posterior to a_dir
-         
+
     return [ name for name in sorted(dirs, key=cmp_to_key(compare_yymm_dir))\
              if compare_yymm_dir(a_dir, name) <= 0 ]
 
@@ -339,7 +344,7 @@ def get_all_dirs_under(root_dir, ignored_dirs = []):#pylint:disable=W0102
        Get all directory names under (1 level only) the root dir
        params:
           root_dir   : the dir to look under
-          ignored_dir: ignore the dir if it is in this list of dirnames 
+          ignored_dir: ignore the dir if it is in this list of dirnames
     """
     return [ name for name in os.listdir(root_dir) \
              if ( os.path.isdir(os.path.join(root_dir, name)) \
@@ -350,13 +355,13 @@ def datetime2imapdate(a_datetime):
        Transfrom in date format for IMAP Request
     """
     if a_datetime:
-        
+
         month = MONTH_CONV[a_datetime.month]
-        
-        pattern = '%%d-%s-%%Y' % (month) 
-        
+
+        pattern = '%%d-%s-%%Y' % (month)
+
         return a_datetime.strftime(pattern)
-    
+
 
 def e2datetime(a_epoch):
     """
@@ -396,7 +401,7 @@ def contains_any(string, char_set):
 
 def makedirs(a_path):
     """ my own version of makedir """
-    
+
     if os.path.isdir(a_path):
         # it already exists so return
         return
@@ -410,15 +415,16 @@ def __rmgeneric(path, __func__):
     try:
         __func__(path)
         #print 'Removed ', path
-    except OSError, (_, strerror): #IGNORE:W0612
-        print """Error removing %(path)s, %(error)s """ % {'path' : path, 'error': strerror }
-            
+    except OSError as xxx_todo_changeme: #IGNORE:W0612
+        (_, strerror) = xxx_todo_changeme.args #IGNORE:W0612
+        print("""Error removing %(path)s, %(error)s """ % {'path' : path, 'error': strerror })
+
 def delete_all_under(path, delete_top_dir = False):
     """ delete all files and directories under path """
 
     if not os.path.isdir(path):
         return
-    
+
     files = os.listdir(path)
 
     for the_f in files:
@@ -430,7 +436,7 @@ def delete_all_under(path, delete_top_dir = False):
             delete_all_under(fullpath)
             new_f = os.rmdir
             __rmgeneric(fullpath, new_f)
-    
+
     if delete_top_dir:
         os.rmdir(path)
 
@@ -456,7 +462,7 @@ def ordered_dirwalk(a_dir, a_file_wildcards='*', a_dir_ignore_list=(), sort_func
     for sub_dir in sort_func(sub_dirs):
         if os.path.basename(sub_dir) not in a_dir_ignore_list:
             for p_elem in ordered_dirwalk(sub_dir, a_file_wildcards):
-                yield p_elem 
+                yield p_elem
         else:
             LOG.debug("Ignore subdir %s" % sub_dir)
 
@@ -467,7 +473,7 @@ def dirwalk(a_dir, a_wildcards='*'):
     for root, _, files in os.walk(a_dir):
         for the_file in files:
             if fnmatch.fnmatch(the_file, a_wildcards):
-                yield os.path.join(root, the_file)  
+                yield os.path.join(root, the_file)
 
 def ascii_hex(a_str):
     """
@@ -502,14 +508,14 @@ def guess_encoding(byte_str, use_encoding_list=True):
     """
     encoding = None
 
-    if type(byte_str) == type(unicode()):
+    if type(byte_str) == type(six.text_type()):
        raise GuessEncoding("Error. The passed string is a unicode string and not a byte string")
 
     if use_encoding_list:
         encoding_list = get_conf_defaults().get('Localisation', 'encoding_guess_list', DEFAULT_ENC_LIST)
         for enc in encoding_list:
            try:
-              unicode(byte_str ,enc,"strict")
+              six.text_type(byte_str ,enc,"strict")
               encoding = enc
            except:
               pass
@@ -548,12 +554,12 @@ def convert_to_unicode(a_str):
             encoding = guess_encoding(a_str[:20000], use_encoding_list = False)
 
         LOG.debug("Convert to %s" % (encoding))
-        u_str = unicode(a_str, encoding = encoding) #convert to unicode with given encoding
-    except Exception, e:
+        u_str = six.text_type(a_str, encoding = encoding) #convert to unicode with given encoding
+    except Exception as e:
         LOG.debug("Exception: %s" % (e))
         LOG.info("Warning: Guessed encoding = (%s). Ignore those characters" % (encoding if encoding else "Not defined"))
         #try utf-8
-        u_str = unicode(a_str, encoding="utf-8", errors='replace')
+        u_str = six.text_type(a_str, encoding="utf-8", errors='replace')
 
     return u_str
 
@@ -562,7 +568,7 @@ def convert_argv_to_unicode(a_str):
        Convert command line individual arguments (argv to unicode)
     """
     #if str is already unicode do nothing and return the str
-    if type(a_str) == type(unicode()):
+    if type(a_str) == type(six.text_type()):
         return a_str
 
     #encoding can be forced from conf
@@ -579,19 +585,19 @@ def convert_argv_to_unicode(a_str):
                 LOG.debug("Cannot Terminal encoding using locale.getpreferredencoding() and locale.getdefaultlocale(), loc = %s. Use chardet to try guessing the encoding." % (loc if loc else "None"))
                 terminal_encoding = guess_encoding(a_str)
     else:
-       LOG.debug("Use terminal encoding forced from the configuration file.") 
+       LOG.debug("Use terminal encoding forced from the configuration file.")
     try:
        LOG.debug("terminal encoding = %s." % (terminal_encoding))
        #decode byte string to unicode and fails in case of error
        u_str = a_str.decode(terminal_encoding)
        LOG.debug("unicode_escape val = %s." % (u_str.encode('unicode_escape')))
        LOG.debug("raw unicode     = %s." % (u_str))
-    except Exception, err: 
+    except Exception as err:
        LOG.error(err)
        get_exception_traceback()
        LOG.info("Convertion of %s from %s to a unicode failed. Will now convert to unicode using utf-8 encoding and ignoring errors (non utf-8 characters will be eaten)." % (a_str, terminal_encoding))
        LOG.info("Please set properly the Terminal encoding or use the [Localisation]:terminal_encoding property to set it.")
-       u_str = unicode(a_str, encoding='utf-8', errors='ignore')
+       u_str = six.text_type(a_str, encoding='utf-8', errors='ignore')
 
     return u_str
 
@@ -601,16 +607,16 @@ def get_home_dir_path():
        Get the gmvault dir
     """
     gmvault_dir = os.getenv("GMVAULT_DIR", None)
-    
+
     # check by default in user[HOME]
     if not gmvault_dir:
         LOG.debug("no ENV variable $GMVAULT_DIR defined. Set by default $GMVAULT_DIR to $HOME/.gmvault (%s/.gmvault)" \
                   % (os.getenv("HOME",".")))
         gmvault_dir = "%s/.gmvault" % (os.getenv("HOME", "."))
-    
+
     #create dir if not there
     makedirs(gmvault_dir)
-    
+
     return gmvault_dir
 
 CONF_FILE = "gmvault_defaults.conf"
@@ -622,19 +628,19 @@ def get_conf_defaults():
        Beware it is memoized
     """
     filepath = get_conf_filepath()
-    
+
     if filepath:
-        
-        os.environ[gmv.conf.conf_helper.Conf.ENVNAME] = filepath
-    
-        the_cf = gmv.conf.conf_helper.Conf.get_instance()
-    
+
+        os.environ[conf_helper.Conf.ENVNAME] = filepath
+
+        the_cf = conf_helper.Conf.get_instance()
+
         LOG.debug("Load defaults from %s" % (filepath))
-        
+
         return the_cf
     else:
-        return gmv.conf.conf_helper.MockConf() #retrun MockObject that will play defaults
-    
+        return conf_helper.MockConf() #retrun MockObject that will play defaults
+
 #VERSION DETECTION PATTERN
 VERSION_PATTERN  = r'\s*conf_version=\s*(?P<version>\S*)\s*'
 VERSION_RE  = re.compile(VERSION_PATTERN)
@@ -655,7 +661,7 @@ def _get_version_from_conf(home_conf_file):
             if matched:
                 ver = matched.group('version')
                 return ver.strip()
-    
+
     return ver
 
 def _create_default_conf_file(home_conf_file):
@@ -667,7 +673,7 @@ def _create_default_conf_file(home_conf_file):
         with open(home_conf_file, "w+") as f:
             f.write(gmvault_const.DEFAULT_CONF_FILE)
         return home_conf_file
-    except Exception, err:
+    except Exception as err:
         #catch all error and let run gmvault with defaults if needed
         LOG.critical("Ignore Error when trying to create conf file for defaults in %s:\n%s.\n" % (get_home_dir_path(), err))
         LOG.debug("=== Exception traceback ===")
@@ -682,7 +688,7 @@ def get_conf_filepath():
        If it cannot be created, then return None
     """
     home_conf_file = "%s/%s" % (get_home_dir_path(), CONF_FILE)
-    
+
     if not os.path.exists(home_conf_file):
         return _create_default_conf_file(home_conf_file)
     else:
@@ -691,14 +697,14 @@ def get_conf_filepath():
         if version not in VERSIONS_TO_PRESERVE:
             LOG.debug("%s with version %s is too old, overwrite it with the latest file." \
                        % (home_conf_file, version))
-            return _create_default_conf_file(home_conf_file)    
-    
+            return _create_default_conf_file(home_conf_file)
+
     return home_conf_file
 
 
 def chunker(seq, size):
     """Returns the contents of `seq` in chunks of up to `size` items."""
-    return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
 
 def escape_url(text):
@@ -725,6 +731,6 @@ def format_url_params(params):
   :return: A URL query string version of the given dict.
   """
   param_elements = []
-  for param in sorted(params.iteritems(), key=lambda x: x[0]):
+  for param in sorted(six.iteritems(params), key=lambda x: x[0]):
     param_elements.append('%s=%s' % (param[0], escape_url(param[1])))
   return '&'.join(param_elements)

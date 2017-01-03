@@ -1,5 +1,6 @@
 # memdebug.py
 
+from __future__ import absolute_import
 import cherrypy
 import dowser
 

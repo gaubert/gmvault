@@ -16,7 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
+from __future__ import absolute_import
 import collections
+from six.moves import map
 
 ## {{{ http://code.activestate.com/recipes/576669/ (r18)
 class OrderedDict(dict, collections.MutableMapping):
@@ -72,7 +74,7 @@ class OrderedDict(dict, collections.MutableMapping):
     items      = collections.MutableMapping.items
 
     def __repr__(self):
-        pairs = ', '.join(map('%r: %r'.__mod__, self.items()))
+        pairs = ', '.join(map('%r: %r'.__mod__, list(self.items())))
         return '%s({%s})' % (self.__class__.__name__, pairs)
 
     def copy(self):
@@ -91,34 +93,34 @@ class Map(object):
     specific multimaps are subclassed. """
     def __init__(self):
         self._dict = {}
-        
+
     def __repr__(self):
         return "%s(%s)" % (self.__class__.__name__, repr(self._dict))
-    
+
     __str__ = __repr__
-        
+
     def __getitem__(self, key):
         return self._dict[key]
-    
+
     def __setitem__(self, key, value):
         self._dict[key] = value
-    
+
     def __delitem__(self, key):
         del self._dict[key]
 
     def __len__(self):
         return len(self._dict)
-        
+
     def remove(self, key, value): #pylint: disable=W0613
         '''remove key from Map'''
         del self._dict[key]
-    
+
     def keys(self):
         '''returns list of keys'''
-        return self._dict.keys()
-    
+        return list(self._dict.keys())
+
     def dict(self):
-        """ Allows access to internal dictionary, if necessary. Caution: multimaps 
+        """ Allows access to internal dictionary, if necessary. Caution: multimaps
         will break if keys are not associated with proper container."""
         return self._dict
 
@@ -127,13 +129,13 @@ class ListMultimap(Map):
     def __init__(self):
         super(ListMultimap, self).__init__()
         self._dict = collections.defaultdict(list)
-        
+
     def __setitem__(self, key, value):
         self._dict[key].append(value)
 
     def __len__(self):
         return len(self._dict)
-    
+
     def remove(self, key, value):
         '''Remove key'''
         self._dict[key].remove(value)
@@ -143,13 +145,13 @@ class SetMultimap(Map):
     def __init__(self):
         super(SetMultimap, self).__init__()
         self._dict = collections.defaultdict(set)
-        
+
     def __setitem__(self, key, value):
         self._dict[key].add(value)
 
     def __len__(self):
         return len(self._dict)
-    
+
     def remove(self, key, value):
         '''remove key'''
         self._dict[key].remove(value)
@@ -159,13 +161,13 @@ class DictMultimap(Map):
     def __init__(self):
         super(DictMultimap, self).__init__()
         self._dict = collections.defaultdict(dict)
-        
+
     def __setitem__(self, key, value):
         self._dict[key][value] = True
 
     def __len__(self):
         return len(self._dict)
-    
+
     def remove(self, key, value):
         """ remove key"""
         del self._dict[key][value]

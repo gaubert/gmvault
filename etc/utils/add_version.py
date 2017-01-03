@@ -17,6 +17,8 @@
 
 """
 
+from __future__ import absolute_import, print_function
+
 import sys
 import re
 
@@ -30,7 +32,7 @@ def find_version(path):
 
     raise Exception("Cannot find GMVAULT_VERSION in %s\n" % (path))
 
-VERSION_PATTERN = r'###GMVAULTVERSION###' 
+VERSION_PATTERN = r'###GMVAULTVERSION###'
 VERSION_RE      = re.compile(VERSION_PATTERN)
 
 def add_version(a_input, a_output, a_version):

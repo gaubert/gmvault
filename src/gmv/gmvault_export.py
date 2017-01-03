@@ -14,10 +14,11 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+   Export module of Gmvault created by dave@vasilevsky.ca
 '''
-'''
-   Export function of Gmvault created by dave@vasilevsky.ca
-'''
+
+from __future__ import absolute_import
 
 import os
 import re
@@ -25,10 +26,10 @@ import mailbox
 
 import imapclient.imap_utf7 as imap_utf7
 
-import gmv.imap_utils as imap_utils
-import gmv.log_utils as log_utils
-import gmv.gmvault_utils as gmvault_utils
-import gmv.gmvault_db as gmvault_db
+from . import imap_utils
+from . import log_utils
+from . import gmvault_utils
+from . import gmvault_db
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_export')
 

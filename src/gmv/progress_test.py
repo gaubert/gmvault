@@ -1,5 +1,7 @@
+from __future__ import absolute_import
 import time
 import sys
+from six.moves import range
 
 def progress_2():
 	"""
@@ -11,7 +13,7 @@ def progress_2():
 
 	steps = 100
 
-	for i in xrange(steps):
+	for i in range(steps):
 		time.sleep(0.1)
 		percents += 1
 		#sys.stdout.write("\b" * (len(to_write)))
@@ -32,7 +34,7 @@ def progress_1():
 	sys.stdout.flush()
 	sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
 
-	for i in xrange(toolbar_width):
+	for i in range(toolbar_width):
 		time.sleep(0.1) # do real work here
 		# update the bar
 		sys.stdout.write("-")

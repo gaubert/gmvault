@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+from __future__ import absolute_import
 from contextlib import contextmanager
 import json
 import gzip
@@ -25,15 +26,16 @@ import itertools
 import fnmatch
 import shutil
 import codecs
-import StringIO
+import io
 
-import gmv.blowfish as blowfish
-import gmv.log_utils as log_utils
+from . import blowfish
+from . import log_utils
 
-import gmv.collections_utils as collections_utils
-import gmv.gmvault_utils as gmvault_utils
-import gmv.imap_utils as imap_utils
-import gmv.credential_utils as credential_utils
+from . import collections_utils
+from . import gmvault_utils
+from . import imap_utils
+from . import credential_utils
+import six
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_db')
 
@@ -76,7 +78,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
     INFO_AREA                  = '.info'  # contains metadata concerning the database
     ENCRYPTION_KEY_FILENAME    = '.storage_key.sec'
     EMAIL_OWNER                = '.owner_account.info'
-    GMVAULTDB_VERSION          = '.gmvault_db_version.info'   
+    GMVAULTDB_VERSION          = '.gmvault_db_version.info'
 
     def __init__(self, a_storage_dir, encrypt_data=False):
         """
@@ -142,7 +144,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 self._sub_chats_dir = self.SUB_CHAT_AREA % ("subchats-%s" % (self._sub_chats_inc))
                 gmvault_utils.makedirs("%s/%s" % (self._db_dir, self._sub_chats_dir))
 
-            # treat when more than limit chats in max dir 
+            # treat when more than limit chats in max dir
             # treat when no dirs
             # add limit  as attribute limit_per_dir = 2000
             else:
@@ -150,7 +152,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 files = os.listdir("%s/%s" % (self._chats_dir, nb_to_dir[the_max]))
                 self._sub_chats_nb  = len(files)/2
                 self._sub_chats_inc = the_max
-                self._sub_chats_dir = self.SUB_CHAT_AREA % nb_to_dir[the_max] 
+                self._sub_chats_dir = self.SUB_CHAT_AREA % nb_to_dir[the_max]
 
     def get_sub_chats_dir(self):
         """
@@ -201,7 +203,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
            cases, the db will be only linked to one email.
         """
         fname = '%s/%s' % (self._info_dir, self.EMAIL_OWNER)
-        if os.path.exists(fname):    
+        if os.path.exists(fname):
             with open(fname, 'r') as f:
                 list_of_owners = json.load(f)
             return list_of_owners
@@ -211,7 +213,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
     def get_info_dir(self):
         """
            Return the info dir of gmvault-db
-        """ 
+        """
         return self._info_dir
 
     def get_encryption_cipher(self):
@@ -263,15 +265,15 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             encod    = "not found"
             try:
                 encod  = gmvault_utils.guess_encoding(tempo, use_encoding_list = False)
-                u_tempo = unicode(tempo, encoding = encod)
-            except gmvault_utils.GuessEncoding, enc_err:
+                u_tempo = six.text_type(tempo, encoding = encod)
+            except gmvault_utils.GuessEncoding as enc_err:
                   #it is already in unicode so ignore encoding
                   u_tempo = tempo
-            except Exception, e:
+            except Exception as e:
                   LOG.critical(e)
                   LOG.critical("Warning: Guessed encoding = (%s). Ignore those characters" % (encod))
                   #try utf-8
-                  u_tempo = unicode(tempo, encoding="utf-8", errors='replace')
+                  u_tempo = six.text_type(tempo, encoding="utf-8", errors='replace')
 
             if u_tempo:
                 subject = u_tempo.encode('utf-8')
@@ -290,7 +292,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
     def get_all_chats_gmail_ids(self):
         """
-           Get only chats dirs 
+           Get only chats dirs
         """
         # first create a normal dir and sort it below with an OrderedDict
         # beware orderedDict preserve order by insertion and not by key order
@@ -303,19 +305,19 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             #get all ids
             for filepath in the_iter:
                 directory, fname = os.path.split(filepath)
-                gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+                gmail_ids[int(os.path.splitext(fname)[0])] = os.path.basename(directory)
 
-            #sort by key 
+            #sort by key
             #used own orderedDict to be compliant with version 2.5
             gmail_ids = collections_utils.OrderedDict(
-                sorted(gmail_ids.items(), key=lambda t: t[0]))
+                sorted(list(gmail_ids.items()), key=lambda t: t[0]))
 
         return gmail_ids
 
     def get_all_existing_gmail_ids(self, pivot_dir=None,
                                    ignore_sub_dir=('chats',)):
         """
-           get all existing gmail_ids from the database within the passed month 
+           get all existing gmail_ids from the database within the passed month
            and all posterior months
         """
         # first create a normal dir and sort it below with an OrderedDict
@@ -343,11 +345,11 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         #get all ids
         for filepath in the_iter:
             directory, fname = os.path.split(filepath)
-            gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+            gmail_ids[int(os.path.splitext(fname)[0])] = os.path.basename(directory)
 
-        #sort by key 
+        #sort by key
         #used own orderedDict to be compliant with version 2.5
-        gmail_ids = collections_utils.OrderedDict(sorted(gmail_ids.items(),
+        gmail_ids = collections_utils.OrderedDict(sorted(list(gmail_ids.items()),
                                                          key=lambda t: t[0]))
 
         return gmail_ids
@@ -384,10 +386,10 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             # come from imap_lib when label is a number
             labels = []
             for label in email_info[imap_utils.GIMAPFetcher.GMAIL_LABELS]:
-                if isinstance(label, (int, long, float, complex)):
+                if isinstance(label, (int, int, float, complex)):
                     label = str(label)
 
-                labels.append(unicode(gmvault_utils.remove_consecutive_spaces_and_strip(label)))
+                labels.append(six.text_type(gmvault_utils.remove_consecutive_spaces_and_strip(label)))
 
             labels.extend(extra_labels) #add extra labels
 
@@ -444,7 +446,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
         #if compress:
         #   data_path = '%s.gz' % data_path
-        #   data_desc = StringIO.StringIO()
+        #   data_desc = io.BytesIO()
         #else:
         #    data_desc = open(data_path, 'wb')
 
@@ -480,7 +482,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             else:
                 #convert email content to unicode
                 data = gmvault_utils.convert_to_unicode(email_info[imap_utils.GIMAPFetcher.EMAIL_BODY])
-      
+
                 # write in chunks of one 1 MB
                 for chunk in gmvault_utils.chunker(data, 1048576):
                     data_desc.write(chunk.encode('utf-8'))
@@ -575,7 +577,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         q_meta_path = os.path.join(self._quarantine_dir, os.path.basename(meta))
 
         if os.path.exists(q_data_path):
-            os.remove(q_data_path)        
+            os.remove(q_data_path)
 
         if os.path.exists(q_meta_path):
             os.remove(q_meta_path)
@@ -635,7 +637,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             else:
                 data = f.read()
 
-        return data    
+        return data
 
     def unbury_metadata(self, a_id, a_id_dir=None):
         """
@@ -649,16 +651,16 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
         metadata[self.INT_DATE_K] = gmvault_utils.e2datetime(
             metadata[self.INT_DATE_K])
-        
+
         # force conversion of labels as string because IMAPClient
         # returns a num when the label is a number (ie. '00000') and handle utf-8
         new_labels = []
 
         for label in metadata[self.LABELS_K]:
-            if isinstance(label, (int, long, float, complex)):
+            if isinstance(label, (int, int, float, complex)):
                 label = str(label)
-            new_labels.append(unicode(label))
- 
+            new_labels.append(six.text_type(label))
+
         metadata[self.LABELS_K] = new_labels
 
         return metadata
@@ -701,8 +703,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 elif os.path.exists(comp_data_p):
                     os.rename(comp_data_p, '%s.gz' % bin_p)
                 elif os.path.exists(cryp_comp_data_p):
-                    os.rename(cryp_comp_data_p, '%s.crypt.gz' % bin_p)   
-                
+                    os.rename(cryp_comp_data_p, '%s.crypt.gz' % bin_p)
+
                 if os.path.exists(metadata_p):
                     os.rename(metadata_p, metadata_bin_p)
             else:
@@ -712,7 +714,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 elif os.path.exists(comp_data_p):
                     os.remove(comp_data_p)
                 elif os.path.exists(cryp_comp_data_p):
-                    os.remove(cryp_comp_data_p)   
+                    os.remove(cryp_comp_data_p)
 
                 if os.path.exists(metadata_p):
                     os.remove(metadata_p)

@@ -1,5 +1,7 @@
 # border.py
 
+from __future__ import absolute_import
+
 import wx
 
 ID_NEW = 1
@@ -8,17 +10,17 @@ ID_CLEAR = 3
 ID_DELETE = 4
 
 class Example(wx.Frame):
-  
+
     def __init__(self, parent, title):
-        super(Example, self).__init__(parent, title=title, 
+        super(Example, self).__init__(parent, title=title,
             size=(260, 180))
-            
+
         self.InitUI()
         self.Centre()
-        self.Show()     
-        
+        self.Show()
+
     def InitUI(self):
-    
+
         panel = wx.Panel(self)
 
         panel.SetBackgroundColour('#4f5049')
@@ -79,7 +81,7 @@ class Example(wx.Frame):
 
 
 if __name__ == '__main__':
-  
+
     app = wx.App()
     Example(None, title='Gmvault-test')
     app.MainLoop()

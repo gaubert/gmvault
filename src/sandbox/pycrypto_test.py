@@ -1,3 +1,5 @@
+from __future__ import absolute_import, print_function
+
 import os, base64
 from Crypto.Cipher import AES
 import hashlib
@@ -10,7 +12,7 @@ from Crypto.Cipher import AES
 
 class AESEncryptor(object):
 
-    def __init__(self, key): 
+    def __init__(self, key):
         self.bs = 32
         self.key = hashlib.sha256(key.encode()).digest()
 
@@ -38,8 +40,8 @@ if __name__ == '__main__':
     key="This is my key"
     enc = AESEncryptor(key)
     for secret in secrets:
-        print "Secret:", secret
-        encrypted = enc.encrypt(secret) 
-        print "Encrypted secret:", encrypted
-        print "Clear Secret:" , enc.decrypt(encrypted)
-        print '-' *50
+        print("Secret:", secret)
+        encrypted = enc.encrypt(secret)
+        print("Encrypted secret:", encrypted)
+        print("Clear Secret:" , enc.decrypt(encrypted))
+        print('-' *50)
