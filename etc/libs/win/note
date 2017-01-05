@@ -1,0 +1,1 @@
+msvcrt100.dll is not necessary but I had a problem with pyinstaller so it is there just in case

@@ -126,7 +126,7 @@ gmv-linux-dist: clean init
 	@echo "=================================================================="
 
 gmv-mac-dist: clean init
-	$(PYINSTALLERMAC) --onefile --name gmvault --distpath=$(GMVDIST)/$(GMVDISTNAME)  $(BASEDIR)/src/gmv_runner.py
+	$(PYINSTALLERMAC) --onefile --clean --name gmvault --distpath=$(GMVDIST)/$(GMVDISTNAME)  $(BASEDIR)/src/gmv_runner.py
 	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/README.txt
 	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/$(GMVDISTNAME)/RELEASE-NOTE.txt
 	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-macosx-intel.tar.gz ./$(GMVDISTNAME)
@@ -138,7 +138,7 @@ gmv-mac-dist: clean init
 	@echo "========================================="
 
 gmv-win-dist: clean init
-	$(PYINSTALLERWIN) --onefile --name gmv_runner --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/src/gmv_runner.py
+	$(PYINSTALLERWIN) --onefile --clean --name gmv_runner --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/src/gmv_runner.py
 	cp $(BASEDIR)/etc/scripts/gmvault.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault-shell.bat $(GMVWINBUILDDIST)
 	cd .; $(PYTHONWINBIN) $(BASEDIR)/etc/utils/add_version.py $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)/gmv-msg.bat $(GMVVERSION)
