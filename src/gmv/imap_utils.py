@@ -28,6 +28,7 @@ import functools
 
 import ssl
 import imaplib
+import imapclient
 
 import gmv.gmvault_const as gmvault_const
 import gmv.log_utils as log_utils
@@ -286,6 +287,10 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         """
            connect to the IMAP server
         """
+        # hanlde CA Cert verification (use gmvault provided CA Certs because some distributions don't have it and can be disbaled if needed)
+        context = imapclient.create_default_context(cafile="/path/to/cacert.pem")
+
+
         # create imap object
         self.server = mimap.MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, need_ssl= self.ssl)
         # connect with password or xoauth
