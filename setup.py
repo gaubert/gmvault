@@ -65,8 +65,8 @@ setup(name='gmvault',
       packages=['gmv','gmv.conf', 'gmv.conf.utils'],
       package_dir = {'gmv': './src/gmv'},
       scripts=['./etc/scripts/gmvault'],
-      package_data={'': ['release-note.txt']},
+      #package_data={'./src/gmv': ['cacerts/*']},
       include_package_data=True,
-      #install_requires=['argparse', 'Logbook==0.4.1', 'IMAPClient==0.9.2','gdata==2.0.17']
+      #data_files=[('./etc/cacerts/cacert.pem', ['gmv/cacert.pem'])],
       install_requires=['argparse', 'Logbook==0.10.1', 'IMAPClient==0.13', 'chardet==2.3.0']
       )
