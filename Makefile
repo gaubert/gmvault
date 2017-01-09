@@ -138,7 +138,8 @@ gmv-mac-dist: clean init
 	@echo "========================================="
 
 gmv-win-dist: clean init
-	$(PYINSTALLERWIN) --onefile --clean --name gmv_runner --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/src/gmv_runner.py
+	#$(PYINSTALLERWIN) --onefile --clean --name gmv_runner --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/src/gmv_runner.py
+	$(PYINSTALLERWIN) --onefile --name gmv_runner --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/src/gmv_runner.py
 	cp $(BASEDIR)/etc/scripts/gmvault.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault-shell.bat $(GMVWINBUILDDIST)
 	cd .; $(PYTHONWINBIN) $(BASEDIR)/etc/utils/add_version.py $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)/gmv-msg.bat $(GMVVERSION)
