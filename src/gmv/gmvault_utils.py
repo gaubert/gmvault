@@ -640,7 +640,7 @@ VERSION_PATTERN  = r'\s*conf_version=\s*(?P<version>\S*)\s*'
 VERSION_RE  = re.compile(VERSION_PATTERN)
 
 #list of version conf to not overwrite with the next
-VERSIONS_TO_PRESERVE = [ '1.9.1', '1.9.2' ]
+VERSIONS_TO_PRESERVE = [ '1.9.3' ]
 
 def _get_version_from_conf(home_conf_file):
     """
@@ -695,6 +695,19 @@ def get_conf_filepath():
     
     return home_conf_file
 
+@memoized
+def get_ca_certs_filepath():
+   """ 
+       Need to pack in Gmvault the default CA Certs (and the one for Gmail) in order to allow the CA cert default verification.
+       Need to do it because not all platforms have them installed.
+       it is by default in $HOME/.gmvault but can be changed by configuration
+   """
+   cacerts_filepath = get_conf_defaults().get("GoogleOauth2", "ca_certs_filepath", "%s/cacert.pem" % get_home_dir_path() )
+   LOG.debug("cacert.pem file location %s" % (cacerts_filepath))
+   if not os.path.exists(cacerts_filepath):
+       raise Exception("Cannot find ca certificate files in %s. Please check if the file exists or if ca_certs_filepath in the [GoogleOauth2] group of the configuration file is properly set" % cacerts_filepath)
+
+   return cacerts_filepath 
 
 def chunker(seq, size):
     """Returns the contents of `seq` in chunks of up to `size` items."""

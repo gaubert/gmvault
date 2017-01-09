@@ -80,7 +80,9 @@ redirect_uri=urn:ietf:wg:oauth:2.0:oob
 gmvault_client_id=1070918343777-0eecradokiu8i77qfo8e3stbi0mkrtog.apps.googleusercontent.com
 gmvault_client_secret=IVkl_pglv5cXzugpmnRNqtT7
 #if it is needed to disable the certficate verification set it to True
-disable_cert_verification=False
+#disable_cacert_verification=True
+#default ca certificates locations (by default in $HOME/.gmvault/cacert.pem)
+#ca_certs_filepath=/tmp/cacert.pem
 
 #set environment variables for the program locally
 #they will be read only once the conf file has been loaded
