@@ -25,13 +25,14 @@ import time
 import calendar
 import fnmatch
 import functools
-
 import StringIO
 import sys
 import traceback
 import random 
 import locale
 import urllib
+import shutil
+
 import chardet
 
 import gmv.log_utils as log_utils
@@ -695,6 +696,15 @@ def get_conf_filepath():
     
     return home_conf_file
 
+def copy_default_cacerts_from_module(default_cacert_path):
+    """
+       Copy the default cacert.pem that is stored in the gmv module
+    """
+    import pkg_resources #use setuptools pkg_resources to locate the file
+    filename = pkg_resources.resource_filename('gmv','cacerts/cacert.pem')
+    shutil.copyfile(filename, default_cacert_path)
+
+
 @memoized
 def get_ca_certs_filepath():
    """ 
@@ -702,9 +712,16 @@ def get_ca_certs_filepath():
        Need to do it because not all platforms have them installed.
        it is by default in $HOME/.gmvault but can be changed by configuration
    """
-   cacerts_filepath = get_conf_defaults().get("GoogleOauth2", "ca_certs_filepath", "%s/cacert.pem" % get_home_dir_path() )
+   """
+      TODO: Check if cacerts file path exists and in the get_home_dir_path(). If not then copy it there from the module.
+      If somewhere else it means that it has been moved by the user and cannot be found
+   """
+   default_cacert_path = "%s/cacert.pem" % get_home_dir_path()
+   cacerts_filepath = get_conf_defaults().get("GoogleOauth2", "ca_certs_filepath", default_cacert_path )
    LOG.debug("cacert.pem file location %s" % (cacerts_filepath))
-   if not os.path.exists(cacerts_filepath):
+   if cacerts_filepath == default_cacert_path and not os.path.exists(cacerts_filepath):
+       copy_default_cacerts_from_module(default_cacert_path)
+   elif not os.path.exists(cacerts_filepath):
        raise Exception("Cannot find ca certificate files in %s. Please check if the file exists or if ca_certs_filepath in the [GoogleOauth2] group of the configuration file is properly set" % cacerts_filepath)
 
    return cacerts_filepath 

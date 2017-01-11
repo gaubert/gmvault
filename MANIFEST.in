@@ -1,2 +1,2 @@
 include *.txt
-include etc/cacerts/*.pem
+include *.pem
