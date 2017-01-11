@@ -701,8 +701,9 @@ def copy_default_cacerts_from_module(default_cacert_path):
        Copy the default cacert.pem that is stored in the gmv module
     """
     import pkg_resources #use setuptools pkg_resources to locate the file
-    filename = pkg_resources.resource_filename('gmv','cacerts/cacert.pem')
-    shutil.copyfile(filename, default_cacert_path)
+    ca_mod_filename = pkg_resources.resource_filename('gmv','cacerts/cacert.pem')
+    LOG.debug("Copy cacert.pem (%s) to %s" %(ca_mod_filename, default_cacert_path))
+    shutil.copyfile(ca_mod_filename, default_cacert_path)
 
 
 @memoized
