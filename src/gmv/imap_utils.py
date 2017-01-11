@@ -290,7 +290,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
 
         # check if it is needed to disbale cert verification (leave that option at the last resort)
         # if the cert verification doesn't work.
-        disable_cert_verification = gmvault_utils.get_conf_defaults().getboolean("GoogleOauth2", "disable_cacert_verification", default=False, fail_if_missing = True)
+        disable_cert_verification = gmvault_utils.get_conf_defaults().getboolean("GoogleOauth2", "disable_cacert_verification", default=False)
         context = None
         if disable_cert_verification:
             LOG.critical("Beware disabling CA Cert verification for the IMAP connection to Gmail.")
