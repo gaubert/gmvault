@@ -27,6 +27,7 @@ PYTHONWINBIN=/c/Python27/python.exe #windows laptop
 PYTHONVERSION=2.7
 
 PYINSTALLERMAC=/usr/local/bin/pyinstaller
+PYINSTALLERLIN=pyinstaller
 PYINSTALLERWIN=c:/Python27/Scripts/pyinstaller.exe
 
 #MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
@@ -97,36 +98,20 @@ gmv-pypi-dist: clean init
 	@echo ""
 	@echo "=================================================================="
 
-gmv-linux-dist: clean init 
-	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
-	mkdir -p $(GMVDIST)/$(GMVDISTNAME)
-	#add GMVault sources
-	mkdir -p $(GMVDIST)/$(GMVDISTNAME)/lib/gmv
-	cp -R $(BASEDIR)/src/gmv $(GMVDIST)/$(GMVDISTNAME)/lib
-	#add python interpreter with virtualenv
-	cd $(GMVDIST)/$(GMVDISTNAME)/lib; virtualenv --no-site-packages python-lib
-	# copy local version of atom to avoid compilation problems
-	cp $(BASEDIR)/etc/libs/atom.tar.gz $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/lib/python$(PYTHONVERSION)/site-packages/
-	cd $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/lib/python$(PYTHONVERSION)/site-packages; tar zxvf atom.tar.gz; rm -f atom.tar.gz
-	# install rest of the packages normally
-	cd $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/bin; ./pip install logbook
-	cd $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/bin; ./pip install IMAPClient
-	#cd $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/bin; ./pip install gdata
-	# copy shell scripts in dist/bin
-	mkdir -p $(GMVDIST)/$(GMVDISTNAME)/bin
-	cp -R $(BASEDIR)/etc/scripts/gmvault $(GMVDIST)/$(GMVDISTNAME)/bin
-	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/bin/README.txt
-	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/$(GMVDISTNAME)/bin/RELEASE-NOTE.txt
-	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-linux-i686.tar.gz ./$(GMVDISTNAME)
+gmv-lin-dist: clean init
+	$(PYINSTALLERLIN) --onefile --clean --name gmvault --distpath=$(GMVDIST)/$(GMVDISTNAME)  $(BASEDIR)/gmvault-pyinstaller.spec
+	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/README.txt
+	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/$(GMVDISTNAME)/RELEASE-NOTE.txt
+	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-lin64.tar.gz ./$(GMVDISTNAME)
 	@echo ""
-	@echo "=================================================================="
+	@echo "========================================="
 	@echo ""
-	@echo "distribution $(GMVDISTNAME)-linux-i686.tar.gz stored in $(GMVDIST)"
+	@echo "distribution $(GMVDISTNAME)-lin64.tar.gz stored in $(GMVDIST)"
 	@echo ""
-	@echo "=================================================================="
+	@echo "========================================="
 
 gmv-mac-dist: clean init
-	$(PYINSTALLERMAC) --onefile --clean --name gmvault --distpath=$(GMVDIST)/$(GMVDISTNAME)  $(BASEDIR)/src/gmv_runner.py
+	$(PYINSTALLERMAC) --onefile --clean --name gmvault --distpath=$(GMVDIST)/$(GMVDISTNAME)  $(BASEDIR)/gmvault-pyinstaller.spec
 	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/README.txt
 	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/$(GMVDISTNAME)/RELEASE-NOTE.txt
 	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-macosx-intel.tar.gz ./$(GMVDISTNAME)
@@ -139,7 +124,7 @@ gmv-mac-dist: clean init
 
 gmv-win-dist: clean init
 	#$(PYINSTALLERWIN) --onefile --clean --name gmv_runner --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/src/gmv_runner.py
-	$(PYINSTALLERWIN) --onefile --name gmv_runner --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/src/gmv_runner.py
+	$(PYINSTALLERWIN) --onefile --name gmv_runner --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/gmvault-pyinstaller.spec
 	cp $(BASEDIR)/etc/scripts/gmvault.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault-shell.bat $(GMVWINBUILDDIST)
 	cd .; $(PYTHONWINBIN) $(BASEDIR)/etc/utils/add_version.py $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)/gmv-msg.bat $(GMVVERSION)

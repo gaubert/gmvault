@@ -2,7 +2,6 @@
 *.pyc
 *.o
 *.class
-*.spec
 gmvault.log
 .DS_Store
 dists/disstoolbox-dist/build
