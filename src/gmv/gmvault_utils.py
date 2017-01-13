@@ -25,13 +25,14 @@ import time
 import calendar
 import fnmatch
 import functools
-
 import StringIO
 import sys
 import traceback
 import random 
 import locale
 import urllib
+import shutil
+
 import chardet
 
 import gmv.log_utils as log_utils
@@ -640,7 +641,7 @@ VERSION_PATTERN  = r'\s*conf_version=\s*(?P<version>\S*)\s*'
 VERSION_RE  = re.compile(VERSION_PATTERN)
 
 #list of version conf to not overwrite with the next
-VERSIONS_TO_PRESERVE = [ '1.9.1', '1.9.2' ]
+VERSIONS_TO_PRESERVE = [ '1.9.3' ]
 
 def _get_version_from_conf(home_conf_file):
     """
@@ -695,6 +696,36 @@ def get_conf_filepath():
     
     return home_conf_file
 
+def copy_default_cacerts_from_module(default_cacert_path):
+    """
+       Copy the default cacert.pem that is stored in the gmv module
+    """
+    import pkg_resources #use setuptools pkg_resources to locate the file
+    ca_mod_filename = pkg_resources.resource_filename('gmv','cacerts/cacert.pem')
+    LOG.debug("Copy cacert.pem (%s) to %s" %(ca_mod_filename, default_cacert_path))
+    shutil.copyfile(ca_mod_filename, default_cacert_path)
+
+
+@memoized
+def get_ca_certs_filepath():
+   """ 
+       Need to pack in Gmvault the default CA Certs (and the one for Gmail) in order to allow the CA cert default verification.
+       Need to do it because not all platforms have them installed.
+       it is by default in $HOME/.gmvault but can be changed by configuration
+   """
+   """
+      TODO: Check if cacerts file path exists and in the get_home_dir_path(). If not then copy it there from the module.
+      If somewhere else it means that it has been moved by the user and cannot be found
+   """
+   default_cacert_path = "%s/cacert.pem" % get_home_dir_path()
+   cacerts_filepath = get_conf_defaults().get("GoogleOauth2", "ca_certs_filepath", default_cacert_path )
+   LOG.debug("cacert.pem file location %s" % (cacerts_filepath))
+   if cacerts_filepath == default_cacert_path and not os.path.exists(cacerts_filepath):
+       copy_default_cacerts_from_module(default_cacert_path)
+   elif not os.path.exists(cacerts_filepath):
+       raise Exception("Cannot find ca certificate files in %s. Please check if the file exists or if ca_certs_filepath in the [GoogleOauth2] group of the configuration file is properly set" % cacerts_filepath)
+
+   return cacerts_filepath 
 
 def chunker(seq, size):
     """Returns the contents of `seq` in chunks of up to `size` items."""

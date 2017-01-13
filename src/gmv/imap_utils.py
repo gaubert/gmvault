@@ -28,6 +28,7 @@ import functools
 
 import ssl
 import imaplib
+import imapclient
 
 import gmv.gmvault_const as gmvault_const
 import gmv.log_utils as log_utils
@@ -286,8 +287,26 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         """
            connect to the IMAP server
         """
+
+        # check if it is needed to disbale cert verification (leave that option at the last resort)
+        # if the cert verification doesn't work.
+        disable_cert_verification = gmvault_utils.get_conf_defaults().getboolean("GoogleOauth2", "disable_cacert_verification", default=False)
+        context = None
+        if disable_cert_verification:
+            LOG.critical("Beware disabling CA Cert verification for the IMAP connection to Gmail.")
+            context = imapclient.create_default_context()
+            # don't check if certificate hostname doesn't match target hostname
+            context.check_hostname = False
+            # don't check if the certificate is trusted by a certificate authority
+            context.verify_mode = ssl.CERT_NONE
+        else:
+            # create a custom ssl context to handle CA cert verification in all cases
+            # In some plateform the CA certs are not available so use the ones provided by Gmvault
+            # CA certs are coming from https://curl.haxx.se/ca/cacert.pem
+            context = imapclient.create_default_context(cafile= gmvault_utils.get_ca_certs_filepath())
+
         # create imap object
-        self.server = mimap.MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, need_ssl= self.ssl)
+        self.server = mimap.MonkeyIMAPClient(self.host, port = self.port, use_uid = self.use_uid, need_ssl = self.ssl, ssl_context = context)
         # connect with password or xoauth
         if self.credential['type'] == 'passwd':
             self.server.login(self.login, self.credential['value'])
