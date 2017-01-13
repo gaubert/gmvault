@@ -111,7 +111,7 @@ gmv-linux-dist: clean init
 	# install rest of the packages normally
 	cd $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/bin; ./pip install logbook
 	cd $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/bin; ./pip install IMAPClient
-	cd $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/bin; ./pip install gdata
+	#cd $(GMVDIST)/$(GMVDISTNAME)/lib/python-lib/bin; ./pip install gdata
 	# copy shell scripts in dist/bin
 	mkdir -p $(GMVDIST)/$(GMVDISTNAME)/bin
 	cp -R $(BASEDIR)/etc/scripts/gmvault $(GMVDIST)/$(GMVDISTNAME)/bin
