@@ -32,6 +32,7 @@ PYINSTALLERWIN=c:/Python27/Scripts/pyinstaller.exe
 
 #MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
 MAKENSIS=c:/Program\ Files/NSIS/makensis.exe #windows laptop
+MAKENSIS=c:/Program\ Files\ \(x86\)/NSIS/makensis.exe #windows 10 version
 
 #VERSION is in gmv_cmd.py as GMVAULT_VERSION
 GMVVERSION=$(shell python $(BASEDIR)/etc/utils/find_version.py $(BASEDIR)/src/gmv/gmvault_utils.py)
