@@ -2,7 +2,6 @@
 
 block_cipher = None
 
-
 a = Analysis(['src/gmv_runner.py'],
              pathex=['/home/gmv/Dev/gmvault'],
              binaries=None,
@@ -19,10 +18,18 @@ pyz = PYZ(a.pure, a.zipped_data,
 exe = EXE(pyz,
           a.scripts,
           a.binaries,
-          a.zipfiles,
-          a.datas,
           name='gmv_runner',
           debug=False,
           strip=False,
           upx=True,
           console=True)
+
+coll = COLLECT(exe,
+               a.scripts,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=None,
+               upx=True,
+               name='gmvault')
+
