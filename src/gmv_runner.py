@@ -16,7 +16,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-
+import os
+import sys
 import gmv.gmv_cmd
+
+os.environ['PYTHONUNBUFFERED'] = "1" 
+sys.stdout = os.fdopen(sys.stdout.fileno(), "a+", 0)
+sys.stdin = os.fdopen(sys.stdin.fileno(), "a+", 0)
+sys.stderr = os.fdopen(sys.stderr.fileno(), "a+", 0)
 
 gmv.gmv_cmd.bootstrap_run()

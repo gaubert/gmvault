@@ -2,12 +2,12 @@
 
 block_cipher = None
 
-options = [ ('u', None, 'OPTION') ]
+options = [ ('u', '', 'OPTION') ]
 
-a = Analysis(['src/gmv_runner.py'],
+a = Analysis(['../../src/gmv_runner.py'],
              pathex=['/Users/gaubert/Documents/Dev/gmvault'],
              binaries=None,
-             datas=[('src/gmv/cacerts/cacert.pem', 'gmv/cacerts')],
+             datas=[('../../src/gmv/cacerts/cacert.pem', 'gmv/cacerts')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -25,7 +25,7 @@ exe = EXE(pyz,
           name='gmv_runner',
           debug=False,
           strip=False,
-          upx=True,
+          upx=False,
           console=True )
 
 coll = COLLECT(exe,
@@ -33,5 +33,5 @@ coll = COLLECT(exe,
                a.zipfiles,
                a.datas,
                strip=False,
-               upx=True,
-               name='gmvault')
+               upx=False,
+               name='gmv_app')
