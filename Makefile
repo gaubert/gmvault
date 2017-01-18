@@ -112,7 +112,7 @@ gmv-lin-dist: clean init
 	@echo "========================================="
 
 gmv-mac-dist: clean init
-	$(PYINSTALLERMAC) --onefile --clean --name gmvault --distpath=$(GMVDIST)/$(GMVDISTNAME)  $(BASEDIR)/gmvault-pyinstaller.spec
+	$(PYINSTALLERMAC) --distpath=$(GMVDIST)/$(GMVDISTNAME)  $(BASEDIR)/etc/pyinstaller/gmvault-mac-pyinstaller.spec
 	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/README.txt
 	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/$(GMVDISTNAME)/RELEASE-NOTE.txt
 	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-macosx-intel.tar.gz ./$(GMVDISTNAME)
@@ -124,8 +124,9 @@ gmv-mac-dist: clean init
 	@echo "========================================="
 
 gmv-win-dist: clean init
+    # old way to use pyinstaller without the spec file
 	#$(PYINSTALLERWIN) --onefile --clean --name gmv_runner --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/src/gmv_runner.py
-	$(PYINSTALLERWIN) --name gmv_runner --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/gmvault-win-pyinstaller.spec
+	$(PYINSTALLERWIN) --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/etc/pyinstaller/gmvault-win-pyinstaller.spec
 	cp $(BASEDIR)/etc/scripts/gmvault.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault-shell.bat $(GMVWINBUILDDIST)
 	cd .; $(PYTHONWINBIN) $(BASEDIR)/etc/utils/add_version.py $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)/gmv-msg.bat $(GMVVERSION)
