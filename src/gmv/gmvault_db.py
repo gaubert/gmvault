@@ -156,6 +156,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         """
            Get sub_chats_dir
         """
+        #TODO: Need to pass chat id. If we can find the dir for that chat id then return it otherwise return a new one
         if self._sub_chats_inc == -1:
             self._init_sub_chats_dir()
 
