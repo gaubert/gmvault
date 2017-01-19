@@ -20,7 +20,10 @@ import os
 import sys
 import gmv.gmv_cmd
 
-os.environ['PYTHONUNBUFFERED'] = "1" 
+# pyinstaller doesn't accept to path -u option with a spec 
+# but it is needed on windows to have unbuffered IOs
+# instead need to programatically reopen all stdin,err,out without buffering
+#os.environ['PYTHONUNBUFFERED'] = "1" 
 sys.stdout = os.fdopen(sys.stdout.fileno(), "a+", 0)
 sys.stdin = os.fdopen(sys.stdin.fileno(), "a+", 0)
 sys.stderr = os.fdopen(sys.stderr.fileno(), "a+", 0)
