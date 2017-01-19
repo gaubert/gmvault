@@ -152,7 +152,23 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 self._sub_chats_inc = the_max
                 self._sub_chats_dir = self.SUB_CHAT_AREA % nb_to_dir[the_max] 
 
-    def get_sub_chats_dir(self):
+    
+    def get_sub_chats_dir(self, chat_id = None):
+        """
+           search the directory where the chat file with chat_id might have been defined
+        """
+        # look first for an existing directory
+        the_dir = None
+
+        if chat_id:
+            the_dir = self.get_chat_directory_from_id(chat_id)
+
+        if not the_dir:
+            #could not find a dir so designate one
+            return self._make_new_chat_dir()
+
+
+    def _make_new_chat_dir(self):
         """
            Get sub_chats_dir
         """
@@ -516,6 +532,32 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
             #walk the filesystem
             for the_dir, _, files in os.walk(os.path.abspath(self._db_dir)):
+                self.fsystem_info_cache[the_dir] = files
+                for filename in fnmatch.filter(files, filename):
+                    return the_dir
+
+    def get_chat_directory_from_id(self, a_id, a_local_dir=None):
+        """
+           If a_local_dir (chat dir) is passed, check that metadata file exists and return dir
+           Return the directory path if id located.
+           Return None if not found.
+           It was better to redefine the method for chat instead of making it more complicated
+        """
+        filename = '%s.meta' % a_id
+
+        #local_dir can be passed to avoid scanning the filesystem (because of WIN7 fs weaknesses)
+        if a_local_dir:
+            the_dir = '%s/%s' % (self._db_dir, a_local_dir)
+            if os.path.exists(self.METADATA_FNAME % (the_dir, a_id)):
+                return the_dir
+        else:
+            # first look in cache
+            for the_dir in self.fsystem_info_cache:
+                if filename in self.fsystem_info_cache[the_dir]:
+                    return the_dir
+
+            #walk the filesystem
+            for the_dir, _, files in os.walk(os.path.abspath(self._chats_dir)):
                 self.fsystem_info_cache[the_dir] = files
                 for filename in fnmatch.filter(files, filename):
                     return the_dir

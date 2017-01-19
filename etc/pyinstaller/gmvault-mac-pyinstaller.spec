@@ -3,10 +3,10 @@
 block_cipher = None
 
 
-a = Analysis(['src/gmv_runner.py'],
+a = Analysis(['../../src/gmv_runner.py'],
              pathex=['/home/gmv/Dev/gmvault'],
              binaries=None,
-             datas=[('src/gmv/cacerts/cacert.pem', 'gmv/cacerts')],
+             datas=[('../../src/gmv/cacerts/cacert.pem', 'gmv/cacerts')], #use data to add cacerts.pem in data part
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
