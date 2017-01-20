@@ -160,12 +160,16 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         # look first for an existing directory
         the_dir = None
 
+        LOG.debug("get_sub_chats_dir. Look for dir with chat id %s" % (chat_id))
+
         if chat_id:
             the_dir = self.get_chat_directory_from_id(chat_id)
 
         if not the_dir:
             #could not find a dir so designate one
             return self._make_new_chat_dir()
+        else:
+            return the_dir
 
 
     def _make_new_chat_dir(self):
@@ -557,6 +561,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                     return the_dir
 
             #walk the filesystem
+            LOG.debug("No hosting directory found for %s. Walk the filesystem from %s." % (filename, os.path.abspath(self._chats_dir)))
             for the_dir, _, files in os.walk(os.path.abspath(self._chats_dir)):
                 self.fsystem_info_cache[the_dir] = files
                 for filename in fnmatch.filter(files, filename):

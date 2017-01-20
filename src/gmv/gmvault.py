@@ -481,7 +481,8 @@ class GMVaulter(object):
                     if a_type == "email":
                         the_dir = gmvault_utils.get_ym_from_datetime(eml_date)
                     elif a_type == "chat":
-                        the_dir = self.gstorer.get_sub_chats_dir()
+                        LOG.debug("DEBUGING sub chat bug. the gm id = %s" % (gid))
+                        the_dir = self.gstorer.get_sub_chats_dir(gid)
                     else:
                         raise Exception("Error a_type %s in _common_sync is unknown" % (a_type))
                     
