@@ -112,7 +112,8 @@ gmv-lin-dist: clean init
 	@echo "========================================="
 
 gmv-mac-dist: clean init
-	$(PYINSTALLERMAC) --distpath=$(GMVDIST)/$(GMVDISTNAME)  $(BASEDIR)/etc/pyinstaller/gmvault-mac-pyinstaller.spec
+	$(PYINSTALLERMAC) --clean --distpath=$(GMVDIST)/$(GMVDISTNAME)  $(BASEDIR)/etc/pyinstaller/gmvault-mac-pyinstaller.spec
+	#$(PYINSTALLERMAC) --onedir --clean --debug --name gmvault --distpath=$(GMVDIST)/$(GMVDISTNAME)  $(BASEDIR)/src/gmv_runner.py
 	cp -R $(BASEDIR)/README.md $(GMVDIST)/$(GMVDISTNAME)/README.txt
 	cp $(BASEDIR)/RELEASE-NOTE.txt $(GMVDIST)/$(GMVDISTNAME)/RELEASE-NOTE.txt
 	cd $(GMVDIST); tar zcvf ./$(GMVDISTNAME)-macosx-intel.tar.gz ./$(GMVDISTNAME)

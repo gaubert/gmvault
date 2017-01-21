@@ -68,7 +68,7 @@ encoding_guess_list=['ascii','iso-8859-1','iso-8859-2','windows-1250','windows-1
 
 #Do not touch any parameters below as it could force an overwrite of this file
 [VERSION]
-conf_version=1.9.2
+conf_version=1.9.2-beta
 
 [GoogleOauth2]
 scope=https://mail.google.com/

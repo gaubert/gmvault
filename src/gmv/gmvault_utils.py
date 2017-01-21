@@ -41,7 +41,7 @@ import gmv.gmvault_const as gmvault_const
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_utils')
 
-GMVAULT_VERSION = "1.9.2"
+GMVAULT_VERSION = "1.9.2-beta"
 
 class memoized(object): #pylint: disable=C0103
     """Decorator that caches a function's return value each time it is called.
@@ -641,7 +641,7 @@ VERSION_PATTERN  = r'\s*conf_version=\s*(?P<version>\S*)\s*'
 VERSION_RE  = re.compile(VERSION_PATTERN)
 
 #list of version conf to not overwrite with the next
-VERSIONS_TO_PRESERVE = [ '1.9.2' ]
+VERSIONS_TO_PRESERVE = [ '1.9.2-beta' ]
 
 def _get_version_from_conf(home_conf_file):
     """
