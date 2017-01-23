@@ -70,5 +70,5 @@ setup(name='gmvault',
       },
       #include_package_data=True,
       #data_files=[('./etc/cacerts/cacert.pem', ['./src/gmv/cacert.pem'])],
-      install_requires=['argparse', 'Logbook==0.10.1', 'IMAPClient==0.13', 'chardet==2.3.0']
+      install_requires=['argparse', 'Logbook==1.0.0', 'IMAPClient==1.0.2', 'chardet==2.3.0','six==1.10.0','setuptools==32.1.0']]
       )
