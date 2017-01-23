@@ -326,7 +326,8 @@ class GMVaulter(object):
            Factory method to create the object if it exists
         """
         try:
-            a_dir = a_gstorer.get_directory_from_id(a_id, a_dir)
+            # pass top dir and found local dir where the files are
+            a_dir = a_gstorer.get_directory_from_id(a_id, a_top_dir = a_gstorer.get_db_dir(), a_local_dir = a_dir)
            
             if a_dir:
                 return a_gstorer.unbury_metadata(a_id, a_dir) 
@@ -481,8 +482,7 @@ class GMVaulter(object):
                     if a_type == "email":
                         the_dir = gmvault_utils.get_ym_from_datetime(eml_date)
                     elif a_type == "chat":
-                        LOG.debug("DEBUGING sub chat bug. the gm id = %s" % (gid))
-                        the_dir = self.gstorer.get_sub_chats_dir(gid)
+                        the_dir = "%s/%s" % (self.gstorer.CHATS_AREA, os.path.split(self.gstorer.get_sub_chats_dir(gid))[1])
                     else:
                         raise Exception("Error a_type %s in _common_sync is unknown" % (a_type))
                     

@@ -118,6 +118,12 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         #add version if it is needed to migrate gmvault-db in the future
         self._create_gmvault_db_version()
 
+    def get_db_dir(self):
+        """
+            return the database directory
+        """
+        return self._db_dir
+
     def _init_sub_chats_dir(self):
         """
            get info from existing sub chats
@@ -140,6 +146,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 self._sub_chats_nb  = 0
                 self._sub_chats_inc = 1
                 self._sub_chats_dir = self.SUB_CHAT_AREA % ("subchats-%s" % (self._sub_chats_inc))
+                LOG.debug("Makedir %s/%s" % (self._db_dir, self._sub_chats_dir))
                 gmvault_utils.makedirs("%s/%s" % (self._db_dir, self._sub_chats_dir))
 
             # treat when more than limit chats in max dir 
@@ -163,7 +170,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         LOG.debug("get_sub_chats_dir. Look for dir with chat id %s" % (chat_id))
 
         if chat_id:
-            the_dir = self.get_chat_directory_from_id(chat_id)
+            the_dir = self.get_directory_from_id(chat_id, a_top_dir = self._chats_dir)
 
         if not the_dir:
             #could not find a dir so designate one
@@ -176,7 +183,6 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         """
            Get sub_chats_dir
         """
-        #TODO: Need to pass chat id. If we can find the dir for that chat id then return it otherwise return a new one
         if self._sub_chats_inc == -1:
             self._init_sub_chats_dir()
 
@@ -185,7 +191,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
             self._sub_chats_nb = 1
 
+            #Beware use double string substitution here. We are in the sub chats area
             self._sub_chats_dir = self.SUB_CHAT_AREA % ("subchats-%s" % (self._sub_chats_inc))
+            LOG.debug("_make_new_char_dir. Making dir %s/%s" % (self._db_dir, self._sub_chats_dir))
             gmvault_utils.makedirs('%s/%s' % (self._db_dir, self._sub_chats_dir))
 
             return self._sub_chats_dir
@@ -439,7 +447,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             compress : if compress is True, use gzip compression
         """
         extra_labels = ['gmvault-chats']
-
+        LOG.debug("DEBUGGING. bury chat dir = %s" % (local_dir))
         return self.bury_email(chat_info, local_dir, compress, extra_labels)
 
     def bury_email(self, email_info, local_dir=None, compress=False,
@@ -515,9 +523,11 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
         return email_info[imap_utils.GIMAPFetcher.GMAIL_ID]
 
-    def get_directory_from_id(self, a_id, a_local_dir=None):
+    def get_directory_from_id(self, a_id, a_top_dir , a_local_dir=None):
         """
            If a_local_dir (yy_mm dir) is passed, check that metadata file exists and return dir
+           a_top_dir: top dir from which to search (different if email or chat)
+           a_local_dir: local dir can be passed to avoid scanning dirs again (just check that the dir exists)
            Return the directory path if id located.
            Return None if not found
         """
@@ -525,7 +535,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
         #local_dir can be passed to avoid scanning the filesystem (because of WIN7 fs weaknesses)
         if a_local_dir:
-            the_dir = '%s/%s' % (self._db_dir, a_local_dir)
+            the_dir = '%s/%s' % (a_top_dir, a_local_dir)
             if os.path.exists(self.METADATA_FNAME % (the_dir, a_id)):
                 return the_dir
         else:
@@ -535,34 +545,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                     return the_dir
 
             #walk the filesystem
-            for the_dir, _, files in os.walk(os.path.abspath(self._db_dir)):
-                self.fsystem_info_cache[the_dir] = files
-                for filename in fnmatch.filter(files, filename):
-                    return the_dir
-
-    def get_chat_directory_from_id(self, a_id, a_local_dir=None):
-        """
-           If a_local_dir (chat dir) is passed, check that metadata file exists and return dir
-           Return the directory path if id located.
-           Return None if not found.
-           It was better to redefine the method for chat instead of making it more complicated
-        """
-        filename = '%s.meta' % a_id
-
-        #local_dir can be passed to avoid scanning the filesystem (because of WIN7 fs weaknesses)
-        if a_local_dir:
-            the_dir = '%s/%s' % (self._db_dir, a_local_dir)
-            if os.path.exists(self.METADATA_FNAME % (the_dir, a_id)):
-                return the_dir
-        else:
-            # first look in cache
-            for the_dir in self.fsystem_info_cache:
-                if filename in self.fsystem_info_cache[the_dir]:
-                    return the_dir
-
-            #walk the filesystem
-            LOG.debug("No hosting directory found for %s. Walk the filesystem from %s." % (filename, os.path.abspath(self._chats_dir)))
-            for the_dir, _, files in os.walk(os.path.abspath(self._chats_dir)):
+            for the_dir, _, files in os.walk(os.path.abspath(a_top_dir)):
                 self.fsystem_info_cache[the_dir] = files
                 for filename in fnmatch.filter(files, filename):
                     return the_dir
