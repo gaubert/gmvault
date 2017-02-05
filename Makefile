@@ -30,9 +30,8 @@ PYINSTALLERMAC=/usr/local/bin/pyinstaller
 PYINSTALLERLIN=pyinstaller
 PYINSTALLERWIN=c:/Python27/Scripts/pyinstaller.exe
 
-#MAKENSIS=/cygdrive/d/Programs/NSIS/makensis.exe #windows work
-MAKENSIS=c:/Program\ Files/NSIS/makensis.exe #windows laptop
-MAKENSIS=c:/Program\ Files\ \(x86\)/NSIS/makensis.exe #windows 10 version
+MAKENSIS=c:/Program\ Files/NSIS/makensis.exe #windows 7 version
+#MAKENSIS=c:/Program\ Files\ \(x86\)/NSIS/makensis.exe #windows 10 version
 
 #VERSION is in gmv_cmd.py as GMVAULT_VERSION
 GMVVERSION=$(shell python $(BASEDIR)/etc/utils/find_version.py $(BASEDIR)/src/gmv/gmvault_utils.py)
@@ -127,7 +126,7 @@ gmv-mac-dist: clean init
 gmv-win-dist: clean init
     # old way to use pyinstaller without the spec file
 	#$(PYINSTALLERWIN) --onefile --clean --name gmv_runner --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/src/gmv_runner.py
-	$(PYINSTALLERWIN) --clean --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/etc/pyinstaller/gmvault-win-pyinstaller.spec
+	$(PYINSTALLERWIN) --distpath=$(GMVWINBUILDDIST) $(BASEDIR)/etc/pyinstaller/gmvault-win-pyinstaller.spec
 	cp $(BASEDIR)/etc/scripts/gmvault.bat $(GMVWINBUILDDIST)
 	cp $(BASEDIR)/etc/scripts/gmvault-shell.bat $(GMVWINBUILDDIST)
 	cd .; $(PYTHONWINBIN) $(BASEDIR)/etc/utils/add_version.py $(BASEDIR)/etc/scripts/gmv-msg.bat $(GMVWINBUILDDIST)/gmv-msg.bat $(GMVVERSION)

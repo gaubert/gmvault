@@ -111,18 +111,15 @@ WriteRegStr HKCU "${REG_UNINSTALL}" "Comments" "Uninstalls Gmvault."
 ;MessageBox MB_OK "$INSTDIR"
 
 ; Put file there
-File gmv_runner.exe
+;File gmv_runner.exe
+;copy dir gmv_app
+File /a /r "gmv_app\"
 File gmvault.bat
 File gmv-msg.bat
 File gmv-icon.ico
 File gmvault-shell.bat
 File RELEASE-NOTE.txt
 File README.txt
-;File library.zip
-;File python27.dll
-;File w9xpopen.exe
-;File *.pyd
-;File /r Microsoft.VC90.CRT
 
 IfErrors 0 +2
 
