@@ -828,7 +828,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
               res    = self.server.append(a_folder, a_body, a_flags, a_internal_time)
         except imaplib.IMAP4.error, toobig:
            # message is too large. It needs to be quarantined
-           if str(err).find("APPEND command error: BAD ['[TOOBIG] Message too large") >= 0:
+           if str(toobig).find("APPEND command error: BAD ['[TOOBIG] Message too large") >= 0:
               LOG.critical("Message is too big to be pushed in Gmail. Needs to be quarantined")
               raise PushEmailError("Message too big. Quarantine it.", quarantined = True)
     
