@@ -831,6 +831,9 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
            if str(toobig).find("APPEND command error: BAD ['[TOOBIG] Message too large") >= 0:
               LOG.critical("Message is too big to be pushed in Gmail. Needs to be quarantined")
               raise PushEmailError("Message too big. Quarantine it.", quarantined = True)
+           else:
+              #normal error handling defer to retry
+              raise toobig
     
         LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" \
                   % (a_flags, a_internal_time, the_timer.elapsed_ms(), res))

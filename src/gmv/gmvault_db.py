@@ -590,7 +590,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         #get the dir where the email is stored
         the_dir = self.get_directory_from_id(a_id, a_top_dir = self._db_dir)
 
-        data = self.DATA_FNAMy % (the_dir, a_id)
+        data = self.DATA_FNAME % (the_dir, a_id)
         meta = self.METADATA_FNAME % (the_dir, a_id)
 
         # check if encrypted and compressed or not
