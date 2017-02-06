@@ -588,9 +588,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
            Quarantine the email
         """
         #get the dir where the email is stored
-        the_dir = self.get_directory_from_id(a_id)
+        the_dir = self.get_directory_from_id(a_id, a_top_dir = self._db_dir)
 
-        data = self.DATA_FNAME % (the_dir, a_id)
+        data = self.DATA_FNAMy % (the_dir, a_id)
         meta = self.METADATA_FNAME % (the_dir, a_id)
 
         # check if encrypted and compressed or not
@@ -633,7 +633,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
            Restore the complete email info from info stored on disk
            Return a tuple (meta, data)
         """
-        the_dir = self.get_directory_from_id(a_id)
+        the_dir = self.get_directory_from_id(a_id, a_top_dir = self._db_dir)
 
         with self._get_data_file_from_id(the_dir, a_id) as f:
             if self.email_encrypted(f.name):
@@ -654,7 +654,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
            Get the only the email content from the DB
         """
         if not a_id_dir:
-            a_id_dir = self.get_directory_from_id(a_id)
+            a_id_dir = self.get_directory_from_id(a_id, a_top_dir = self._db_dir)
 
         with self._get_data_file_from_id(a_id_dir, a_id) as f:
             if self.email_encrypted(f.name):
@@ -673,7 +673,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
            Get metadata info from DB
         """
         if not a_id_dir:
-            a_id_dir = self.get_directory_from_id(a_id)
+            a_id_dir = self.get_directory_from_id(a_id, a_top_dir = self._db_dir)
 
         with self._get_metadata_file_from_id(a_id_dir, a_id) as f:
             metadata = json.load(f)
