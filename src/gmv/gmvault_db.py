@@ -544,6 +544,12 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                 if filename in self.fsystem_info_cache[the_dir]:
                     return the_dir
 
+            #if not found in cache look in quarantine
+            for the_dir, _, files in os.walk(os.path.abspath(self._quarantine_dir)):
+               self.fsystem_info_cache[the_dir] = files
+               for filename in fnmatch.filter(files, filename):
+                  return the_dir
+
             #walk the filesystem
             for the_dir, _, files in os.walk(os.path.abspath(a_top_dir)):
                 self.fsystem_info_cache[the_dir] = files

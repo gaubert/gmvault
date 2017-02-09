@@ -534,7 +534,7 @@ class GMVaulter(object):
                             #get the data
                             LOG.debug("Get Data for %s." % (gid))
                             email_data = self.src.fetch(the_id, imap_utils.GIMAPFetcher.GET_DATA_ONLY )
-                            
+
                             new_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY] = \
                             email_data[the_id][imap_utils.GIMAPFetcher.EMAIL_BODY]
                             
