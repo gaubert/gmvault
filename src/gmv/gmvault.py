@@ -981,7 +981,7 @@ class GMVaulter(object):
                                     email_meta[self.gstorer.INT_DATE_K] )      
                 
                     #labels for this email => real_labels U extra_labels
-                    labels = set(email_meta[self.gstorer.LABELS_K])
+                    labels = set(email_meta.get(self.gstorer.LABELS_K,[]) if email_meta else [])
                     
                     # add in the labels_to_create struct
                     for label in labels:
@@ -1120,7 +1120,9 @@ class GMVaulter(object):
                                     email_meta[self.gstorer.INT_DATE_K] )      
                 
                     #labels for this email => real_labels U extra_labels
-                    labels = set(email_meta[self.gstorer.LABELS_K])
+                    #bullet proof 
+                    labels = set(email_meta.get(self.gstorer.LABELS_K,[]) if email_meta else [])
+                    
 
                     # add in the labels_to_create struct
                     for label in labels:
