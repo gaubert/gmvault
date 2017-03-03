@@ -121,6 +121,15 @@ def get_exception_traceback():
     traceback.print_exception(exception_type, exception_value, exception_traceback, file = the_file)
     return the_file.getvalue()
 
+def cs_raw_input(a_str):
+    """
+       Write a custom raw input because the standard one is not properly flushing stdout
+    """
+    sys.stdout.write(a_str)
+    sys.stdout.flush() #flush stdout
+    #wait for a readline
+    return sys.stdin.readline()
+
 
 MULTI_SPACES_PATTERN = r"\s{2,}"
 MULTI_SPACES_RE = re.compile(MULTI_SPACES_PATTERN, flags=re.U) #to support unicode

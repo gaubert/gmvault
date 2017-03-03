@@ -342,7 +342,7 @@ class CredentialHelper(object):
         permission_url = generate_permission_url()
 
         #message to indicate that a browser will be opened
-        raw_input('gmvault will now open a web browser page in order for you to grant gmvault access to your Gmail.\n'\
+        gmvault_utils.cs_raw_input('gmvault will now open a web browser page in order for you to grant gmvault access to your Gmail.\n'\
                   'Please make sure you\'re logged into the correct Gmail account (%s) before granting access.\n'\
                   'Press ENTER to open the browser.' % (email))
 
@@ -356,11 +356,11 @@ class CredentialHelper(object):
                 LOG.critical(gmvault_utils.get_exception_traceback())
                 LOG.critical("=== End of Exception traceback ===\n")
 
-            verification_code = raw_input("You should now see the web page on your browser now.\n"\
+            verification_code = gmvault_utils.cs_raw_input("You should now see the web page on your browser now.\n"\
                       "If you don\'t, you can manually open:\n\n%s\n\nOnce you've granted"\
                       " gmvault access, enter the verification code and press enter:\n" % (permission_url))
         else:
-            verification_code = raw_input('Please log in and/or grant access via your browser at %s '
+            verification_code = gmvault_utils.cs_raw_input('Please log in and/or grant access via your browser at %s '
                       'then enter the verification code and press enter:' % (permission_url))
 
         #request access and refresh token with the obtained verification code
