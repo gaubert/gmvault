@@ -29,7 +29,7 @@ Once installed launch `gmvault-shell.bat` (there should be a shortcut on your de
 The shell sets the environment so you can seamlessly launch gmvault.
 
 
-Go to the [gmvault 2 mins start](##gmvault-2-mins-start) to learn how to pilot gmvault.
+Go to the [gmvault 2 mins start](#gmvault-2-mins-start) to learn how to pilot gmvault.
 
 ## Linux and Mac OS X install
 
@@ -49,7 +49,7 @@ or
 
 ## gmvault 2 mins start 
 
-Gmvault is a user-frendly command-line tool. It tries to set all the necessary defaults to be self explanatory.
+Gmvault is a user-friendly command-line tool. It tries to set all the necessary defaults to be self explanatory.
 
 ### Authentication
 
