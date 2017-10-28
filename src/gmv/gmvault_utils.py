@@ -395,15 +395,17 @@ def contains_any(string, char_set):
     return 1 in [c in string for c in char_set]
 
 def makedirs(a_path):
-    """ my own version of makedir """
-    
-    if os.path.isdir(a_path):
-        # it already exists so return
-        return
-    elif os.path.isfile(a_path):
-        raise OSError("a file with the same name as the desired dir, '%s', already exists."%(a_path))
-
-    os.makedirs(a_path)
+    """
+    Create all the intermediate directories in a path.
+    Similar to the `mkdir -p` command.
+    """
+    try:
+        os.makedirs(a_path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(a_path):
+            pass
+        else:
+            raise
 
 def __rmgeneric(path, __func__):
     """ private function that is part of delete_all_under """
