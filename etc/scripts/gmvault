@@ -37,7 +37,7 @@ HERE=$(unset CDPATH; cd "$CDIR"; pwd)
 GMVAULT_HOME=$(unset CDPATH; cd "$HERE/.."; pwd)
 
 #set trap to remove temp file
-trap "rm -f /tmp/gmvault.bootstrap.$$" EXIT
+trap "rm -f $TMPDIR/gmvault.bootstrap.$$" EXIT
 
 #################################
 ## setup PYTHON_BIN
@@ -72,20 +72,20 @@ fi
 ###################################
 ## create bootstrap and launch program
 ## the bootstrap is always under
-## /tmp/rnpicker.bootstrap
+## $TMPDIR/rnpicker.bootstrap
 ###################################
 
 # keep args in variables
 ARGS="$@"
 
-cat > /tmp/gmvault.bootstrap.$$ << EOF
+cat > $TMPDIR/gmvault.bootstrap.$$ << EOF
 import gmv.gmv_cmd as runner
 runner.bootstrap_run()
 EOF
 
 #call gmvault bootstrap
-if [ -r /tmp/gmvault.bootstrap.$$ ];then
-	"$PYTHON_BIN" /tmp/gmvault.bootstrap.$$ "$@"
+if [ -r $TMPDIR/gmvault.bootstrap.$$ ];then
+	"$PYTHON_BIN" $TMPDIR/gmvault.bootstrap.$$ "$@"
         res="$?"
 else
 	echo "Could not run gmvault bootstrap."
