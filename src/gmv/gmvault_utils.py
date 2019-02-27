@@ -33,6 +33,7 @@ import random
 import locale
 import urllib
 import chardet
+import errno
 
 import gmv.log_utils as log_utils
 import gmv.conf.conf_helper
