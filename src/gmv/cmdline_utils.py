@@ -75,7 +75,7 @@ class CmdLineParser(argparse.ArgumentParser): #pylint: disable=R0904
         super(CmdLineParser, self).print_help(out)
         if self.epilogue: 
             #print >> out, '\n%s' % textwrap.fill(self.epilogue, 100, replace_whitespace = False) 
-            print >> out, '\n%s' % self.epilogue
+            print('\n%s' % self.epilogue, file=out)
             out.flush() 
    
     def show_usage(self, msg=None): 
@@ -97,7 +97,7 @@ class CmdLineParser(argparse.ArgumentParser): #pylint: disable=R0904
                   The process exit code. Defaults to 2. 
         """ 
         if msg != None: 
-            print >> sys.stderr, msg 
+            print(msg, file=sys.stderr)
         
         self.print_help(sys.stderr) 
         sys.exit(exit_code) 

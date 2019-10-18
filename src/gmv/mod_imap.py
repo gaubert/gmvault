@@ -24,7 +24,7 @@ import datetime
 import re
 import socket
 import ssl
-import cStringIO
+from io import StringIO
 import os
 
 import imaplib  #for the exception
@@ -154,12 +154,12 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
             Call _intern_read that takes care of the compression
         """
         
-        chunks = cStringIO.StringIO() #use cStringIO.cStringIO to avoir too much fragmentation
+        chunks = StringIO() #use cStringIO.cStringIO to avoir too much fragmentation
         read = 0
         while read < size:
             try:
                 data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
-            except ssl.SSLError, err:
+            except ssl.SSLError as err:
                 print("************* SSLError received %s" % (err)) 
                 raise self.abort('Gmvault ssl socket error: EOF. Connection lost, reconnect.')
             read += len(data)
@@ -173,7 +173,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
             Call _intern_read that takes care of the compression
         """
         
-        chunks = cStringIO.StringIO() #use cStringIO.cStringIO to avoir too much fragmentation
+        chunks = StringIO() #use cStringIO.cStringIO to avoir too much fragmentation
         read = 0
         while read < size:
             data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
@@ -202,7 +202,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
         
     def readline(self):
         """Read line from remote."""
-        line = cStringIO.StringIO() #use cStringIO to avoid memory fragmentation
+        line = StringIO() #use cStringIO to avoid memory fragmentation
         while 1:
             #make use of read that takes care of the compression
             #it could be simplified without compression

@@ -456,7 +456,7 @@ class GMVaultLauncher(object):
                 port = int(options.port)
             else:
                 port = options.port
-        except Exception, _: #pylint:disable=W0703
+        except Exception as _: #pylint:disable=W0703
             parser.error("--port option %s is not a number. Please check the port value" % (port))
             
         # add port
@@ -763,7 +763,7 @@ class GMVaultLauncher(object):
             
             on_error = False
         
-        except KeyboardInterrupt, _:
+        except KeyboardInterrupt as _:
             LOG.critical("\nCTRL-C. Stop all operations.\n")
             on_error = False
         except socket.error:
@@ -773,7 +773,7 @@ class GMVaultLauncher(object):
             LOG.critical(gmvault_utils.get_exception_traceback())
             LOG.critical("=== End of Exception traceback ===\n")
             die_with_usage = False
-        except imaplib.IMAP4.error, imap_err:
+        except imaplib.IMAP4.error as imap_err:
             #bad login or password
             if str(imap_err) in ['[AUTHENTICATIONFAILED] Invalid credentials (Failure)', \
                                  '[ALERT] Web login required: http://support.google.com/'\
@@ -787,7 +787,7 @@ class GMVaultLauncher(object):
                 LOG.critical("=== Exception traceback ===")
                 LOG.critical(gmvault_utils.get_exception_traceback())
                 LOG.critical("=== End of Exception traceback ===\n")
-        except Exception, err:
+        except Exception as err:
             LOG.critical("Error: %s. \n" % (err) )
             LOG.critical("=== Exception traceback ===")
             LOG.critical(gmvault_utils.get_exception_traceback())

@@ -82,7 +82,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         try:
             gimap.connect()
-        except ssl.SSLError, err:
+        except ssl.SSLError as err:
             
             msg = str(err)
             
@@ -285,7 +285,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         res = gimap.fetch(ids, [gimap.GMAIL_ID])
         
-        self.assertEquals(res, {27362: {'X-GM-MSGID': 1147537963432096749L, 'SEQ': 14535}, 27363: {'X-GM-MSGID': 1147537994018957026L, 'SEQ': 14536}})
+        self.assertEquals(res, {27362: {'X-GM-MSGID': 1147537963432096749, 'SEQ': 14535}, 27363: {'X-GM-MSGID': 1147537994018957026, 'SEQ': 14536}})
         
     def ztest_retrieve_all_params(self):
         """
@@ -304,7 +304,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         
         res = gimap.fetch(ids[0], [gimap.GMAIL_ID, gimap.EMAIL_BODY, gimap.GMAIL_THREAD_ID, gimap.GMAIL_LABELS])
         
-        self.assertEquals(res[ids[0]][gimap.GMAIL_ID], 1147537963432096749L)
+        self.assertEquals(res[ids[0]][gimap.GMAIL_ID], 1147537963432096749)
         
         self.assertEquals(res[ids[0]][gimap.EMAIL_BODY], \
                           'Message-ID: <6999505.1094377483218.JavaMail.wwwadm@chewbacca.ecmwf.int>\r\nDate: Sun, 5 Sep 2004 09:44:43 +0000 (GMT)\r\nFrom: Guillaume.Aubert@ecmwf.int\r\nReply-To: Guillaume.Aubert@ecmwf.int\r\nTo: aubert_guillaume@yahoo.fr\r\nSubject: Fwd: [Flickr] Guillaume Aubert wants you to see their photos\r\nMime-Version: 1.0\r\nContent-Type: text/plain; charset=us-ascii\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: jwma\r\nStatus: RO\r\nX-Status: \r\nX-Keywords:                 \r\nX-UID: 1\r\n\r\n\r\n') #pylint:disable-msg=C0301
@@ -681,7 +681,7 @@ class TestGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         credential = { 'type' : 'passwd', 'value': self.passwd}
         syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, credential, 'verySecRetKeY')
         
-        syncer._create_update_sync([142221L], compress = True)
+        syncer._create_update_sync([142221], compress = True)
         
     def test_check_flags(self):
         """

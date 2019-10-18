@@ -435,7 +435,7 @@ def get_oauth_cred(email, cred_path):
                 if len(oauth_result) == 2:
                     token  = oauth_result[0]
                     secret = oauth_result[1]
-        except Exception, _: #pylint: disable-msg=W0703              
+        except Exception as _: #pylint: disable-msg=W0703              
             print("Cannot read oauth credentials from %s. Force oauth credentials renewal." % user_oauth_file_path)
             print("=== Exception traceback ===")
             print(gmvault_utils.get_exception_traceback())
