@@ -633,7 +633,7 @@ def get_conf_defaults():
         
         return the_cf
     else:
-        return gmv.conf.conf_helper.MockConf() #retrun MockObject that will play defaults
+        return gmv.conf.conf_helper.MockConf() #return MockObject that will play defaults
     
 #VERSION DETECTION PATTERN
 VERSION_PATTERN  = r'\s*conf_version=\s*(?P<version>\S*)\s*'
