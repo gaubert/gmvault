@@ -121,7 +121,7 @@ LOG = log_utils.LoggerFactory.get_logger('gmv')
 
 class NotSeenAction(argparse.Action): #pylint:disable=R0903,w0232
     """
-       to differenciate between a seen and non seen command
+       to differentiate between a seen and non seen command
     """
     def __call__(self, parser, namespace, values, option_string=None):
         if values:
@@ -835,7 +835,7 @@ def setup_default_conf():
     """
        set the environment GMVAULT_CONF_FILE which is necessary for Conf object
     """
-    gmvault_utils.get_conf_defaults() # force instanciation of conf to load the defaults
+    gmvault_utils.get_conf_defaults() # force instantiation of conf to load the defaults
 
 def bootstrap_run():
     """ temporary bootstrap """
@@ -856,7 +856,7 @@ def bootstrap_run():
         LOG.critical("Activate debugging information.")
         activate_debug_mode()
     
-    # force instanciation of conf to load the defaults
+    # force instantiation of conf to load the defaults
     gmvault_utils.get_conf_defaults() 
     
     gmvlt.run(args)

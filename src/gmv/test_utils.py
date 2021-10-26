@@ -326,7 +326,7 @@ def diff_online_mailboxes(gmvaulter_a, gmvaulter_b): #pylint: disable=R0912, R09
 
     #dumb search not optimisation
     #iterate over imap_ids_a and flag emails only in a but not in b
-    #remove emails from imap_ids_b everytime they are found 
+    #remove emails from imap_ids_b every time they are found 
     for data_infos in batch_fetcher_a:
         for gm_info in data_infos:
             gm_id = data_infos[gm_info]['X-GM-MSGID']
@@ -376,7 +376,7 @@ def print_diff_result(diff_result):
 
 def assert_login_is_protected(login):
     """
-      Insure that the login is not my personnal mailbox
+      Insure that the login is not my personal mailbox
     """
     if login != 'gsync.mtester@gmail.com':
         raise Exception("Beware login should be gsync.mtester@gmail.com and it is %s" % (login)) 

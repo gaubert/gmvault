@@ -370,7 +370,7 @@ class CredentialHelper(object):
         """
         Used once the connection has been lost. Return an auth_str obtained from a refresh token or
         with the current access token if it is still valid
-        :param email: user email used to load refresh token from peristent file
+        :param email: user email used to load refresh token from persistent file
         :return: credential { 'type' : 'oauth2', 'value' : auth_str, 'option':None }
         """
         oauth2_creds = cls.read_oauth2_tok_sec(email)

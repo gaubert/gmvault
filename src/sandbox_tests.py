@@ -123,10 +123,10 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
         content = gz_fd.read()
         
         cipher.initCTR()
-        crypted = cipher.encryptCTR(content)
+        encrypted = cipher.encryptCTR(content)
         
         cipher.initCTR()
-        decrypted = cipher.decryptCTR(crypted)
+        decrypted = cipher.decryptCTR(encrypted)
         
         self.assertEquals(decrypted, content)
         
@@ -183,7 +183,7 @@ class TestSandbox(unittest.TestCase): #pylint:disable-msg=R0904
 
     def ztest_retry_mode(self):
         """
-           Test that the decorators are functionning properly
+           Test that the decorators are functioning properly
         """
         class MonkeyIMAPFetcher(imap_utils.GIMAPFetcher):
             

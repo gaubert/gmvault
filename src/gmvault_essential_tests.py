@@ -41,7 +41,7 @@ class TestEssentialGMVault(unittest.TestCase): #pylint:disable-msg=R0904
         self.gmvault_test_login, self.gmvault_test_passwd = test_utils.read_password_file('/homespace/gaubert/.ssh/gmvault_test_passwd')
         self.ba_login, self.ba_passwd = test_utils.read_password_file('/homespace/gaubert/.ssh/ba_passwd')
 
-        #xoauth hanlding
+        #xoauth handling
         self.ga_login = 'guillaume.aubert@gmail.com'
         self.ga_cred  = test_utils.get_oauth_cred(self.ga_login, '/homespace/gaubert/.ssh/ga_oauth')
 

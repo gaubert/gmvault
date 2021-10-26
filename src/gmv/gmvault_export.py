@@ -34,7 +34,7 @@ LOG = log_utils.LoggerFactory.get_logger('gmvault_export')
 
 class GMVaultExporter(object):
     """
-       Class hanlding the creation of exports in standard formats
+       Class handling the creation of exports in standard formats
        such as maildir, mbox
     """
     PROGRESS_INTERVAL = 200

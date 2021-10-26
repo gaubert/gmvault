@@ -481,7 +481,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
     @retry(3,1,2) # try 3 times to reconnect with a sleep time of 1 sec and a backoff of 2. The fourth time will wait 4 sec
     def list_all_folders(self): 
         """
-           Return all folders mainly for debuging purposes
+           Return all folders mainly for debugging purposes
         """
         return self.server.xlist_folders()
         

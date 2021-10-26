@@ -431,7 +431,7 @@ class Compiler(object):
                     dummy = the_token.value[1:-1]
                     
             elif the_token.type == 'NAME':
-                # intepret all non quoted names as a string
+                # interpret all non quoted names as a string
                 dummy = the_token.value
                     
             elif the_token.type == 'NUMBER':  

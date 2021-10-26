@@ -161,7 +161,7 @@ New Features:
 - GTalk chats can be restored in any accounts in the label gmvault-chats as the official Gmail Chats label in read-only.
 - Add the check command for cleaning your Gmvault db. With check, Gmvault-db will reflect your Gmail account and emails that have been trashed on Gmail will be deleted from the Gmvault-db.
 - The check option used to keep in sync the Gmvault-db with your Gmail account is now by default activated in the sync mode. Use option "--check-db" no to deactivate it. 
-  Beware if you have a Gmvault db containg emails from multiple accounts: You will have to resync in quick mode with --db-cleaning no with both accounts to no have part of it  deleted.
+  Beware if you have a Gmvault db containing emails from multiple accounts: You will have to resync in quick mode with --db-cleaning no with both accounts to no have part of it  deleted.
 - Add options --chats-only and --emails-only to synchronise only emails or chats.
 - Create default configuration file $HOME/.gmvault/gmvault_defaults.conf in order to make some options customisable.
 - Change quick sync time to 7 days and restore time to one month to speed-up the quick modes. It can be configured in $HOME/.gmvault/gmvault_defaults.conf.

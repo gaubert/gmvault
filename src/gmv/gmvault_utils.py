@@ -69,8 +69,8 @@ class memoized(object): #pylint: disable=C0103
         return functools.partial(self.__call__, obj)
     
 class Curry:
-    """ Class used to implement the currification (functional programming technic) :
-        Create a function from another one by instanciating some of its parameters.
+    """ Class used to implement the currification (functional programming technique) :
+        Create a function from another one by instantiating some of its parameters.
         For example double = curry(operator.mul,2), res = double(4) = 8
     """
     def __init__(self, fun, *args, **kwargs):
@@ -126,7 +126,7 @@ MULTI_SPACES_RE = re.compile(MULTI_SPACES_PATTERN, flags=re.U) #to support unico
 
 def remove_consecutive_spaces_and_strip(a_str):
     """
-       Supress consecutive spaces to replace them with a unique one.
+       Suppress consecutive spaces to replace them with a unique one.
        e.g "two  spaces" = "two spaces"
     """
     #return re.sub("\s{2,}", " ", a_str, flags=re.U).strip()
@@ -137,7 +137,7 @@ TIMER_SUFFIXES = ['y', 'w', 'd', 'h', 'm', 's']
 
 class Timer(object):
     """
-       Timer Class to mesure time.
+       Timer Class to measure time.
        Possess also few time utilities
     """
     
@@ -347,7 +347,7 @@ def get_all_dirs_under(root_dir, ignored_dirs = []):#pylint:disable=W0102
 
 def datetime2imapdate(a_datetime):
     """
-       Transfrom in date format for IMAP Request
+       Transform in date format for IMAP Request
     """
     if a_datetime:
         
@@ -589,7 +589,7 @@ def convert_argv_to_unicode(a_str):
     except Exception, err: 
        LOG.error(err)
        get_exception_traceback()
-       LOG.info("Convertion of %s from %s to a unicode failed. Will now convert to unicode using utf-8 encoding and ignoring errors (non utf-8 characters will be eaten)." % (a_str, terminal_encoding))
+       LOG.info("Conversion of %s from %s to a unicode failed. Will now convert to unicode using utf-8 encoding and ignoring errors (non utf-8 characters will be eaten)." % (a_str, terminal_encoding))
        LOG.info("Please set properly the Terminal encoding or use the [Localisation]:terminal_encoding property to set it.")
        u_str = unicode(a_str, encoding='utf-8', errors='ignore')
 
@@ -633,7 +633,7 @@ def get_conf_defaults():
         
         return the_cf
     else:
-        return gmv.conf.conf_helper.MockConf() #retrun MockObject that will play defaults
+        return gmv.conf.conf_helper.MockConf() #return MockObject that will play defaults
     
 #VERSION DETECTION PATTERN
 VERSION_PATTERN  = r'\s*conf_version=\s*(?P<version>\S*)\s*'
