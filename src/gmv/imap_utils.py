@@ -121,7 +121,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1): #pylint:disable=R0912
                 LOG.exception(ignored)
         else:
             #cascade error
-            raise rec_error
+            raise
     
     def inner_retry(the_func): #pylint:disable=C0111,R0912
         def wrapper(*args, **kwargs): #pylint:disable=C0111,R0912
@@ -179,6 +179,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1): #pylint:disable=R0912
                     LOG.debug("IMAP (normal) error message = %s. traceback:%s" % (err, gmvault_utils.get_exception_traceback()))
                     
                     if nb_tries[0] < a_nb_tries:
+                        LOG.critical(err)
                         LOG.critical("Error when reaching Gmail server. Wait %s second(s) and retry up to 2 times." \
                                      % (m_sleep_time[0]))
                     else:
@@ -800,6 +801,10 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
         try:
            #a_body = self._clean_email_body(a_body)
            res = self.server.append(a_folder, a_body, a_flags, a_internal_time)
+        except imaplib.IMAP4.error, erre:
+           if str(erre).find("APPEND command error: BAD ['[TOOBIG]") >= 0:
+              LOG.critical("APPEND error due to attachment too big: %s" % (len(a_body)))
+           raise
         except imaplib.IMAP4.abort, err:
            # handle issue when there are invalid characters (This is do to the presence of null characters)
            if str(err).find("APPEND => Invalid character in literal") >= 0:
@@ -807,7 +812,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
               a_body = self._clean_email_body(a_body)
               self.reconnect()
               res    = self.server.append(a_folder, a_body, a_flags, a_internal_time)
-    
+        
         LOG.debug("Appended data with flags %s and internal time %s. Operation time = %s.\nres = %s\n" \
                   % (a_flags, a_internal_time, the_timer.elapsed_ms(), res))
         
