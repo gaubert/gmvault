@@ -45,15 +45,14 @@ def handle_restore_imap_error(the_exception, gm_id, db_gmail_ids_info, gmvaulter
             LOG.critical("Disconnecting and reconnecting to restart cleanly.")
             gmvaulter.src.reconnect() #reconnect
         else:
-            raise the_exception
+            raise
     elif isinstance(the_exception, IOError) and str(the_exception).find('[Errno 2] No such file or directory:') >=0:
         LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
                          " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(the_exception)))  
         gmvaulter.gstorer.quarantine_email(gm_id)
         gmvaulter.error_report['emails_in_quarantine'].append(gm_id)
         LOG.critical("Disconnecting and reconnecting to restart cleanly.")
-        gmvaulter.src.reconnect() #reconnect      
-           
+        gmvaulter.src.reconnect() #reconnects
     elif isinstance(the_exception, imaplib.IMAP4.error): 
         LOG.error("Catched IMAP Error %s" % (str(the_exception)))
         LOG.exception(the_exception)
@@ -64,9 +63,14 @@ def handle_restore_imap_error(the_exception, gm_id, db_gmail_ids_info, gmvaulter
             LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore it:"\
                          " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(the_exception)))
             gmvaulter.gstorer.quarantine_email(gm_id)
+            gmvaulter.error_report['emails_in_quarantine'].append(gm_id)
+        elif str(the_exception) == "APPEND command error: BAD ['[TOOBIG] Message too large. https://support.google.com/mail/answer/6584#limit']":
+            LOG.critical("Quarantine email with gm id %s from %s. GMAIL IMAP cannot restore attachment too large:"\
+                         " err={%s}" % (gm_id, db_gmail_ids_info[gm_id], str(the_exception)))
+            gmvaulter.gstorer.quarantine_email(gm_id)
             gmvaulter.error_report['emails_in_quarantine'].append(gm_id) 
         else:
-            raise the_exception
+            raise
     elif isinstance(the_exception, imap_utils.PushEmailError):
         LOG.error("Catch the following exception %s" % (str(the_exception)))
         LOG.exception(the_exception)
@@ -77,11 +81,11 @@ def handle_restore_imap_error(the_exception, gm_id, db_gmail_ids_info, gmvaulter
             gmvaulter.gstorer.quarantine_email(gm_id)
             gmvaulter.error_report['emails_in_quarantine'].append(gm_id) 
         else:
-            raise the_exception          
+            raise
     else:
         LOG.error("Catch the following exception %s" % (str(the_exception)))
         LOG.exception(the_exception)
-        raise the_exception
+        raise
 
 def handle_sync_imap_error(the_exception, the_id, error_report, src):
     """
@@ -266,7 +270,8 @@ class GMVaulter(object):
                               'cannot_be_fetched'  : [],
                               'emails_in_quarantine' : [],
                               'reconnections' : 0,
-                              'key_error' : []}
+                              'key_error' : [],
+                              'attachment_too_big' : 0 }
         
         #instantiate gstorer
         self.gstorer =  gmvault_db.GmailStorer(self.db_root_dir, self.use_encryption)
@@ -1142,6 +1147,7 @@ class GMVaulter(object):
                         labels_to_apply[ex_label] = imap_id
                 
                 except Exception, err:
+                    LOG.critical("Error on gmid %s" % (gm_id))
                     handle_restore_imap_error(err, gm_id, db_gmail_ids_info, self)
 
             #create the non existing labels and update existing labels
