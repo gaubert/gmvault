@@ -250,7 +250,7 @@ class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
     
             gmvaulter.run(args)
         
-        except SystemExit, _:
+        except SystemExit as _:
             print("In Error success")
             
     def ztest_cli_bad_passwd(self):
@@ -270,7 +270,7 @@ class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
     
             gmvaulter.run(args)
         
-        except SystemExit, err:
+        except SystemExit as err:
             print("In Error success")
             
     def ztest_cli_bad_login(self):
@@ -290,7 +290,7 @@ class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
     
             gmvaulter.run(args)
         
-        except SystemExit, err:
+        except SystemExit as err:
             print("In Error success")
             
     
@@ -307,10 +307,10 @@ class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
     
         try:
             _ = gmvaulter.parse_args()
-        except SystemExit, err:
+        except SystemExit as err:
             self.assertEquals(type(err), type(SystemExit()))
             self.assertEquals(err.code, 2)
-        except Exception, err:
+        except Exception as err:
             self.fail('unexpected exception: %s' % err)
         else:
             self.fail('SystemExit exception expected')
@@ -339,9 +339,9 @@ class TestGMVCMD(unittest.TestCase): #pylint:disable-msg=R0904
             self.assertEquals(args['port'], 993)
             self.assertEquals(args['db-dir'],'./gmvault-db')
             
-        except SystemExit, err:
+        except SystemExit as err:
             self.fail("SystemExit Exception: %s"  % err)
-        except Exception, err:
+        except Exception as err:
             self.fail('unexpected exception: %s' % err)
     
     def ztest_full_sync_gmv(self):

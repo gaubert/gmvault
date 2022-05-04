@@ -18,7 +18,10 @@
 '''
 import tokenize
 import token
-import StringIO
+try:
+    from StringIO import StringIO ## for Python 2
+except ImportError:
+    from io import StringIO ## for Python 3
 
 class TokenizerError(Exception):
     """Base class for All exceptions"""
@@ -109,7 +112,7 @@ class Tokenizer(object):
             Raises:
                exception TokenizerError if the syntax of the aString string is incorrect
         """
-        g_info = tokenize.generate_tokens(StringIO.StringIO(a_program).readline)   # tokenize the string
+        g_info = tokenize.generate_tokens(StringIO(a_program).readline)   # tokenize the string
         
         for toknum, tokval, tokbeg, tokend, tokline  in g_info:
             if token.tok_name[toknum] not in a_eatable_token_types:
@@ -266,7 +269,7 @@ class Compiler(object):
         try:
             tokenizer = Tokenizer()
             tokenizer.tokenize(a_to_compile_str, self._tokens_to_ignore)
-        except tokenize.TokenError, err:
+        except tokenize.TokenError as err:
             
             #translate this error into something understandable. 
             #It is because the bloody tokenizer counts the brackets
@@ -287,7 +290,7 @@ class Compiler(object):
         try:
             tokenizer = Tokenizer()
             tokenizer.tokenize(a_to_compile_str, self._tokens_to_ignore)
-        except tokenize.TokenError, err:
+        except tokenize.TokenError as err:
             
             #translate this error into something understandable. 
             #It is because the bloody tokenizer counts the brackets
@@ -423,8 +426,8 @@ class Compiler(object):
                 #check if the string is unicode
                 if len(the_token.value) >= 3 and the_token.value[:2] == "u'":
                     #unicode string
-                    #dummy = unicode(the_token.value[2:-1], 'utf_8') #decode from utf-8 encoding not necessary if read full utf-8 file
-                    dummy = unicode(the_token.value[2:-1])
+                    #dummy = str(the_token.value[2:-1], 'utf_8') #decode from utf-8 encoding not necessary if read full utf-8 file
+                    dummy = str(the_token.value[2:-1])
                 else:
                     #ascii string
                     # the value contains the quote or double quotes so remove them always

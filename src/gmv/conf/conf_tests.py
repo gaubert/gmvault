@@ -265,7 +265,7 @@ class TestConf(unittest.TestCase): #pylint: disable=R0904
         
         try:
             self.conf.get_dict('GroupTestValueStruct', 'dict_error')
-        except Exception, err:
+        except Exception as err:
             self.assertEquals(err.message, "Expression \"{1:2,'v b': a\" cannot be converted as a dict.")
             return
         
@@ -277,7 +277,7 @@ class TestConf(unittest.TestCase): #pylint: disable=R0904
         try:
             the_list = self.conf.get_list('GroupTestValueStruct', 'list_error')
             print('the_list = %s\n' % (the_list))
-        except Exception, err:
+        except Exception as err:
             self.assertEquals(err.message, 'Unsupported token (type: @, value : OP) (line=1,col=3).')
             return
          

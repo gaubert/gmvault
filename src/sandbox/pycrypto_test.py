@@ -38,8 +38,8 @@ if __name__ == '__main__':
     key="This is my key"
     enc = AESEncryptor(key)
     for secret in secrets:
-        print "Secret:", secret
+        print("Secret:", secret)
         encrypted = enc.encrypt(secret) 
-        print "Encrypted secret:", encrypted
-        print "Clear Secret:" , enc.decrypt(encrypted)
-        print '-' *50
+        print("Encrypted secret:", encrypted)
+        print("Clear Secret:" , enc.decrypt(encrypted))
+        print('-' *50)

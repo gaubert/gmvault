@@ -59,7 +59,7 @@ class Blowfish:
     DECRYPT = 1
  
     # For _round()
-    _MODULUS = 2L ** 32
+    _MODULUS = 2 ** 32
  
     # CTR constants
     _BLOCK_SIZE = 8
@@ -528,23 +528,23 @@ if __name__ == '__main__':
  
     def _demo(heading, source, encrypted, decrypted):
         """demo method """
-        print heading
-        print "\tSource: %(source)s" % {
+        print(heading)
+        print("\tSource: %(source)s" % {
          'source': source,
-        }
-        print "\tEncrypted: %(encrypted)s" % {
+        })
+        print("\tEncrypted: %(encrypted)s" % {
          'encrypted': encrypted,
-        }
-        print "\tDecrypted: %(decrypted)s" % {
+        })
+        print("\tDecrypted: %(decrypted)s" % {
          'decrypted': decrypted,
-        }
-        print
+        })
+        print()
  
     key = 'This is a test key'
     cipher = Blowfish(key)
  
     # Encryption processing
-    (xl, xr) = (123456L, 654321L)
+    (xl, xr) = (123456, 654321)
     (cl, cr) = cipher.cipher(xl, xr, cipher.ENCRYPT)
     (dl, dr) = cipher.cipher(cl, cr, cipher.DECRYPT)
     _demo("Testing encryption", (xl, xr), (cl, cr), (dl, dr))
@@ -564,7 +564,7 @@ if __name__ == '__main__':
     _demo("Testing CTR logic", text, repr(crypted), decrypted)
  
     # Test speed
-    print "Testing speed"
+    print("Testing speed")
     test_strings = [''.join(("The quick brown fox jumps over the lazy dog", str(i),)) for i in xrange(1000)]
     n = 0
     t1 = time.time()
@@ -575,8 +575,8 @@ if __name__ == '__main__':
         t2 = time.time()
         if t2 - t1 >= 5.0:
             break
-    print "%(count)i encryptions in %(time)0.1f seconds: %(throughput)0.1f enc/s" % {
+    print("%(count)i encryptions in %(time)0.1f seconds: %(throughput)0.1f enc/s" % {
      'count': n,
      'time': t2 - t1,
      'throughput': n / (t2 - t1),
-    }
+    })

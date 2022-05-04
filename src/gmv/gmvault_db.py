@@ -25,7 +25,10 @@ import itertools
 import fnmatch
 import shutil
 import codecs
-import StringIO
+try:
+    from StringIO import StringIO ## for Python 2
+except ImportError:
+    from io import StringIO ## for Python 3
 
 import gmv.blowfish as blowfish
 import gmv.log_utils as log_utils
@@ -264,10 +267,10 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             try:
                 encod  = gmvault_utils.guess_encoding(tempo, use_encoding_list = False)
                 u_tempo = unicode(tempo, encoding = encod)
-            except gmvault_utils.GuessEncoding, enc_err:
+            except gmvault_utils.GuessEncoding as enc_err:
                   #it is already in unicode so ignore encoding
                   u_tempo = tempo
-            except Exception, e:
+            except Exception as e:
                   LOG.critical(e)
                   LOG.critical("Warning: Guessed encoding = (%s). Ignore those characters" % (encod))
                   #try utf-8

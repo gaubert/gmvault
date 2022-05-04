@@ -26,7 +26,11 @@ import calendar
 import fnmatch
 import functools
 
-import StringIO
+try:
+    from StringIO import StringIO ## for Python 2
+except ImportError:
+    from io import StringIO ## for Python 3
+
 import sys
 import traceback
 import random 
@@ -53,11 +57,11 @@ class memoized(object): #pylint: disable=C0103
     def __call__(self, *args):
         try:
             return self.cache[args]
-        except KeyError:
+        except KeyError as e:
             value = self.func(*args)
             self.cache[args] = value
             return value
-        except TypeError:
+        except TypeError as e:
             # uncachable -- for instance, passing a list as an argument.
             # Better to not cache than to blow up entirely.
             return self.func(*args)
@@ -115,7 +119,7 @@ def get_exception_traceback():
                
     """
    
-    the_file = StringIO.StringIO()
+    the_file = StringIO()
     exception_type, exception_value, exception_traceback = sys.exc_info() #IGNORE:W0702
     traceback.print_exception(exception_type, exception_value, exception_traceback, file = the_file)
     return the_file.getvalue()
@@ -409,9 +413,9 @@ def __rmgeneric(path, __func__):
     """ private function that is part of delete_all_under """
     try:
         __func__(path)
-        #print 'Removed ', path
-    except OSError, (_, strerror): #IGNORE:W0612
-        print """Error removing %(path)s, %(error)s """ % {'path' : path, 'error': strerror }
+        #print('Removed ', path)
+    except OSError as strerror: #IGNORE:W0612
+        print("""Error removing %(path)s, %(error)s """ % {'path' : path, 'error': strerror })
             
 def delete_all_under(path, delete_top_dir = False):
     """ delete all files and directories under path """
@@ -549,7 +553,7 @@ def convert_to_unicode(a_str):
 
         LOG.debug("Convert to %s" % (encoding))
         u_str = unicode(a_str, encoding = encoding) #convert to unicode with given encoding
-    except Exception, e:
+    except Exception as e:
         LOG.debug("Exception: %s" % (e))
         LOG.info("Warning: Guessed encoding = (%s). Ignore those characters" % (encoding if encoding else "Not defined"))
         #try utf-8
@@ -586,7 +590,7 @@ def convert_argv_to_unicode(a_str):
        u_str = a_str.decode(terminal_encoding)
        LOG.debug("unicode_escape val = %s." % (u_str.encode('unicode_escape')))
        LOG.debug("raw unicode     = %s." % (u_str))
-    except Exception, err: 
+    except Exception as err: 
        LOG.error(err)
        get_exception_traceback()
        LOG.info("Convertion of %s from %s to a unicode failed. Will now convert to unicode using utf-8 encoding and ignoring errors (non utf-8 characters will be eaten)." % (a_str, terminal_encoding))
@@ -667,7 +671,7 @@ def _create_default_conf_file(home_conf_file):
         with open(home_conf_file, "w+") as f:
             f.write(gmvault_const.DEFAULT_CONF_FILE)
         return home_conf_file
-    except Exception, err:
+    except Exception as err:
         #catch all error and let run gmvault with defaults if needed
         LOG.critical("Ignore Error when trying to create conf file for defaults in %s:\n%s.\n" % (get_home_dir_path(), err))
         LOG.debug("=== Exception traceback ===")
