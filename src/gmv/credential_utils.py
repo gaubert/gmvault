@@ -20,18 +20,18 @@
  and xauth part of gyb http://code.google.com/p/got-your-back/source/browse/trunk/gyb.py
 
 '''
+from __future__ import absolute_import
 import webbrowser
 import json
 import base64
-import urllib #for urlencode
-import urllib2
 
 import os
 import getpass
 
-import gmv.log_utils as log_utils
-import gmv.blowfish as blowfish
-import gmv.gmvault_utils as gmvault_utils
+from . import log_utils
+from . import blowfish
+from . import gmvault_utils
+from six.moves import input, urllib
 
 LOG = log_utils.LoggerFactory.get_logger('credential_utils')
 
@@ -62,7 +62,7 @@ class CredentialHelper(object):
        Helper handling all credentials
     """
     SECRET_FILEPATH = '%s/token.sec'
-    
+
     @classmethod
     def get_secret_key(cls, a_filepath):
         """
@@ -74,7 +74,7 @@ class CredentialHelper(object):
         else:
             secret = gmvault_utils.make_password()
 
-            fdesc = os.open(a_filepath, os.O_CREAT|os.O_WRONLY, 0600)
+            fdesc = os.open(a_filepath, os.O_CREAT|os.O_WRONLY, 0o600)
             try:
                 the_bytes = os.write(fdesc, secret)
             finally:
@@ -84,24 +84,24 @@ class CredentialHelper(object):
                 raise Exception("Error: Cannot write secret in %s" % a_filepath)
 
         return secret
-    
+
     @classmethod
     def store_passwd(cls, email, passwd):
         """
            Encrypt and store gmail password
         """
         passwd_file = '%s/%s.passwd' % (gmvault_utils.get_home_dir_path(), email)
-    
-        fdesc = os.open(passwd_file, os.O_CREAT|os.O_WRONLY, 0600)
-        
+
+        fdesc = os.open(passwd_file, os.O_CREAT|os.O_WRONLY, 0o600)
+
         cipher       = blowfish.Blowfish(cls.get_secret_key(cls.SECRET_FILEPATH % (gmvault_utils.get_home_dir_path())))
         cipher.initCTR()
-    
+
         encrypted = cipher.encryptCTR(passwd)
         the_bytes = os.write(fdesc, encrypted)
-    
+
         os.close(fdesc)
-        
+
         if the_bytes < len(encrypted):
             raise Exception("Error: Cannot write password in %s" % (passwd_file))
 
@@ -153,7 +153,7 @@ class CredentialHelper(object):
             try:
                 with open(user_oauth_file_path) as oauth_file:
                     oauth_result = json.load(oauth_file)
-            except Exception, _: #pylint: disable-msg=W0703
+            except Exception as _: #pylint: disable-msg=W0703
                 LOG.critical("Cannot read oauth credentials from %s. Force oauth credentials renewal." % user_oauth_file_path)
                 LOG.critical("=== Exception traceback ===")
                 LOG.critical(gmvault_utils.get_exception_traceback())
@@ -197,24 +197,24 @@ class CredentialHelper(object):
         #first check that there is an email
         if not args.get('email', None):
             raise Exception("No email passed, Need to pass an email")
-        
-        if args['passwd'] in ['empty', 'store', 'renew']: 
-            # --passwd is here so look if there is a passwd in conf file 
+
+        if args['passwd'] in ['empty', 'store', 'renew']:
+            # --passwd is here so look if there is a passwd in conf file
             # or go in interactive mode
-            
+
             LOG.critical("Authentication performed with Gmail password.\n")
-            
+
             passwd = cls.read_password(args['email'])
-            
+
             #password to be renewed so need an interactive phase to get the new pass
             if not passwd or args['passwd'] in ['renew', 'store']: # go to interactive mode
                 if not test_mode.get('activate', False):
                     passwd = getpass.getpass('Please enter gmail password for %s and press ENTER:' % (args['email']))
                 else:
                     passwd = test_mode.get('value', 'no_password_given')
-                    
+
                 credential = { 'type' : 'passwd', 'value' : passwd}
-                
+
                 #store it in dir if asked for --store-passwd or --renew-passwd
                 if args['passwd'] in ['renew', 'store']:
                     LOG.critical("Store password for %s in $HOME/.gmvault." % (args['email']))
@@ -223,7 +223,7 @@ class CredentialHelper(object):
             else:
                 LOG.critical("Use password stored in $HOME/.gmvault dir (Storing your password here is not recommended).")
                 credential = { 'type' : 'passwd', 'value' : passwd, 'option':'read' }
-                               
+
         # use oauth2
         elif args['passwd'] in ('not_seen', None) and args['oauth2'] in (None, 'empty', 'renew', 'not_seen'):
             # get access token and refresh token
@@ -261,8 +261,8 @@ class CredentialHelper(object):
       request_url = '%s/%s' % (account_base_url, 'o/oauth2/token')
 
       try:
-        response = urllib2.urlopen(request_url, urllib.urlencode(params)).read()
-      except Exception, err: #pylint: disable-msg=W0703
+        response = urllib.request.urlopen(request_url, urllib.parse.urlencode(params)).read()
+      except Exception as err: #pylint: disable-msg=W0703
         LOG.critical("Error: Problems when trying to connect to Google oauth2 endpoint: %s.\n" % (request_url))
         raise err
 
@@ -300,8 +300,8 @@ class CredentialHelper(object):
         request_url = '%s/%s' % (account_base_url, 'o/oauth2/token')
 
         try:
-            response = urllib2.urlopen(request_url, urllib.urlencode(params)).read()
-        except Exception, err: #pylint: disable-msg=W0703
+            response = urllib.request.urlopen(request_url, urllib.parse.urlencode(params)).read()
+        except Exception as err: #pylint: disable-msg=W0703
             LOG.critical("Error: Problems when trying to connect to Google oauth2 endpoint: %s." % (request_url))
             raise err
 
@@ -317,7 +317,7 @@ class CredentialHelper(object):
         permission_url = generate_permission_url()
 
         #message to indicate that a browser will be opened
-        raw_input('gmvault will now open a web browser page in order for you to grant gmvault access to your Gmail.\n'\
+        input('gmvault will now open a web browser page in order for you to grant gmvault access to your Gmail.\n'\
                   'Please make sure you\'re logged into the correct Gmail account (%s) before granting access.\n'\
                   'Press ENTER to open the browser.' % (email))
 
@@ -325,17 +325,17 @@ class CredentialHelper(object):
         if use_webbrowser:
             try:
                 webbrowser.open(str(permission_url))
-            except Exception, err: #pylint: disable-msg=W0703
+            except Exception as err: #pylint: disable-msg=W0703
                 LOG.critical("Error: %s.\n" % (err) )
                 LOG.critical("=== Exception traceback ===")
                 LOG.critical(gmvault_utils.get_exception_traceback())
                 LOG.critical("=== End of Exception traceback ===\n")
 
-            verification_code = raw_input("You should now see the web page on your browser now.\n"\
+            verification_code = input("You should now see the web page on your browser now.\n"\
                       "If you don\'t, you can manually open:\n\n%s\n\nOnce you've granted"\
                       " gmvault access, enter the verification code and press enter:\n" % (permission_url))
         else:
-            verification_code = raw_input('Please log in and/or grant access via your browser at %s '
+            verification_code = input('Please log in and/or grant access via your browser at %s '
                       'then enter the verification code and press enter:' % (permission_url))
 
         #request access and refresh token with the obtained verification code

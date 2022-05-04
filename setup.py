@@ -16,6 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from __future__ import absolute_import, print_function
+
 import os
 from setuptools import setup
 
@@ -61,11 +63,11 @@ setup(name='gmvault',
       author_email='guillaume.aubert@gmail.com',
       url='http://www.gmvault.org',
       license='AGPLv3',
-      packages=['gmv','gmv.conf', 'gmv.conf.utils'],
-      package_dir = {'gmv': './src/gmv'},
+      packages=['gmv', 'gmv.conf', 'gmv.conf.utils'],
+      package_dir={'': 'src'},
       scripts=['./etc/scripts/gmvault'],
       package_data={'': ['release-note.txt']},
       include_package_data=True,
       #install_requires=['argparse', 'Logbook==0.4.1', 'IMAPClient==0.9.2','gdata==2.0.17']
-      install_requires=['argparse', 'Logbook==0.10.1', 'IMAPClient==0.13', 'chardet==2.3.0']
+      install_requires=['argparse', 'Logbook==0.10.1', 'IMAPClient==0.13', 'chardet==2.3.0', 'six']
       )

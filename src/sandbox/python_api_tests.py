@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from __future__ import absolute_import, print_function
+
 import argparse
 import httplib2
 
@@ -44,4 +46,4 @@ threads = gmail_service.users().threads().list(userId='me').execute()
 # Print ID for each thread
 if threads['threads']:
   for thread in threads['threads']:
-    print 'Thread ID: %s' % (thread['id'])
+    print('Thread ID: %s' % (thread['id']))

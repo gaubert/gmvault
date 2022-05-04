@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
- 
+
 # blowfish.py
 # Copyright (C) 2002 Michael Gilfix <mgilfix@eecs.tufts.edu>
 #
@@ -16,7 +16,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
- 
+
 # This software was modified by Ivan Voras: CTR cipher mode of
 # operation was added, together with testing and example code.
 # These changes are (c) 2007./08. Ivan Voras <ivoras@gmail.com>
@@ -24,7 +24,7 @@
 # GPL or Artistic License, the same as the original module.
 # All disclaimers of warranty from the original module also
 # apply to these changes.
- 
+
 # Further modifications by Neil Tallim <flan@uguu.ca> to make use
 # of more modern Python practises and features, improving
 # performance and, in this maintainer's opinion, readability.
@@ -33,18 +33,37 @@
 # June 13, 2010, subject to the terms of the original module.
 """
 Blowfish Encryption
- 
+
 This module is a pure python implementation of Bruce Schneier's
 encryption scheme 'Blowfish'. Blowish is a 16-round Feistel Network
 cipher and offers substantial speed gains over DES.
- 
+
 The key is a string of length anywhere between 64 and 448 bits, or
 equivalently 8 and 56 bytes. The encryption and decryption functions operate
 on 64-bit blocks, or 8-byte strings.
 """
+from __future__ import absolute_import, print_function
+
 import array
 import struct
- 
+from six.moves import range
+
+
+def _ensure_bytearray(s):
+    """Convert bytes to bytearrays and complain otherwise"""
+    if not isinstance(s, bytearray):
+        if not isinstance(s, bytes):
+            raise TypeError('Expected object of type bytes or bytearray, got: '
+                            '{0}'.format(type(s)))
+        else:
+            s = bytearray(s)
+    return s
+
+def _chr(i):
+    """Python 2/3 compatible version of chr for byte strings"""
+    return bytes(bytearray((i,)))
+
+
 class Blowfish:
     """
     Implements the encryption and decryption functionality of the Blowfish
@@ -53,29 +72,31 @@ class Blowfish:
     # Key restrictions
     KEY_MIN_LEN = 8 #64 bits
     KEY_MAX_LEN = 56 #448 bits
- 
+
     # Cipher directions
     ENCRYPT = 0
     DECRYPT = 1
- 
+
     # For _round()
-    _MODULUS = 2L ** 32
- 
+    _MODULUS = 2 ** 32
+
     # CTR constants
     _BLOCK_SIZE = 8
- 
+
     def __init__(self, key):
         """
         Creates an instance of blowfish using 'key' as the encryption key.
- 
+
         Key is a string of bytes, used to seed calculations.
         Once the instance of the object is created, the key is no longer necessary.
         """
+        key = _ensure_bytearray(key)
+
         if not self.KEY_MIN_LEN <= len(key) <= self.KEY_MAX_LEN:
             raise ValueError("Attempted to initialize Blowfish cipher with key of invalid length: %(len)i" % {
              'len': len(key),
             })
- 
+
         self._p_boxes = array.array('I', [
             0x243F6A88, 0x85A308D3, 0x13198A2E, 0x03707344,
             0xA4093822, 0x299F31D0, 0x082EFA98, 0xEC4E6C89,
@@ -83,7 +104,7 @@ class Blowfish:
             0xC0AC29B7, 0xC97C50DD, 0x3F84D5B5, 0xB5470917,
             0x9216D5D9, 0x8979FB1B
         ])
- 
+
         self._s_boxes = (
             array.array('I', [
                 0xD1310BA6, 0x98DFB5AC, 0x2FFD72DB, 0xD01ADFB7,
@@ -350,36 +371,36 @@ class Blowfish:
                 0xB74E6132, 0xCE77E25B, 0x578FDFE3, 0x3AC372E6
             ])
         )
- 
+
         # Cycle through the p-boxes and round-robin XOR the
         # key with the p-boxes
         key_len = len(key)
         index = 0
-        for i in xrange(len(self._p_boxes)):
+        for i in range(len(self._p_boxes)):
             self._p_boxes[i] = self._p_boxes[i] ^ (
-             (ord(key[index % key_len]) << 24) +
-             (ord(key[(index + 1) % key_len]) << 16) +
-             (ord(key[(index + 2) % key_len]) << 8) +
-             (ord(key[(index + 3) % key_len]))
+             (key[index % key_len] << 24) +
+             (key[(index + 1) % key_len] << 16) +
+             (key[(index + 2) % key_len] << 8) +
+             (key[(index + 3) % key_len])
             )
             index += 4
- 
+
         # For the chaining process
         l = r = 0
- 
+
         # Begin chain replacing the p-boxes
-        for i in xrange(0, len(self._p_boxes), 2):
+        for i in range(0, len(self._p_boxes), 2):
             (l, r) = self.cipher(l, r, self.ENCRYPT)
             self._p_boxes[i] = l
             self._p_boxes[i + 1] = r
- 
+
         # Chain replace the s-boxes
-        for i in xrange(len(self._s_boxes)):
-            for j in xrange(0, len(self._s_boxes[i]), 2):
+        for i in range(len(self._s_boxes)):
+            for j in range(0, len(self._s_boxes[i]), 2):
                 (l, r) = self.cipher(l, r, self.ENCRYPT)
                 self._s_boxes[i][j] = l
                 self._s_boxes[i][j + 1] = r
- 
+
     def initCTR(self, iv=0):
         """
         Initializes CTR engine for encryption or decryption.
@@ -389,18 +410,18 @@ class Blowfish:
              'target-len': self._BLOCK_SIZE,
              'q-len': struct.calcsize("Q"),
             })
- 
+
         self._ctr_iv = iv
         self._calcCTRBuf()
- 
+
     def cipher(self, xl, xr, direction):
         """
         Encrypts a 64-bit block of data where xl is the upper 32 bits and xr is
         the lower 32-bits.
- 
+
         'direction' is the direction to apply the cipher, either ENCRYPT or
         DECRYPT class-constants.
- 
+
         Returns a tuple of either encrypted or decrypted data of the left half
         and right half of the 64-bit block.
         """
@@ -421,70 +442,75 @@ class Blowfish:
             xr = xr ^ self._p_boxes[1]
             xl = xl ^ self._p_boxes[0]
         return (xl, xr)
- 
+
     def encrypt(self, data):
         """
         Encrypt an 8-byte (64-bit) block of text where 'data' is an 8 byte
         string.
- 
+
         Returns an 8-byte encrypted string.
         """
+        data = _ensure_bytearray(data)
+
         if not len(data) == 8:
             raise ValueError("Attempted to encrypt data of invalid block length: %(len)i" % {
              'len': len(data),
             })
- 
+
         # Use big endianess since that's what everyone else uses
-        xl = (ord(data[3])) | (ord(data[2]) << 8) | (ord(data[1]) << 16) | (ord(data[0]) << 24)
-        xr = (ord(data[7])) | (ord(data[6]) << 8) | (ord(data[5]) << 16) | (ord(data[4]) << 24)
- 
+        xl = (data[3]) | (data[2] << 8) | (data[1] << 16) | (data[0] << 24)
+        xr = (data[7]) | (data[6] << 8) | (data[5] << 16) | (data[4] << 24)
+
         (cl, cr) = self.cipher(xl, xr, self.ENCRYPT)
-        chars = ''.join ([
-         chr((cl >> 24) & 0xFF), chr((cl >> 16) & 0xFF), chr((cl >> 8) & 0xFF), chr(cl & 0xFF),
-         chr((cr >> 24) & 0xFF), chr((cr >> 16) & 0xFF), chr((cr >> 8) & 0xFF), chr(cr & 0xFF)
+        chars = b''.join ([
+         _chr((cl >> 24) & 0xFF), _chr((cl >> 16) & 0xFF), _chr((cl >> 8) & 0xFF), _chr(cl & 0xFF),
+         _chr((cr >> 24) & 0xFF), _chr((cr >> 16) & 0xFF), _chr((cr >> 8) & 0xFF), _chr(cr & 0xFF)
         ])
         return chars
- 
+
     def decrypt(self, data):
         """
         Decrypt an 8 byte (64-bit) encrypted block of text, where 'data' is the
         8-byte encrypted string.
- 
+
         Returns an 8-byte string of plaintext.
         """
+        data = _ensure_bytearray(data)
+
         if not len(data) == 8:
             raise ValueError("Attempted to encrypt data of invalid block length: %(len)i" % {
              'len': len(data),
             })
- 
+
         # Use big endianess since that's what everyone else uses
-        cl = (ord(data[3])) | (ord(data[2]) << 8) | (ord(data[1]) << 16) | (ord(data[0]) << 24)
-        cr = (ord(data[7])) | (ord(data[6]) << 8) | (ord(data[5]) << 16) | (ord(data[4]) << 24)
- 
+        cl = (data[3]) | (data[2] << 8) | (data[1] << 16) | (data[0] << 24)
+        cr = (data[7]) | (data[6] << 8) | (data[5] << 16) | (data[4] << 24)
+
         (xl, xr) = self.cipher (cl, cr, self.DECRYPT)
-        return ''.join ([
-         chr((xl >> 24) & 0xFF), chr((xl >> 16) & 0xFF), chr((xl >> 8) & 0xFF), chr(xl & 0xFF),
-         chr((xr >> 24) & 0xFF), chr((xr >> 16) & 0xFF), chr((xr >> 8) & 0xFF), chr(xr & 0xFF)
+        return b''.join ([
+         _chr((xl >> 24) & 0xFF), _chr((xl >> 16) & 0xFF), _chr((xl >> 8) & 0xFF), _chr(xl & 0xFF),
+         _chr((xr >> 24) & 0xFF), _chr((xr >> 16) & 0xFF), _chr((xr >> 8) & 0xFF), _chr(xr & 0xFF)
         ])
- 
+
     def encryptCTR(self, data):
         """
         Encrypts an arbitrary string and returns the encrypted string.
- 
+
         This method can be called successively for multiple string blocks.
         """
-        if not type(data) is str:
+        data = _ensure_bytearray(data)
+        if not isinstance(data, bytearray):
             raise TypeError("Only 8-bit strings are supported")
- 
-        return ''.join([chr(ord(ch) ^ self._nextCTRByte()) for ch in data])
- 
+
+        return b''.join([_chr(ch ^ self._nextCTRByte()) for ch in data])
+
     def decryptCTR(self, data):
         """
         Decrypts a string encrypted with encryptCTR() and returns the original
         string.
         """
         return self.encryptCTR(data)
- 
+
     def _calcCTRBuf(self):
         """
         Calculates one block of CTR keystream.
@@ -492,80 +518,80 @@ class Blowfish:
         self._ctr_cks = self.encrypt(struct.pack("Q", self._ctr_iv)) # keystream block
         self._ctr_iv += 1
         self._ctr_pos = 0
- 
+
     def _nextCTRByte(self):
         """
         Returns one byte of CTR keystream.
         """
-        b = ord(self._ctr_cks[self._ctr_pos])
+        b = self._ctr_cks[self._ctr_pos]
         self._ctr_pos += 1
- 
+
         if self._ctr_pos >= len(self._ctr_cks):
             self._calcCTRBuf()
         return b
- 
+
     def _round(self, xl):
         """
         Performs an obscuring function on the 32-bit block of data, 'xl', which
         is the left half of the 64-bit block of data.
- 
+
         Returns the 32-bit result as a long integer.
         """
         # Perform all ops as longs then and out the last 32-bits to
         # obtain the integer
-        f = long(self._s_boxes[0][(xl & 0xFF000000) >> 24])
-        f += long(self._s_boxes[1][(xl & 0x00FF0000) >> 16])
+        f = int(self._s_boxes[0][(xl & 0xFF000000) >> 24])
+        f += int(self._s_boxes[1][(xl & 0x00FF0000) >> 16])
         f %= self._MODULUS
-        f ^= long(self._s_boxes[2][(xl & 0x0000FF00) >> 8])
-        f += long(self._s_boxes[3][(xl & 0x000000FF)])
+        f ^= int(self._s_boxes[2][(xl & 0x0000FF00) >> 8])
+        f += int(self._s_boxes[3][(xl & 0x000000FF)])
         f %= self._MODULUS
         return f & 0xFFFFFFFF
- 
+
 # Sample usage
 ##############
 if __name__ == '__main__':
     import time
- 
+
     def _demo(heading, source, encrypted, decrypted):
         """demo method """
-        print heading
-        print "\tSource: %(source)s" % {
+        print(heading)
+        print("\tSource: %(source)s" % {
          'source': source,
-        }
-        print "\tEncrypted: %(encrypted)s" % {
+        })
+        print("\tEncrypted: %(encrypted)s" % {
          'encrypted': encrypted,
-        }
-        print "\tDecrypted: %(decrypted)s" % {
+        })
+        print("\tDecrypted: %(decrypted)s" % {
          'decrypted': decrypted,
-        }
-        print
- 
-    key = 'This is a test key'
+        })
+        print()
+
+    key = b'This is a test key'
     cipher = Blowfish(key)
- 
+
     # Encryption processing
-    (xl, xr) = (123456L, 654321L)
+    (xl, xr) = (123456, 654321)
     (cl, cr) = cipher.cipher(xl, xr, cipher.ENCRYPT)
     (dl, dr) = cipher.cipher(cl, cr, cipher.DECRYPT)
     _demo("Testing encryption", (xl, xr), (cl, cr), (dl, dr))
- 
+
     # Block processing
-    text = 'testtest'
+    text = b'testtest'
     crypted = cipher.encrypt(text)
     decrypted = cipher.decrypt(crypted)
     _demo("Testing block encrypt", text, repr(crypted), decrypted)
- 
+
     # CTR ptocessing
     cipher.initCTR()
-    text = "The quick brown fox jumps over the lazy dog"
+    text = b"The quick brown fox jumps over the lazy dog"
     crypted = cipher.encryptCTR(text)
     cipher.initCTR()
     decrypted = cipher.decryptCTR(crypted)
     _demo("Testing CTR logic", text, repr(crypted), decrypted)
- 
+
     # Test speed
-    print "Testing speed"
-    test_strings = [''.join(("The quick brown fox jumps over the lazy dog", str(i),)) for i in xrange(1000)]
+    print("Testing speed")
+    test_strings = [b''.join((b"The quick brown fox jumps over the lazy dog", bytes(i),)) for i in range(1000)]
     n = 0
     t1 = time.time()
     while True:
@@ -575,8 +601,8 @@ if __name__ == '__main__':
         t2 = time.time()
         if t2 - t1 >= 5.0:
             break
-    print "%(count)i encryptions in %(time)0.1f seconds: %(throughput)0.1f enc/s" % {
+    print("%(count)i encryptions in %(time)0.1f seconds: %(throughput)0.1f enc/s" % {
      'count': n,
      'time': t2 - t1,
      'throughput': n / (t2 - t1),
-    }
+    })

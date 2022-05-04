@@ -5,12 +5,13 @@ Usage:
     python setup.py py2app
 """
 
+from __future__ import absolute_import
 from setuptools import setup
 
 #APP = ['./gmv/gmv_cmd.py']
 APP = ['./gmv_runner.py']
 DATA_FILES = []
-OPTIONS = {'argv_emulation': True, 'includes':['argparse', 'logbook','imapclient','chardet'],}
+OPTIONS = {'argv_emulation': True, 'includes':['argparse', 'logbook','imapclient','chardet','six'],}
 
 setup(
     app=APP,

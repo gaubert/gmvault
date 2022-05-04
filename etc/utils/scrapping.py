@@ -19,6 +19,8 @@
 
 #quick and dirty scrapper to get number of downloads
 
+from __future__ import absolute_import, print_function
+
 import json
 import datetime
 import mechanize
@@ -41,16 +43,16 @@ def get_from_bitbucket():
     #body_tag = soup.body
     all_tables = soup.findAll('table')
 
-    table = soup.find(lambda tag: tag.name=='table' and tag.has_key('id') and tag['id']=="uploaded-files")
+    table = soup.find(lambda tag: tag.name=='table' and 'id' in tag and tag['id']=="uploaded-files")
 
     rows = table.findAll(lambda tag: tag.name=='tr')
 
-    res = {} 
+    res = {}
     for row in rows:
-       
+
        tds = row.findAll(lambda tag: tag.name == 'td')
 
-       #print("tds = %s\n" %(tds))   
+       #print("tds = %s\n" %(tds))
 
        td_number = 0
        name = None
@@ -73,7 +75,7 @@ def get_from_bitbucket():
     return res
 
 def get_from_pypi(url):
- 
+
     res = {}
 
     print("Get info from pypi (url= %s)\n" % (url))
@@ -93,12 +95,12 @@ def get_from_pypi(url):
     #print("rows = %s\n" %(rows))
 
     for row in rows:
-       
+
        tds = row.findAll(lambda tag: tag.name == 'td')
 
-       #print("tds = %s\n" %(tds))   
+       #print("tds = %s\n" %(tds))
 
-       #ignore tds that are too small 
+       #ignore tds that are too small
        if len(tds) < 6:
           #print("ignore td = %s\n" % (tds))
           continue
@@ -142,20 +144,20 @@ def get_stats(return_type):
     res.update(get_from_pypi("https://pypi.python.org/pypi/gmvault/1.8-beta"))
     res.update(get_from_pypi("https://pypi.python.org/pypi/gmvault/1.7-beta"))
 
-    #print("name , nb_downloads") 
+    #print("name , nb_downloads")
     total = 0
     win_total   = 0
     lin_total   = 0
     mac_total   = 0
     v17_total   = 0
-    v18_total   = 0 
-    v181_total  = 0 
+    v18_total   = 0
+    v181_total  = 0
     pypi_total  = 0
     src_total   = 0
     for key in res.keys():
         #print("key= %s: (%s)\n" %(key, res[key]))
         if key.endswith(".exe"):
-           win_total += res[key] 
+           win_total += res[key]
         elif "macosx" in key:
            mac_total += res[key]
         else:
@@ -178,11 +180,11 @@ def get_stats(return_type):
         #print("%s, %s\n" % (key, res[key]))
         total += res[key]
 
-    total      += TOTAL_PREVIOUS_VERSIONS 
+    total      += TOTAL_PREVIOUS_VERSIONS
     win_total  += WIN_TOTAL_PREVIOUS_VERSIONS
     lin_total  += LIN_TOTAL_PREVIOUS_VERSIONS
     mac_total  += MAC_TOTAL_PREVIOUS_VERSIONS
-    pypi_total += PYPI_TOTAL_PREVIOUS_VERSIONS  
+    pypi_total += PYPI_TOTAL_PREVIOUS_VERSIONS
     src_total  += SRC_TOTAL_PREVIOUS_VERSIONS
 
     the_str = ""

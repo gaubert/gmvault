@@ -18,6 +18,7 @@
 
 '''
 # unit tests part
+from __future__ import absolute_import
 import unittest
 from gmv.conf.utils.struct_parser import Compiler, CompilerError
 
@@ -89,7 +90,7 @@ class TestParser(unittest.TestCase): #pylint: disable=R0904
         
         try:
             compiler.compile_list(the_string)
-        except CompilerError, err:
+        except CompilerError as err:
             self.assertEqual(err.message, 'Expression "  a ]" cannot be converted as a list.')
     
     def test_list_unicode_val(self):
@@ -126,7 +127,7 @@ class TestParser(unittest.TestCase): #pylint: disable=R0904
         
         try:
             compiler.compile_list(the_string)
-        except CompilerError, err:
+        except CompilerError as err:
             self.assertEqual(err.message, 'Unsupported token (type: @, value : OP) (line=1,col=3).')
         
     def test_simple_dict(self):
@@ -148,7 +149,7 @@ class TestParser(unittest.TestCase): #pylint: disable=R0904
         
         try:
             compiler.compile_dict(the_string)
-        except CompilerError, err:
+        except CompilerError as err:
             self.assertEqual(err.message, 'Expression "{\'a\':1, b:2 " cannot be converted as a dict.')
         
     def test_dict_with_list(self):

@@ -17,6 +17,7 @@
 
 '''
 
+from __future__ import absolute_import
 import gmv.gmv_cmd
 
 gmv.gmv_cmd.bootstrap_run()

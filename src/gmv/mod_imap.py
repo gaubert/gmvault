@@ -19,18 +19,20 @@
     Contains the class monkey patching IMAPClient and imaplib
 
 '''
+from __future__ import absolute_import, print_function
+
 import zlib
 import datetime
 import re
 import socket
 import ssl
-import cStringIO
+import io
 import os
 
 import imaplib  #for the exception
 import imapclient
 
-#enable imap debugging if GMV_IMAP_DEBUG is set 
+#enable imap debugging if GMV_IMAP_DEBUG is set
 if os.getenv("GMV_IMAP_DEBUG"):
     imaplib.Debug = 4 #enable debugging
 
@@ -55,22 +57,22 @@ def mod_convert_INTERNALDATE(date_string, normalise_times=True):#pylint: disable
     mon = INTERNALDATE_RE.match('INTERNALDATE "%s"' % date_string)
     if not mon:
         raise ValueError("couldn't parse date %r" % date_string)
-    
+
     zoneh = int(mon.group('zoneh'))
     zonem = (zoneh * 60) + int(mon.group('zonem'))
     if mon.group('zonen') == '-':
         zonem = -zonem
     timez = imapclient.fixed_offset.FixedOffset(zonem)
-    
+
     year    = int(mon.group('year'))
     the_mon = MON2NUM[mon.group('mon')]
     day     = int(mon.group('day'))
     hour    = int(mon.group('hour'))
     minute  = int(mon.group('min'))
     sec = int(mon.group('sec'))
-    
+
     the_dt = datetime.datetime(year, the_mon, day, hour, minute, sec, 0, timez)
-    
+
     if normalise_times:
         # Normalise to host system's timezone
         return the_dt.astimezone(imapclient.fixed_offset.FixedOffset.for_system()).replace(tzinfo=None)
@@ -114,9 +116,9 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
         """
         self.compressor = None
         self.decompressor = None
-        
+
         imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
-        
+
     def activate_compression(self):
         """
            activate_compressing()
@@ -125,8 +127,8 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
         # rfc 1951 - pure DEFLATE, so use -15 for both windows
         self.decompressor = zlib.decompressobj(-15)
         self.compressor   = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
-        
-    def open(self, host = '', port = imaplib.IMAP4_SSL_PORT): 
+
+    def open(self, host = '', port = imaplib.IMAP4_SSL_PORT):
         """Setup connection to remote server on "host:port".
            (default: localhost:standard IMAP4 SSL port).
            This connection will be used by the routines:
@@ -135,16 +137,16 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
         self.host   = host
         self.port   = port
 
-        self.sock   = socket.create_connection((host, port), self.SOCK_TIMEOUT) #add so_timeout  
+        self.sock   = socket.create_connection((host, port), self.SOCK_TIMEOUT) #add so_timeout
 
         #self.sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1) #try to set TCP NO DELAY to increase performances
 
         self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
         #self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile, suppress_ragged_eofs = False)
-        
+
         # This is the last correction added to avoid memory fragmentation in imaplib
-        # makefile creates a file object that makes use of cStringIO to avoid mem fragmentation
-        # it could be used without the compression 
+        # makefile creates a file object that makes use of io to avoid mem fragmentation
+        # it could be used without the compression
         # (maybe make 2 set of methods without compression and with compression)
         #self.file   = self.sslobj.makefile('rb')
 
@@ -153,38 +155,38 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
             Read 'size' bytes from remote.
             Call _intern_read that takes care of the compression
         """
-        
-        chunks = cStringIO.StringIO() #use cStringIO.cStringIO to avoir too much fragmentation
+
+        chunks = io.BytesIO()
         read = 0
         while read < size:
             try:
                 data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
-            except ssl.SSLError, err:
-                print("************* SSLError received %s" % (err)) 
+            except ssl.SSLError as err:
+                print("************* SSLError received %s" % (err))
                 raise self.abort('Gmvault ssl socket error: EOF. Connection lost, reconnect.')
             read += len(data)
             chunks.write(data)
-        
-        return chunks.getvalue() #return the cStringIO content
-    
+
+        return chunks.getvalue() #return the io content
+
     def read(self, size):
         """
             Read 'size' bytes from remote.
             Call _intern_read that takes care of the compression
         """
-        
-        chunks = cStringIO.StringIO() #use cStringIO.cStringIO to avoir too much fragmentation
+
+        chunks = io.BytesIO()
         read = 0
         while read < size:
             data = self._intern_read(min(size-read, 16384)) #never ask more than 16384 because imaplib can do it
-            if not data: 
+            if not data:
                 #to avoid infinite looping due to empty string returned
-                raise self.abort('Gmvault ssl socket error: EOF. Connection lost, reconnect.') 
+                raise self.abort('Gmvault ssl socket error: EOF. Connection lost, reconnect.')
             read += len(data)
             chunks.write(data)
-        
-        return chunks.getvalue() #return the cStringIO content
-  
+
+        return chunks.getvalue() #return the io content
+
     def _intern_read(self, size):
         """
             Read at most 'size' bytes from remote.
@@ -199,24 +201,24 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
             data = self.sslobj.read(8192) #Fixed buffer size. maybe change to 16384
 
         return self.decompressor.decompress(data, size)
-        
+
     def readline(self):
         """Read line from remote."""
-        line = cStringIO.StringIO() #use cStringIO to avoid memory fragmentation
+        line = io.BytesIO() #use BytesIO to avoid memory fragmentation
         while 1:
             #make use of read that takes care of the compression
             #it could be simplified without compression
-            char = self.read(1) 
+            char = self.read(1)
             line.write(char)
-            if char in ("\n", ""): 
+            if char in ("\n", ""):
                 return line.getvalue()
-    
+
     def shutdown(self):
         """Close I/O established in "open"."""
         #self.file.close() #if file created
         self.sock.close()
-        
-      
+
+
     def send(self, data):
         """send(data)
         Send 'data' to remote."""
@@ -224,7 +226,7 @@ class IMAP4COMPSSL(imaplib.IMAP4_SSL): #pylint:disable=R0904
             data = self.compressor.compress(data)
             data += self.compressor.flush(zlib.Z_SYNC_FLUSH)
         self.sslobj.sendall(data)
-       
+
 def seq_to_parenlist(flags):
     """Convert a sequence of strings into parenthised list string for
     use with IMAP commands.
@@ -234,13 +236,13 @@ def seq_to_parenlist(flags):
     elif not isinstance(flags, (tuple, list)):
         raise ValueError('invalid flags list: %r' % flags)
     return '(%s)' % ' '.join(flags)
-    
+
 class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
     """
        Need to extend the IMAPClient to do more things such as compression
        Compression inspired by http://www.janeelix.com/piers/python/py2html.cgi/piers/python/imaplib2
     """
-    
+
     def __init__(self, host, port=None, use_uid=True, need_ssl=False):
         """
            constructor
@@ -256,7 +258,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
         typ, data = self._imap.authenticate('XOAUTH2', lambda x: oauth2_cred)
         self._checkok('authenticate', typ, data)
         return data[0]
-    
+
     def search(self, criteria): #pylint: disable=W0221
         """
            Perform a imap search or gmail search
@@ -270,12 +272,12 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
             return self.gmail_search(criteria.get('req',''))
         else:
             raise Exception("Unknown search type %s" % (criteria.get('type','no request type passed')))
-        
+
     def gmail_search(self, criteria):
         """
            perform a search with gmailsearch criteria.
            eg, subject:Hello World
-        """  
+        """
         criteria = criteria.replace('\\', '\\\\')
         criteria = criteria.replace('"', '\\"')
 
@@ -283,20 +285,20 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
         #args = ['CHARSET', 'utf-8', 'X-GM-RAW', '"%s"' % (criteria)]
         #typ, data = self._imap.uid('SEARCH', *args)
 
-        #working Literal search 
+        #working Literal search
         self._imap.literal = '"%s"' % (criteria)
         self._imap.literal = imaplib.MapCRLF.sub(imaplib.CRLF, self._imap.literal)
         self._imap.literal = self._imap.literal.encode("utf-8")
- 
+
         #use uid to keep the imap ids consistent
         args = ['CHARSET', 'utf-8', 'X-GM-RAW']
         typ, data = self._imap.uid('SEARCH', *args) #pylint: disable=W0142
-        
+
         self._checkok('search', typ, data)
         if data == [None]: # no untagged responses...
             return [ ]
 
-        return [ long(i) for i in data[0].split() ]
+        return [ int(i) for i in data[0].split() ]
 
     def append(self, folder, msg, flags=(), msg_time=None):
         """Append a message to *folder*.
@@ -326,7 +328,7 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
                                        time_val,
                                        to_bytes(msg),
                                        unpack=True)
-    
+
     def enable_compression(self):
         """
         enable_compression()
@@ -342,4 +344,4 @@ class MonkeyIMAPClient(imapclient.IMAPClient): #pylint:disable=R0903,R0904
             #no errors for the moment
             pass
 
-        
+

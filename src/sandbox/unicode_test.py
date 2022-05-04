@@ -1,23 +1,26 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function
+
 import sys
 import unicodedata
+import six
 
 def ascii_hex(str):
    new_str = ""
    for c in str:
       new_str += "%s=hex[%s]," % (c,hex(ord(c)))
    return new_str
-                
+
 def convert_to_utf8(a_str):
     """
     """
     if type(a_str) != type(u'a'):
-		#import chardet
-		#char_enc = chardet.detect(a_str)
-		#print("detected encoding = %s" % (char_enc))
-		#print("system machine encoding = %s" % (sys.getdefaultencoding()))
-		#u_str = unicode(a_str, char_enc['encoding'], errors='ignore')
-		u_str = unicode(a_str, 'cp437', errors='ignore')
+        #import chardet
+        #char_enc = chardet.detect(a_str)
+        #print("detected encoding = %s" % (char_enc))
+        #print("system machine encoding = %s" % (sys.getdefaultencoding()))
+        #u_str = unicode(a_str, char_enc['encoding'], errors='ignore')
+        u_str = six.text_type(a_str, 'cp437', errors='ignore')
     else:
         print("Already unicode do not convert")
         u_str = a_str
@@ -34,7 +37,7 @@ def convert_to_utf8(a_str):
     print("Hex ascii %s" % (hex_s))
     utf8_arg = u_str
     #utf8_arg = u_str.encode("utf-8")
-    
+
     return utf8_arg
 
 if __name__ == '__main__':

@@ -16,6 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from __future__ import absolute_import, print_function
+
 import sys
 import unittest
 import base64
@@ -41,7 +43,7 @@ def read_password_file(a_path):
     with open(a_path) as f:
         line = f.readline()
     login, passwd = line.split(":")
-    
+
     return deobfuscate_string(login.strip()), deobfuscate_string(passwd.strip())
 
 def delete_db_dir(a_db_dir):
@@ -59,27 +61,27 @@ class TestGMVaultValidation(unittest.TestCase): #pylint:disable-msg=R0904
     def __init__(self, stuff):
         """ constructor """
         super(TestGMVaultValidation, self).__init__(stuff)
-        
+
         self.login  = None
         self.passwd = None
-        
+
         self.gmvault_login  = None
-        self.gmvault_passwd = None 
-        
+        self.gmvault_passwd = None
+
         self.default_dir = "/tmp/gmvault-tests"
-    
+
     def setUp(self): #pylint:disable-msg=C0103
         self.login, self.passwd = read_password_file('/homespace/gaubert/.ssh/passwd')
-        
+
         self.gmvault_test_login, self.gmvault_test_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
-                
+
     def test_help_msg_spawned_by_def(self):
         """
            spawn python gmv_runner account > help_msg_spawned.txt
            check that res is 0 or 1
         """
         pass
-   
+
     def test_backup_10_emails(self):
         """
            backup 10 emails and check that they are backed
@@ -87,42 +89,42 @@ class TestGMVaultValidation(unittest.TestCase): #pylint:disable-msg=R0904
            => python gmv_runner.py sync account > checkfile
         """
         pass
-    
+
     def test_restore_and_check(self):
         """
            Restore emails, retrieve them and compare with originals
         """
         db_dir = "/tmp/the_dir"
-    
-    
+
+
     def ztest_restore_on_gmail(self):
         """
            clean db disk
            sync with gmail for few emails
            restore them on gmail test
         """
-        
+
         db_dir = '/tmp/gmail_bk'
-        
+
         #clean db dir
         delete_db_dir(db_dir)
         credential    = { 'type' : 'passwd', 'value': self.passwd}
         gs_credential = { 'type' : 'passwd', 'value': self.gmvault_passwd}
         search_req    = { 'type' : 'imap', 'req': "Since 1-Nov-2011 Before 3-Nov-2011"}
-        
+
         syncer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.login, credential, read_only_access = False, use_encryption = True)
-        
+
         #syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
         # Nov-2007 BigDataset
         syncer.sync(imap_req = search_req)
-        
+
         restorer = gmvault.GMVaulter(db_dir, 'imap.gmail.com', 993, self.gmvault_login, gs_credential, read_only_access = False)
         restorer.restore()
-            
-        print("Done \n")    
-        
-        
-        
+
+        print("Done \n")
+
+
+
 
 def tests():
     """
@@ -130,7 +132,7 @@ def tests():
     """
     suite = unittest.TestLoader().loadTestsFromTestCase(TestGMVaultValidation)
     unittest.TextTestRunner(verbosity=2).run(suite)
- 
+
 if __name__ == '__main__':
-    
+
     tests()
