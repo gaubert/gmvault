@@ -129,6 +129,9 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         if os.path.exists(self._chats_dir):
             dirs = os.listdir(self._chats_dir)
             for the_dir in dirs:
+                if the_dir.startswith('@') or the_dir.startswith('#'):
+                    continue
+                    
                 the_split = the_dir.split("-")
                 if len(the_split) != 2:
                     raise Exception("Should get 2 elements in %s" % the_split)
