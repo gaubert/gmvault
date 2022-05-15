@@ -73,7 +73,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1): #pylint:disable=R0912
     """
       Decorator for retrying command when it failed with a imap or socket error.
       Should be used exclusively on imap exchanges.
-      Strategy, always retry on any imaplib or socket error. Wait few seconds before to retry
+      Strategy, always retry on any imaplib or socket error. Wait a few seconds before retrying
       backoff sets the factor by which the a_sleep_time should lengthen after each failure. backoff must be greater than 1,
       or else it isn't really a backoff
     """
@@ -109,7 +109,7 @@ def retry(a_nb_tries=3, a_sleep_time=1, a_backoff=1): #pylint:disable=R0912
             # go in retry mode: reconnect.
             # retry reconnect as long as we have tries left
             try:
-                LOG.critical("Reconnecting to the from Gmail Server.")
+                LOG.critical("Reconnecting to the Gmail Server.")
                 
                 #reconnect to the current folder
                 the_self.connect(go_to_current_folder = True )
