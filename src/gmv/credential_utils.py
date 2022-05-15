@@ -112,26 +112,15 @@ class CredentialHelper(object):
         """
         oauth_file = '%s/%s.oauth2' % (gmvault_utils.get_home_dir_path(), email)
 
-        # Open a file
-        fdesc = os.open(oauth_file, os.O_RDWR|os.O_CREAT )
-
-        #write new content
-        fobj = os.fdopen(fdesc, "w")
-
-        #empty file
-        fobj.truncate()
-        fobj.seek(0, os.SEEK_SET)
-
-
         the_obj = { "access_token"    : access_token,
                     "refresh_token"   : refresh_token,
                     "validity"        : validity,
                     "access_creation" : gmvault_utils.get_utcnow_epoch(),
                     "type"            : type}
 
-        json.dump(the_obj, fobj)
+        with open(oauth_file, 'w') as f:
+            json.dump(the_obj, f)
 
-        fobj.close()
 
     @classmethod
     def read_oauth2_tok_sec(cls, email):
