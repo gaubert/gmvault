@@ -36,7 +36,25 @@ Untar the binary tarball distribution and go to the GMVAULT_HOME/bin dir to laun
 
 ## Install from the sources
 
-python setup.py install
+    python setup.py install
+
+## Install from source using Docker
+
+    docker build -t gmvault .
+
+Prefix all gmvault commands with "docker run -ti" to use the docker container,
+e.g.:
+
+    docker run -ti gmvault -h
+
+After syncing, extract your backups from the stopped container using docker
+copy:
+
+    docker cp <containername>:/root/gmvault-db ~/
+
+Or map the volume locally, to begin with:
+
+    docker run --rm -ti -v $HOME/gmvault-db:/root/gmvault-db gmvault sync ...
 
 ## Install from PyPi
 
