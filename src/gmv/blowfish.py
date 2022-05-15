@@ -434,7 +434,7 @@ class Blowfish:
              'len': len(data),
             })
  
-        # Use big endianess since that's what everyone else uses
+        # Use big endianness since that's what everyone else uses
         xl = (ord(data[3])) | (ord(data[2]) << 8) | (ord(data[1]) << 16) | (ord(data[0]) << 24)
         xr = (ord(data[7])) | (ord(data[6]) << 8) | (ord(data[5]) << 16) | (ord(data[4]) << 24)
  
@@ -457,7 +457,7 @@ class Blowfish:
              'len': len(data),
             })
  
-        # Use big endianess since that's what everyone else uses
+        # Use big endianness since that's what everyone else uses
         cl = (ord(data[3])) | (ord(data[2]) << 8) | (ord(data[1]) << 16) | (ord(data[0]) << 24)
         cr = (ord(data[7])) | (ord(data[6]) << 8) | (ord(data[5]) << 16) | (ord(data[4]) << 24)
  
@@ -551,17 +551,17 @@ if __name__ == '__main__':
  
     # Block processing
     text = 'testtest'
-    crypted = cipher.encrypt(text)
-    decrypted = cipher.decrypt(crypted)
-    _demo("Testing block encrypt", text, repr(crypted), decrypted)
+    encrypted = cipher.encrypt(text)
+    decrypted = cipher.decrypt(encrypted)
+    _demo("Testing block encrypt", text, repr(encrypted), decrypted)
  
     # CTR ptocessing
     cipher.initCTR()
     text = "The quick brown fox jumps over the lazy dog"
-    crypted = cipher.encryptCTR(text)
+    encrypted = cipher.encryptCTR(text)
     cipher.initCTR()
-    decrypted = cipher.decryptCTR(crypted)
-    _demo("Testing CTR logic", text, repr(crypted), decrypted)
+    decrypted = cipher.decryptCTR(encrypted)
+    _demo("Testing CTR logic", text, repr(encrypted), decrypted)
  
     # Test speed
     print "Testing speed"

@@ -31,7 +31,7 @@ class CmdLineParser(argparse.ArgumentParser): #pylint: disable=R0904
         Comments regarding usability of the lib. 
         By default you want to print the default in the help if you had them so the default formatter should print them
         Also new lines are eaten in the epilogue strings. You would use an epilogue to show examples most of the time so you
-        want to have the possiblity to go to a new line. There should be a way to format the epilogue differently from  the rest  
+        want to have the possibility to go to a new line. There should be a way to format the epilogue differently from  the rest  
 
     """ 
     

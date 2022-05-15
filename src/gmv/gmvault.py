@@ -55,7 +55,7 @@ def handle_restore_imap_error(the_exception, gm_id, db_gmail_ids_info, gmvaulter
         gmvaulter.src.reconnect() #reconnect      
            
     elif isinstance(the_exception, imaplib.IMAP4.error): 
-        LOG.error("Catched IMAP Error %s" % (str(the_exception)))
+        LOG.error("Caught IMAP Error %s" % (str(the_exception)))
         LOG.exception(the_exception)
         
         #When the email cannot be read from Database because it was empty when returned by gmail imap
@@ -271,7 +271,7 @@ class GMVaulter(object):
         #instantiate gstorer
         self.gstorer =  gmvault_db.GmailStorer(self.db_root_dir, self.use_encryption)
         
-        #timer used to mesure time spent in the different values
+        #timer used to measure time spent in the different values
         self.timer = gmvault_utils.Timer()
         
     @classmethod
@@ -289,7 +289,8 @@ class GMVaulter(object):
         """
         the_str = "\n================================================================\n"\
                   "%s operation performed in %s.\n" \
-                  "Number of reconnections: %d.\nNumber of emails quarantined: %d.\n" \
+                  "Number of reconnections: %d.\n" \
+                  "Number of emails quarantined: %d.\n" \
                   "Number of emails that could not be fetched: %d.\n" \
                   "Number of emails that were returned empty by gmail: %d.\n"\
                   "Number of emails without label information returned by gmail: %d.\n"\
@@ -634,7 +635,7 @@ class GMVaulter(object):
         else:
             LOG.critical("\nSkip chats synchronization.\n")
         
-        #delete supress emails from DB since last sync
+        #delete suppress emails from DB since last sync
         self.check_clean_db(db_cleaning)
        
         LOG.debug("Sync operation performed in %s.\n" \
@@ -775,7 +776,7 @@ class GMVaulter(object):
             
             LOG.debug("Got %s emails imap_id(s) from the Gmail Server." % (len(imap_ids)))
             
-            #delete supress emails from DB since last sync
+            #delete suppress emails from DB since last sync
             self._delete_sync(imap_ids, db_gmail_ids, db_gmail_ids_info, 'email')
             
             # get all chats ids
@@ -792,7 +793,7 @@ class GMVaulter(object):
                 
                 LOG.debug("Got %s chat imap_ids from the Gmail Server." % (len(chat_ids)))
             
-                #delete supress emails from DB since last sync
+                #delete suppress emails from DB since last sync
                 self._delete_sync(chat_ids, db_chat_ids, db_gmail_ids_info , 'chat')
             else:
                 LOG.critical("Chats IMAP Directory not visible on Gmail. Ignore deletion of chats.")
@@ -1055,7 +1056,7 @@ class GMVaulter(object):
            restore emails in a gmail account using batching to group restore
            If you are not in "All Mail" Folder, it is extremely fast to push emails.
            But it is not possible to reapply labels if you are not in All Mail because the uid which is returned
-           is dependant on the folder. On the other hand, you can restore labels in batch which would help gaining lots of time.
+           is dependent on the folder. On the other hand, you can restore labels in batch which would help gaining lots of time.
            The idea is to get a batch of 50 emails and push them all in the mailbox one by one and get the uid for each of them.
            Then create a dict of labels => uid_list and for each label send a unique store command after having changed dir
         """

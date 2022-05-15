@@ -26,7 +26,7 @@ import gmv.conf.utils.struct_parser as struct_parser
 
 class ResourceError(Exception):
     """
-        Base class for ressource exceptions 
+        Base class for resource exceptions 
     """
 
     def __init__(self, a_msg):
@@ -35,19 +35,19 @@ class ResourceError(Exception):
 
 class Resource(object):
     """
-        Class read a ressource.
+        Class read a resource.
         It can be read first from the Command Line, then from the ENV as an env variable and finally from a conf file 
     """
     
     def __init__(self, a_cli_argument=None, a_env_variable=None, a_conf_property=None): 
         """ 
           Default Constructor.
-          It is important to understand that there is precedence between the different ways to set the ressource:
+          It is important to understand that there is precedence between the different ways to set the resource:
           - get from the command line if defined otherwise get from the Env variable if defined otherwise get from the conf file otherwise error
        
            Args:
               a_cli_argument : The command line argument name
-              a_env_variable : The env variable name used for this ressource
+              a_env_variable : The env variable name used for this resource
               a_conf_property: It should be a tuple containing two elements (group,property)
         """
       
@@ -83,7 +83,7 @@ class Resource(object):
     def _get_value_from_command_line(self):
         """
           internal method for extracting the value from the command line.
-          All command line agruments must be lower case (unix style).
+          All command line arguments must be lower case (unix style).
           To Do support short and long cli args.
            
            Returns:
@@ -331,7 +331,7 @@ class Conf(object):
          * support for variables in configuration file
          * support for default values in all accessors
          * integrated with the resources object offering to get the configuration from an env var, a commandline option or the conf
-         * to be done : support for blocs, list comprehension and dict comprehension, json 
+         * to be done : support for blocks, list comprehension and dict comprehension, json 
          * to be done : define resources in the conf using the [Resource] group with A= { ENV:TESTVAR, CLI:--testvar, VAL:1.234 }
     
     """
