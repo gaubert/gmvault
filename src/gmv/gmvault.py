@@ -167,7 +167,7 @@ class IMAPBatchFetcher(object):
         self.request            = request
         self.error_report       = error_report  
         
-        self.to_fetch           = list(imap_ids)
+        self.to_fetch           = list(sorted(imap_ids))
     
     def individual_fetch(self, imap_ids):
         """
